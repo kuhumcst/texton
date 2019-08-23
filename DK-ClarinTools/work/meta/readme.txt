@@ -1,0 +1,1 @@
+This folder contains metadata files that will be needed in any incarnation of the tools module. The file 'features' describes which features are used in this incarnation. For each of those features there is a table in the feuture folder. For each feature value, there CAN be a table in the style folder. Whether that is the case is also described in the feature table.

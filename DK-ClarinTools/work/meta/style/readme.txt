@@ -1,0 +1,1 @@
+This folder contains tables that let you describe a feature to the finest detail. For example, an input may have a file format 'image'. In this folder would be a table telling that you have the following 'image' formats: JPEG, TIFF, BMP 
