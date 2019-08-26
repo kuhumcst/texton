@@ -1,0 +1,107 @@
+{seg.bra
+
+emulate seg.py
+
+Call:
+bracmat "get'\"seg.bra\"" inputfileTok inputfileSent outputfileSeg
+}
+
+X=
+  ( doit
+  =   
+    .     !arg:(?tok.?sent.?seg)
+        & get$(!tok,X ML):?tok
+        & get$(!sent,X ML):?sent
+        & 0:?i
+        & :?ERR
+        &   put
+          $ (   toML
+              $ ( spanGrp
+                .   (ana.ClarinSegments)
+                  ,   map
+                    $ ( ( 
+                        =   
+                          .       !arg
+                                : ( span
+                                  .   ? (from.?fromIndex) ?
+                                    : ( ? (to.?toIndex) ?
+                                      | ?&:?toIndex
+                                      )
+                                  )
+                              &   !tok
+                                :   ?
+                                    (   ( span
+                                        .   ? (from.!fromIndex) ?
+                                          : ? ("xml:id".?fromID) ?
+                                        )
+                                        ?
+                                    : ?tok
+                                    )
+                              & (   !toIndex:
+                                  & !fromID:?toID
+                                | !( 
+                                   ' ( $tok
+                                     :   ?
+                                         ( span
+                                         .   ( ? (to.$toIndex) ?
+                                             | ? (from.$toIndex) ?
+                                             )
+                                           : ? ("xml:id".?toID) ?
+                                         )
+                                         ?tok
+                                     )
+                                   )
+                                |   !ERR:
+                                  &     str
+                                      $ ( "ERROR: Inputs are unrelated. Sentence 'to'-index "
+                                          !toIndex
+                                          " does not point to a token."
+                                        )
+                                    : ?ERR
+                                | 
+                                )
+                              & ( span
+                                .     (from.str$("#" !fromID))
+                                      (to.str$("#" !toID))
+                                      (type.Sseg)
+                                      ("xml:id".str$(S (!i+1:?i)))
+                                  , 
+                                )
+                            | 
+                        )
+                      . !sent
+                      )
+                )
+            , !seg
+            , NEW
+            )
+        & !ERR:
+      | put$(!ERR,!seg,NEW)
+  )
+  (new=.~|(its.doit)$(arg$.arg$.arg$));
+
+r=
+  get'("seg.bra",TXT)
+& rmv$(str$(seg ".bak"))
+& ren$("seg.bra".str$(seg ".bak"))
+&   put
+  $ ( "{seg.bra
+
+emulate seg.py
+
+Call:
+bracmat \"get'\\\"seg.bra\\\"\" inputfileTok inputfileSent outputfileSeg
+}
+
+"
+    , "seg.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"seg.bra",APP)
+& put'(\n,"seg.bra",APP,BIN)
+& lst'(r,"seg.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"seg.bra",APP,BIN)
+& ;
+
+new'X;

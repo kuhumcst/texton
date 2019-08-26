@@ -1,0 +1,539 @@
+{LemmaVal.bra
+
+Given rules and the training data (or other full form - lemma data, plus additional info like POS tags), 
+produce the lemmas of the full forms and compare those with the lemmas in the training data.
+Write errors in a file.}
+
+X=
+  ( doit
+  =   
+    .   ( reverse
+        =   a R
+          .   :?R
+            & whl'(!arg:%?a ?arg&!a !R:?R)
+            & !R
+        )
+      & ( theLemmas
+        =   R l
+          .   :?R
+            &   whl
+              ' ( !arg:(?l.?) %?arg
+                & !R !l "|":?R
+                )
+            & !arg:(?l.?)
+            & !R !l:?R
+            & str$!R
+        )
+      & ( short
+        =   g
+          .     vap$((=.!arg.upp$!arg.low$!arg).!arg)
+              :   %?arg
+                  ( ((?g.~!g.?)|(?g.?.!g)) ?
+                  | 
+                  )
+            &   str
+              $ ( map
+                $ ( (=.!arg:(?arg.?)&!arg)
+                  . !arg
+                  )
+                )
+        )
+      & ( combineClasFreq
+        =   CLS cls U M F c A Z n m G
+          .   !arg:(?CLS.?cls)
+            & 0:?U
+            &   whl
+              ' ( !CLS:?M+?F*(?c.0)+?CLS
+                & !M+!CLS:?CLS
+                &     !U
+                    + (   !cls:?A+?G*(!c.0)+?Z
+                        & !A+!Z:?cls
+                        & (!F+!G)*(!c.0)
+                      | !F*(!c.0)
+                      )
+                  : ?U
+                )
+            &   whl
+              ' ( !CLS:(?c.?n)+?CLS
+                &     !U
+                    + (   !cls:?A+(!c.?m)+?Z
+                        & !A+!Z:?cls
+                        & (!c.!n+!m)
+                      | (!c.!n)
+                      )
+                  : ?U
+                )
+            & !U+!cls
+        )
+      & !arg:(?WordLemmaPosData.?F.?TheFlexRules.?lemposfile.?TorC)
+      & get$"lemmatize.bra"
+      & str$(!TheFlexRules "NRS.bra"):?NRSfile
+      & str$(!TheFlexRules "hexs.bra"):?hexsfile
+      & str$(!TheFlexRules "exs.bra"):?exsfile
+      & get$!TheFlexRules:?theTree
+      & (   get$!NRSfile
+          & new$hash:?H
+          & whl'(!NRS:%?k ?NRS&(H..insert)$!k)
+        |   ( get$!hexsfile
+            |   ( get$!exsfile
+                |       vap
+                      $ ( ( 
+                          =   vals wrd lem cls freq
+                            .     vap$((=.!arg).!arg.\t)
+                                : ?vals
+                              & (   !vals:%?wrd %?lem %?cls %?freq ?
+                                  &   whl
+                                    ' @( !freq
+                                       : ?freq (" "|\r)
+                                       )
+                                  & ( !wrd
+                                    . !lem
+                                    .     !TorC:C
+                                        & short$!cls
+                                      | !cls
+                                    . !freq:~|1
+                                    )
+                                | 
+                                )
+                          )
+                        . get$(!WordLemmaPosData,STR)
+                        . \n
+                        )
+                    : ?exs
+                  & lst$(exs,!exsfile,NEW)
+                )
+              & :?hexs
+              &   whl
+                ' ( !exs:(?wrd.?r1) ?exs
+                  &   whl
+                    ' ( !exs:(!wrd.?r2) ?exs
+                      & !r2 !r1:?r1
+                      )
+                  &   whl
+                    ' (   !r1
+                        : ?A (?L.?Cf1) ?M (!L.?Cf2) ?Z
+                      & !A (!L.!Cf1+!Cf2) !M !Z:?r1
+                      )
+                  &     map
+                      $ ( ( 
+                          =   L A B f g
+                            .   !arg:(?L.?A)
+                              & 0:?B
+                              &   whl
+                                ' ( !A:?*(?C.?f)+?A
+                                  &   whl
+                                    ' ( !A:?*(!C.?g)+?A
+                                      & !f+!g:?f
+                                      )
+                                  & !B+(!C.!f):?B
+                                  )
+                              & (!L.!B)
+                          )
+                        . !r1
+                        )
+                    : ?r1
+                  &   whl
+                    ' ( !r1:?aa (?q.?A+#%*?M+?Z) ?zz
+                      & !aa (!q.!A+!M+!Z) !zz:?r1
+                      )
+                  & (!wrd.!r1) !hexs:?hexs
+                  )
+              & lst$(hexs,!hexsfile,NEW)
+            )
+          & :?ERRORS
+          & (   new$hash:?H
+              &   whl
+                ' ( !hexs:(?word.?lems:?Lems) ?hexs
+                  &   lemmatise$(!theTree.!word..0)
+                    : ?results
+                    : ?ress
+                  &   whl
+                    ' ( !results:(?lm.?nrs) ?results
+                      & !lems:?A (!lm.?cls) ?Z
+                      & !A !Z:?lems
+                      &   whl
+                        ' ( !nrs:%?nr ?nrs
+                          & (   (H..find)$!nr:(?nnr.?CLS)
+                              & (H..remove)$!nr
+                            | 0:?CLS
+                            )
+                          &   (H..insert)
+                            $ (!nr.combineClasFreq$(!CLS.!cls))
+                          )
+                      )
+                  & ( !lems:!results:
+                    |   (!word.!ress.!Lems.!lems.!results) !ERRORS
+                      : ?ERRORS
+                    )
+                  )
+              & :?NRS
+              & (H..forall)$(=.!arg !NRS:?NRS)
+              & lst$(NRS,!NRSfile,NEW)
+            |   whl
+              ' ( !hexs:(?word.?lems:?Lems) ?hexs
+                &   lemmatise$(!theTree.!word..0)
+                  : ?results
+                  : ?ress
+                &   whl
+                  ' ( !results:(?lm.?nrs) ?results
+                    & !lems:?A (!lm.?cls) ?Z
+                    & !A !Z:?lems
+                    )
+                & ( !lems:!results:
+                  |   (!word.!ress.!Lems.!lems.!results) !ERRORS
+                    : ?ERRORS
+                  )
+                )
+            )
+          & (   !ERRORS:
+              & (rmv$"ERRORS.bra"|)
+            | lst$(ERRORS,"ERRORS.bra",NEW)
+            )
+        )
+      & ( readDict
+        =   dict
+          .   get$!arg
+            & new$hash:?dict
+            &   map
+              $ ( (=.(dict..insert)$!arg&)
+                . !hexs
+                )
+            & !dict
+        )
+      & readDict$!hexsfile:?dict
+      & 0:?lineno:?wordno
+      & ( junk
+        =   wrd CLS
+          .   !arg:(?wrd.?CLS)
+            & (   !CLS:%+%
+                &     vap
+                    $ ( (=.utf$!arg:>128|)
+                      . !wrd
+                      )
+                  : 
+                & upp$!wrd:low$!wrd
+                & ( @(!wrd:? #% ?)&(NUM.0)
+                  | (XX.0)
+                  )
+              | !CLS
+              )
+        )
+      & ( theWordThing
+        =   woord id
+          .   !arg:(?arg.?id)
+            & (   !arg:(\r|\t|)
+                & 
+              |   (C..!id)
+                + (F..!arg:?woord)
+                + ( LS
+                  .     (dict..find)$!arg:(?.?lemmas)
+                      & !lemmas
+                    |   (dict..find)$(low$!arg):(?.?lemmas)
+                      & !lemmas
+                    |       map
+                          $ ( ( 
+                              =     wrd nrs nr svar
+                                  , cls CLS lemmas
+                                  , a b c d e
+                                .   !arg:(?wrd.?nrs)
+                                  & ( !wrd:~
+                                    | !woord:?wrd
+                                    )
+                                  & 0:?CLS
+                                  &   whl
+                                    ' ( !nrs:%?nr ?nrs
+                                      & (H..find)$!nr:(?.?cls)
+                                      &   combineClasFreq$(!CLS.!cls)
+                                        : ?CLS
+                                      )
+                                  &   (   !CLS:0
+                                        & (!woord.XX.0)
+                                      |   junk$(!wrd.!CLS):?CLS
+                                        & (!wrd.!CLS)
+                                      )
+                                    : (?wrd.?CLS)
+                                  & (!wrd.!CLS)
+                              )
+                            . lemmatise$(!theTree.!arg..0)
+                            )
+                        : ?svar
+                      & (!svar,!svarene):?svarene
+                      &   whl
+                        ' (   !svar
+                            : ?a (?b.?c) ?d (!b.!c) ?e
+                          & !a (!b.!c) !d !e:?svar
+                          )
+                      & !svar
+                  )
+              )
+        )
+      &   (   !F:(?sen.?tok)
+            & (     nestML$(get$(!sen,X ML))
+                  : ? (spanGrp.?,?sents) ?
+                &   nestML$(get$(!tok,X ML))
+                  : ? (spanGrp.?,?toks) ?
+                &   map
+                  $ ( ( 
+                      =   
+                        .       !arg
+                              : ( span
+                                .     ? (from.?from) ?
+                                    : ( ? (to.?to) ?
+                                      | ?&!from:?to
+                                      )
+                                    : ? ("xml:id".?id) ?
+                                  , ?
+                                )
+                            & @(!from:"#" ?from)
+                            & @(!to:"#" ?to)
+                            & (   !from:!to
+                                &   !toks
+                                  :   ?
+                                      (   ( span
+                                          .   ? ("xml:id".!from) ?
+                                            , ?
+                                          )
+                                          ?
+                                      : ?theseToks
+                                      )
+                                      ?toks
+                              |     !toks
+                                  :   ?
+                                      (   ( span
+                                          .   ? ("xml:id".!from) ?
+                                            , ?
+                                          )
+                                          ?
+                                      : ?theseToks
+                                      )
+                                      ( ( span
+                                        . ? ("xml:id".!to) ?,?
+                                        )
+                                      : ?last
+                                      )
+                                      ?toks
+                                & !theseToks !last:?theseToks
+                              )
+                            & (   (J..!id)
+                                + ( S
+                                  .   map
+                                    $ ( ( 
+                                        =   
+                                          .       !arg
+                                                : ( span
+                                                  .     ?
+                                                        ("xml:id".?id)
+                                                        ?
+                                                    , ?tok
+                                                  )
+                                              & theWordThing$(!tok.!id)
+                                            | 
+                                        )
+                                      . !theseToks
+                                      )
+                                  )
+                              , 
+                              )
+                          | 
+                      )
+                    . !sents
+                    )
+              | 
+              )
+          |   vap
+            $ ( ( 
+                =   
+                  .   vap
+                    $ ( ( 
+                        =   
+                          .     !arg
+                              : ( 
+                                | \r
+                                | \t
+                                | " "
+                                )
+                            | (   ( J
+                                  . 
+                                  .   0:?wordno
+                                    & !lineno+1:?lineno
+                                  )
+                                + ( S
+                                  .   vap
+                                    $ ( ( 
+                                        =   
+                                          .   theWordThing
+                                            $ (!arg.1+!wordno:?wordno)
+                                        )
+                                      . !arg
+                                      . " "
+                                      )
+                                  )
+                              , 
+                              )
+                        )
+                      . !arg
+                      . \r
+                      )
+                )
+              . get$(!F,STR)
+              . \n
+              )
+          )
+        : ?Output
+      & ( theTags
+        =   tags N T
+          .   :?tags
+            &   whl
+              ' ( !arg:?*(?T.?n)+?arg
+                & (!arg:?*(!T.>0:?n)+?arg|)
+                & !tags ((f.!n)+(T..!T),):?tags
+                )
+            & (,!tags)
+        )
+      &   ( 
+          ,   map
+            $ ( ( 
+                =   lineno line
+                  .   !arg:(?arg,)
+                    &   !arg
+                      : ?+(J..?lineno)+?
+                      : ?+(S.?line)+?
+                    & (   (J..!lineno)
+                        + ( S
+                          .   
+                            ,   map
+                              $ ( ( 
+                                  =   A Z lemmas
+                                    .   !arg:?A+(LS.?lemmas)+?Z
+                                      & (   !A
+                                          + ( LS
+                                            .   
+                                              ,   map
+                                                $ ( ( 
+                                                    =   lemma tags
+                                                      .     !arg
+                                                          : (?lemma.?tags)
+                                                        & (   (L..!lemma)
+                                                            + ( TS
+                                                              . theTags$!tags
+                                                              )
+                                                          , 
+                                                          )
+                                                    )
+                                                  . !lemmas
+                                                  )
+                                            )
+                                          + !Z
+                                        , 
+                                        )
+                                  )
+                                . !line
+                                )
+                          )
+                      , 
+                      )
+                )
+              . !Output
+              )
+          )
+        : ?json
+      & jsn$!json:?JSON
+      & put$(!JSON,!lemposfile,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        & "C:\\projects\\parole\\ParoleSTOdictionary":?traindata
+        & "C:\\projects\\parole\\flexr.bra":?flexrules
+        & "C:\\downloads\\3635\\JEB-040-170.xml-3635-step3.xml":?tok
+        & "C:\\downloads\\3635\\JEB-040-170.xml-3635-step4.xml":?sen
+        & "uit.json":?lemposfile
+        & T:?TorC
+        &   (its.doit)
+          $ (!traindata.(!sen.!tok).!flexrules.!lemposfile.!TorC)
+        & out$klaar
+      |   ~
+        & "C:\\projects\\parole\\ParoleSTOdictionary":?traindata
+        &   put
+          $ ("Da kan vi forvisse os om at køer ikke gør .
+ikke ?",F,NEW)
+        & F:?F
+        & "C:\\projects\\parole\\\\flexr.bra":?flexrules
+        & "uit.json":?lemposfile
+        & C:?TorC
+        & (its.doit)$(!traindata.!F.!flexrules.!lemposfile.!TorC)
+        & out$klaar
+      |   ~
+        & "da\\STOposUTF8":?traindata
+        &   put
+          $ ("Da kan jeg forvisse mig om at køer driller .
+ikke ?",F,NEW)
+        & F:?F
+        & "da\\flexrules.pretty.bra.2":?flexrules
+        & "uit.json":?lemposfile
+        & C:?TorC
+        & (its.doit)$(!traindata.!F.!flexrules.!lemposfile.!TorC)
+        & out$klaar
+      |   ~
+        & "da\\STOposUTF8":?traindata
+        & "C:\\downloads\\JEB-103ab-98.xml-3574-step3.xml":?tok
+        & "C:\\downloads\\JEB-103ab-98.xml-3574-step4.xml":?sen
+        & "da\\flexrules.pretty.bra.2":?flexrules
+        & "uit.json":?lemposfile
+        & C:?TorC
+        &   (its.doit)
+          $ (!traindata.(!sen.!tok).!flexrules.!lemposfile.!TorC)
+        & out$klaar
+      |   ~
+        & "nl\\dict_nl_without_doubles_UTF8.ph":?traindata
+        & "C:\\downloads\\JEB-103ab-98.xml-3574-step3.xml":?tok
+        & "C:\\downloads\\JEB-103ab-98.xml-3574-step4.xml":?sen
+        & "nl\\flexrules.pretty.bra.2":?flexrules
+        & "uit.json":?lemposfile
+        & C:?TorC
+        &   (its.doit)
+          $ (!traindata.(!sen.!tok).!flexrules.!lemposfile.!TorC)
+        & out$klaar
+      |   
+        & arg$:?traindata
+        & arg$:?IfacetsegF
+        & ( !IfacetsegF:onefile&arg$:?F
+          | arg$:?IfacettokF&:?F
+          )
+        & arg$:?flexrules
+        & arg$:?lemposfile
+        & "T if full tag, C if tag to be shortened to first capital letters"
+        & arg$:?TorC
+        &   (its.doit)
+          $ ( !traindata
+            . !F:~|(!IfacetsegF.!IfacettokF)
+            . !flexrules
+            . !lemposfile
+            . !TorC
+            )
+  );
+
+r=
+  get'("LemmaVal.bra",TXT)
+& rmv$(str$(LemmaVal ".bak"))
+& ren$("LemmaVal.bra".str$(LemmaVal ".bak"))
+&   put
+  $ ( "{LemmaVal.bra
+
+Given rules and the training data (or other full form - lemma data, plus additional info like POS tags), 
+produce the lemmas of the full forms and compare those with the lemmas in the training data.
+Write errors in a file.}
+
+"
+    , "LemmaVal.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"LemmaVal.bra",APP)
+& put'(\n,"LemmaVal.bra",APP,BIN)
+& lst'(r,"LemmaVal.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"LemmaVal.bra",APP,BIN)
+& ;
+
+new'X;

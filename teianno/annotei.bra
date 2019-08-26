@@ -1,0 +1,494 @@
+{annotei.bra
+
+Create TEI P5 output with w pc elements that have attributes holding PoS tag and lemma.
+Retain elements that occur in the TEI P5 input in the output.}
+
+program-annotei=
+  ( doit
+  =   
+    .   !arg:(?tei.?tok.?pos.?lem.?output)
+      &   nestML$(get$(!tei,X ML))
+        : (   ?teiA
+              (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
+              ?teiZ
+          |   ? (text.?textatt,? (body.,?tei) ?) ?
+            & :?TEIatt:?head:?tail
+          )
+      &   nestML$(get$(!tok,X ML))
+        : ? (spanGrp.?,?tok) ?
+      &   nestML$(get$(!pos,X ML))
+        : ? (spanGrp.?,?pos) ?
+      &   nestML$(get$(!lem,X ML))
+        : ? (spanGrp.?,?lem) ?
+      &     map
+          $ ( ( 
+              =   
+                .     !arg
+                    : ( span
+                      .     ? (from.@(?:"#" ?teiid)) ?
+                          : ( ? (to.@(?:"#" ?toid)) ?
+                            | ?&!teiid:?toid
+                            )
+                          : ? ("xml:id".?tokid) ?
+                        , ?tok
+                      )
+                  & str$("#" !tokid):?tokid
+                  & (     !lem
+                        :   ?
+                            (span.? (from.!tokid) ?,?LS)
+                            ?lem
+                      &   whl
+                        ' (   !lem
+                            :   (span.? (from.!tokid) ?,?L)
+                                ?lem
+                          & !LS !L:?LS
+                          )
+                    | :?LS
+                    )
+                  & (     !pos
+                        :   ?
+                            (span.? (from.!tokid) ?,?PS)
+                            ?pos
+                      &   whl
+                        ' (   !pos
+                            :   (span.? (from.!tokid) ?,?P)
+                                ?pos
+                          & !PS !P:?PS
+                          )
+                    | :?PS
+                    )
+                  & "Length of PS and LS must be the same or 1."
+                  & (!teiid.!toid.!PS.!LS)
+              )
+            . !tok
+            )
+        : ?PL
+      & ( getSP
+        =   sp
+          .   (!SP.):(?sp.?SP)
+            &   map
+              $ ( (=.!arg:(?.?,?arg)&!arg)
+                . !sp
+                )
+        )
+      & ( getMWU
+        = MWU.(!mwu.):(?MWU.?mwu)&!MWU
+        )
+      & 0:?ID
+      & ( anno
+        =   A e a s lenPS lenLS id
+          .     !arg:?A (?e.?a,?s) ?arg
+              &   !A
+                  (     !e
+                      : ( w
+                        |   c
+                          & ( !a:? (type.s) ?
+                            | pc:?e
+                            )
+                        )
+                    & (   !a:? ("xml:id".?id) ?
+                        & (   !MWUend:
+                            &   !PL
+                              :   (!id.?to.?PS [?lenPS.?LS [?lenLS)
+                                  ?PL
+                            & "Current TEI element is w or pc"
+                            & :?excludes:?ids
+                            & (   !lenPS+!lenLS:>2
+                                &   (!lenPS:>1|!lenLS)
+                                  : ?len
+                                & :?alts
+                                &   whl
+                                  ' ( !len+-1:~<0:?len
+                                    &     !alts
+                                            str
+                                          $ ("#A" (!ID+1:?ID) " ")
+                                      : ?alts
+                                    )
+                                & (   !alts
+                                    :   ?A
+                                        @(?:"#" ?M " ")
+                                        ( ?Z
+                                        &     !excludes
+                                              ( exclude
+                                              .   @(str$(!A !Z):?A " ")
+                                                & !A
+                                              )
+                                          : ?excludes
+                                        & !ids ("xml:id".!M):?ids
+                                        & ~
+                                        )
+                                  | 
+                                  )
+                              | 
+                              )
+                            & (   !e
+                                : (w|pc|c)
+                              | 
+                              )
+                            & (   !to:!id
+                                &   getSP$()
+                                    (   !excludes:
+                                      & ( !e
+                                        .     !a
+                                              (pos.!PS)
+                                              (lemma.!LS)
+                                          , !s
+                                        )
+                                    |   map
+                                      $ ( ( 
+                                          =   id
+                                            .   !ids:%?id ?ids
+                                              & ( !PS:%?P ?PS
+                                                | 
+                                                )
+                                              & ( !LS:%?L ?LS
+                                                | 
+                                                )
+                                              & ( !e
+                                                .     !a
+                                                      (pos.!P)
+                                                      (lemma.!L)
+                                                      !id
+                                                      !arg
+                                                  , !s
+                                                )
+                                          )
+                                        . !excludes
+                                        )
+                                    )
+                              |   !to:?MWUend
+                                & (!e.!a,!s):?mwu
+                                & 
+                              )
+                          |   !id:!MWUend
+                            & :?MWUend
+                            & !mwu (!e.!a,!s):?mwu
+                            & getMWU$:?theMWU
+                            &   getSP$()
+                                (   !excludes:
+                                  & ( w
+                                    .   (pos.!PS) (lemma.!LS)
+                                      , !theMWU
+                                    )
+                                |   map
+                                  $ ( ( 
+                                      =   
+                                        .   !ids:%?id ?ids
+                                          & ( !PS:%?P ?PS
+                                            | 
+                                            )
+                                          & ( !LS:%?L ?LS
+                                            | 
+                                            )
+                                          & ( w
+                                            .     (pos.!P)
+                                                  (lemma.!L)
+                                                  !id
+                                                  !arg
+                                              , !theMWU
+                                            )
+                                      )
+                                    . !excludes
+                                    )
+                                )
+                          |   (   !mwu:
+                                & !SP (!e.!a,!s):?SP
+                              | !mwu (!e.!a,!s):?mwu
+                              )
+                            & 
+                          )
+                      | getSP$() (!e.!a,!s)
+                      )
+                  | "Not w or c"&getSP$() (!e.!a,anno$!s)
+                  )
+                  anno$!arg
+            | getSP$() !arg
+        )
+      & :?MWUend:?mwu:?to:?SP
+      & anno$!tei:?tei
+      & ( cleanup
+        =   A e a s aa zz
+          .     !arg:?A (?e.?a,?s) ?arg
+              &   !A
+                  (   !e:(w|pc)
+                    & (   !a:? (type.s) ?
+                        & (!s:~|SPACE)
+                      |   (   !a:?aa ("xml:id".?) ?zz
+                            & !aa !zz:?a
+                          | 
+                          )
+                        & (   !a:?aa (T.?) ?zz
+                            & !aa !zz:?a
+                          | 
+                          )
+                        & (   !a:?aa (S.?) ?zz
+                            & !aa !zz:?a
+                          | 
+                          )
+                        & (   !a:?aa (type.?) ?zz
+                            & !aa !zz:?a
+                          | 
+                          )
+                        & ( !a:&!s
+                          | (!e.!a,cleanup$!s)
+                          )
+                      )
+                  | (!e.!a,cleanup$!s)
+                  )
+                  cleanup$!arg
+            | !arg
+        )
+      & cleanup$!tei:?tei
+      & "Modified toML. No space before slash in empty tags."
+      & ( toML
+        =   O d t g l "&" w \" "'" H G S D E F I U
+          .   :?O
+            & chr$127:?D
+            & ( d
+              =   a
+                .   whl
+                  ' (!arg:%?a ?arg&!a !O:?O)
+              )
+            &     
+                ' ( a c n
+                  .     @(!arg:?a (>%@($D) ?:?arg))
+                      & ( @( !arg
+                           : (%?c&utf$!c:?n) ?arg
+                           )
+                        | @( !arg
+                           : (%?c&asc$!c:?n) ?arg
+                           )
+                        )
+                      & !a "&#" !n ";" S$!arg
+                    | !arg
+                  )
+              : (=?S)
+            &     
+                ' ( a c n
+                  .     @(!arg:?a (>%@($D) ?:?arg))
+                      & (   @( !arg
+                             : (%?c&utf$!c:?n) ?arg
+                             )
+                          & (   !n:>255
+                              & !a "&#" !n ";" I$!arg
+                            | !a chr$!n I$!arg
+                            )
+                        | !a !arg
+                        )
+                    | !arg
+                  )
+              : (=?I)
+            &     
+                ' ( a c n
+                  .     @(!arg:?a (>%@($D) ?:?arg))
+                      & (   @( !arg
+                             : (%?c&utf$!c:?n) ?
+                             )
+                          & !a !arg
+                        |   @( !arg
+                             : (%?c&asc$!c:?n) ?arg
+                             )
+                          & !a chu$!n U$!arg
+                        )
+                    | !arg
+                  )
+              : (=?U)
+            &   MLencoding$!arg
+              : ( ~<>utf-8&U:?F
+                | ~<>iso-8859-1&I:?F
+                | ?&S:?F
+                )
+            & '($F)$!a:(=?H)
+            & '($F)$!arg:(=?G)
+            &     
+                ' ( a b
+                  .     @(!arg:?a "&" ?arg)
+                      & $H "&amp;" "&"$!arg
+                    | $G
+                  )
+              : (=?"&")
+            &     
+                ' ( a b
+                  .     @(!arg:?a ()$D ?arg)
+                      &   "&"$!a
+                          (@(!arg:%?b ?arg)&!b)
+                          E$!arg
+                    | "&"$!arg
+                  )
+              : (=?E)
+            &     
+                ' ( a
+                  .     @(!arg:?a "<" ?arg)
+                      & E$!a "&lt;" l$!arg
+                    | E$!arg
+                  )
+              : (=?l)
+            & ( g
+              =   a
+                .     @(!arg:?a ">" ?arg)
+                    & l$!a "&gt;" g$!arg
+                  | l$!arg
+              )
+            & ( \"
+              =   a
+                .     @(!arg:?a \" ?arg)
+                    & g$!a "&quot;" \"$!arg
+                  | g$!arg
+              )
+            & ( "'"
+              =   a
+                .     @(!arg:?a "'" ?arg)
+                    & \"$!a "&apos;" "'"$!arg
+                  | \"$!arg
+              )
+            & ( t
+              =   a v
+                .     !arg:(?a.?v) ?arg
+                    & " " g$!a "=\"" "'"$!v \" t$!arg
+                  | 
+              )
+            & (   !arg:? (html|HTML.?) ?
+                & ( Q
+                  =   !C:
+                    &   low$!A
+                      : ( area
+                        | base
+                        | br
+                        | col
+                        | command
+                        | embed
+                        | hr
+                        | img
+                        | input
+                        | keygen
+                        | link
+                        | meta
+                        | param
+                        | source
+                        | track
+                        | wbr
+                        )
+                  )
+              | (Q=!C:)
+              )
+            &     
+                ' ( r A B C T
+                  .   whl
+                    ' ( !arg:%?r ?arg
+                      & (   !r:(?A.?B)
+                          & (   !B:(?T,?C)
+                              & (   $Q
+                                  & d$("<" !A t$!T "/>")
+                                |   d$("<" !A t$!T ">")
+                                  & (     !A
+                                        : (~<>script|~<>style)
+                                      & d$!C
+                                    | w$!C
+                                    )
+                                  & d$("</" !A ">")
+                                )
+                            |   !A
+                              : (   
+                                  & !B:(?B.)
+                                  & d$("</" g$!B ">")
+                                | "!"&d$("<!" !F$!B ">")
+                                |   "!--"
+                                  & d$("<!--" !F$!B "-->")
+                                | "?"&d$("<?" !F$!B "?>")
+                                |   "![CDATA["
+                                  & d$("<![CDATA[" !F$!B "]]>")
+                                |   "!DOCTYPE"
+                                  & d$("<!DOCTYPE" !F$!B ">")
+                                | ?&d$("<" !A t$!B ">")
+                                )
+                            )
+                        | d$(g$!r)
+                        )
+                      )
+                  )
+              : (=?w)
+            & w$!arg
+            &   str
+              $ ( ( 
+                  =   a L
+                    .   :?L
+                      &   whl
+                        ' ( !arg:%?a ?arg
+                          & !a !L:?L
+                          )
+                      & !L
+                  )
+                $ !O
+                )
+        )
+      &   put
+        $ (   toML
+            $ (   !head:
+                & !tail:
+                & !TEIatt:
+                & (text.!textatt,(body.,!tei))
+              |   !teiA
+                  (TEI.!TEIatt,!head (text.!textatt,!tei) !tail)
+                  !teiZ
+              )
+          , !output
+          , NEW
+          )
+  )
+  ( new
+  =   
+    .     ~
+        & "Remove the ~ to merely reformat the code, not run it."
+      |   ~
+        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step3.xml"
+          : ?tei
+        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step5.xml"
+          : ?tok
+        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step9.xml"
+          : ?lem
+        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step10.xml"
+          : ?pos
+        & (its.doit)$(!tei.!tok.!pos.!lem."middelgrunden.output.xml")
+      |   ~
+        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step64.xml":?tei
+        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step66.xml":?tok
+        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step71.xml":?pos
+        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step70.xml":?lem
+        & (its.doit)$(!tei.!tok.!pos.!lem."JEB-106-142.output.xml")
+      |   ~
+        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step19.xml":?tei
+        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step21.xml":?tok
+        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step26.xml":?pos
+        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step25.xml":?lem
+        & (its.doit)$(!tei.!tok.!pos.!lem."JEB-081-161.output.xml")
+      |   
+        & "C:\\downloads\\dsl_brandes-15.xml-3881-step1.xml":?tei
+        & "C:\\downloads\\dsl_brandes-15.xml-3881-step3.xml":?tok
+        & "C:\\downloads\\dsl_brandes-15.xml-3881-step7.xml":?pos
+        & "C:\\downloads\\dsl_brandes-15.xml-3881-step8.xml":?lem
+        & (its.doit)$(!tei.!tok.!pos.!lem."dsl_brandes.output.xml")
+      | (its.doit)$(arg$.arg$.arg$.arg$.arg$)
+  );
+
+r=
+  get'("annotei.bra",TXT)
+& rmv$(str$(annotei ".bak"))
+& ren$("annotei.bra".str$(annotei ".bak"))
+&   put
+  $ ( "{annotei.bra
+
+Create TEI P5 output with w pc elements that have attributes holding PoS tag and lemma.
+Retain elements that occur in the TEI P5 input in the output.}
+
+"
+    , "annotei.bra"
+    , NEW
+    , BIN
+    )
+& lst'(program-annotei,"annotei.bra",APP)
+& put'(\n,"annotei.bra",APP,BIN)
+& lst'(r,"annotei.bra",APP)
+& put$(str$("\nnew'" program-annotei ";\n"),"annotei.bra",APP,BIN)
+& ;
+
+new'program-annotei;

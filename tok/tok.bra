@@ -1,0 +1,277 @@
+{tok.bra
+
+Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
+
+X=
+  ( readTables
+  =   
+    .   new$hash:?H
+      &   map
+        $ ( ( 
+            =   what navn
+              .   vap
+                $ ( ( 
+                    =   
+                      .   !arg:
+                        |     vap$((=." " !arg).!arg."=")
+                            : " " ?arg
+                          & str$!arg:?string
+                          & (   (H..find)$!arg:?XX
+                              & (     !XX
+                                    : ?c (!arg.!string,?d) ?e
+                                  & ( !d:?+!what+?
+                                    |   (H..remove)$!arg
+                                      &   (H..insert)
+                                        $ (!arg.!string,!d+!what)
+                                      &   map
+                                        $ ( (=.(H..insert)$!arg)
+                                          . !c !e
+                                          )
+                                    )
+                                | (H..insert)$(!arg.!string,!what)
+                                )
+                            | (H..insert)$(!arg.!string,!what)
+                            )
+                    )
+                  .   !arg:(?navn.?what)
+                    & get$(!navn.STR)
+                  . \n
+                  )
+            )
+          . !arg
+          )
+      & !H
+  )
+  ( normalize
+  =   
+    .       (its.readTables)
+          $ ( ("bynavne.txt".by)
+              ("efternavne.txt".efternavn)
+              ("fornavne.txt".fornavn)
+              ("landenavne.txt".land)
+            )
+        : ?H
+      & ( checkName
+        =   A Z
+          .   vap$((=.!arg).!arg):%@?A ?Z
+            & upp$!A:!A
+            &   (H..find)$(str$(!A low$(str$!Z)))
+              : (?key.?val) ?
+            & ~( Ned Vi Tom Paa Saa Dag Hold Ting Land Andre
+               : ? !key ?
+               )
+            & !key
+        )
+      & ( hyph
+        =   A a z Z al au zl zu
+          .     vap$((=.!arg).!arg):?A %@?a "-" %@?z ?Z
+              & low$!a:?al
+              & upp$!a:?au
+              & low$!z:?zl
+              & upp$!z:?zu
+              & (   ( !al:!au
+                    | !zl:!zu
+                    | !a:!au
+                    | !z:!zu
+                    )
+                  & !arg
+                | str$(!A !a !z !Z)
+                )
+            | !arg
+        )
+      & ( compound
+        =   A a z Z al au zl zu
+          .   str
+            $ ( vap
+              $ ( ( 
+                  =   
+                    .       !arg
+                          : ( " "
+                            | \t
+                            | \n
+                            | \r
+                            )
+                        & 
+                      | !arg
+                  )
+                . !arg
+                )
+              )
+        )
+      & ( norm
+        =   a z
+          .   !arg:I
+            |   hyph$(str$!arg):?arg
+              & compound$!arg:?arg
+              & ( checkName$!arg
+                |   vap$((=.!arg).low$!arg):?arg
+                  &   whl
+                    ' ( !arg:?a a a ?z
+                      & !a å !z:?arg
+                      )
+                  & str$!arg
+                )
+        )
+      & ( trav
+        =   A e a s
+          .   map
+            $ ( ( 
+                =   
+                  .     !arg:(?e.?a,?s)
+                      & ( !e
+                        .   !a
+                          ,   ( !e:span&norm
+                              | trav
+                              )
+                            $ !s
+                        )
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      & trav$!arg
+  )
+  ( doit
+  =   normalizeYesOrNo
+    .   !arg:(?arg.?normalizeYesOrNo)
+      & nestML$(get$(!arg,X ML)):?xml
+      & !xml:? (TEI.?,? (text.?,?xml) ?) ?
+      & ( concat
+        =   
+          .   str
+            $ ( map
+              $ ( ( 
+                  =   sub
+                    .   vap$((=.!arg).!arg." "):?arg
+                      | !arg:(del.?)&
+                      | !arg:(?.?,?sub)&concat$!sub
+                      | 
+                  )
+                . !arg
+                )
+              )
+        )
+      & 0:?id
+      & (ID="xml:id".str$(t (1+!id:?id)))
+      & ( combine
+        =   O T S from to h
+          .   :?O
+            &   whl
+              ' (   !arg
+                  :   ( span
+                      .     (S.?S)
+                            (T.?T)
+                            (from.?from:?to)
+                        , ?h
+                      )
+                      ?arg
+                &   whl
+                  ' (   !arg
+                      :   ( span
+                          .   (S.!S) (T.!T) (from.?to)
+                            , ?H
+                          )
+                          ?arg
+                    & !h !H:?h
+                    )
+                &     ( span
+                      .     !from:!to
+                          & ((from.str$("#" !from)) !ID,!h)
+                        | (   (from.str$("#" !from))
+                              (to.str$("#" !to))
+                              !ID
+                          , str$!h
+                          )
+                      )
+                      !O
+                  : ?O
+                )
+            & :?OO
+            & whl'(!O:%?A ?O&!A !OO:?OO)
+            & !OO
+        )
+      & ( recur
+        =   
+          .   map
+            $ ( ( 
+                =   att h S T from
+                  .     !arg:(?.?att,?h)
+                      & (     !att
+                            : ? (S.?S) ?
+                            : ? (T.?T) ?
+                            : ? ("xml:id".?from) ?
+                          & ( span
+                            .     (S.!S)
+                                  (T.!T)
+                                  (from.!from)
+                              , concat$!h
+                            )
+                        | recur$!h
+                        )
+                    | 
+                )
+              . !arg
+              )
+        )
+      &   (spanGrp.(ana.ClarinTokeniser),combine$(recur$!xml))
+        : ?ret
+      & (   @(low$!normalizeYesOrNo:y ?)
+          & (its.normalize)$!ret:?ret
+        | 
+        )
+      & !ret
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        &   put
+          $ (   toML
+              $ ( (its.doit)
+                $ ( "C:\\downloads\\adl_brandes\\adl_brandes-18.xml-3887-step1.xml"
+                  . y
+                  )
+                )
+            , "adl_brandes.out3.xml"
+            , NEW
+            )
+      |   ~
+        &   put
+          $ (   toML
+              $ ( (its.doit)
+                $ ( "C:\\downloads\\https___hr.wikipedia.org_wiki_Hrvatski_jezik-86-3542-step3.xml"
+                  . y
+                  )
+                )
+            , "out.xml"
+            , NEW
+            )
+      |   arg$:?input
+        & arg$:?output
+        & arg$:?normalizeYesOrNo
+        &   put
+          $ (toML$((its.doit)$(!input.!normalizeYesOrNo)),!output,NEW)
+  );
+
+r=
+  get'("tok.bra",TXT)
+& rmv$(str$(tok ".bak"))
+& ren$("tok.bra".str$(tok ".bak"))
+&   put
+  $ ( "{tok.bra
+
+Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
+
+"
+    , "tok.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"tok.bra",APP)
+& put'(\n,"tok.bra",APP,BIN)
+& lst'(r,"tok.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"tok.bra",APP,BIN)
+& ;
+
+new'X;

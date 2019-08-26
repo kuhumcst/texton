@@ -1,0 +1,986 @@
+{disam.bra
+Disambiguate POS tags. Input is output from lempos. (JSON)
+}
+
+X=
+  (tagFreq=0)
+  (LemmaTagWordFreq=1)
+  ( addStartAndEnd
+  =   
+    .   (   (C..0)
+          + (F..START)
+          + (LS.,(L..START)+(TS.,(T..START)+(f.1),),)
+        , 
+        )
+        !arg
+        (   (C..999999)
+          + (F..END)
+          + (LS.,(L..END)+(TS.,(T..END)+(f.1),),)
+        , 
+        )
+  )
+  ( getBigramsFromInputText
+  =   BIGRAMS multiplyBigramsByAPrioriProbability
+    .   ( sum
+        =   n J
+          .   0:?J
+            &   whl
+              ' (!arg:(?.?n)+?arg&!n+!J:?J)
+            & !J
+        )
+      & ( unWeightedSentenceBigrams
+        =   Fs fsl Ss ssl Prob F SF ss S fl sl bigrs
+          .   0:?bigrs
+            &   whl
+              ' (   !arg
+                  :   (,?Fs [?fsl)
+                      ((,?Ss [?ssl) ?:?arg)
+                & (!fsl*!ssl)^-1:?Prob
+                & 0:?bigr
+                &   whl
+                  ' ( !Fs:%?SF ?Fs
+                    & !SF:?+[?fl
+                    & !Ss:?ss
+                    &   whl
+                      ' ( !ss:%?S ?ss
+                        & !S:?+[?sl
+                        & !SF:?F
+                        &   whl
+                          ' ( !F:(?POF.?ff)+?F
+                            & !S:?SS
+                            &   whl
+                              ' ( !SS:(?POS.?fs)+?SS
+                                & (!POF.!POS)+!bigr:?bigr
+                                )
+                            )
+                        )
+                    )
+                & !bigr:?+[?borp
+                &   whl
+                  ' ( !bigr:?A+#%?n*%?B+?C
+                    & !A+!B+!C:?bigr
+                    )
+                & ( !borp:0
+                  |   1+!Prob*!borp^-1*!bigr+-1:?II
+                    & !II+!bigrs:?bigrs
+                  )
+                )
+            & !bigrs
+        )
+      & ( weightedSentenceBigrams
+        =     Fs fsl Ss ssl Prob F
+            , SF ss S fl sl prob bigrs
+            , t POF POS
+          .   0:?bigrs
+            & !(its.tagFreq):?t
+            &     map
+                $ ( ( 
+                    =   
+                      .   !arg:(,?arg)
+                        & ( 
+                          ,   map
+                            $ ( ( 
+                                =   P f R
+                                  .   0:?R
+                                    &   whl
+                                      ' ( !arg:(?P.?)+?arg
+                                        & (   !t:?+?f*!P+?
+                                            & !R+(!P.!f):?R
+                                          | 
+                                          )
+                                        )
+                                    & !R
+                                )
+                              . !arg
+                              )
+                          )
+                    )
+                  . !arg
+                  )
+              : ?arg
+            &   whl
+              ' (   !arg
+                  :   (,?Fs [?fsl)
+                      ((,?Ss [?ssl) ?:?arg)
+                & (!fsl*!ssl)^-1:?Prob
+                &   whl
+                  ' ( !Fs:%?SF ?Fs
+                    & !Ss:?ss
+                    &   whl
+                      ' ( !ss:%?S ?ss
+                        & !SF:?+[?fl
+                        & !S:?+[?sl
+                        & !Prob*(!fl*!sl)^-1:?prob
+                        & !SF:?F
+                        &   whl
+                          ' ( !F:(?POF.?ff)+?F
+                            & !S:?SS
+                            &   whl
+                              ' ( !SS:(?POS.?fs)+?SS
+                                & !prob*(!POF.!POS)+!bigrs:?bigrs
+                                )
+                            )
+                        )
+                    )
+                )
+            & !bigrs
+        )
+      & ( multiplyBigramsByAPrioriProbability
+        =   bigrs F S SS fl sl prob POS POF sum t
+          .   0:?bigrs
+            &   (   !iterations:>1
+                  & weightedSentenceBigrams$!arg
+                | unWeightedSentenceBigrams$!arg
+                )
+              : ?bigrs
+            & !bigrs
+        )
+      & 0:?BIGRAMS
+      &   map
+        $ ( ( 
+            =   sentno wrds
+              .   !arg:((J..?sentno)+(S.,?wrds),)
+                &       multiplyBigramsByAPrioriProbability
+                      $ ( map
+                        $ ( ( 
+                            =   wrd lemmas
+                              .     !arg
+                                  : (   (C..?C)
+                                      + (F..?wrd)
+                                      + (LS.,?lemmas)
+                                    , 
+                                    )
+                                & ( 
+                                  ,   map
+                                    $ ( ( 
+                                        =   Tfs
+                                          .     !arg
+                                              : (?+(TS.,?TFs)+?,)
+                                            &   map
+                                              $ ( ( 
+                                                  =   T f
+                                                    .     !arg
+                                                        : (   (T..?T)
+                                                            + (f.?f)
+                                                          , 
+                                                          )
+                                                      & (!T.!f)
+                                                  )
+                                                . !TFs
+                                                )
+                                        )
+                                      . !lemmas
+                                      )
+                                  )
+                            )
+                          . (its.addStartAndEnd)$!wrds
+                          )
+                        )
+                    + !BIGRAMS
+                  : ?BIGRAMS
+                & 
+            )
+          . !arg
+          )
+      & "Factors of bigrams are not normalized!"
+      & !BIGRAMS
+  )
+  ( setConditionalProbabilities
+  =   theBigrams num a b totnum numbs probsbs factor
+    .   :?theBigrams
+      &   whl
+        ' ( !BIGRAMS:#?num*(?a.?b)+?BIGRAMS
+          & !num:?totnum
+          & (!num.!b):?numbs
+          &   whl
+            ' ( !BIGRAMS:#?num*(!a.?b)+?BIGRAMS
+              & !num+!totnum:?totnum
+              & !numbs+(!num.!b):?numbs
+              )
+          & 0:?probsbs
+          & !totnum^-1:?factor
+          &   whl
+            ' ( !numbs:(?num.?b)+?numbs
+              & (!factor*!num.!b)+!probsbs:?probsbs
+              )
+          & (!a.!probsbs) !theBigrams:?theBigrams
+          )
+      & !theBigrams
+  )
+  ( disambiguateText
+  =   merged truuk disamPhrase form shallow isAmbiguousPos vertak
+    .   ( merged
+        =   first last x cdrs butlasts
+          .     ( cdrs
+                =   a b
+                  .     !arg:((?,) ?a)+?b
+                      & !a+cdrs$!b
+                    | 0
+                )
+              & ( butlasts
+                =   a b
+                  .     !arg:(?a (?,))+?b
+                      & !a+butlasts$!b
+                    | 0
+                )
+              & !arg:%+%
+              & !arg:?+((%?x,) ?)+?+((~!x,) ?)+?
+              & (   !arg:?+(? (%?x,))+?+(? (~!x,))+?
+                  & !arg
+                |   !arg:(? (?last,))+?
+                  & merged$(butlasts$!arg) (!last,)
+                | !arg
+                )
+            |   !arg:((?first,) ?)+?
+              & (!first,) merged$(cdrs$!arg)
+            | !arg
+        )
+      & ( truuk
+        =     done todo b1 b2
+            , lemma1 lemma2 lemmas1 lemmas2
+            , p prob tag1 tag2 tags1 tags2
+            , wrd1 wrd2
+          .   !arg:(?done.?todo.?prob)
+            & 1+!calls:?calls
+            & (   !prob:~>0
+                &   put
+                  $ (   str
+                      $ ( "OOPS prob:~>0"
+                          "\ndone:"
+                          !done
+                          "\ntodo:"
+                          !todo
+                          "\nprob:"
+                          !prob
+                          \n
+                        )
+                    , OOPS
+                    , APP
+                    )
+              | 
+              )
+            & !prob:~<!bestp
+            & !calls:<5000
+            & ( 
+              |   !prob:>1
+                & put$("OOPS prob:>1",OOPS,APP)
+              | 
+              )
+            & (   !todo:? [<2
+                & !prob:~<!bestp:?bestp
+                & (!prob.!done !todo)+!solutions:?solutions
+                & `~
+              |     !todo
+                  :   (?wrd1+(LS.,?lemmas1),)
+                      (?wrd2+(LS.,?lemmas2),)
+                      ?todo
+                &   !lemmas1
+                  :   ?
+                      ( (?lemma1+(TS.,?tags1),) ?
+                      &   !tags1
+                        :   ?
+                            ( ((T..?tag1)+(f.?b1),) ?
+                            &   !lemmas2
+                              :   ?
+                                  ( (?lemma2+(TS.,?tags2),) ?
+                                  &   !tags2
+                                    :   ?
+                                        (   ((T..?tag2)+(f.?b2),)
+                                            ?
+                                        &   !theBigrams
+                                          :   ?
+                                              (!tag1.?+(?p.!tag2)+?)
+                                              ?
+                                        &   truuk
+                                          $ (   !done
+                                                (   !wrd1
+                                                  + ( LS
+                                                    .   
+                                                      ,   !lemma1
+                                                        + ( TS
+                                                          .   
+                                                            ,   (T..!tag1)
+                                                              + (f.!b1)
+                                                            , 
+                                                          )
+                                                      , 
+                                                    )
+                                                , 
+                                                )
+                                            .   (   !wrd2
+                                                  + ( LS
+                                                    .   
+                                                      ,   !lemma2
+                                                        + ( TS
+                                                          .   
+                                                            ,   (T..!tag2)
+                                                              + (f.!b2)
+                                                            , 
+                                                          )
+                                                      , 
+                                                    )
+                                                , 
+                                                )
+                                                !todo
+                                            .   ( !b2:~0
+                                                | 1/2
+                                                )
+                                              * !p
+                                              * !prob
+                                            )
+                                        )
+                                  )
+                            )
+                      )
+              )
+        )
+      & ( disamPhrase
+        =   solutions
+          .   0:?solutions
+            & 0:?bestp:?calls
+            & ( truuk$(.!arg.1)
+              | !solutions:?+((?p.?)+~(?+(>!p.?)):?solution)
+              )
+            & (!calls:>!maxcalls:?maxcalls|)
+            & !solution
+        )
+      & ( form
+        =   C w LS
+          .   !arg:(?C+(F..?w)+(LS.,?LS),)
+            & (!C:(C..?C)|:?C)
+            & (   !LS:% %
+                & (   ( !C:&0
+                      | (ID..!C)
+                      )
+                    + (Word..!w)
+                    + ( ambiguous
+                      .   
+                        ,   map
+                          $ ( ( 
+                              =   l p
+                                .     !arg
+                                    : (   (L..?l)
+                                        + (TS.,(T..?p)+?,)
+                                      , 
+                                      )
+                                  & ((lemma..!l)+(pos..!p),)
+                              )
+                            . !LS
+                            )
+                      )
+                  , 
+                  )
+              |   !LS:((L..?l)+(TS.,(T..?p)+?,),)
+                & (   ( !C:&0
+                      | (ID..!C)
+                      )
+                    + (Word..!w)
+                    + (lemma..!l)
+                    + (pos..!p)
+                  , 
+                  )
+              )
+        )
+      & ( shallow
+        =   
+          .   ( shal
+              =   
+                .   !arg:(?arg,)
+                  & (   !arg:(?br.,?arr)
+                      & (,map$((=.form$!arg).!arr))
+                    | form$(!arg,)
+                    )
+              )
+            &   map
+              $ ( ( 
+                  =   brs br
+                    .     !arg:(,?arg)
+                        & (,map$((=.shal$!arg).!arg))
+                      | shal$!arg
+                  )
+                . !arg
+                )
+        )
+      & ( isAmbiguousPos
+        =   x
+          .     !sjt
+              : ( ? (?+(TS.,? [>1)+?,) ?
+                |   ?
+                    (?+(TS.,?+(T..?x)+?,)+?,)
+                    ?
+                    (?+(TS.,?+(T..~!x)+?,)+?,)
+                    ?
+                )
+            & ?
+        )
+      & ( vertak
+        =   a n L
+          .   :?L
+            & !arg:(?n.?arg)
+            &   whl
+              ' ( !arg:%?a+?arg
+                & !L ((str$(br !n).,!a),):?L
+                & !n+1:?n
+                )
+            & (,!L)
+        )
+      & ( PassageZipper
+        =   a zipped col newarg car cdr
+          .   :?zipped
+            &   whl
+              ' ( !arg:~0
+                & :?col
+                & 0:?newarg
+                &   whl
+                  ' ( !arg:%?a+?arg
+                    & !a:%?car ?cdr
+                    & ( !col:? !car ?
+                      | !car !col:?col
+                      )
+                    & ( !cdr:
+                      | !newarg:?+!cdr+?
+                      | !cdr+!newarg:?newarg
+                      )
+                    )
+                & !newarg:?arg
+                & !zipped (,!col):?zipped
+                )
+            & !zipped
+        )
+      & ( 
+        ,   map
+          $ ( ( 
+              =     sentno wrds FS
+                  , AA BB CC DD BBL DDL
+                  , aaa mmm zzz nam amb
+                .   !arg:((J..?sentno)+(S.,?wrds),)
+                  & (its.addStartAndEnd)$!wrds:?wrds
+                  & :?newwrds
+                  &   whl
+                    ' ( !wrds:%?wrd ?wrds
+                      & :?koek
+                      &     !newwrds
+                            (     !wrd
+                                : (     ?BB
+                                      + ( LS
+                                        . ,isAmbiguousPos$BB:?BBL
+                                        )
+                                      + ?
+                                    : ?amb
+                                  , 
+                                  )
+                              & koek:?koek
+                              &   !wrds
+                                :   ?CC
+                                    (     ?DD
+                                        + ( LS
+                                          .   
+                                            ,   ~(isAmbiguousPos$DD)
+                                              : ?DDL
+                                          )
+                                        + ?
+                                      : ?nam
+                                    , 
+                                    )
+                                    ?wrds
+                              & cake amb !amb nam !nam:?koek
+                              & !newwrds:? (?AA,?)
+                              &     kaakje[
+                                    newwrds
+                                    !newwrds
+                                    AA
+                                    (!AA,)
+                                    BB
+                                    ((!BB.,!BBL),)
+                                    CC
+                                    !CC
+                                    DD
+                                    ((!DD.,!DDL),)
+                                    "]"
+                                : ?koek
+                              & (     disamPhrase
+                                    $ (   (!AA,)
+                                          (!BB+(LS.,!BBL),)
+                                          !CC
+                                          (!DD+(LS.,!DDL),)
+                                      : ?PHRASE
+                                      )
+                                  : ?ABCD
+                                |   put$(\n,OOPS,APP)
+                                  & lst$(PHRASE,OOPS,APP)
+                                  & ~
+                                )
+                              & cookie:?koek
+                              & 0:?BC
+                              &   whl
+                                ' (   !ABCD
+                                    : (?p.(?,) ?bc (?d,))+?ABCD
+                                  & ( !BC:?+!bc+?
+                                    | !BC+!bc:?BC
+                                    )
+                                  )
+                              & marie:?koek
+                              & merged$!BC:?BC
+                              & oeko:?koek
+                              &   (     !BC
+                                      : ?aaa (%+%:?mmm) ?zzz
+                                    &   !aaa
+                                        (   
+                                          & PassageZipper$!mmm
+                                        | vertak$(1.!mmm)
+                                        )
+                                        !zzz
+                                  | !BC
+                                  )
+                                  (!nam,)
+                            |   ( !koek:
+                                |   put
+                                  $ (   str
+                                      $ ( "koek:"
+                                          !koek
+                                          " "
+                                          !sentno
+                                          " "
+                                          !wrd
+                                          " "
+                                          "\nINPUT:"
+                                          (!AA,)
+                                          " "
+                                          ((!BB.,!BBL),)
+                                          " "
+                                          !CC
+                                          " "
+                                          ((!DD.,!DDL),)
+                                          " "
+                                        )
+                                    , OOPS
+                                    , APP
+                                    )
+                                )
+                                !wrd
+                            )
+                        : ?newwrds
+                      )
+                  & ( ~
+                    | (its.accumulatePosStatistics)$!newwrds
+                    )
+                  & (its.accumulateWordPosStatistics)$!newwrds
+                  & !newwrds:(?,) ?newwrds (?,)
+                  & shallow$!newwrds:?shalnwwrds
+                  & ((!sentno.,!shalnwwrds),)
+              )
+            . !arg
+            )
+        )
+  )
+  ( accumulatePosStatistics
+  =   tagFreq
+    .   0:?tagFreq
+      &   map
+        $ ( ( 
+            =   n f brs
+              .     !arg:(,?brs [?nbr)
+                  & !nbr^-1:?f
+                  &   map
+                    $ ( ( 
+                        =   
+                          .   !arg
+                            : ( ( ?
+                                .   
+                                  ,   ?wrds
+                                    &   map
+                                      $ ( ( 
+                                          =   
+                                            .   !arg
+                                              : (   ?
+                                                  + ( LS
+                                                    .   
+                                                      ,   ?arr
+                                                        &   map
+                                                          $ ( ( 
+                                                              =   
+                                                                .     !arg
+                                                                    : (   ?
+                                                                        + ( TS
+                                                                          .   
+                                                                            ,   ?
+                                                                              + ( T
+                                                                                . 
+                                                                                . ?p
+                                                                                )
+                                                                              + ?
+                                                                            , 
+                                                                          )
+                                                                        + ?
+                                                                      , 
+                                                                      )
+                                                                  &     !f*!p
+                                                                      + !tagFreq
+                                                                    : ?tagFreq
+                                                              )
+                                                            . !arr
+                                                            )
+                                                    )
+                                                  + ?
+                                                , 
+                                                )
+                                          )
+                                        . !wrds
+                                        )
+                                )
+                              , 
+                              )
+                        )
+                      . !brs
+                      )
+                |   !arg:(?arg,)
+                  & !arg:(?+(TS.,?+(T..?p)+?,)+?,)
+                  & !p+!tagFreq:?tagFreq
+            )
+          . !arg
+          )
+      & !tagFreq+!(its.tagFreq):?(its.tagFreq)
+  )
+  ( accumulateWordPosStatistics
+  =   tagFreq
+    .   1:?LemmaTagWordFreq
+      & 0:?tagFreq
+      & ( subf
+        =   LS Factor n f
+          .   !arg:(?LS.?Factor)
+            & !LS:? [?n
+            & !Factor*!n^-1:?f
+            &   map
+              $ ( ( 
+                  =   l TS m ff
+                    .   !arg:((L..?l)+(TS.,?TS),)
+                      & !TS:? [?m
+                      & !m^-1*!f:?ff
+                      &   map
+                        $ ( ( 
+                            =   p
+                              .   !arg:(?+(T..?p)+?,)
+                                &     (!l.)^(!ff*!p\L(.!w))
+                                    * !LemmaTagWordFreq
+                                  : ?LemmaTagWordFreq
+                                & !ff*!p+!tagFreq:?tagFreq
+                            )
+                          . !TS
+                          )
+                  )
+                . !LS
+                )
+        )
+      & ( tel
+        =   Factor n f arr w LS l TS m ff p alts
+          .   !arg:(?arg.?Factor)
+            & (   !arg:% % [?n
+                & put$(\nWOORDJES\n !arg,OOPS,APP)
+                & !Factor*!n^-1:?f
+                &   whl
+                  ' ( !arg:(?.,?arr)+?arg
+                    &   map
+                      $ ( ( 
+                          =   w l p
+                            .     !arg
+                                : ( (?w.,(?l.(?p.?),),)
+                                  , 
+                                  )
+                              &   (!l.)^(!f*!p\L(.!w))*!LemmaTagWordFreq
+                                : ?LemmaTagWordFreq
+                          )
+                        . !arr
+                        )
+                    )
+              |   !arg:(?+(F..?w)+?+(LS.,?LS)+?,)
+                & subf$(!LS.!Factor)
+              |   !arg:((?br.,?passage),)
+                & put$(\nPASSAGE\n !arg,OOPS,APP)
+                &   map
+                  $ ( ( 
+                      =   
+                        .   !arg:(?+(F..?w)+(LS.,?LS)+?,)
+                          & subf$(!LS.!Factor)
+                      )
+                    . !passage
+                    )
+              |   !arg:%+%+[?alts
+                & "NOT USED CODE"
+                & put$(NIEUW,OOPS,APP)
+                & !alts^-1*!Factor:?Factor
+                &   whl
+                  ' ( !arg:%?term+?arg
+                    & tel$(!term.!Factor)
+                    )
+              | put$(\nWHAAT\n !arg,OOPS,APP)
+              )
+        )
+      &   map
+        $ ( ( 
+            =   N brs Factor
+              .   (   !arg:(,?brs)
+                    & !brs:? [?N
+                    & !N^-1:?Factor
+                    & map$((=.tel$(!arg.!Factor)).!brs)
+                  | !arg:(?,)&tel$(!arg.1)
+                  )
+                & 
+            )
+          . !arg
+          )
+      &   !LemmaTagWordFreq*!(its.LemmaTagWordFreq)
+        : ?(its.LemmaTagWordFreq)
+      & !tagFreq+!(its.tagFreq):?(its.tagFreq)
+  )
+  ( createLemmaPosWordHash
+  =   
+    .   new$hash:?LTWF
+      & !(its.LemmaTagWordFreq):?ltwfs
+      &   whl
+        ' ( !ltwfs:(?l.)^?twfs*?ltwfs
+          & (   !l:(.?l)^?f
+              & (LTWF..insert)$(!l.!l\L((.!l)^!f))
+            | (LTWF..insert)$(!l.!twfs)
+            )
+          )
+      & :?hashcontents
+      &   (LTWF..forall)
+        $ (=.!arg !hashcontents:?hashcontents)
+      & !LTWF
+  )
+  ( SetTagProbablitiesInInputTextTo1
+  =     sentences set1 p f lemma wrd twf pfs
+      , wfs F npfs
+    .   ( set1
+        =   
+          .   map
+            $ ( ( 
+                =   A Z
+                  .   !arg:(?A+(f.?)+?Z,)
+                    & (!A+(f.1)+!Z,)
+                )
+              . !arg
+              )
+        )
+      & !arg:?sentences
+      &   map
+        $ ( ( 
+            =   sentno wrds A Z
+              .   !arg:(?A+(S.,?wrds)+?Z,)
+                & (   !A
+                    + ( S
+                      .   
+                        ,   map
+                          $ ( ( 
+                              =   wrd lemmas
+                                .     !arg
+                                    : (   (C..?C)
+                                        + (F..?wrd)
+                                        + (LS.,?lemmas)
+                                      , 
+                                      )
+                                  & (   (C..!C)
+                                      + (F..!wrd)
+                                      + ( LS
+                                        .   
+                                          ,   map
+                                            $ ( ( 
+                                                =   lemma poss
+                                                  .     !arg
+                                                      : (   (L..?lemma)
+                                                          + (TS.,?poss)
+                                                        , 
+                                                        )
+                                                    & (   (L..!lemma)
+                                                        + (TS.,set1$!poss)
+                                                      , 
+                                                      )
+                                                )
+                                              . !lemmas
+                                              )
+                                        )
+                                    , 
+                                    )
+                              )
+                            . !wrds
+                            )
+                      )
+                    + !Z
+                  , 
+                  )
+            )
+          . !sentences
+          )
+  )
+  ( AdaptTagProbablitiesInInputText
+  =     sentences adapt LTWF p f lemma wrd twf pfs
+      , wfs F npfs
+    .   ( adapt
+        =   pfs npfs lemma wrd p f ltwf
+          .   !arg:(?pfs.?lemma.?wrd)
+            & (   (LTWF..find)$!lemma:?found
+                & !found:(?.?twf)
+                &   map
+                  $ ( ( 
+                      =   A Z
+                        .   !arg:(?+(T..?p)+?,)
+                          & (   !twf:?+?*!p\L?wfs+?
+                              & 0:?F
+                              &   whl
+                                ' ( !wfs:(.?)^?f*?wfs
+                                  & !F+!f:?F
+                                  )
+                              & ((T..!p)+(f.!F),)
+                            | 
+                            )
+                      )
+                    . !pfs
+                    )
+              | 
+              )
+        )
+      & !arg:(?sentences.?LTWF)
+      &   map
+        $ ( ( 
+            =   sentno wrds
+              .   !arg:((J..?sentno)+(S.,?wrds),)
+                & (   (J..!sentno)
+                    + ( S
+                      .   
+                        ,   map
+                          $ ( ( 
+                              =   wrd lemmas
+                                .     !arg
+                                    : (?C+(F..?wrd)+(LS.,?lemmas),)
+                                  & (   !C
+                                      + (F..!wrd)
+                                      + ( LS
+                                        .   
+                                          ,   map
+                                            $ ( ( 
+                                                =   lemma poss pf
+                                                  .     !arg
+                                                      : (   (L..?lemma)
+                                                          + (TS.,?poss)
+                                                        , 
+                                                        )
+                                                    &     adapt
+                                                        $ (!poss.!lemma.!wrd)
+                                                      : ?pf
+                                                    & (     !pf
+                                                          : (0|)
+                                                        & 
+                                                      | (   (L..!lemma)
+                                                          + (TS.,!pf)
+                                                        , 
+                                                        )
+                                                      )
+                                                )
+                                              . !lemmas
+                                              )
+                                        )
+                                    , 
+                                    )
+                              )
+                            . !wrds
+                            )
+                      )
+                  , 
+                  )
+            )
+          . !sentences
+          )
+  )
+  ( doit
+  =   
+    .   !arg:(?input.?output.?monogams.?bigrams)
+      & get$(!input,JSN):(,?sentences)
+      & 0:?maxcalls
+      & :?Output
+      & ( 
+        |   (its.SetTagProbablitiesInInputTextTo1)$!sentences
+          : ?sentences
+        )
+      & (   !bigrams:~
+          & out$readingBigrams
+          & get$!bigrams:?theBigrams
+          & 0:?(its.tagFreq)
+          & 1:?(its.LemmaTagWordFreq)
+          & (its.disambiguateText)$!sentences:?Output
+          & !(its.tagFreq):?tagFreq
+          & !(its.LemmaTagWordFreq):?LemmaTagWordFreq
+          & out$disambiguated
+        |   0:?iterations
+          & 1:?maxiterations
+          &   whl
+            ' ( 1+!iterations:~>!maxiterations:?iterations
+              & (its.getBigramsFromInputText)$!sentences:?BIGRAMS
+              &   (its.setConditionalProbabilities)$!BIGRAMS
+                : ?theBigrams
+              & 0:?(its.tagFreq)
+              & 1:?(its.LemmaTagWordFreq)
+              & (its.disambiguateText)$!sentences:?Output
+              & !(its.tagFreq):?tagFreq
+              & !(its.LemmaTagWordFreq):?LemmaTagWordFreq
+              & (its.createLemmaPosWordHash)$:?LTWF
+              &   (its.AdaptTagProbablitiesInInputText)$(!sentences.!LTWF)
+                : ?sentences
+              )
+        )
+      & put$(jsn$!Output,!output,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        &   (its.doit)
+          $ ( "..\\lempos\\uit.json"
+            . "uitp.json"
+            . |"C:\\projects\\parole\\ParoleBigrams"
+            . 
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\projects\\csttools\\lempos\\uit.json"
+            . "uitp.json"
+            . |"C:\\projects\\parole\\ParoleBigrams"
+            . 
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\downloads\\3626\\JEB-103ab-156.xml-3626-step41.json"
+            . "step42.json"
+            . |"C:\\projects\\parole\\ParoleBigrams"
+            . 
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\downloads\\3626\\JEB-108b-156.xml-3626-step86.json"
+            . "step87.json"
+            . "C:\\projects\\parole\\ParoleMonograms"
+            . "C:\\projects\\parole\\ParoleBigrams"
+            )
+      | (its.doit)$(arg$.arg$..)
+  );
+
+r=
+  get'("disam.bra",TXT)
+& rmv$(str$(disam ".bak"))
+& ren$("disam.bra".str$(disam ".bak"))
+&   put
+  $ ( "{disam.bra
+Disambiguate POS tags. Input is output from lempos. (JSON)
+}
+
+"
+    , "disam.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"disam.bra",APP)
+& put'(\n,"disam.bra",APP,BIN)
+& lst'(r,"disam.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"disam.bra",APP,BIN)
+& ;
+
+new'X;

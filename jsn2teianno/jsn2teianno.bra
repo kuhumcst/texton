@@ -1,0 +1,249 @@
+{jsn2teianno.bra
+
+Read json file with ID, Word, lemma, and pos fields.
+Extract the ID and either the lemma or the pos values and output in TEI P5 DKClARIN notation.}
+
+program-jsn2teianno=
+  ( doit
+  =   
+    .   !arg:(?jsn.?LemmaOrPos.?tei)
+      & get$(!jsn,JSN):(,?jsn)
+      & 0:?LP
+      & put$(,words,NEW)
+      & ( IWlpl
+        =   j2x
+          .   ( j2x
+              =   ID Word lemma
+                .     !arg
+                    : (   (ID..?ID)
+                        + (Word..?Word)
+                        + ?
+                        + (lemma..?lemma)
+                        + ?
+                      , 
+                      )
+                  & ( span
+                    .     (from.str$("#" !ID))
+                          (type.Slem)
+                          ("xml:id".str$(L (!LP+1:?LP)))
+                      , !lemma
+                    )
+              )
+            & (   !arg:(,?arg)
+                & !arg:% %
+                & (passage.,map$(j2x.!arg))
+              | j2x$!arg
+              )
+        )
+      & ( IWlpp
+        =   j2x
+          .   ( j2x
+              =   ID Word pos
+                .     !arg
+                    : ( (ID..?ID)+(Word..?Word)+?+(pos..?pos)+?
+                      , 
+                      )
+                  & ( span
+                    .     (from.str$("#" !ID))
+                          (type.Spos)
+                          ("xml:id".str$(P (!LP+1:?LP)))
+                      , !pos
+                    )
+              )
+            & (   !arg:(,?arg)
+                & !arg:% %
+                & (passage.,map$(j2x.!arg))
+              | j2x$!arg
+              )
+        )
+      &     ("?"."xml version='1.0' encoding='utf-8'")
+            \n
+            ( spanGrp
+            .     !LemmaOrPos:lemma
+                & ( (ana.lemma)
+                  ,   map
+                    $ ( ( 
+                        =   
+                          .     !arg:((?sentno.,?words),)
+                              &   map
+                                $ ( ( 
+                                    =   
+                                      .     !arg:(,% %:?arg)
+                                          & map$(IWlpl.!arg)
+                                        | IWlpl$!arg
+                                        |     !arg
+                                            : (   (ID..?ID)
+                                                + (Word..?Word)
+                                                + (ambiguous.,?ambiguous)
+                                              , 
+                                              )
+                                          & :?lemmas
+                                          & asc$a+-1:?amb
+                                          & !LP+1:?LP
+                                          &   map
+                                            $ ( ( 
+                                                =   lemma
+                                                  .     !arg
+                                                      : (   ?
+                                                          + (lemma..?lemma)
+                                                          + ?
+                                                        , 
+                                                        )
+                                                    & (     !lemmas
+                                                          : ? !lemma ?
+                                                        & 
+                                                      |     !lemmas !lemma
+                                                          : ?lemmas
+                                                        & ( span
+                                                          .     ( from
+                                                                .   str
+                                                                  $ ("#" !ID)
+                                                                )
+                                                                (type.Slem)
+                                                                ( "xml:id"
+                                                                .   str
+                                                                  $ ( L
+                                                                      !LP
+                                                                        chr
+                                                                      $ (   !amb
+                                                                          + 1
+                                                                        : ?amb
+                                                                        )
+                                                                    )
+                                                                )
+                                                            , !lemma
+                                                          )
+                                                      )
+                                                )
+                                              . !ambiguous
+                                              )
+                                    )
+                                  . !words
+                                  )
+                            | 
+                        )
+                      . !jsn
+                      )
+                  )
+              | ( (ana.POStags)
+                ,   map
+                  $ ( ( 
+                      =   
+                        .     !arg:((?sentno.,?words),)
+                            &   map
+                              $ ( ( 
+                                  =   
+                                    .     !arg:(,% %:?arg)
+                                        & map$(IWlpp.!arg)
+                                      | IWlpp$!arg
+                                      |     !arg
+                                          : (   (ID..?ID)
+                                              + (Word..?Word)
+                                              + (ambiguous.,?ambiguous)
+                                            , 
+                                            )
+                                        & :?poss
+                                        & asc$a+-1:?amb
+                                        & !LP+1:?LP
+                                        &   map
+                                          $ ( ( 
+                                              =   pos
+                                                .     !arg
+                                                    : (?+(pos..?pos)+?,)
+                                                  & (     !poss
+                                                        : ? !pos ?
+                                                      & 
+                                                    |     !poss !pos
+                                                        : ?poss
+                                                      & ( span
+                                                        .     ( from
+                                                              . str$("#" !ID)
+                                                              )
+                                                              (type.Spos)
+                                                              ( "xml:id"
+                                                              .   str
+                                                                $ ( P
+                                                                    !LP
+                                                                      chr
+                                                                    $ (   !amb
+                                                                        + 1
+                                                                      : ?amb
+                                                                      )
+                                                                  )
+                                                              )
+                                                          , !pos
+                                                        )
+                                                    )
+                                              )
+                                            . !ambiguous
+                                            )
+                                  )
+                                . !words
+                                )
+                          | 
+                      )
+                    . !jsn
+                    )
+                )
+            )
+        : ?xml
+      & put$(toML$!xml,!tei,NEW)
+  )
+  ( new
+  =   
+    .     ~
+        & "Remove the ~ to merely reformat the code, not run it."
+      |   
+        &   (its.doit)
+          $ ( "C:\\downloads\\3612\\JEB-040-134.xml-3612-step6S.json"
+            . lemma
+            . "uitL.xml"
+            )
+        &   (its.doit)
+          $ ( "C:\\downloads\\3612\\JEB-040-134.xml-3612-step6S.json"
+            . pos
+            . "uitP.xml"
+            )
+      |   ~
+        &   (its.doit)
+          $ ("C:\\downloads\\JEB-103ab-99.xml-3580-step6.json".lemma."uit.xml")
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\downloads\\JEB-040-104.xml-3602-step6.json"
+            . lemma
+            . "..\\JEB-040-104.xml-3602-step7.xml"
+            )
+        &   (its.doit)
+          $ ( "C:\\downloads\\JEB-040-104.xml-3602-step6.json"
+            . pos
+            . "..\\JEB-040-104.xml-3602-step8.xml"
+            )
+      |   arg$:?input
+        & arg$:?LemmaOrPos
+        & arg$:?output
+        & (its.doit)$(!input.!LemmaOrPos.!output)
+  );
+
+r=
+  get'("jsn2teianno.bra",TXT)
+& rmv$(str$(jsn2teianno ".bak"))
+& ren$("jsn2teianno.bra".str$(jsn2teianno ".bak"))
+&   put
+  $ ( "{jsn2teianno.bra
+
+Read json file with ID, Word, lemma, and pos fields.
+Extract the ID and either the lemma or the pos values and output in TEI P5 DKClARIN notation.}
+
+"
+    , "jsn2teianno.bra"
+    , NEW
+    , BIN
+    )
+& lst'(program-jsn2teianno,"jsn2teianno.bra",APP)
+& put'(\n,"jsn2teianno.bra",APP,BIN)
+& lst'(r,"jsn2teianno.bra",APP)
+&   put
+  $ (str$("\nnew'" program-jsn2teianno ";\n"),"jsn2teianno.bra",APP,BIN)
+& ;
+
+new'program-jsn2teianno;

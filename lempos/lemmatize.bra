@@ -1,0 +1,70 @@
+{ lemmatize.bra 
+Usage:
+a) Include this file in your Bracmat script:
+       get$"lemmatize.bra"
+b) Read a rule file in Bracmat format, e.g.,
+       get$"short.bra":?short
+c) Call the lemmatise function. Use four arguments
+   1. the rules
+   2. the word that should be lemmatized
+   3. an empty string
+   4. the string "0"
+For example:
+   lemmatise$(!short.sports..0)
+The value returned by the lemmatise function
+is a data structure containing lemmas and
+additional information, such as the numbers
+of the rules used to produce those lemmas.
+}
+
+( ( apply
+  =   pat rep wrd nr
+    .   !arg:(?wrd.((=?pat).(=?rep)).?nr)
+      & @(!wrd:!pat)
+      & (str$!rep.!nr)
+  )
+& ( merge
+  =   a b c d
+    .     whl
+        ' ( !arg:?a #%?b ?c !b ?d
+          & !a !b !c !d:?arg
+          )
+      & !arg
+  )
+& ( prune
+  =   a A B C m z
+    .     whl
+        ' ( !arg:?a (?A.?B) ?m (!A.?C) ?z
+          & !a (!A.merge$(!B !C)) !m !z:?arg
+          )
+      & !arg
+  )
+& ( lemmatise
+  =   tree wrd sub rule parent 1st 2nd W res
+    .   !arg:(?tree.?wrd.?parent)
+      & ( !tree:&!parent
+        |   !tree:(?1st.~#?2nd)
+          &   prune
+            $ ( lemmatise$(!1st.!wrd.!parent)
+                lemmatise$(!2nd.!wrd.!parent)
+              )
+        |     !tree
+            :   ?
+                (   (?rule,?sub)
+                  & apply$(!wrd.!rule):?parent
+                  & lemmatise$(!sub.!W.!parent):?res
+                  & prune$!res:?res
+                |   (?.#):?rule
+                  & apply$(!wrd.!rule):?res
+                |   (?1st.~#?2nd)
+                  &     prune
+                      $ ( lemmatise$(!1st.!wrd.!parent)
+                          lemmatise$(!2nd.!wrd.!parent)
+                        )
+                    : ?res
+                )
+                ?
+          & !res
+        | !parent
+        )
+  ));
