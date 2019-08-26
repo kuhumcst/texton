@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/sent.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/textton/log/sent.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = false;
@@ -275,7 +275,7 @@ try {
 //        TODO your code!
         $sentfile = tempFileName("sent-results");
 
-        $command = "/usr/local/bin/bracmat \"get'\\\"sent.bra\\\"\" $F $sentfile";
+        $command = "../bin/bracmat \"get'\\\"sent.bra\\\"\" $F $sentfile";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)

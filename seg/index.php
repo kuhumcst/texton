@@ -32,7 +32,7 @@ Inactive       : on
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/seg.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/textton/log/seg.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = false;
@@ -272,8 +272,8 @@ try {
     $dump = ob_get_clean();    
     logit($dump);
 
-        //$command = "/usr/bin/python /opt/csttools/seg/seg.py $IfacettokF $IfacetsentF $segfile";
-        $command = "/usr/local/bin/bracmat \"get'\\\"seg.bra\\\"\" $IfacettokF $IfacetsentF $segfile"; // perhaps 2x faster
+        //$command = "/usr/bin/python /opt/textton/seg/seg.py $IfacettokF $IfacetsentF $segfile";
+        $command = "../bin/bracmat \"get'\\\"seg.bra\\\"\" $IfacettokF $IfacetsentF $segfile"; // perhaps 2x faster
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)

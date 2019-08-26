@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/tok.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/textton/log/tok.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -512,7 +512,7 @@ try {
         else
             $convertaa = 'n';
         //if($Oappnrm && $Iappunn)
-            $command = "/usr/local/bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile $convertaa";
+            $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile $convertaa";
         //else
         //    $command = "/usr/local/bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile n";
         logit($command);

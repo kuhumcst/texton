@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/JSON2TEIP5ANNO.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/textton/log/JSON2TEIP5ANNO.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+ //   return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -279,14 +279,14 @@ try {
 //        TODO your code!
         $JSON2TEIP5ANNOfile = tempFileName("JSON2TEIP5ANNO-results");
         if($Ofacetlem)
-	        {
-	        $command = "/usr/local/bin/bracmat 'get\$\"/opt/csttools/jsn2teianno/jsn2teianno.bra\"' '$F' 'lemma' '$JSON2TEIP5ANNOfile'";
-	        }
-	    else
-	        {
-	        $command = "/usr/local/bin/bracmat 'get\$\"/opt/csttools/jsn2teianno/jsn2teianno.bra\"' '$F' 'pos' '$JSON2TEIP5ANNOfile'";
+            {
+            $command = "../bin/bracmat \"get'\\\"jsn2teianno.bra\\\"\" $F lemma $JSON2TEIP5ANNOfile";
+	    }
+        else
+	    {
+	    $command = "../bin/bracmat \"get'\\\"jsn2teianno.bra\\\"\" $F pos $JSON2TEIP5ANNOfile";
             }
-
+        logit($command);
         if(($cmd = popen($command, "r")) == NULL)
             {
             throw new SystemExit(); // instead of exit()

@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/teitok.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/textton/log/teitok.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -268,7 +268,7 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         $teitokfile = tempFileName("teitokfile-results");
-        $command = "/usr/local/bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile";
+        $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile";
 
         logit($command);
 

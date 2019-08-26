@@ -32,7 +32,7 @@ Inactive       : on
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/TEIanno.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/textton/log/TEIanno.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = false;
@@ -331,7 +331,7 @@ try {
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
 
-        $command = "/usr/local/bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $rawXML && xmllint --format --output $TEIannofile $rawXML";
+        $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $rawXML && xmllint --format --output $TEIannofile $rawXML";
 //        $command = "/usr/local/bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $TEIannofile";
         logit($command);
 
