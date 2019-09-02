@@ -1,21 +1,33 @@
-{sent.bra
-
+{sent.braput
 Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
 
 X=
   ( doit
   =   
     .   nestML$(get$(!arg,X ML)):?xml
-      & !xml:? (TEI.?,? (text.?,?xml) ?) ?
+      &   !xml
+        : ( ? (TEI.?,? (text.?,?xml) ?) ?
+          | ? (text.?,?xml) ?
+          )
       & 0:?id
       & (ID="xml:id".str$(Z (1+!id:?id)))
+      & ( content
+        =   A c e
+          .     !arg:?A (?e.?,?c) ?arg
+              &   !A
+                  ( !e:(del|fw)&
+                  | !c
+                  )
+                  content$!arg
+            | !arg
+        )
       & ( collectST
         =   
           .   map
             $ ( ( 
                 =   
                   .     !arg
-                      : ( (c|lb.?,?)
+                      : ( (c|lb|space.?,?)
                         | (?.? (S.?) ?,?)
                         )
                     |   !arg:(?.?,?arg)
@@ -45,15 +57,21 @@ X=
                       )
                       (type.Ssent)
                       !ID
-                  ,   0:?sp
+                  ,   -1:?sp
                     &   str
                       $ ( map
                         $ ( ( 
                             =   h
                               .       !arg
                                     : (?.? (T.?) ?,?h)
-                                  & 0:?sp
-                                  & !h
+                                  & (     str$(content$!h)
+                                        : ~
+                                        : ?h
+                                      & 0:?sp
+                                      & !h
+                                    | !sp:-1&
+                                    | 1:?sp&" "
+                                    )
                                 |   !sp+1:1:?sp
                                   & " "
                                 | 
@@ -95,7 +113,7 @@ X=
                 )
             | 
         )
-      &   (spanGrp.(ana.ClarinSentences),map$(snt.!xml))
+      & (spanGrp.(ana.ClarinSentences),map$(snt.!xml))
   )
   ( new
   =   
@@ -110,7 +128,18 @@ X=
       |   ~
         &   put
           $ (   toML
-              $ ((its.doit)$"C:\\downloads\\adl_brandes\\adl_brandes-18.xml-3887-step1.xml")
+              $ ( (its.doit)
+                $ "C:\\projects\\csttools\\teitok\\original-deposited-file-37.out.xml"
+                )
+            , "original-deposited-file-37.out2.xml"
+            , NEW
+            )
+      |   ~
+        &   put
+          $ (   toML
+              $ ( (its.doit)
+                $ "C:\\downloads\\adl_brandes\\adl_brandes-18.xml-3887-step1.xml"
+                )
             , "adl_brandes.out3.xml"
             , NEW
             )
@@ -122,8 +151,7 @@ r=
 & rmv$(str$(sent ".bak"))
 & ren$("sent.bra".str$(sent ".bak"))
 &   put
-  $ ( "{sent.bra
-
+  $ ( "{sent.braput
 Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
 
 "
