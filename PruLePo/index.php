@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/textton/log/PruLePo.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/texton/log/PruLePo.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -303,9 +303,9 @@ try {
             {
             $PruLePofile = tempFileName("prujson");
             logit('PruLePofile='.$PruLePofile);
-	    $mono = '/opt/textton/res/web/da/lemmatiser/training/ParoleMonograms';
-	    $bigr = '/opt/textton/res/web/da/lemmatiser/training/ParoleBigrams';
-            $command = "../bin/bracmat 'get\$\"/opt/textton/PruLePo/disam.bra\"' '$F' '$PruLePofile' '$mono' '$bigr'";
+	    $mono = '/opt/texton/res/web/da/lemmatiser/training/ParoleMonograms';
+	    $bigr = '/opt/texton/res/web/da/lemmatiser/training/ParoleBigrams';
+            $command = "../bin/bracmat 'get\$\"/opt/texton/PruLePo/disam.bra\"' '$F' '$PruLePofile' '$mono' '$bigr'";
 
             logit($command);
 
