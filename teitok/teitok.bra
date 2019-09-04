@@ -477,8 +477,8 @@ X=
               )
         )
       & ( Tx
-        =   abb
-          .   !arg:(?arg.?abb)
+        =   abb efter før
+          .   !arg:(?arg.?abb.?før,?efter)
             & ( !arg:
               |     vap
                   $ ( ( 
@@ -491,20 +491,30 @@ X=
                                         =   T
                                           .   (c.(type.s)," ")
                                               ( !arg:
-                                              | toksplit$(!arg.!abb)
+                                              |   vap
+                                                $ ( ( 
+                                                    =   T
+                                                      .   !arg:
+                                                        |   toksplit
+                                                          $ (!arg.!abb)
+                                                    )
+                                                  . !arg
+                                                  . \t
+                                                  )
                                               )
                                         )
                                       . !arg
                                       . " "
                                       )
-                                  : (c.(type.s),?) ?arg
+                                  :   (c.(type.s) ?,?)
+                                      ?arg
                                 & !arg
                               )
                       )
                     . !arg
                     . \n
                     )
-                : (c.(type.s),?) ?arg
+                : (c.(type.s) ?,?) ?arg
               )
             & ( concS
               =   A s S
@@ -512,7 +522,7 @@ X=
                   |   :?S
                     &   whl
                       ' (   !arg
-                          : (c.(type.s),?A) ?arg
+                          : (c.(type.s) ?,?A) ?arg
                         & !A !S:?S
                         )
                     &   (   !S:
@@ -523,9 +533,17 @@ X=
                             ' ( !S:%?A ?S
                               & !A !s:?s
                               )
-                          & (c.(type.s),str$!s)
+                          & (     !før
+                                : (c|lb|space)
+                              & 
+                            |   !arg:
+                              &   !efter
+                                : (c|lb|space)
+                              & 
+                            | (c.(type.s),str$!s)
+                            )
                         )
-                        concS$!arg
+                        (:?før&concS$!arg)
               )
             & concS$!arg
         )
@@ -540,67 +558,92 @@ X=
                          )
                          ?
                      )
+                    (~(c|lb|space).?)
                     ?
               & (c.(type.s),)
             | 
         )
       & ( ecaps
-        =   
+        =   før B
           .       !arg
-                : @( ?
-                   :   ?
-                       ( " "
-                       | \n
-                       | \r
-                       | \t
-                       )
-                   )
-              & (c.(type.s),)
+                : ( @( ?
+                     :   ?B
+                         ( " "
+                         | \n
+                         | \r
+                         | \t
+                         )
+                     )
+                  . ?før
+                  )
+              & (   (   !før
+                      : (c|lb|space)
+                    | trm$!B:
+                    )
+                  & 
+                | (c.(type.s),)
+                )
             | 
         )
       & ( trav
-        =   A e a S B aS abb
-          .   !arg:(?arg.?abb)
+        =   A e a S B aS abb før
+          .   !arg:(?arg.?abb.?før)
             & (   !arg:?A (?e.?aS) ?B
-                &   Tx$(!A.!abb)
-                    (   !e:w
-                      & !aS:(?a,?S)
-                      &   ecaps$!A
-                          ( w
-                          .     !a
-                                ( S
-                                .   (   !tok:0
-                                      & 1+!sen:?sen
-                                    | 
-                                    )
-                                  & !sen
-                                )
-                                (T.1+!tok:?tok)
-                            , trim$!S
-                          )
-                          space$!B
-                    |   !e:add
-                      &   ecaps$!A
-                          ( add
-                          .     !aS:(?a,?S)
-                              & (!a,trav$(!S.!abb))
-                            | !aS
-                          )
-                          space$!B
-                    |   !e:del
-                      & ecaps$!A (!e.!aS) space$!B
-                    | (   !e
-                        : (p&0:?tok|?)
-                      .     !aS:(?a,?S)
-                          & ( !a
-                            ,   trav
-                              $ (!S.!e:abbr|!abb)
+                &   Tx$(!A.!abb.!før,!e)
+                    ( (   !e:w
+                        & !aS:(?a,?S)
+                        &   ecaps$(!A.!før)
+                            ( w
+                            .     !a
+                                  ( S
+                                  .   (   !tok:0
+                                        & 1+!sen:?sen
+                                      | 
+                                      )
+                                    & !sen
+                                  )
+                                  (T.1+!tok:?tok)
+                              , trim$!S
                             )
-                        | !aS
+                            space$!B
+                      |   !e:c
+                        & !aS:(?a,?S)
+                        &   ( c
+                            .     !a
+                                  (S.!sen)
+                                  (T.1+!tok:?tok)
+                              , !S
+                            )
+                            (   !a:? (type.s) ?
+                              & 
+                            | space$!B
+                            )
+                      |   !e:add
+                        &   ecaps$(!A.!før)
+                            ( add
+                            .     !aS:(?a,?S)
+                                & (!a,trav$(!S.!abb.))
+                              | !aS
+                            )
+                            space$!B
+                      |   !e:del
+                        & ecaps$(!A.!før) (!e.!aS) space$!B
+                      | (   !e
+                          : ( p&0:?tok
+                            | ?
+                            )
+                        .     !aS:(?a,?S)
+                            & ( !a
+                              ,   trav
+                                $ (!S.!e:abbr|!abb.)
+                              )
+                          | !aS
+                        )
                       )
+                    : ? (?før.?)
                     )
-                    trav$(!B.!abb)
-              | Tx$(!arg.!abb)
+                    trav$(!B.!abb.!før)
+              | Tx$(!arg.!abb.!før,!e)
               )
         )
       & ( contractwadddel
@@ -619,10 +662,10 @@ X=
                       .       !arg
                             :   ?A
                                 ( ?e
-                                .     ?a
-                                    : ( ~(? (S.?) ?)
+                                .     ( ~(? (S.?) ?)
                                       | ? (S.!sen) ?
                                       )
+                                    : ?a
                                   , ?s
                                 )
                                 ?arg
@@ -639,7 +682,7 @@ X=
               )
             & trq$!arg
         )
-      & trav$(!text.):?nbody
+      & trav$(!text..):?nbody
       & contractwadddel$!nbody:?nbody2
       & assignIDs$!nbody2:?nnbody
       & renumber$!nnbody:?nrbody
@@ -691,8 +734,17 @@ X=
       |   ~
         &   put
           $ (   toML
-              $ ((its.teitok)$"C:\\downloads\\adl_brandes\\adl_brandesShort.xml")
-            , "adl_brandesShort.out.xml"
+              $ ((its.teitok)$"C:\\downloads\\adl_brandes\\adl_brandes.xml")
+            , "adl_brandes.out.xml"
+            , NEW
+            )
+      |   ~
+        &   put
+          $ (   toML
+              $ ( (its.teitok)
+                $ "C:\\tekster\\input\\original-deposited-file-37.xml"
+                )
+            , "original-deposited-file-37.out.xml"
             , NEW
             )
       |   

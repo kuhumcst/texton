@@ -10,8 +10,10 @@ X=
   ( doit
   =   
     .     !arg:(?tok.?sent.?seg)
-        & get$(!tok,X ML):?tok
-        & get$(!sent,X ML):?sent
+        &   nestML$(get$(!tok,X ML))
+          : ? (spanGrp.?,?tok) ?
+        &   nestML$(get$(!sent,X ML))
+          : ? (spanGrp.?,?sent) ?
         & 0:?i
         & :?ERR
         &   put
@@ -23,16 +25,18 @@ X=
                         =   
                           .       !arg
                                 : ( span
-                                  .   ? (from.?fromIndex) ?
-                                    : ( ? (to.?toIndex) ?
-                                      | ?&:?toIndex
-                                      )
+                                  .     ? (from.?fromIndex) ?
+                                      : ( ? (to.?toIndex) ?
+                                        | ?&:?toIndex
+                                        )
+                                    , ?
                                   )
                               &   !tok
                                 :   ?
                                     (   ( span
-                                        .   ? (from.!fromIndex) ?
-                                          : ? ("xml:id".?fromID) ?
+                                        .     ? (from.!fromIndex) ?
+                                            : ? ("xml:id".?fromID) ?
+                                          , ?
                                         )
                                         ?
                                     : ?tok
@@ -43,10 +47,13 @@ X=
                                    ' ( $tok
                                      :   ?
                                          ( span
-                                         .   ( ? (to.$toIndex) ?
-                                             | ? (from.$toIndex) ?
-                                             )
-                                           : ? ("xml:id".?toID) ?
+                                         .     ( ? (to.$toIndex) ?
+                                               |   ?
+                                                   (from.$toIndex)
+                                                   ?
+                                               )
+                                             : ? ("xml:id".?toID) ?
+                                           , ?
                                          )
                                          ?tok
                                      )
