@@ -17,7 +17,7 @@ ToolID         : seg
 PassWord       : 
 Version        : 1.0
 Title          : TEIP5-segmenter
-ServiceURL     : http://ada.sc.ku.dk/seg/	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+ServiceURL     : http://localhost/seg/	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
 Publisher      : Københavns Universitet, Center for Sprogteknologi
 ContentProvider: Københavns Universitet, Center for Sprogteknologi
 Creator        : Bart Jongejan
