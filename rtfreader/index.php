@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/async.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/async.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = false;
@@ -401,8 +401,7 @@ try {
         $command = "echo $echos >> $CSTRTFreadfile";
         logit($command);
 
-        //$tool = "/opt/csttools/bin/cstrtfreader";
-        $tool = "/usr/local/bin/rtfreader";
+        $tool = "../bin/rtfreader";
         $abbr = "";
 
         if($Iappocr)
@@ -422,7 +421,7 @@ try {
                     $abbr = "-a $lang.dat ";
                     break;
                 case "nb":
-                    $abbr = "-a /opt/csttools/res/web/no/tokeniser/abbr ";
+                    $abbr = "-a ../res/web/no/tokeniser/abbr ";
                     break;
                 case "bg":
                 case "cs":
@@ -451,7 +450,7 @@ try {
                 case "sv":
                 case "tr":
                 case "uk":
-                    $abbr = "-a /opt/csttools/res/web/" . $lang . "/tokeniser/abbr ";
+                    $abbr = "-a ../res/web/" . $lang . "/tokeniser/abbr ";
                     break;
                 default:
                     $abbr = "";
@@ -473,7 +472,7 @@ try {
 
         $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t $CSTRTFreadfile $DEL";
 
-        $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > /opt/csttools/log/async2.log 2>&1 &";
+        $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/async2.log 2>&1 &";
 
         logit($command);
 
