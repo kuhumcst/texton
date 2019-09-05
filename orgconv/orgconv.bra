@@ -1,0 +1,308 @@
+{orgconv.bra
+
+Take diplom text in org-mode format and add values for lemma and/or PoS.
+The lemma and Pos input must also be in org-mode format.
+}
+
+X=
+  ( doit
+  =   
+    .   (trim=.str$(vap$((=.!arg).!arg." ")))
+      & (spaces=.str$(vap$((=." ").!arg)))
+      & ( pad
+        =   s x Ls Ls L
+          .   !arg:(?s.?x)
+            & vap$((=.!arg).!x):? [?Lx
+            & vap$((=.!arg).!s):? [?Ls
+            & !Lx+-1*!Ls:?L
+            & @(spaces$!x:?x [!L ?)
+            & str$(!s !x)
+        )
+      & ( readOrg2colFile
+        =   table H1 H2 H3
+          .       vap
+                $ ( ( 
+                    =   token anno
+                      .   @(!arg:"|" ?token "|" ?anno "|")
+                        & (trim$!token.!anno)
+                    )
+                  . out$(file !arg)&get$(!arg,STR)
+                  . \n
+                  )
+              : (?H1.?H2) (?.?) ?table
+            & ((!H1.trim$!H2).!table)
+        )
+      & ( readOrg3colFileLem
+        =   table H1 H2
+          .       vap
+                $ ( ( 
+                    =   token lemma
+                      .   @(!arg:"|" ?token "|" ?lemma "|" ? "|")
+                        & (trim$!token.!lemma)
+                    )
+                  . out$(file !arg)&get$(!arg,STR)
+                  . \n
+                  )
+              : (?H1.?H2) (?.?) ?table
+            & ((!H1.trim$!H2).!table)
+        )
+      & ( readOrg3colFilePos
+        =   table H1 H3
+          .       vap
+                $ ( ( 
+                    =   token pos
+                      .   @(!arg:"|" ?token "|" ? "|" ?pos "|")
+                        & (trim$!token.!pos)
+                    )
+                  . out$(file !arg)&get$(!arg,STR)
+                  . \n
+                  )
+              : (?H1.?H3) (?.?) ?table
+            & ((!H1.trim$!H3).!table)
+        )
+      & ( getFull
+        =   A Z
+          .       vap
+                $ ( ( 
+                    =   
+                      .       !arg
+                            : ( "("
+                              | ")"
+                              | "["
+                              | "]"
+                              | "{"
+                              | "}"
+                              | ⟨
+                              | ⟩
+                              | " "
+                              )
+                          & 
+                        | !arg
+                    )
+                  . !arg
+                  )
+              : ?arg
+            &   whl
+              ' ( !arg:?A "-" ¦ ?Z
+                & !A !Z:?arg
+                )
+            &   whl
+              ' (!arg:?A ¦ ?Z&!A !Z:?arg)
+            & !arg
+        )
+      & !arg:(?outp.?txt.?pos.?lem.?Iappnrm)
+      &   (!Iappnrm:1&norm|facs)
+        : ?normOrFacs
+      & (   !pos:!lem
+          &   readOrg3colFilePos$!pos
+            : (?.?pos:(?.?hp) ?):?AA
+          &   readOrg3colFileLem$!lem
+            : (?.?lem:(?.?hl) ?):?BB
+          & (|lst$(AA BB,AABB,NEW))
+        |   readOrg2colFile$!pos:(?.?pos:(?.?hp) ?):?CC
+          & readOrg2colFile$!lem:(?.?lem:(?.?hl) ?):?DD
+          & (|lst$(CC DD,CCDD,NEW))
+        )
+      & spaces$!hp:?hp
+      & spaces$!hl:?hl
+      & (|lst$(hp,hp,NEW)
+      & lst$(hl,hl,NEW)
+      & lst$(pos,pos,NEW)
+      & lst$(lem,lem,NEW))
+      &   ( 
+          =   ?a
+              "|"
+              ?b
+              "|"
+              ?c
+              "|"
+              ?d
+              "|"
+              ?e
+              "|"
+              ?f
+              "|"
+              ?norm
+              "|"
+              ?facs
+              "|"
+              ?dipl
+              "|"
+              ?h
+              "|"
+              ?i
+              "|"
+              ?j
+              "|"
+              ?k
+              "|"
+              ?l
+              "|"
+              ?m
+              "|"
+              ?n
+              "|"
+              ?o
+              "|"
+              ?p
+          )
+        : ?longpat
+      &   ( 
+          =   ?a
+              "|"
+              ?b
+              "|"
+              ?d
+              "|"
+              ?e
+              "|"
+              ?f
+              "|"
+              ?norm
+              "|"
+              ?facs
+              "|"
+              ?dipl
+              "|"
+              ?h
+              "|"
+              ?i
+              "|"
+              ?j
+              "|"
+              ?k
+              "|"
+              ?l
+              "|"
+              ?m
+              "|"
+              ?n
+              "|"
+              ?o
+              "|"
+              ?p
+          )
+        : ?shortpat
+      & (|put$(OO,OO,NEW))
+      &     vap
+          $ ( ( 
+              =   w full short
+                .     @( !arg
+                       : ? "|" ? "|" ? "|" ? "|" ?
+                       : ( !pat
+                         |   ?w
+                           & (|put$(shortpat,OO,APP))
+                           & !shortpat:(=?pat)
+                           & " ":?c
+                           & !w:!pat
+                         )
+                       )
+                    & (|put$(normOrFacs !normOrFacs !!normOrFacs facs !facs,OO,APP))
+                    & trim$(str$getFull$!!normOrFacs):?K
+                    & (|put$(str$("K[" !K "]"),OO,APP))
+                    &   ( !K:&(!hl.!hp)
+                        |   !pos:(?tokp.?POS) ?posn
+                          & !lem:(?tokl.?LEM) ?lemn
+                          & (   sim$(!tokp.!K):>3/5
+                              & !posn:?pos
+                              & !lemn:?lem
+                            |   !posn:(?tokp2.?POS2) ?posn2
+                              & !lemn:(?tokl2.?LEM2) ?lemn2
+                              & sim$(str$(!tokp !tokp2).!K):>3/5
+                              &     pad
+                                  $ ( str$(" " trim$!LEM trim$!LEM2)
+                                    . !LEM2
+                                    )
+                                : ?LEM
+                              & !posn2:?pos
+                              & !lemn2:?lem
+                            )
+                          & (!LEM.!POS)
+                        | (!hl.!hp)
+                        )
+                      : (?d.?e)
+                    &   str
+                      $ ( !a
+                          "|"
+                          !b
+                          "|"
+                          !c
+                          "|"
+                          !d
+                          "|"
+                          !e
+                          "|"
+                          !f
+                          "|"
+                          !norm
+                          "|"
+                          !facs
+                          "|"
+                          !dipl
+                          "|"
+                          !h
+                          "|"
+                          !i
+                          "|"
+                          !j
+                          "|"
+                          !k
+                          "|"
+                          !l
+                          "|"
+                          !m
+                          "|"
+                          !n
+                          "|"
+                          !o
+                          "|"
+                          !p
+                          \n
+                        )
+                  | str$(!arg \n)
+              )
+            .   out$(file !arg)
+              & :?lang
+              & !longpat:(=?pat)
+              & get$(!txt,STR)
+            . \n
+            )
+        : ?diplom
+      & (|lst$(diplom,diplom,NEW))
+      & put$(str$!diplom,!outp,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   arg$:?outp
+        & arg$:?txt
+        & arg$:?pos
+        & arg$:?lem
+        & arg$:?Iappnrm
+        & (its.doit)$(!outp.!txt.!pos.!lem.!Iappnrm)
+  );
+
+r=
+  get'("orgconv.bra",TXT)
+& rmv$(str$(orgconv ".bak"))
+& ren$("orgconv.bra".str$(orgconv ".bak"))
+&   put
+  $ ( "{orgconv.bra
+
+Take diplom text in org-mode format and add values for lemma and/or PoS.
+The lemma and Pos input must also be in org-mode format.
+}
+
+"
+    , "orgconv.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"orgconv.bra",APP)
+& put'(\n,"orgconv.bra",APP,BIN)
+& lst'(r,"orgconv.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"orgconv.bra",APP,BIN)
+& ;
+
+new'X;
+
