@@ -466,7 +466,7 @@ try {
                 else
                     {
                     $flexrules = "/opt/texton/res/web/da/lemmatiser/notags/c13-c18/0/flexrules.bra";
-                    $traindata = "/opt/texton/res/web/da/lemmatiser/training/tabfile.POS.ph";
+                    $traindata = "/opt/texton/res/web/da/lemmatiser/training/tabfile";
                     }
                 }
             if($Ilangde)
