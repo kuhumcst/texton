@@ -1,0 +1,152 @@
+{dip2plain.bra
+
+Fetch the column with corrected transcriptions. This column contains words with additions between parentheses. The parentheses are removed in the output.}
+
+X=
+  ( doit
+  =   in ud
+    .   !arg:(?in.?ud)
+      & ( getFull
+        =   A Z
+          .       vap
+                $ ( ( 
+                    =   
+                      .       !arg
+                            : ( "("
+                              | ")"
+                              | "["
+                              | "]"
+                              | "{"
+                              | "}"
+                              | ⟨
+                              | ⟩
+                              | " "
+                              )
+                          & 
+                        | !arg
+                    )
+                  . !arg
+                  )
+              : ?arg
+            &   whl
+              ' ( !arg:?A "-" ¦ ?Z
+                & !A !Z:?arg
+                )
+            &   whl
+              ' (!arg:?A ¦ ?Z&!A !Z:?arg)
+            & !arg
+        )
+      &     vap
+          $ ( ( 
+              =   w
+                .     @( !arg
+                       :   ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?w
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                           "|"
+                           ?
+                       )
+                    & ( getFull$!w:?w
+                      |       vap
+                            $ ( ( 
+                                =   
+                                  .       !arg
+                                        : ( "("
+                                          | ")"
+                                          | "["
+                                          | "]"
+                                          | "{"
+                                          | "}"
+                                          | ⟨
+                                          | ⟩
+                                          | " "
+                                          )
+                                      & 
+                                    | !arg
+                                )
+                              . !w
+                              )
+                          : ?w
+                        &   whl
+                          ' ( !w:?A "-" ¦ ?Z
+                            & !A !Z:?w
+                            )
+                        &   whl
+                          ' ( !w:?A ¦ ?Z
+                            & !A !Z:?w
+                            )
+                      )
+                    & (!w:&\n|!w " ")
+                  | 
+              )
+            . get$(!in,STR),\n
+            )
+        : ?txt
+      & :?xt
+      & ( 
+        |     whl
+            ' (   ( !txt:" " "." ?txt&"."
+                  | !txt:%@?x ?txt&!x
+                  )
+                : ?x
+              & !x !xt:?xt
+              )
+          & whl'(!xt:%@?x ?xt&!x !txt:?txt)
+        )
+      & put$(str$!txt,!ud,NEW)
+  )
+  (new=.~|(its.doit)$(arg$.arg$));
+
+r=
+  get'("dip2plain.bra",TXT)
+& rmv$(str$(dip2plain ".bak"))
+& ren$("dip2plain.bra".str$(dip2plain ".bak"))
+&   put
+  $ ( "{dip2plain.bra
+
+Fetch the column with corrected transcriptions. This column contains words with additions between parentheses. The parentheses are removed in the output.}
+
+"
+    , "dip2plain.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"dip2plain.bra",APP)
+& put'(\n,"dip2plain.bra",APP,BIN)
+& lst'(r,"dip2plain.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"dip2plain.bra",APP,BIN)
+& ;
+
+new'X;
