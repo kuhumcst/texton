@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/csttools/log/dip2plain.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/texton/log/dip2plain.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = false;
@@ -330,7 +330,7 @@ try {
             {
             $dip2plainfile = tempFileName("d2p");
             logit('dip2plainfile='.$dip2plainfile);
-            $command = "../bin/bracmat 'get\$\"/opt/csttools/dip2plain/dip2plain.bra\"' '$F' '$dip2plainfile'";
+            $command = "../bin/bracmat 'get\$\"/opt/texton/dip2plain/dip2plain.bra\"' '$F' '$dip2plainfile'";
 
             logit($command);
 
