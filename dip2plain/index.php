@@ -330,7 +330,7 @@ try {
             {
             $dip2plainfile = tempFileName("d2p");
             logit('dip2plainfile='.$dip2plainfile);
-            $command = "/usr/local/bin/bracmat 'get\$\"/opt/csttools/dip2plain/dip2plain.bra\"' '$F' '$dip2plainfile'";
+            $command = "../bin/bracmat 'get\$\"/opt/csttools/dip2plain/dip2plain.bra\"' '$F' '$dip2plainfile'";
 
             logit($command);
 
