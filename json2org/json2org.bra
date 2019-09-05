@@ -1,0 +1,300 @@
+{json2org.bra
+
+Convert JSON to ORG-mode}
+
+X=
+  ( doit
+  =   
+    .   !arg:(?outp.?input)
+      & ( len
+        =   s l
+          .   !arg:(?s.?l)
+            &   vap$((=.!arg).!s)
+              : ? ([>!l:[?l|)
+            & !l
+        )
+      & ( do
+        =   Word LP
+          .   !arg:(?Word.?LP)
+            & :?LS:?PS
+            &   whl
+              ' ( !LP:(?L.?P) ?LP
+                & ( !LS:? !L ?
+                  | !LS (!LS:|¦) !L:?LS
+                  )
+                & ( !PS:? !P ?
+                  | !PS (!PS:|¦) !P:?PS
+                  )
+                )
+            & str$!LS:?LS
+            & str$!PS:?PS
+            & len$(!Word.!Tsiz):?Tsiz
+            & len$(!LS.!Lsiz):?Lsiz
+            & len$(!PS.!Psiz):?Psiz
+            & (!Word.!LS.!PS)
+        )
+      & ( !input:&put$(,!outp,NEW)
+        |   get$(!input,JSN):?input
+          & !input:(,?sents)
+          & :?WLPS
+          & @(token:? [?Tsiz)
+          & @(lemma:? [?Lsiz)
+          & @("Part of Speech":? [?Psiz)
+          &   (     !sents
+                  :   ( ( ?sentno
+                        .   
+                          ,   ( (   ?
+                                  + (Word..?)
+                                  + (lemma..?)
+                                  + (pos..?)
+                                , 
+                                )
+                              | ( 
+                                ,   (   ?
+                                      + (Word..?)
+                                      + (lemma..?)
+                                      + (pos..?)
+                                    , 
+                                    )
+                                    ?
+                                )
+                              )
+                              ?
+                        )
+                      , 
+                      )
+                      ?
+                &   map
+                  $ ( ( 
+                      =   
+                        .   !arg:((?sentno.,?sent),)
+                          &   map
+                            $ ( ( 
+                                =   
+                                  .       !arg
+                                        : (   ?
+                                            + (~<>Word..?Word)
+                                            + (~<>lemma..?lemma)
+                                            + (~<>pos..?pos)
+                                          , 
+                                          )
+                                      & len$(!Word.!Tsiz):?Tsiz
+                                      & len$(!lemma.!Lsiz):?Lsiz
+                                      & len$(!pos.!Psiz):?Psiz
+                                      & (!Word.!lemma.!pos)
+                                    |     !arg
+                                        : (   ?
+                                            + (~<>Word..?Word)
+                                            + (ambiguous.,?LP)
+                                          , 
+                                          )
+                                      &     map
+                                          $ ( ( 
+                                              =   
+                                                .     !arg
+                                                    : (   (~<>lemma..?lemma)
+                                                        + (~<>pos..?pos)
+                                                      , 
+                                                      )
+                                                  & (!lemma.!pos)
+                                              )
+                                            . !LP
+                                            )
+                                        : ?LP
+                                      & do$(!Word.!LP)
+                                    |   !arg:(,?arg)
+                                      &     map
+                                          $ ( ( 
+                                              =   
+                                                .     !arg
+                                                    : (   ?
+                                                        + (~<>Word..?Word)
+                                                        + (~<>lemma..?lemma)
+                                                        + (~<>pos..?pos)
+                                                      , 
+                                                      )
+                                                  & (!lemma.!pos)
+                                              )
+                                            . !arg
+                                            )
+                                        : ?LP
+                                      & do$(!Word.!LP)
+                                )
+                              . !sent
+                              )
+                      )
+                    . !sents
+                    )
+              |   map
+                $ ( ( 
+                    =   
+                      .   !arg:((J..?sentno)+(S.,?words),)
+                        &   map
+                          $ ( ( 
+                              =   
+                                .   !arg:(?wordstuff,)
+                                  &   !wordstuff
+                                    : ?+(F..?word)+?
+                                    : ?+(LS.,?lemmas)+?
+                                  &   
+                                    : ?lemmalist
+                                    : ?poslist
+                                    : ?posses
+                                  &   map
+                                    $ ( ( 
+                                        =   
+                                          .     !arg
+                                              : (   ?
+                                                  + (L..?lemma)
+                                                  + ?
+                                                  + (TS.,?poss)
+                                                  + ?
+                                                , 
+                                                )
+                                            &     map
+                                                $ ( ( 
+                                                    =   
+                                                      .     !arg
+                                                          : (   ?
+                                                              + (T..?pos)
+                                                              + ?
+                                                            , 
+                                                            )
+                                                        & !pos ¦
+                                                    )
+                                                  . !poss
+                                                  )
+                                              : ?posses ¦
+                                            &     !lemmalist
+                                                  ( !lemmalist:
+                                                  | ¦
+                                                  )
+                                                  !lemma
+                                              : ?lemmalist
+                                            &   (   !poslist:
+                                                  & !posses
+                                                |   ( !poslist:? ")"
+                                                    | "(" !poslist ")"
+                                                    )
+                                                    "¦("
+                                                    !posses
+                                                    ")"
+                                                )
+                                              : ?poslist
+                                            & :?posses
+                                        )
+                                      . !lemmas
+                                      )
+                                  & str$!lemmalist:?lemmalist
+                                  & str$!poslist:?poslist
+                                  & len$(!word.!Tsiz):?Tsiz
+                                  & len$(!lemmalist.!Lsiz):?Lsiz
+                                  & len$(!poslist.!Psiz):?Psiz
+                                  & (!word.!lemmalist.!poslist)
+                              )
+                            . !words
+                            )
+                    )
+                  . !sents
+                  )
+              )
+            : ?WLPS
+          &   (   !Psiz:>!Tsiz
+                & (!Psiz:>!Lsiz|!Lsiz)
+              | !Tsiz:>!Lsiz
+              | !Lsiz
+              )
+            : ?size
+          & :?padding
+          &   whl
+            ' ( !size+-1:~<0:?size
+              & " " !padding:?padding
+              )
+          &     ( 
+                =   a b c H
+                  .   !arg:(?a.?b.?c)
+                    & "-|":?H
+                    &   whl
+                      ' ( !a+-1:~<0:?a
+                        & "-" !H:?H
+                        )
+                    & "-|-" !H:?H
+                    &   whl
+                      ' ( !b+-1:~<0:?b
+                        & "-" !H:?H
+                        )
+                    & "-|-" !H:?H
+                    &   whl
+                      ' ( !c+-1:~<0:?c
+                        & "-" !H:?H
+                        )
+                    & "|-" !H:?H
+                    & str$!H
+                )
+              $ (!Psiz.!Lsiz.!Tsiz)
+            : ?H
+          & ( pad
+            =   s L
+              .   !arg:(?s.?L)
+                & vap$((=.!arg).!s) !padding:?s [!L ?
+                & str$(" " !s " ")
+            )
+          &     "|"
+                pad$(token.!Tsiz)
+                "|"
+                pad$(lemma.!Lsiz)
+                "|"
+                pad$("Part of Speech".!Psiz)
+                "|"
+                \n
+                !H
+                \n
+                  map
+                $ ( ( 
+                    =   
+                      .   !arg:(?token.?L.?P)
+                        &   "|"
+                            pad$(!token.!Tsiz)
+                            "|"
+                            pad$(!L.!Lsiz)
+                            "|"
+                            pad$(!P.!Psiz)
+                            "|\n"
+                    )
+                  . !WLPS
+                  )
+            : ?t
+          & put$(str$(!t \n),!outp,NEW)
+        )
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        & "C:\\downloads\\guldkorpus\\14-202.org-3688-step5.json":?input
+        & uit:?outp
+        & (its.doit)$(!outp.!input)
+      |   arg$:?input
+        & arg$:?outp
+        & (its.doit)$(!outp.!input)
+      |   lem:?what
+        & (its.doit)$(str$(step3 !what)."334-1.org-3271-step4.json")
+  );
+
+r=
+  get'("json2org.bra",TXT)
+& rmv$(str$(json2org ".bak"))
+& ren$("json2org.bra".str$(json2org ".bak"))
+&   put
+  $ ("{json2org.bra
+
+Convert JSON to ORG-mode}
+
+","json2org.bra",NEW,BIN)
+& lst'(X,"json2org.bra",APP)
+& put'(\n,"json2org.bra",APP,BIN)
+& lst'(r,"json2org.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"json2org.bra",APP,BIN)
+& ;
+
+new'X;
