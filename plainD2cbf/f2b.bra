@@ -1,0 +1,212 @@
+{f2b.bra
+
+Take segmentized and tokenized with DEL as separator between tokens that tear the input word apart.}
+
+X=
+  ( doit
+  =   
+    .   0:?seg
+      & chr$127:?DEL
+      & ( text
+        .   
+          , ( body
+            .   
+              ,       vap
+                    $ ( ( 
+                        =   
+                          .   1+!seg:?seg
+                            & 0:?tok
+                            & 0:?id
+                            & ( ID
+                              =   "xml:id"
+                                . str$(i !seg "." (1+!id:?id))
+                              )
+                            & (@(!arg:?arg \r)|)
+                            & ( p
+                              .   (n.!seg)
+                                ,       vap
+                                      $ ( ( 
+                                          =   
+                                            .     vap
+                                                $ ( ( 
+                                                    =   WW
+                                                      .       vap
+                                                            $ ( ( 
+                                                                =   
+                                                                  .       !arg
+                                                                        : ( "'"
+                                                                          | "("
+                                                                          | ")"
+                                                                          | "["
+                                                                          | "]"
+                                                                          | "{"
+                                                                          | "}"
+                                                                          | ":"
+                                                                          | ","
+                                                                          | "-"
+                                                                          | –
+                                                                          | —
+                                                                          | …
+                                                                          | "!"
+                                                                          | "."
+                                                                          | ‹
+                                                                          | ›
+                                                                          | «
+                                                                          | »
+                                                                          | "?"
+                                                                          | ‘
+                                                                          | ’
+                                                                          | “
+                                                                          | ”
+                                                                          | ";"
+                                                                          | "\\"
+                                                                          | "/"
+                                                                          | \"
+                                                                          | "&"
+                                                                          )
+                                                                      & ( p
+                                                                        . !arg
+                                                                        )
+                                                                    | !arg
+                                                                )
+                                                              . !arg
+                                                              )
+                                                          : ?C
+                                                        &   whl
+                                                          ' (   !C
+                                                              :   ?A
+                                                                  (p.%@?x ?y)
+                                                                  (p.!x)
+                                                                  ?Z
+                                                            &     !A
+                                                                  ( p
+                                                                  . !x !y !x
+                                                                  )
+                                                                  !Z
+                                                              : ?C
+                                                            )
+                                                        & :?O
+                                                        &   whl
+                                                          ' (   !C
+                                                              :   ?A
+                                                                  (p.?x)
+                                                                  ?C
+                                                            &   ( !A:
+                                                                | ( w
+                                                                  .     !ID
+                                                                        ( S
+                                                                        . !seg
+                                                                        )
+                                                                        ( T
+                                                                        .     1
+                                                                            + !tok
+                                                                          : ?tok
+                                                                        )
+                                                                    , str$!A
+                                                                  )
+                                                                )
+                                                              : ?WW
+                                                            &     ( c
+                                                                  .     !ID
+                                                                        ( S
+                                                                        . !seg
+                                                                        )
+                                                                        ( T
+                                                                        .     1
+                                                                            + !tok
+                                                                          : ?tok
+                                                                        )
+                                                                        ( type
+                                                                        . p
+                                                                        )
+                                                                    , str$!x
+                                                                  )
+                                                                  (   !A
+                                                                    : 
+                                                                  | !WW
+                                                                  )
+                                                                  !O
+                                                              : ?O
+                                                            )
+                                                        & ( !A:
+                                                          |   str$!C
+                                                            : ?C
+                                                            : 
+                                                          |     ( w
+                                                                .     !ID
+                                                                      (S.!seg)
+                                                                      ( T
+                                                                      .     1
+                                                                          + !tok
+                                                                        : ?tok
+                                                                      )
+                                                                  , !C
+                                                                )
+                                                                !O
+                                                            : ?O
+                                                          )
+                                                        & :?OO
+                                                        &   whl
+                                                          ' ( !O:%?A ?O
+                                                            &   !A !OO
+                                                              : ?OO
+                                                            )
+                                                        & !OO
+                                                    )
+                                                  . !arg
+                                                  . !DEL
+                                                  )
+                                                (c.!ID (type.s),)
+                                          )
+                                        . !arg
+                                        . " "
+                                        )
+                                    : ?SEG
+                                  & ( !SEG:
+                                    |   !SEG:?SEG (c.?)
+                                      & !SEG
+                                    )
+                              )
+                        )
+                      . get$(!arg,STR)
+                      . \n
+                      )
+                  : ?P
+                & (!P:?P (p.?,)|)
+                & !P
+            )
+        )
+  )
+  ( new
+  =   
+    .   ~
+      | put$(toML$((its.doit)$"maak.txt"),"maak.xml",NEW)
+      | put$(toML$((its.doit)$(arg$)),arg$,NEW)
+      |   put
+        $ ( toML$((its.doit)$"334-4.org-3182-step2.plainD")
+          , "334-4.org-3182-step2.plainD.xml"
+          , NEW
+          )
+  );
+
+r=
+  get'("f2b.bra",TXT)
+& rmv$(str$(f2b ".bak"))
+& ren$("f2b.bra".str$(f2b ".bak"))
+&   put
+  $ ( "{f2b.bra
+
+Take segmentized and tokenized with DEL as separator between tokens that tear the input word apart.}
+
+"
+    , "f2b.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"f2b.bra",APP)
+& put'(\n,"f2b.bra",APP,BIN)
+& lst'(r,"f2b.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"f2b.bra",APP,BIN)
+& ;
+
+new'X;
