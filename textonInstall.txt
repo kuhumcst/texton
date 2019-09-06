@@ -1,0 +1,113 @@
+Install WSL
+Install Ubuntu 18.04
+
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt install apache2
+sudo apt-get install php libapache2-mod-php
+sudo a2enmod php7.2
+sudo service apache2 restart
+
+sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
+cd /tmp
+wget https://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.24/bin/apache-tomcat-9.0.24.tar.gz
+sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
+sudo ln -s /opt/tomcat/apache-tomcat-9.0.24 /opt/tomcat/latest
+sudo chown -RH tomcat: /opt/tomcat/latest
+sudo chmod o+x /opt/tomcat/latest/bin/
+
+sudo vi /opt/tomcat/latest/conf/tomcat-users.xml
+
+ <role rolename="manager-gui"/>
+ <user username="tomcat" password="wachtwoord" roles="manager-gui"/>
+
+sudo vi /opt/tomcat/latest/conf/server.xml
+change
+
+ <Connector port="8080" protocol="HTTP/1.1"
+
+to
+
+ <Connector address="127.0.0.1" port="8080" protocol="HTTP/1.1"
+
+sudo apt install default-jdk
+
+sudo /opt/tomcat/latest/bin/startup.sh
+sudo /opt/tomcat/latest/bin/shutdown.sh
+
+sudo vi /opt/tomcat/latest/bin/setenv.sh
+
+  CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar
+
+sudo chown tomcat.tomcat /opt/tomcat/latest/bin/setenv.sh
+sudo chmod ug+x /opt/tomcat/latest/bin/setenv.sh
+
+sudo apt-get install libxml2-utils
+
+curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+sudo apt-get install git-lfs
+
+cd /opt/
+sudo git clone https://github.com/kuhumcst/texton.git
+
+cd texton/
+sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+sudo ln -s texton-linguistic-resources/ res
+
+sudo chown -R www-data:www-data /opt/texton/
+sudo chown -R tomcat:tomcat /opt/texton/DK-ClarinTools/
+
+sudo cp /opt/texton/apache2-sites/texton.conf /etc/apache2/sites-available/
+sudo a2ensite texton.conf
+sudo service apache2 reload
+
+sudo vi /etc/apache2/mods-available/proxy.conf
+
+  Add:
+        ProxyPass /texton/ http://127.0.0.1:8080/texton/
+        ProxyPass /texton/ http://127.0.0.1:8080/texton/
+        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
+        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
+        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
+        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
+        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
+        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
+
+sudo a2enmod proxy
+sudo a2enmod proxy_ajp
+sudo a2enmod proxy_http
+sudo service apache2 restart
+
+cd /opt/texton/bin
+sudo ln -s /opt/texton/bin/libbracmat.so.1.0 /usr/lib/libbracmat.so.1
+sudo ln -s /usr/lib/libbracmat.so.1 /usr/lib/libbracmat.so
+sudo cp /opt/texton/bin/bracmat.jar /opt/tomcat/latest/lib/bracmat.jar
+
+sudo vi /opt/tomcat/latest/conf/catalina.policy 
+
+  Add following:
+
+    grant codeBase "war:file:${catalina.base}/webapps/texton.war*/-" {
+          permission java.io.FilePermission
+           "/opt/texton/DK-Clarin/work/-", "read, write, delete";
+    }
+
+sudo /opt/tomcat/latest/bin/startup.sh
+
+Browser (in Windows)
+   
+   http://localhost:8080/
+   Press "Manager App" button
+   Enter user "tomcat" password "wachtwoord"
+   Select WAR file to upload: 
+   C:\Users\<you>\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu18.04onWindows_<blahblah>\LocalState\rootfs\opt\texton\DK-ClarinTools\war\texton.war
+   Deploy
+   browse to http://localhost:8080/texton/
+   browse to http://localhost:8080/texton/admin.html
+   Reload script (Press the "Bracmat" button)
+   Stress test (Enter a number and expect to see an appoximation to π)
+   Evaluate program code
+      importTables$"alltables-truus.bra"
+
+   Browse to http://localhost:8080/texton/
