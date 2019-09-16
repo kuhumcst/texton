@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/texton/log/lempos.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '/opt/csttools/log/lempos.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -434,15 +434,15 @@ try {
             if($Ilangbg)
                 {
                 $lang = "bg";
-                $flexrules = "/opt/texton/res/web/bg/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/bg/lemmatiser/training/wfl-bg.txt.ph";
+                $flexrules = "/opt/csttools/res/web/bg/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/bg/lemmatiser/training/wfl-bg.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilangcs)
                 {
                 $lang = "cs";
-                $flexrules = "/opt/texton/res/web/cs/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/cs/lemmatiser/training/wfl-cs.txt.ph";
+                $flexrules = "/opt/csttools/res/web/cs/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/cs/lemmatiser/training/wfl-cs.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilangda)
@@ -450,123 +450,126 @@ try {
                 $lang = "da";
                 if($Iperiodc20 && $Operiodc20)
                     {
-                    $flexrules = "/opt/texton/res/web/da/lemmatiser/notags/c19/0/flexrules.bra";
-                    //$traindata = "/opt/texton/res/web/da/lemmatiser/training/numedforadv";//ods_170412.csv.corrected-TAGS.ph";
-                    $traindata = "/opt/texton/res/web/da/lemmatiser/training/ParoleBrandesDSLdictionary";
+                    $flexrules = "/opt/csttools/res/web/da/lemmatiser/notags/c19/0/flexrules.bra";
+                    //$traindata = "/opt/csttools/res/web/da/lemmatiser/training/numedforadv";//ods_170412.csv.corrected-TAGS.ph";
+                    $traindata = "/opt/csttools/res/web/da/lemmatiser/training/ParoleBrandesDSLdictionary";
                     }
                 else if($Iperiodc21 && $Operiodc21)
                     {
-                    //$flexrules = "/opt/texton/res/web/da/lemmatiser/notags/c21/0/flexrules.pretty.bra.2";
-                    $flexrules = "/opt/texton/res/web/da/lemmatiser/notags/c21/0/flexr.bra";
-                    //$flexrules = "/opt/texton/res/web/da/lemmatiser/notags/c21/0/flexrules.bra";
-                    //$traindata = "/opt/texton/res/web/da/lemmatiser/training/STOposUTF8";
-                    //$traindata = "/opt/texton/res/web/da/lemmatiser/training/tabseparated";
-                    $traindata = "/opt/texton/res/web/da/lemmatiser/training/ParoleSTOdictionary";
+                    //$flexrules = "/opt/csttools/res/web/da/lemmatiser/notags/c21/0/flexrules.pretty.bra.2";
+                    $flexrules = "/opt/csttools/res/web/da/lemmatiser/notags/c21/0/flexr.bra";
+                    //$flexrules = "/opt/csttools/res/web/da/lemmatiser/notags/c21/0/flexrules.bra";
+                    //$traindata = "/opt/csttools/res/web/da/lemmatiser/training/STOposUTF8";
+                    //$traindata = "/opt/csttools/res/web/da/lemmatiser/training/tabseparated";
+                    $traindata = "/opt/csttools/res/web/da/lemmatiser/training/ParoleSTOdictionary";
                     }
                 else
                     {
-                    $flexrules = "/opt/texton/res/web/da/lemmatiser/notags/c13-c18/0/flexrules.bra";
-                    $traindata = "/opt/texton/res/web/da/lemmatiser/training/tabfile";
+                    $flexrules = "/opt/csttools/res/web/da/lemmatiser/notags/c13-c18/0/flexrules.bra";
+                    $traindata = "/opt/csttools/res/web/da/lemmatiser/training/tabfile";
                     }
                 }
             if($Ilangde)
                 {
                 $lang = "de";
-                $flexrules = "/opt/texton/res/web/de/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/de/lemmatiser/training/dict_de_without_doubles.ph";
+                $flexrules = "/opt/csttools/res/web/de/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/de/lemmatiser/training/dict_de_without_doubles.ph";
                 }
             else if($Ilangnl)
                 {
                 $lang = "nl";
-                $flexrules = "/opt/texton/res/web/nl/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/nl/lemmatiser/training/dict_nl_without_doubles_UTF8.ph";
+                $flexrules = "/opt/csttools/res/web/nl/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                //$flexrules = "/opt/csttools/res/web/nl/lemmatiser/notags/0/flexrules.elex.tab.ph_ziggurat_XS.bra";
+                $traindata = "/opt/csttools/res/web/nl/lemmatiser/training/dict_nl_without_doubles_UTF8.ph";
+                //$traindata = "/opt/csttools/res/web/nl/lemmatiser/training/elex.tab";
+		//The e-Lex data have many errors and highly unusual word-lemma pairs.
                 }
             else if($Ilangen)
                 {
                 $lang = "en";
-                $flexrules = "/opt/texton/res/web/en/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/en/lemmatiser/training/dict_en_without_doubles.ph";
+                $flexrules = "/opt/csttools/res/web/en/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/en/lemmatiser/training/dict_en_without_doubles.ph";
                 }
             else if($Ilanges)
                 {
                 $lang = "es";
-                $flexrules = "/opt/texton/res/web/es/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/es/lemmatiser/training/spanish.txt.learn.flat.ph";
+                $flexrules = "/opt/csttools/res/web/es/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/es/lemmatiser/training/spanish.txt.learn.flat.ph";
                 }
             else if($Ilanget)
                 {
                 $lang = "et";
-                $flexrules = "/opt/texton/res/web/et/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/et/lemmatiser/training/wfl-et.txt.ph";
+                $flexrules = "/opt/csttools/res/web/et/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/et/lemmatiser/training/wfl-et.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilangfa)
                 {
                 $lang = "fa";
-                $flexrules = "/opt/texton/res/web/fa/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/fa/lemmatiser/training/wfl-fa.txt.ph";
+                $flexrules = "/opt/csttools/res/web/fa/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/fa/lemmatiser/training/wfl-fa.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilanghr)
                 {
                 $lang = "hr";
-                $flexrules = "/opt/texton/res/web/hr/lemmatiser/notags/0/flexrules.bra";
-                $traindata = "/opt/texton/res/web/hr/lemmatiser/training/apertium-hbs.hbs_HR_purist.mte.POS.ph";
+                $flexrules = "/opt/csttools/res/web/hr/lemmatiser/notags/0/flexrules.bra";
+                $traindata = "/opt/csttools/res/web/hr/lemmatiser/training/apertium-hbs.hbs_HR_purist.mte.POS.ph";
                 $TorC = "C";
                 }
             else if($Ilanghu)
                 {
                 $lang = "hu";
-                $flexrules = "/opt/texton/res/web/hu/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/hu/lemmatiser/training/wfl-hu.txt.ph";
+                $flexrules = "/opt/csttools/res/web/hu/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/hu/lemmatiser/training/wfl-hu.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilangis)
                 {
                 $lang = "is";
-                $flexrules = "/opt/texton/res/web/is/lemmatiser/notags/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/is/lemmatiser/training/icelandic_without_doubles.UTF8";
+                $flexrules = "/opt/csttools/res/web/is/lemmatiser/notags/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/is/lemmatiser/training/icelandic_without_doubles.UTF8";
                 }
             else if($Ilangit)
                 {
                 $lang = "it";
-                $flexrules = "/opt/texton/res/web/it/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/it/lemmatiser/training/morph-it_048_utf8.txt.ph";
+                $flexrules = "/opt/csttools/res/web/it/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/it/lemmatiser/training/morph-it_048_utf8.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilangla)
                 {
                 $lang = "la";
-                $flexrules = "/opt/texton/res/web/la/lemmatiser/notags/0/flexrules.bra";
-                $traindata = "/opt/texton/res/web/la/lemmatiser/training/WordLemmaTag.tab";
+                $flexrules = "/opt/csttools/res/web/la/lemmatiser/notags/0/flexrules.bra";
+                $traindata = "/opt/csttools/res/web/la/lemmatiser/training/WordLemmaTag.tab";
                 $TorC = "C";
                 }
             else if($Ilangpt)
                 {
                 $lang = "pt";
-                $flexrules = "/opt/texton/res/web/pt/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/pt/lemmatiser/training/Label-Delaf_pt_v4_1.tab.ph";
+                $flexrules = "/opt/csttools/res/web/pt/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/pt/lemmatiser/training/Label-Delaf_pt_v4_1.tab.ph";
                 $TorC = "C";
                 }
             else if($Ilangro)
                 {
                 $lang = "ro";
-                $flexrules = "/opt/texton/res/web/ro/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/ro/lemmatiser/training/wfl-ro.txt.ph";
+                $flexrules = "/opt/csttools/res/web/ro/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/ro/lemmatiser/training/wfl-ro.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilangsr)
                 {
                 $lang = "sr";
-                $flexrules = "/opt/texton/res/web/sr/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/sr/lemmatiser/training/wfl-sr.txt.ph";
+                $flexrules = "/opt/csttools/res/web/sr/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/sr/lemmatiser/training/wfl-sr.txt.ph";
                 $TorC = "C";
                 }
             else if($Ilanguk)
                 {
                 $lang = "uk";
-                $flexrules = "/opt/texton/res/web/uk/lemmatiser/notags/flexrules.pretty.bra.2";
-                $traindata = "/opt/texton/res/web/uk/lemmatiser/training/wfl-uk.txt.ph";
+                $flexrules = "/opt/csttools/res/web/uk/lemmatiser/notags/flexrules.pretty.bra.2";
+                $traindata = "/opt/csttools/res/web/uk/lemmatiser/training/wfl-uk.txt.ph";
                 $TorC = "C";
                 }
             }
@@ -581,9 +584,9 @@ try {
             logit('lemposfile='.$lemposfile);
             /* 20181001 $lang is not used by LemmaVal.bra, so it was removed as argument. */
             if($Ifacetseto)
-                $command = "../bin/bracmat 'get\$\"/opt/texton/lempos/LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
+                $command = "../bin/bracmat 'get\$\"/opt/csttools/lempos/LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
             else
-                $command = "../bin/bracmat 'get\$\"/opt/texton/lempos/LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
+                $command = "../bin/bracmat 'get\$\"/opt/csttools/lempos/LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
