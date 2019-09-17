@@ -439,6 +439,10 @@ toolsProg=
                 )
             & 
       )
+      (recentTasks=)
+      ( saveToolTable
+      = .saveTable$!arg&:?recentTasks
+      )
       ( setLang
       =   full YYY A Z
         .       (   @(low$!arg:d (a|k) ?)
@@ -3407,6 +3411,14 @@ toolsProg=
               )
           & !arg
       )
+      ( removeNumFactors
+      =   A M Z
+        .     whl
+            ' ( !arg:?A+#%*?M+?Z
+              & !A+!M+!Z:?arg
+              )
+          & !arg
+      )
       "
 /**
   * register
@@ -4639,7 +4651,7 @@ toolsProg=
                 , ToolCreator InfoAbout ToolDescription
                 , ToolExternalURI ToolXMLparms removeEmptyValues
                 , ToolPostData ToolInactive sortFacets
-                , denumber ContactEmail
+                , ContactEmail
               .     !arg
                   : ( ?Metadata
                     . ?ToolName
@@ -4806,7 +4818,7 @@ toolsProg=
                           | 0
                       )
                     & unfactorize$!thisToolProp:?thisToolProp
-                    & denumber$!thisToolProp:?thisToolProp
+                    & removeNumFactors$!thisToolProp:?thisToolProp
                     & ( Combine
                       =     A M Z AA ZZ Name Facet val1
                           , Vals1 Vals2 Vals a m z i o i2 o2
@@ -4862,7 +4874,7 @@ toolsProg=
                     & ( ~&log$DOEHIERIETS
                       | !thisToolProp+!otherToolprop:?toolprop
                       )
-                    & saveTable$toolprop
+                    & saveToolTable$toolprop
                     & (     !tooladm
                           : ?A+(? (ToolID.!ToolName) ?)+?Z
                         & !A+!Z:?tooladm
@@ -4887,7 +4899,7 @@ toolsProg=
                           : ?admdata
                           )
                       : ?tooladm
-                    & saveTable$tooladm
+                    & saveToolTable$tooladm
                     & "O.k."
                   |   str
                     $ ( "You need to be logged in to save or replace an active tool. (handle=\""
@@ -5075,7 +5087,7 @@ toolsProg=
                           |   !Submit:!deleteToolButton
                             & (   !toolprop:?AA+(!ToolName.?)+!ZZ
                                 & !AA+!ZZ:?toolprop
-                                & saveTable$toolprop
+                                & saveToolTable$toolprop
                                 &   str
                                   $ ( "Deleted current incarnation of tool "
                                       !ToolName
@@ -5085,7 +5097,7 @@ toolsProg=
                                     + (? (ToolID.!ToolName) ?)
                                     + ?ZZ
                                 & !AA+!ZZ:?tooladm
-                                & saveTable$tooladm
+                                & saveToolTable$tooladm
                                 &   str
                                   $ ( "Deleted administrative metadata of tool "
                                       !ToolName
@@ -5545,14 +5557,6 @@ toolsProg=
             & !nfeatures
           | !outfeat
       )
-      ( removeNumFactors
-      =   A M Z
-        .     whl
-            ' ( !arg:?A+#%*?M+?Z
-              & !A+!M+!Z:?arg
-              )
-          & !arg
-      )
       ( differentOutput
       =     fields otherPath otherPaths otherFields
           , same other A Z apathfld apathflds
@@ -5921,11 +5925,6 @@ toolsProg=
           & !newGoal
       )
       (NA=|"?"|0)
-      ( sentence
-      =   a
-        .   !arg:%?a*%?arg&!a sentence$!arg
-          | !arg
-      )
       ( product
       =   a
         .   !arg:%?a %?arg&!a*product$!arg
@@ -6343,8 +6342,248 @@ toolsProg=
       )
       ( fp
       =     tool source goal restriction superset
-          , fulfil memoizedSteps activeTools getGoals
-        .   0:?memoizedSteps
+          , fulfil memoizedSteps activeTools
+          , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
+          , getActiveTools getGoals getImplicatedGoals
+        .   ( isfulfilled
+            =   source src goal gl tool pipe pipes
+              .   !arg:(?source.?goal.?tool)
+                & product$!source:?src
+                & product$!goal:?gl
+                & 0:?pipes
+                & (   !memoizedSteps
+                    :   ?
+                      + ( !src
+                        . !gl
+                        .   ?
+                          + ( (!tool,?):?pipe
+                            & !pipe+!pipes:?pipes
+                            & ~
+                            )
+                          + ?
+                        )
+                      + ?
+                  | !pipes:~0&(!source.!goal.!pipes)
+                  )
+            )
+          & ( hasfulfilled
+            =   source src goal gl term a b m,pipe
+              .   !arg:(?source.?goal.?pipe)
+                &   ( product$!source:?src
+                    . product$!goal:?gl
+                    . !pipe
+                    )
+                  : ?term
+                & ( !memoizedSteps:?+!term+?
+                  |   !memoizedSteps:?a+(!src.!gl.?m)+?b
+                    & ( !m:?+!pipe+?
+                      | !a+(!src.!gl.!m+!pipe)+!b:?memoizedSteps
+                      )
+                  | !term+!memoizedSteps:?memoizedSteps
+                  )
+                & !arg
+            )
+          & ( fulfilGoalProduct
+            =     goalterm tools forkk goaly
+                , toolspath tool ltools path1
+                , toolFeatures pathh pathfields newGoal infeat
+                , GL feat val memopaths restriction
+                , goal source I IO O Os
+              .   "Check whether source and goal already have been connected by tool and stored as a step."
+                & !arg:(?source.?goalterm.?tools.?restriction)
+                & 1:?forkk
+                &   whl
+                  ' ( !goalterm:%?goaly*?goalterm
+                    &     (   !goaly:?GL
+                            &   whl
+                              ' ( !GL:(?feat,?val^?) ?
+                                & (   !source
+                                    :   ?
+                                        (!feat,?+?*!val^?*?+? ?)
+                                        ?
+                                  | ~(!source:? (!feat,?) ?)
+                                  )
+                                & !GL:% ?GL
+                                )
+                            & !GL:
+                            & !source
+                          |     (!restriction:~0|!tools)
+                              : ?ltools
+                            & 0:?toolspath
+                            &   whl
+                              ' ( !forkk:~0
+                                & !ltools:(?tool.?)+?
+                                & (     isfulfilled$(!source.!goaly.!tool)
+                                      : (?source.?goal.?memopaths)
+                                    &   whl
+                                      ' (!ltools:(!tool.?)+?ltools)
+                                    &     denumerizeSum
+                                        $ (!toolspath+!memopaths)
+                                      : ?toolspath
+                                  |   0:?memopaths
+                                    &   whl
+                                      ' (   !ltools
+                                          : (!tool.?toolFeatures)+?ltools
+                                        & (       removeUnspecifiedFeatures
+                                                $ !toolFeatures
+                                              : ?toolFeatures
+                                            & !toolFeatures:
+                                          |       matchGoalWithFeatures
+                                                $ (!goaly.!toolFeatures)
+                                              : (?pathfields.?newGoal)
+                                            & (       fulfil
+                                                    $ ( !tools
+                                                      . !source
+                                                      . !newGoal
+                                                      . !indent+1
+                                                      . 0
+                                                      )
+                                                  : ?pathh
+                                                &   removeNumFactors$!pathh
+                                                  : ?infeat
+                                                &     distribute
+                                                    $ (!newGoal.!infeat)
+                                                  : ?IO
+                                                & 0:?memopaths
+                                                &   whl
+                                                  ' (   !IO
+                                                      : (?I.?Os)+?IO
+                                                    &   whl
+                                                      ' ( !Os:%?O+?Os
+                                                        &   ( !tool
+                                                            , (   sort
+                                                                $ ( !pathfields
+                                                                      supplyMissingFields
+                                                                    $ ( !pathfields
+                                                                      . !O
+                                                                      . !toolFeatures
+                                                                      )
+                                                                  )
+                                                              . !I
+                                                              . !O
+                                                              )
+                                                            )
+                                                          : ?pathh
+                                                        & (   assert
+                                                            ' ( !pathh
+                                                              : ~( ?
+                                                                 + ( ?
+                                                                   , (   ?
+                                                                         ( ?
+                                                                         ,     %
+                                                                             + %
+                                                                           |   %
+                                                                             ^ ( %
+                                                                               + %
+                                                                               )
+                                                                         )
+                                                                         ?
+                                                                     . ?
+                                                                     . ?
+                                                                     )
+                                                                   )
+                                                                 + ?
+                                                                 )
+                                                              )
+                                                          |     restrictOutputParms
+                                                              $ ( !pathh
+                                                                . !toolFeatures
+                                                                )
+                                                            : ?pathh
+                                                          )
+                                                        &   whl
+                                                          ' (   !pathh
+                                                              : %?path1 ?pathh
+                                                            & (   !toolspath
+                                                                : ?+!path1+?
+                                                              |       !toolspath
+                                                                    + !path1
+                                                                  : ?toolspath
+                                                                &     !memopaths
+                                                                    + !path1
+                                                                  : ?memopaths
+                                                              )
+                                                            )
+                                                        )
+                                                    )
+                                                &   hasfulfilled
+                                                  $ ( !source
+                                                    . !pathfields
+                                                    . !memopaths
+                                                    )
+                                                & ( !goaly:!pathfields
+                                                  |   hasfulfilled
+                                                    $ ( !source
+                                                      . !goaly
+                                                      . !memopaths
+                                                      )
+                                                  )
+                                              | 0:?pathh
+                                              )
+                                          | FAIL
+                                          )
+                                        )
+                                  )
+                                )
+                            & "forkk will become zero if no tools can fulfil goaly!"
+                            & !toolspath
+                          | 1:?goalterm&0
+                          )
+                        * !forkk
+                      : ?forkk
+                    )
+                & 1+!forkk+-1
+            )
+          & " unfoldGoal:
+              Construct all 2^n combinations of n options,
+              and unfold all alternatives.
+              Output: a list of disambiguated goals."
+          & ( unfoldGoal
+            =     A Z AA ZZ AAA ZZZ M1 M2
+                , gfield gopts convertOptionsToAlternatives
+              .   ( convertOptionsToAlternatives
+                  =   gopt gopts gvaluesAlts
+                    .   !arg:%?gvaluesAlts ?gopts
+                      &   whl
+                        ' ( !gopts:%?gopt ?gopts
+                          &   !gvaluesAlts+!gvaluesAlts*!gopt
+                            : ?gvaluesAlts
+                          )
+                      & !gvaluesAlts
+                  )
+                &   whl
+                  ' (   !arg
+                      :   ?A
+                        +   ?AA
+                          * ( ?AAA
+                              (?gfield,(% %|%+%):?M1)
+                              ?ZZZ
+                            )
+                          * ?ZZ
+                        + ?Z
+                    & convertOptionsToAlternatives$!M1:?M1
+                    & !A+!Z:?arg
+                    &   whl
+                      ' ( !M1:%?M2+?M1
+                        &   !arg+!AA*(!AAA (!gfield,!M2) !ZZZ)*!ZZ
+                          : ?arg
+                        )
+                    )
+                &   whl
+                  ' (   !arg
+                      :   ?A
+                        + ?AA*(?AAA (?gfield,%?M1*%?M2) ?ZZZ)*?ZZ
+                        + ?Z
+                    &     !A
+                        +   !AA
+                          * (!AAA (!gfield,!M1) !ZZZ)
+                          * (!AAA (!gfield,!M2) !ZZZ)
+                          * !ZZ
+                        + !Z
+                      : ?arg
+                    )
+                & !arg
+            )
           & ( fulfil
             =     tools source goal
                 , sourcePlus
@@ -6352,272 +6591,8 @@ toolsProg=
                 , goals goalterm nnnpathh indent
                 , accPipelines Pipeline
                 , WRONGPIPES OKPIPES
-                , fulfilGoalProduct
-                , unfoldGoal restriction
-              .   ( fulfilGoalProduct
-                  =     goalterm tools forkk goaly
-                      , toolspath tool ltools path1
-                      , toolFeatures pathh pathfields newGoal infeat
-                      , GL feat val memopaths restriction
-                      , goal source isfulfilled hasfulfilled
-                    .   "Check whether source and goal already have been connected by tool and stored as a step."
-                      & ( isfulfilled
-                        =   source goal tool pipe pipes
-                          .   !arg:(?source.?goal.?tool)
-                            & product$!source:?source
-                            & product$!goal:?goal
-                            & 0:?pipes
-                            & (   !memoizedSteps
-                                :   ?
-                                  + ( !source
-                                    . !goal
-                                    .   ?
-                                      + ( (!tool,?):?pipe
-                                        & !pipe+!pipes:?pipes
-                                        & ~
-                                        )
-                                      + ?
-                                    )
-                                  + ?
-                              |   !pipes:~0
-                                & (sentence$!source.sentence$!goal.!pipes)
-                              )
-                        )
-                      & ( hasfulfilled
-                        =   source goal term a b m,pipe
-                          .   !arg:(?source.?goal.?pipe)
-                            &   ( product$!source:?source
-                                . product$!goal:?goal
-                                . !pipe
-                                )
-                              : ?term
-                            & ( !memoizedSteps:?+!term+?
-                              |     !memoizedSteps
-                                  : ?a+(!source.!goal.?m)+?b
-                                & ( !m:?+!pipe+?
-                                  |   !a+(!source.!goal.!m+!pipe)+!b
-                                    : ?memoizedSteps
-                                  )
-                              | !term+!memoizedSteps:?memoizedSteps
-                              )
-                            & (sentence$!source.sentence$!goal.!pipe)
-                        )
-                      & !arg:(?source.?goalterm.?tools.?restriction)
-                      & 1:?forkk
-                      &   whl
-                        ' ( !goalterm:%?goaly*?goalterm
-                          &     (   !goaly:?GL
-                                  &   whl
-                                    ' ( !GL:(?feat,?val^?) ?
-                                      & (   !source
-                                          :   ?
-                                              (!feat,?+?*!val^?*?+? ?)
-                                              ?
-                                        | ~( !source
-                                           : ? (!feat,?) ?
-                                           )
-                                        )
-                                      & !GL:% ?GL
-                                      )
-                                  & !GL:
-                                  & !source
-                                |     ( !restriction:~0
-                                      | !tools
-                                      )
-                                    : ?ltools
-                                  & 0:?toolspath
-                                  &   whl
-                                    ' ( !forkk:~0
-                                      & !ltools:(?tool.?)+?
-                                      & (       isfulfilled
-                                              $ (!source.!goaly.!tool)
-                                            : (?source.?goal.?memopaths)
-                                          &   whl
-                                            ' ( !ltools
-                                              : (!tool.?)+?ltools
-                                              )
-                                          &     denumerizeSum
-                                              $ (!toolspath+!memopaths)
-                                            : ?toolspath
-                                        |   0:?memopaths
-                                          &   whl
-                                            ' (   !ltools
-                                                :   (!tool.?toolFeatures)
-                                                  + ?ltools
-                                              & (       removeUnspecifiedFeatures
-                                                      $ !toolFeatures
-                                                    : ?toolFeatures
-                                                  & !toolFeatures:
-                                                |       matchGoalWithFeatures
-                                                      $ (!goaly.!toolFeatures)
-                                                    : (?pathfields.?newGoal)
-                                                  & (       fulfil
-                                                          $ ( !tools
-                                                            . !source
-                                                            . !newGoal
-                                                            . !indent+1
-                                                            . 0
-                                                            )
-                                                        : ?pathh
-                                                      &     removeNumFactors
-                                                          $ !pathh
-                                                        : ?infeat
-                                                      &     distribute
-                                                          $ (!newGoal.!infeat)
-                                                        : ?IO
-                                                      & 0:?memopaths
-                                                      &   whl
-                                                        ' (   !IO
-                                                            : (?I.?Os)+?IO
-                                                          &   whl
-                                                            ' (   !Os
-                                                                : %?O+?Os
-                                                              &   ( !tool
-                                                                  , (   sort
-                                                                      $ ( !pathfields
-                                                                            supplyMissingFields
-                                                                          $ ( !pathfields
-                                                                            . !O
-                                                                            . !toolFeatures
-                                                                            )
-                                                                        )
-                                                                    . !I
-                                                                    . !O
-                                                                    )
-                                                                  )
-                                                                : ?pathh
-                                                              & (   assert
-                                                                  ' ( !pathh
-                                                                    : ~( ?
-                                                                       + ( ?
-                                                                         , (   ?
-                                                                               ( ?
-                                                                               ,     %
-                                                                                   + %
-                                                                                 |   %
-                                                                                   ^ ( %
-                                                                                     + %
-                                                                                     )
-                                                                               )
-                                                                               ?
-                                                                           . ?
-                                                                           . ?
-                                                                           )
-                                                                         )
-                                                                       + ?
-                                                                       )
-                                                                    )
-                                                                |     restrictOutputParms
-                                                                    $ ( !pathh
-                                                                      . !toolFeatures
-                                                                      )
-                                                                  : ?pathh
-                                                                )
-                                                              &   whl
-                                                                ' (   !pathh
-                                                                    :   %?path1
-                                                                        ?pathh
-                                                                  & (   !toolspath
-                                                                      :   ?
-                                                                        + !path1
-                                                                        + ?
-                                                                    |       !toolspath
-                                                                          + !path1
-                                                                        : ?toolspath
-                                                                      &     !memopaths
-                                                                          + !path1
-                                                                        : ?memopaths
-                                                                    )
-                                                                  )
-                                                              )
-                                                          )
-                                                      &   hasfulfilled
-                                                        $ ( !source
-                                                          . !pathfields
-                                                          . !memopaths
-                                                          )
-                                                      & (   !goaly
-                                                          : !pathfields
-                                                        |   hasfulfilled
-                                                          $ ( !source
-                                                            . !goaly
-                                                            . !memopaths
-                                                            )
-                                                        )
-                                                    | 0:?pathh
-                                                    )
-                                                | FAIL
-                                                )
-                                              )
-                                        )
-                                      )
-                                  & "forkk will become zero if no tools can fulfil goaly!"
-                                  & !toolspath
-                                | 1:?goalterm&0
-                                )
-                              * !forkk
-                            : ?forkk
-                          )
-                      & 1+!forkk+-1
-                  )
-                & " unfoldGoal:
-                Construct all 2^n combinations of n options,
-                and unfold all alternatives.
-                Output: a list of disambiguated goals."
-                & ( unfoldGoal
-                  =     A Z AA ZZ AAA ZZZ M1 M2
-                      , gfield gopts convertOptionsToAlternatives
-                    .   ( convertOptionsToAlternatives
-                        =   gopt gopts gvaluesAlts
-                          .   !arg:%?gvaluesAlts ?gopts
-                            &   whl
-                              ' ( !gopts:%?gopt ?gopts
-                                &   !gvaluesAlts+!gvaluesAlts*!gopt
-                                  : ?gvaluesAlts
-                                )
-                            & !gvaluesAlts
-                        )
-                      &   whl
-                        ' (   !arg
-                            :   ?A
-                              +   ?AA
-                                * ( ?AAA
-                                    ( ?gfield
-                                    , (% %|%+%):?M1
-                                    )
-                                    ?ZZZ
-                                  )
-                                * ?ZZ
-                              + ?Z
-                          & convertOptionsToAlternatives$!M1:?M1
-                          & !A+!Z:?arg
-                          &   whl
-                            ' ( !M1:%?M2+?M1
-                              &     !arg
-                                  +   !AA
-                                    * (!AAA (!gfield,!M2) !ZZZ)
-                                    * !ZZ
-                                : ?arg
-                              )
-                          )
-                      &   whl
-                        ' (   !arg
-                            :   ?A
-                              +   ?AA
-                                * (?AAA (?gfield,%?M1*%?M2) ?ZZZ)
-                                * ?ZZ
-                              + ?Z
-                          &     !A
-                              +   !AA
-                                * (!AAA (!gfield,!M1) !ZZZ)
-                                * (!AAA (!gfield,!M2) !ZZZ)
-                                * !ZZ
-                              + !Z
-                            : ?arg
-                          )
-                      & !arg
-                  )
-                & !arg:(?tools.?source.?goal.?indent.?restriction)
+                , restriction
+              .   !arg:(?tools.?source.?goal.?indent.?restriction)
                 & "Restrict path length to max 20"
                 & !indent:<20
                 & 0:?accPipelines
@@ -6648,131 +6623,135 @@ toolsProg=
                     )
                 & !accPipelines:~0
             )
+          & ( getActiveTools
+            =   T F L
+              .   0:?L
+                & readTable$tooladm
+                &   whl
+                  ' ( !arg:(?T.?F)+?arg
+                    & (     !tooladm
+                          :   ?
+                            + ( ? (ToolID.!T) ?
+                              : ? (ServiceURL.~) ?
+                              : ? (Inactive.) ?
+                              )
+                            + ?
+                        & (!T.!F)+!L:?L
+                      | 
+                      )
+                    )
+                & !L
+            )
+          & ( getGoals
+            =     AllFs Inca FS Ios allOs Os O
+                , X A FN a b Y Z
+              .   0:?AllFs
+                &   whl
+                  ' ( !arg:%?Inca+?arg
+                    & :?FS
+                    &   whl
+                      ' ( !Inca:(?FN,?Ios) ?Inca
+                        & 0:?allOs
+                        &   whl
+                          ' ( !Ios:(?.?Os)+?Ios
+                            &   whl
+                              ' ( !Os:%?O+?Os
+                                & !O+!allOs:?allOs
+                                )
+                            & 
+                            )
+                        & !FS (!FN,!allOs):?FS
+                        )
+                    &   whl
+                      ' ( !FS:?X+#*(?A (?FN,%?a+%?b) ?Z)+?Y
+                        &     !X
+                            + (!A (!FN,!a) !Z)
+                            + (!A (!FN,!b) !Z)
+                            + !Y
+                          : ?FS
+                        )
+                    & !FS+!AllFs:?AllFs
+                    )
+                & removeNumFactors$!AllFs
+            )
+          & ( getImplicatedGoals
+            =   allios tools,restriction ios restrictedTools
+              .   !arg:(?tools.?restriction)
+                & 0:?allios:?restrictedTools
+                & (   !tools
+                    :   ?
+                      + ( !restriction
+                        .   ?ios
+                          & !ios+!allios:?allios
+                          &   (!restriction.!ios)+!restrictedTools
+                            : ?restrictedTools
+                          & ~
+                        )
+                      + ?
+                  | 
+                  )
+                & (getGoals$!allios.!restrictedTools)
+            )
+          & ( getSuperGoals
+            =   SuperSets goal nwg
+              .   !arg:?goal:?nwg
+                &   ( facet
+                    .   (pos.spo stp tlp stpl stplo stpd)
+                        (ner.stn)
+                        (lem.sl tl tlp stl stpl stplo)
+                        (cls.stplo)
+                        (stx.stpd)
+                        (tok.seto stn)
+                        (seg.seto)
+                    )
+                  : ?SuperSets
+                &   map
+                  $ ( ( 
+                      =   feat vals A Z Val
+                        .     !arg:(?feat.?vals)
+                            & !goal:?A (!feat,?Val) ?Z
+                            &   map
+                              $ ( ( 
+                                  =   val alts sp
+                                    .   !arg:(?val.?alts)
+                                      & (   !Val:!val^?sp
+                                          &   map
+                                            $ ( ( 
+                                                =   
+                                                  .         ( !A
+                                                              (!feat,!arg^!sp)
+                                                              !Z
+                                                            )
+                                                          + !nwg
+                                                        : ?nwg
+                                                      & 
+                                                    | 
+                                                )
+                                              . !alts
+                                              )
+                                        | 
+                                        )
+                                  )
+                                . !vals
+                                )
+                          | 
+                      )
+                    . !SuperSets
+                    )
+                & !nwg
+            )
           & !arg:(?source.?goal.?restriction.?superset)
           & readTable$toolprop
-          &     ( 
-                =   T F L
-                  .   0:?L
-                    & readTable$tooladm
-                    &   whl
-                      ' ( !arg:(?T.?F)+?arg
-                        & (     !tooladm
-                              :   ?
-                                + ( ? (ToolID.!T) ?
-                                  : ? (ServiceURL.~) ?
-                                  : ? (Inactive.) ?
-                                  )
-                                + ?
-                            & (!T.!F)+!L:?L
-                          | 
-                          )
-                        )
-                    & !L
-                )
-              $ !toolprop
-            : ?activeTools
+          & getActiveTools$!toolprop:?activeTools
           & (   !goal:
-              & ( getGoals
-                =     AllFs Inca FS Ios allOs Os O
-                    , X A FN a b Y Z
-                  .   0:?AllFs
-                    &   whl
-                      ' ( !arg:%?Inca+?arg
-                        & :?FS
-                        &   whl
-                          ' ( !Inca:(?FN,?Ios) ?Inca
-                            & 0:?allOs
-                            &   whl
-                              ' ( !Ios:(?.?Os)+?Ios
-                                &   whl
-                                  ' ( !Os:%?O+?Os
-                                    & !O+!allOs:?allOs
-                                    )
-                                & 
-                                )
-                            & !FS (!FN,!allOs):?FS
-                            )
-                        &   whl
-                          ' (   !FS
-                              : ?X+#*(?A (?FN,%?a+%?b) ?Z)+?Y
-                            &     !X
-                                + (!A (!FN,!a) !Z)
-                                + (!A (!FN,!b) !Z)
-                                + !Y
-                              : ?FS
-                            )
-                        & !FS+!AllFs:?AllFs
-                        )
-                    & removeNumFactors$!AllFs
-                )
-              &     ( 
-                    =     allios tools
-                        , restriction ios restrictedTools
-                      .   !arg:(?tools.?restriction)
-                        & 0:?allios:?restrictedTools
-                        & (   !tools
-                            :   ?
-                              + ( !restriction
-                                .   ?ios
-                                  & !ios+!allios:?allios
-                                  &   (!restriction.!ios)+!restrictedTools
-                                    : ?restrictedTools
-                                  & ~
-                                )
-                              + ?
-                          | 
-                          )
-                        & (getGoals$!allios.!restrictedTools)
-                    )
-                  $ (!activeTools.!restriction)
+              &   getImplicatedGoals$(!activeTools.!restriction)
                 : (?goal.?restriction)
             | 0:?restriction
             )
           & ( !superset:
-            |     ( facet
-                  .   (pos.spo stp tlp stpl stplo stpd)
-                      (ner.stn)
-                      (lem.sl tl tlp stl stpl stplo)
-                      (cls.stplo)
-                      (stx.stpd)
-                      (tok.seto stn)
-                      (seg.seto)
-                  )
-                : ?SuperSets
-              &   map
-                $ ( ( 
-                    =   feat vals A Z Val
-                      .     !arg:(?feat.?vals)
-                          & !goal:?A (!feat,?Val) ?Z
-                          &   map
-                            $ ( ( 
-                                =   val alts sp
-                                  .   !arg:(?val.?alts)
-                                    & (   !Val:!val^?sp
-                                        &   map
-                                          $ ( ( 
-                                              =   
-                                                .         ( !A
-                                                            (!feat,!arg^!sp)
-                                                            !Z
-                                                          )
-                                                        + !goal
-                                                      : ?goal
-                                                    & 
-                                                  | 
-                                              )
-                                            . !alts
-                                            )
-                                      | 
-                                      )
-                                )
-                              . !vals
-                              )
-                        | 
-                    )
-                  . !SuperSets
-                  )
+            | getSuperGoals$!goal:?goal
             )
+          & 0:?memoizedSteps
           & fulfil$(!activeTools.!source.!goal.0.!restriction)
       )
       ( extractIOfeaturesFromHTTParg
@@ -6882,7 +6861,14 @@ toolsProg=
           & readTable$features
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
-          & fp$(!i.!o.!restriction.!superset):?FP
+          & (!i.!o.!restriction.!superset):?userInput
+          & ( !recentTasks:? (!userInput.?FP) ?
+            |   log$Nouwfp
+              & fp$!userInput:?FP
+              & log$klaarfp
+              & (!recentTasks:?recentTasks [3 ?|)
+              & (!userInput.!FP) !recentTasks:?recentTasks
+            )
           & ( !i
             . !FP
             .       !FP
