@@ -902,9 +902,11 @@ toolsProg=
           &   whl
             ' ( !parms:?A (!parm.?val) ?parms
               & NEWSPEC
+              & log$(unpackIOparm !val)
               & ( lexan$(" " "+" "*" "^".!val):?val
                 | 
                 )
+              & log$(unpackIOparm2 !val)
               & !nparms !A (!parm.!val):?nparms
               )
           & !nparms !parms
@@ -4651,7 +4653,7 @@ toolsProg=
                 , ToolCreator InfoAbout ToolDescription
                 , ToolExternalURI ToolXMLparms removeEmptyValues
                 , ToolPostData ToolInactive sortFacets
-                , ContactEmail
+                , ContactEmail otherToolprop thisToolProp
               .     !arg
                   : ( ?Metadata
                     . ?ToolName
@@ -5720,7 +5722,82 @@ toolsProg=
                    )
                )
       )
-      ( unfoldTreeN
+      ( selectCommonTracks
+      =   sum spotSum eliminate OUT WAY TERM result term M
+        .   ( spotSum
+            =   a sum
+              .     !arg:%*%
+                  & (   !arg:?*(?,(?.?.?.%+%:?sum))*?
+                      & !sum
+                    |   !arg:%?a*%?arg
+                      & (spotSum$!a|spotSum$!arg)
+                    )
+                | !arg:%+%:?sum&!sum
+                |   !arg:(?,(?.?.?.?arg))
+                  & spotSum$!arg
+            )
+          & ( eliminate
+            =   term O R T o i W S J P F D
+              .   !arg:(?arg.?term)
+                & (   !arg:(?O.?W)
+                    & ( !O
+                      .     !W:%*%:?S
+                          & 1:?R
+                          &   whl
+                            ' ( !S:(?T,(?o.?i.?J))*?S
+                              &   !R*(!T,(!o.!i.eliminate$(!J.!term)))
+                                : ?R
+                              )
+                          & !R
+                        |   !W:%+%
+                          & ( !W:?+!term+?&!term
+                            |   !W:?S
+                              & 0:?R
+                              &   whl
+                                ' ( !S:%?P+?S
+                                  & 1:?D
+                                  &   whl
+                                    ' ( !P:%?F*?P
+                                      &     !D
+                                          * (   !F:(?T,(?o.?i.?J))
+                                              & ( !T
+                                                , ( !o
+                                                  . !i
+                                                  . eliminate$(!J.!term)
+                                                  )
+                                                )
+                                            | !F
+                                            )
+                                        : ?D
+                                      )
+                                  & !R+!D:?R
+                                  )
+                              & !R
+                            )
+                        |   !W:(?T,(?o.?i.?J))
+                          & (!T,(!o.!i.eliminate$(!J.!term)))
+                        | !W
+                      )
+                  | !arg
+                  )
+            )
+          & 0:?result
+          &   whl
+            ' ( !arg:#*(?OUT.?WAY)+?arg
+              & (   spotSum$!WAY:?sum
+                  & 0:?TERM
+                  &   whl
+                    ' ( !sum:%?term+?sum
+                      &   !TERM+eliminate$((!OUT.!WAY).!term)
+                        : ?TERM
+                      )
+                  & !TERM+!arg:?arg
+                | !result+(!OUT.!WAY):?result
+                )
+              )
+          & !result
+      )
+      ( unfoldTree
       =     tool ou ou2 inputprop childstuff A Z goal b
           , inputprop feature stop a ret As stp z sp
           , projectOnto rt af bf
@@ -5738,41 +5815,34 @@ toolsProg=
              Expects that the variable 'sources' is a list of input feature/value pairs. 
              (A single pair can contain more than one value. That is the case if there are more than one inputs.)"
           & !arg:(?stop.?arg)
-          & 1+!calls:?calls:<100000
+          & 1+!calls:?calls:<56789
           & ( @(!calls:? 000)&log$(calls !calls)
             | 
             )
           & (   !arg:%?A*%?arg
               & "Multiply each term in unfolded first factor with each term in unfolded remaining factors."
               & 0:?ret
-              & unfoldTreeN$(!stop.!A):?Z
-              & !calls:<100000
-              &   whl
-                ' ( !Z:(?stp.?a)+?Z
-                  & unfoldTreeN$(!stop*!stp.!arg):?z
-                  & !calls:<100000
-                  & leaveFeat$!a:?af^?
-                  &   whl
-                    ' ( !z:(?sp.?b)+?z
-                      & leaveFeat$!b:?bf^?
-                      & (   compatibleFeatureSets$(!af*!bf)
-                          & !ret+(!sp.!a*!b):?ret
-                        | log$(NOTCOMPATIBLE !af AND !bf)
-                        )
-                      )
-                  )
+              & unfoldTree$(!stop.!A):(?stp.?a)
+              & unfoldTree$(!stop*!stp.!arg):(?sp.?b)
+              & leaveFeat$!a:?af^?
+              & leaveFeat$!b:?bf^?
+              & (   compatibleFeatureSets$(!af*!bf)
+                  & !ret+(!sp.!a*!b):?ret
+                | log$(NOTCOMPATIBLE !af AND !bf)
+                )
               & !ret
-            |   !calls:<100000
+            |   !calls:<56789
               & !arg:%+%
+              & LOG$SUMDETECTED
               & (   !stop:?*(!arg.?projectOnto)^?*?
-                  & "This removes MANY solutions that assume incompatible input specs."
+                  & "This removes perhaps some solutions that assume incompatible input specs."
                   & (!stop.!projectOnto)
                 |   0:?ret
                   & !arg:?As
                   &   whl
                     ' ( !As:%?A+?As
-                      & unfoldTreeN$(!stop.!A):?Z
-                      & !calls:<100000
+                      & unfoldTree$(!stop.!A):?Z
+                      & !calls:<56789
                       &   whl
                         ' ( !Z:(?stp.?a)+?Z
                           & !ret+((!arg.!a)*!stop.!a):?ret
@@ -5780,17 +5850,17 @@ toolsProg=
                       )
                   & !ret
                 )
-            |   !calls:<100000
+            |   !calls:<56789
               & !arg:(?goal.?childstuff)
-              & unfoldTreeN$(!stop.!childstuff):?Z
-              & !calls:<100000
+              & unfoldTree$(!stop.!childstuff):?Z
+              & !calls:<56789
               & 0:?ret
               &   whl
                 ' ( !Z:(?stp.?A)+?Z
                   & !ret+(!stp.!goal.!A):?ret
                   )
               & !ret
-            |   !calls:<100000
+            |   !calls:<56789
               &   !arg
                 : ( ?tool
                   , ( ?A (?feature,%+%:?ou) ?Z
@@ -5799,7 +5869,7 @@ toolsProg=
                     )
                   )
               & (   !stop:?*(!ou.?projectOnto)*?
-                  &   unfoldTreeN
+                  &   unfoldTree
                     $ ( !stop
                       .   !tool
                         , ( !A (!feature,!projectOnto) !Z
@@ -5807,12 +5877,12 @@ toolsProg=
                           . !childstuff
                           )
                       )
-                |   !calls:<100000
+                |   !calls:<56789
                   & !ou:?ou2
                   & 0:?ret
                   &   whl
                     ' ( !ou2:%?a+?ou2
-                      &     unfoldTreeN
+                      &     unfoldTree
                           $ ( !stop*(!ou.!a)
                             .   !tool
                               , ( !A (!feature,!a) !Z
@@ -5823,86 +5893,19 @@ toolsProg=
                         : ?rt
                       & !ret+!rt:?ret
                       )
-                  & !calls:<100000
+                  & !calls:<56789
                   & !ret
                 )
-            |   !calls:<100000
+            |   !calls:<56789
               & !arg:(?tool,(?ou.?inputprop.?childstuff))
-              & unfoldTreeN$(!stop.!childstuff):?Z
+              & unfoldTree$(!stop.!childstuff):?Z
               & 0:?ret
               &   whl
                 ' ( !Z:(?stp.?A)+?Z
                   & !ret+(!stp.!tool,(!ou.!inputprop.!A)):?ret
                   )
               & !ret
-            | !calls:<100000&(!stop.!arg)
-            )
-      )
-      ( unfoldTree
-      =     tool ou ou2 inputprop childstuff A Z goal
-          , inputprop feature T L LP R
-        .   !arg:?arg
-          & (   !arg:%?A*%?Z
-              & 1:?T
-              & 1:?LP
-              &   whl
-                ' ( !arg:%?A*?arg
-                  & !T*(unfoldTree$!A:?+[?L):?T
-                  & !L*!LP:?LP
-                  & !LP:<1000
-                  )
-              & (!LP:~<1000|1+!T+-1)
-            |   !arg:%?A+%?Z
-              & 0:?T
-              &   whl
-                ' ( !arg:%?A+?arg
-                  & unfoldTree$!A:?R
-                  & !R:~#
-                  & !T+!R:?T
-                  )
-              & (!R:#|!T)
-            |   !arg:(?goal.?childstuff)
-              & unfoldTree$!childstuff:?childstuff
-              & ( !childstuff:#
-                |   0:?Z
-                  &   whl
-                    ' ( !childstuff:%?A+?childstuff
-                      & !Z+(!goal.!A):?Z
-                      )
-                  & !Z
-                )
-            |     !arg
-                : ( ?tool
-                  , ( ?A (?feature,%?ou+%?ou2) ?Z
-                    . ?inputprop
-                    . ?childstuff
-                    )
-                  )
-              &     unfoldTree
-                  $ ( !tool
-                    , ( !A (!feature,!ou) !Z
-                      . !inputprop
-                      . !childstuff
-                      )
-                    )
-                +   unfoldTree
-                  $ ( !tool
-                    , ( !A (!feature,!ou2) !Z
-                      . !inputprop
-                      . !childstuff
-                      )
-                    )
-            |   !arg:(?tool,(?ou.?inputprop.?childstuff))
-              & unfoldTree$!childstuff:?childstuff
-              & ( !childstuff:#
-                |   0:?Z
-                  &   whl
-                    ' ( !childstuff:%?A+?childstuff
-                      & !Z+(!tool,(!ou.!inputprop.!A)):?Z
-                      )
-                  & !Z
-                )
-            | !arg
+            | !calls:<56789&(!stop.!arg)
             )
       )
       ( createNewGoal
@@ -6394,18 +6397,32 @@ toolsProg=
                 & 1:?forkk
                 &   whl
                   ' ( !goalterm:%?goaly*?goalterm
-                    &     (   !goaly:?GL
-                            &   whl
-                              ' ( !GL:(?feat,?val^?) ?
-                                & (   !source
-                                    :   ?
-                                        (!feat,?+?*!val^?*?+? ?)
-                                        ?
-                                  | ~(!source:? (!feat,?) ?)
+                    &     (       map
+                                $ ( ( 
+                                    =   feat val sp SP
+                                      .     !arg:(?feat,?val^?sp)
+                                          & ( ~( !source
+                                               : ? (!feat,?) ?
+                                               )
+                                            |     !source
+                                                :   ?
+                                                    ( !feat
+                                                    , ?+?*!val^?SP*?+? ?
+                                                    )
+                                                    ?
+                                              & ( !SP:1
+                                                |   !sp
+                                                  : ( 1
+                                                    | ?+!SP+?
+                                                    )
+                                                )
+                                            )
+                                          & 
+                                        | !arg
+                                    )
+                                  . !goaly
                                   )
-                                & !GL:% ?GL
-                                )
-                            & !GL:
+                              : 
                             & !source
                           |     (!restriction:~0|!tools)
                               : ?ltools
@@ -6807,50 +6824,43 @@ toolsProg=
             )
       )
       ( filter
-      =   pipes rstr parms nnn fpipes o pipe1
-        .   !arg:(?pipes.?parms)
-          & ( !parms:? (desiredtool.?rstr) ?
-            | :?rstr
-            )
-          & ( !rstr:&!pipes
-            |   0:?fpipes
-              &   whl
-                ' ( !pipes:(?nnn.?o.?pipe1)+?pipes
-                  & (   has$(!pipe1.!rstr)
-                      & ( !fpipes:?+(?.!o.!pipe1)+?
-                        | (!nnn.!o.!pipe1)+!fpipes:?fpipes
-                        )
-                    | 
+      =   pipes rstr desiredtool fpipes o pipe1
+        .   !arg:(?pipes.?desiredtool)
+          & 0:?fpipes
+          &   whl
+            ' ( !pipes:(?o.?pipe1)+?pipes
+              & (   has$(!pipe1.!desiredtool)
+                  & ( !fpipes:?+(?.!o.!pipe1)+?
+                    | (!o.!pipe1)+!fpipes:?fpipes
                     )
-                  )
-              & !fpipes
-            )
+                | 
+                )
+              )
+          & !fpipes
       )
       ( haz
       =   rstr S F T notfound
         .   !arg:(?arg.?rstr)
-          & ( :!rstr
-            |   :?notfound
+          & :?notfound
+          &   whl
+            ' ( :!notfound
+              & !arg:%?T+?arg
               &   whl
                 ' ( :!notfound
-                  & !arg:%?T+?arg
-                  &   whl
-                    ' ( :!notfound
-                      & !T:%?F*?T
-                      & (   ( !F:(!rstr,?)
-                            |   !F:(?,(?.?.?.?S))
-                              & haz$(!S.!rstr)
-                            )
-                          & false:?notfound
-                        | 
+                  & !T:%?F*?T
+                  & (   ( !F:(!rstr,?)
+                        |   !F:(?,(?.?.?.?S))
+                          & haz$(!S.!rstr)
                         )
-                      )
+                      & false:?notfound
+                    | 
+                    )
                   )
-              & !notfound:false
-            )
+              )
+          & !notfound:false
       )
       ( Pipelines
-      =   i o restriction FP fP
+      =   i o restriction FP fP superset userInput
         .   0:?indent
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
@@ -6862,21 +6872,27 @@ toolsProg=
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
           & (!i.!o.!restriction.!superset):?userInput
-          & ( !recentTasks:? (!userInput.?FP) ?
-            |   log$Nouwfp
-              & fp$!userInput:?FP
-              & log$klaarfp
-              & (!recentTasks:?recentTasks [3 ?|)
-              & (!userInput.!FP) !recentTasks:?recentTasks
-            )
-          & ( !i
-            . !FP
-            .       !FP
-                  : ?+(?.?fP&haz$(!fP.!restriction))+?
-                & withRestriction
-              |   !FP:(?,?) ?
-                & triviallyFulfilled
-              | onlyWithoutRestriction
+          & (   !recentTasks:? (!userInput.?FP) ?
+              & (!i.!FP.withRestriction)
+            |   fp$!userInput:?FP
+              & ( !i
+                .     ( !restriction:
+                      |   !FP
+                        :   ?
+                          + (?.?fP&haz$(!fP.!restriction))
+                          + ?
+                      )
+                    & prunePipes$!FP:?FP
+                    & ( !recentTasks:?recentTasks [3 ?
+                      | 
+                      )
+                    &   (!userInput.!FP) !recentTasks
+                      : ?recentTasks
+                    & (!FP.withRestriction)
+                  |   !FP:(?,?) ?
+                    & (!FP.triviallyFulfilled)
+                  | (!FP.onlyWithoutRestriction)
+                )
             )
       )
       ( testPipelines
@@ -7106,7 +7122,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & !requestString
             )
           & ( notIncompatible
-            =   feats In
+            =   feats In f
               .   !arg:(?feats.?In)
                 & ~( !feats
                    :   ?
@@ -7166,7 +7182,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?in.?nfiles.?requestString)
                 &     map
                     $ ( ( 
-                        =   feat vals Val spec file val dep
+                        =     feat vals Val spec file
+                            , val dep FiLfeats fileitem
                           .   !arg:(?feat,?vals)
                             & :?dep
                             &   whl
@@ -9607,7 +9624,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
       )
       ( percolateForgottenFeatures
-      =     pipes F nnn updateOFwithNF NN
+      =     pipes F updateOFwithNF NN
           , FeatureList Results pipe1 pipe2 pipe3
           , fromMethods fromResultMethod fromToolOrSource
           , toMethods toResultMethod toTool
@@ -9794,7 +9811,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & 0:?pipes
           & 0:?NN
           &   whl
-            ' ( !arg:(?nnn.?pipe1)+?arg
+            ' ( !arg:%?pipe1+?arg
               & 1+!NN:?NN
               & fromResultMethod$(!pipe1.):(?pipe2.?F)
               & toResultMethod$(!pipe2.!F):(?pipe3.?)
@@ -9802,12 +9819,62 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 |   (~|validateInputsForEachTool$!pipe3)
                   & (   !pipes:?+(?.!pipe3)+?
                       & log$"pipe3 already added"
-                    | (!nnn.!pipe3)+!pipes:?pipes
+                    | !pipe3+!pipes:?pipes
                     )
                 | 
                 )
               )
           & !pipes
+      )
+      ( prunePipes
+      =     As Ax NNN Z ax incarnationpipes
+          , newpipes parms pipe pipes pipesN restriction
+        .   !arg:?pipes
+          & 0:?newpipes
+          &   whl
+            ' ( !pipes:((?.?):?incarnationpipes)+?pipes
+              & "incarnationpipes is (<(user or declared tool) provided output specs> . <sum of unambiguous trees>)"
+              & log$"now unfoldTree"
+              & "TODO 20190917: do not have workflows with two or more tools that do exactly the same thing.
+                Strategy: 
+                (1) search for a sum. 
+                (2) Iterate over that sum. 
+                (3) For each term, produce a (possibly still ambiguous) workflow by projecting each sum that contains that
+                    term on that term. So if a sum contains the current term, ignore all terms but the current term.
+                (4) Repeat this for each new workflow.
+                (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
+              & selectCommonTracks$!incarnationpipes:?As
+              & 0:?pipesN
+              &   whl
+                ' ( !As:%?Ax+?As
+                  & unfoldTree$(1.!Ax):?Z
+                  &   whl
+                    ' ( !Z:(?.?ax)+?Z
+                      & !pipesN+!ax:?pipesN
+                      )
+                  )
+              & "The 1 is the initial stop list, which is formed as a product."
+              & log$"unfoldTree done"
+              & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
+              & !pipesN:?+[?NNN
+              & (   !parms:? (desiredtool.?restriction) ?
+                  & !restriction:~
+                  & log$(filter !restriction)
+                  & filter$(!pipesN.!restriction):?pipesN
+                | 
+                )
+              & percolateForgottenFeatures$!pipesN:?pipesN
+              & !pipesN:?+[?NNN
+              &   whl
+                ' ( !pipesN:%?pipe+?pipesN
+                  & wantThis$!pipe:?pipe
+                  & ( !pipe:0
+                    | !newpipes:?+!pipe+?
+                    | !pipe+!newpipes:?newpipes
+                    )
+                  )
+              )
+          & !newpipes
       )
       "
 /**
@@ -9853,7 +9920,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , ShowAllPipes ShowOnlyTheCurrentPipe AddMetadata
           , "We are at the start. Show an input form."
           , "We are past the first stage: the user has pressed a button"
-          , errorInMetadata
+          , errorInMetadata rstr
           , MetadataInParms canConsumeMetadata
           , NoValueConflicts Subst Tubst
           , adaptInputProfile containedBy
@@ -10058,15 +10125,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     | text/x-conll&(format.flat):?R
                     |   @( ?
                          :   image/
-                             ( ( gif
-                               | jpeg
-                               | pjpeg
-                               | png
-                               | "svg+xml"
-                               | tiff
-                               | "vnd.microsoft.icon"
-                               )
-                             : ?spec
+                             (   ( gif
+                                 | jpeg
+                                 | pjpeg
+                                 | png
+                                 | tiff
+                                 | "vnd.microsoft.icon"
+                                 )
+                               : ?spec
+                             | "svg+xml"&svg:?spec
                              )
                          )
                       & (app.rom) (format.img^!spec):?R
@@ -11564,7 +11631,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?restriction.?restr.?calls)
                 &   log
                   $ (restriction !restriction restr !restr calls !calls)
-                & (   !calls:<100000
+                & (   !calls:<56789
                     & (   !restr:triviallyFulfilled
                         &   str
                           $ ( 404~~~
@@ -11636,39 +11703,37 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( TooManyOrNone
-            =   
-              .     !arg:0
-                  &   str
-                    $ ( 404~~~
-                          toML
-                        $ ( !BodyContainer
-                          $ ( paragraph
-                            $ ( localized
-                              $ ( "There are no workflows leading to your goal. You could try to slacken the specification of your goal."
-                                  "Der er ingen workflows der fører til dit mål. Dan kan prøve at slække på kravene til dit mål."
+            =   calls pipes
+              .   !arg:(?calls.?pipes)
+                & (   !calls:>0
+                    &   str
+                      $ ( 404~~~
+                            toML
+                          $ ( !BodyContainer
+                            $ ( paragraph
+                              $ ( localized
+                                $ ( "There are unmanageable many possible workflows leading to your goal. Try to specify more details for your goal."
+                                    "Der er uoverskuelig mange mulige workflows der fører til dit mål. Prøv at specificere dit mål nærmere."
+                                  )
                                 )
                               )
                             )
-                          )
-                      )
-                |   str
-                  $ ( 404~~~
-                        toML
-                      $ ( !BodyContainer
-                        $ ( paragraph
-                          $ (   localized
-                              $ ( "There are unmanageable many ("
-                                  "Der er uoverskuelig mange ("
-                                )
-                              !arg
-                                localized
-                              $ ( ") possible workflows leading to your goal. Try to specify more details for your goal."
-                                  ") mulige workflows der fører til dit mål. Prøv at specificere dit mål nærmere."
-                                )
-                            )
-                          )
                         )
-                    )
+                  |   !pipes:0
+                    &   str
+                      $ ( 404~~~
+                            toML
+                          $ ( !BodyContainer
+                            $ ( paragraph
+                              $ ( localized
+                                $ ( "There are no workflows leading to your goal. You could try to slacken the specification of your goal."
+                                    "Der er ingen workflows der fører til dit mål. Dan kan prøve at slække på kravene til dit mål."
+                                  )
+                                )
+                              )
+                            )
+                        )
+                  )
             )
           & ( "We are at the start. Show an input form."
             =   formFields presels,directedBy hiddenData Items
@@ -12188,40 +12253,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           |   log$(ComputePipelines failed)
                             & ~
                           )
-                        & (   !restr:withRestriction
-                            & !pipes:?+[?NNN
-                            & log$(NNN !NNN)
-                            & 0:?newpipes
-                            &   whl
-                              ' (   !pipes
-                                  : ((?.?):?incarnationpipes)+?pipes
-                                & "incarnationpipes is (<(user or declared tool) provided output specs> . <sum of unambiguous trees>)"
-                                & log$"now unfoldTreeN"
-                                &   unfoldTreeN$(1.!incarnationpipes)
-                                  : ?pipesN
-                                & "The 1 is the initial stop list, which is formed as a product."
-                                & log$"unfoldTreeN done"
-                                & "pipesN is (<final stop list> . <user provided output specs> . <unfolded tree>) + ..."
-                                & "It seems we don't need the final stop list anymore."
-                                & !pipesN:?+[?NNN
-                                & filter$(!pipesN.!parms):?pipesN
-                                &   percolateForgottenFeatures$!pipesN
-                                  : ?pipesN
-                                & !pipesN:?+[?NNN
-                                &   whl
-                                  ' ( !pipesN:(?.?pipe)+?pipesN
-                                    & ( ~
-                                      | wantThis$!pipe:?pipe
-                                      )
-                                    & ( !pipe:0
-                                      | !newpipes:?+!pipe+?
-                                      | !pipe+!newpipes:?newpipes
-                                      )
-                                    )
-                                )
-                            & !newpipes:?pipes
-                          | !restr:triviallyFulfilled
-                          )
+                        &   !restr
+                          : ( withRestriction
+                            | triviallyFulfilled
+                            )
                       )
                     &   log
                       $ "We may have succeeded in computing one or more pipelines."
@@ -12230,8 +12265,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           |   !pipes:?+[?NNN
                             & !NNN:>1000
                           )
-                        & log$(TooManyOrNone !pipes)
-                        & TooManyOrNone$!NNN
+                        & TooManyOrNone$(!calls.!NNN)
                       |   !Submit:"next step"
                         & log$"next step"
                         & ShowAllPipes$(!directedBy.!hiddenData.!pipes)
