@@ -172,13 +172,13 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
+        $IfacetsegF = "";	/* Input with type of content segments (SÃ¦tningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) if true */
+        $Ifacetseto = false;	/* Type of content in input is segments,tokens (SÃ¦tningssegmenter,tokens) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -197,7 +197,7 @@ try {
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
         $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
-        $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
+        $Ilangro = false;	/* Language in input is Romanian (rumÃ¦nsk) if true */
         $Ilangsr = false;	/* Language in input is Serbian (serbisk) if true */
         $Ilanguk = false;	/* Language in input is Ukrainian (ukrainsk) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
@@ -224,7 +224,7 @@ try {
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
-        $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
+        $Olangro = false;	/* Language in output is Romanian (rumÃ¦nsk) if true */
         $Olangsr = false;	/* Language in output is Serbian (serbisk) if true */
         $Olanguk = false;	/* Language in output is Ukrainian (ukrainsk) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
@@ -264,7 +264,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (SÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
