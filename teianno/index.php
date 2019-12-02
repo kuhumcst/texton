@@ -17,7 +17,7 @@ ToolID         : TEIanno
 PassWord       : 
 Version        : 1
 Title          : TEI P5 annotator
-ServiceURL     : https://cst.dk/TEIanno	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+ServiceURL     : http://localhost/TEIanno	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
@@ -106,7 +106,7 @@ try {
 
         if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "https://cst.dk/toolsdata/";
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;

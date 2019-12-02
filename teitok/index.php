@@ -17,13 +17,13 @@ ToolID         : teitok
 PassWord       : 
 Version        : 1.0
 Title          : pretokenize TEI P5
-ServiceURL     : https://cst.dk/teitok/	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+ServiceURL     : http://localhost/teitok/	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: Nors
 Creator        : Bart Jongejan
 InfoAbout      : *---*
 Description    : Apply a primitive tokenisation to the contents of the <text> element in a TEI P5 document. Each word, punctuation and whitespace is marked up by w or c tags. S and T attributes indicate wich primitive tokens should be combined to create higher level tokens.
-ExternalURI    : https://cst.dk/teitok/
+ExternalURI    : http://localhost/teitok/
 XMLparms       : 
 PostData       : 
 Inactive       : 
@@ -106,7 +106,7 @@ try {
 
         if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "https://cst.dk/toolsdata/";
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;

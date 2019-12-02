@@ -106,7 +106,7 @@ try {
 
         if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "https://cst.dk/toolsdata/";
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;
