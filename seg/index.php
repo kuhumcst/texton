@@ -32,10 +32,10 @@ Inactive       : on
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/texton/log/seg.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/seg.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
-$dodelete = false;
+$dodelete = true;
 $tobedeleted = array();
 
 
@@ -106,7 +106,7 @@ try {
 
         if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "https://infra.clarin.dk/toolsdata/";
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;
@@ -267,12 +267,11 @@ try {
 
         $segfile = tempFileName("seg-results");
 
-    ob_start();
-    var_dump($_REQUEST);
-    $dump = ob_get_clean();    
-    logit($dump);
+        ob_start();
+        var_dump($_REQUEST);
+        $dump = ob_get_clean();    
+        logit($dump);
 
-        //$command = "/usr/bin/python /opt/texton/seg/seg.py $IfacettokF $IfacetsentF $segfile";
         $command = "../bin/bracmat \"get'\\\"seg.bra\\\"\" $IfacettokF $IfacetsentF $segfile"; // perhaps 2x faster
         logit($command);
 
@@ -298,11 +297,6 @@ try {
                 {
 //                logit($line);
                 print $line;
-                if(substr($line, 0, 5) == "ERROR")
-                    {
-                    header ('An error occurred.' . $ERROR, true , 404 );
-                    break;
-                    }
                 }
             fclose($tmpf);
             }
