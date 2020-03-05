@@ -21,6 +21,12 @@ X=
                               | ⟨
                               | ⟩
                               | " "
+                              | ⸠
+                              | ⸡
+                              | ⸌
+                              | ⸍
+                              | "!"
+                              | ¡
                               )
                           & 
                         | !arg
@@ -36,13 +42,14 @@ X=
               ' (!arg:?A ¦ ?Z&!A !Z:?arg)
             & !arg
         )
+      & str$(chr$127 \n):?NL
       &     vap
           $ ( ( 
-              =   w
+              =   w elm
                 .     @( !arg
                        :   ?
                            "|"
-                           ?
+                           ?elm
                            "|"
                            ?
                            "|"
@@ -78,37 +85,41 @@ X=
                            "|"
                            ?
                        )
-                    & ( getFull$!w:?w
-                      |       vap
-                            $ ( ( 
-                                =   
-                                  .       !arg
-                                        : ( "("
-                                          | ")"
-                                          | "["
-                                          | "]"
-                                          | "{"
-                                          | "}"
-                                          | ⟨
-                                          | ⟩
-                                          | " "
-                                          )
-                                      & 
-                                    | !arg
+& put$(!arg,LINES,APP)
+                    & (   vap$((=.!arg),!elm," "):lm
+                        & !NL
+                      |   ( getFull$!w:?w
+                          |       vap
+                                $ ( ( 
+                                    =   
+                                      .       !arg
+                                            : ( "("
+                                              | ")"
+                                              | "["
+                                              | "]"
+                                              | "{"
+                                              | "}"
+                                              | ⟨
+                                              | ⟩
+                                              | " "
+                                              )
+                                          & 
+                                        | !arg
+                                    )
+                                  . !w
+                                  )
+                              : ?w
+                            &   whl
+                              ' ( !w:?A "-" ¦ ?Z
+                                & !A !Z:?w
                                 )
-                              . !w
-                              )
-                          : ?w
-                        &   whl
-                          ' ( !w:?A "-" ¦ ?Z
-                            & !A !Z:?w
-                            )
-                        &   whl
-                          ' ( !w:?A ¦ ?Z
-                            & !A !Z:?w
-                            )
+                            &   whl
+                              ' ( !w:?A ¦ ?Z
+                                & !A !Z:?w
+                                )
+                          )
+                        & !w " "
                       )
-                    & (!w:&\n|!w " ")
                   | 
               )
             . get$(!in,STR),\n
@@ -127,7 +138,7 @@ X=
         )
       & put$(str$!txt,!ud,NEW)
   )
-  (new=.~|(its.doit)$(arg$.arg$));
+  (new=.~|put$(,LINES,NEW)&(its.doit)$(arg$.arg$));
 
 r=
   get'("dip2plain.bra",TXT)
