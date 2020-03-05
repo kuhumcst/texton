@@ -17,7 +17,7 @@ ToolID         : lempos
 PassWord       : 
 Version        : 1
 Title          : LemPoS
-ServiceURL     : http://130.225.251.141/lempos	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+ServiceURL     : https://localhost/lempos	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
 Publisher      : Bart Jongejan
 ContentProvider: Bart Jongejan
 Creator        : Bart Jongejan
@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/texton/log/lempos.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/lempos.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -41,7 +41,6 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +52,6 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-  //  return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -108,7 +106,7 @@ try {
 
         if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://130.225.251.141/toolsdata/";
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;
@@ -198,6 +196,7 @@ try {
         $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
         $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
+        $Ilangru = false;	/* Language in input is Russian (russisk) if true */
         $Ilangsr = false;	/* Language in input is Serbian (serbisk) if true */
         $Ilanguk = false;	/* Language in input is Ukrainian (ukrainsk) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
@@ -207,7 +206,7 @@ try {
         $Oambigamb = false;	/* Ambiguity in output is ambiguous (tvetydig) if true */
         $Oappdrty = false;	/* Appearance in output is optimized for software (bedst for programmer) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
-        $Ofacetstpl = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas (segmenter,tokens,PoS-tags,lemmaer) if true */
+        $Ofacetstlp = false;	/* Type of content in output is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
         $Olangbg = false;	/* Language in output is Bulgarian (bulgarsk) if true */
         $Olangcs = false;	/* Language in output is Czech (tjekkisk) if true */
@@ -225,12 +224,17 @@ try {
         $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
         $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
+        $Olangru = false;	/* Language in output is Russian (russisk) if true */
         $Olangsr = false;	/* Language in output is Serbian (serbisk) if true */
         $Olanguk = false;	/* Language in output is Ukrainian (ukrainsk) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Presentation in output is normal if true */
+        $OfacetstlpDSL = false;	/* Style of type of content segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) in output is DSL-tagset if true */
+        $OfacetstlpUni = false;	/* Style of type of content segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) in output is Universal Part-of-Speech Tagset if true */
+        $Oformatjsonnid = false;	/* Style of format JSON in output is No unique IDIngen unik ID if true */
+        $Oformatjsonxid = false;	/* Style of format JSON in output is With xml idMed xml id if true */
 
         if( hasArgument("base") )
             {
@@ -325,9 +329,10 @@ try {
             $Ilangnl = existsArgumentWithValue("Ilang", "nl");
             $Ilangpt = existsArgumentWithValue("Ilang", "pt");
             $Ilangro = existsArgumentWithValue("Ilang", "ro");
+            $Ilangru = existsArgumentWithValue("Ilang", "ru");
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangnl=$Ilangnl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
+            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangnl=$Ilangnl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -354,8 +359,8 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
-            $Ofacetstpl = existsArgumentWithValue("Ofacet", "stpl");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetstpl=$Ofacetstpl ";
+            $Ofacetstlp = existsArgumentWithValue("Ofacet", "stlp");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetstlp=$Ofacetstlp ";
             }
         if( hasArgument("Oformat") )
             {
@@ -380,9 +385,10 @@ try {
             $Olangnl = existsArgumentWithValue("Olang", "nl");
             $Olangpt = existsArgumentWithValue("Olang", "pt");
             $Olangro = existsArgumentWithValue("Olang", "ro");
+            $Olangru = existsArgumentWithValue("Olang", "ru");
             $Olangsr = existsArgumentWithValue("Olang", "sr");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangnl=$Olangnl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
+            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangnl=$Olangnl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
             }
         if( hasArgument("Operiod") )
             {
@@ -400,6 +406,18 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ofacetstlp") )
+            {
+            $OfacetstlpDSL = existsArgumentWithValue("Ofacetstlp", "DSL");
+            $OfacetstlpUni = existsArgumentWithValue("Ofacetstlp", "Uni");
+            $echos = $echos . "OfacetstlpDSL=$OfacetstlpDSL " . "OfacetstlpUni=$OfacetstlpUni ";
+            }
+        if( hasArgument("Oformatjson") )
+            {
+            $Oformatjsonnid = existsArgumentWithValue("Oformatjson", "nid");
+            $Oformatjsonxid = existsArgumentWithValue("Oformatjson", "xid");
+            $echos = $echos . "Oformatjsonnid=$Oformatjsonnid " . "Oformatjsonxid=$Oformatjsonxid ";
+            }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $lemposfile = tempFileName("lempos-results");
@@ -563,6 +581,13 @@ try {
                 $traindata = "/opt/texton/res/web/ro/lemmatiser/training/wfl-ro.txt.ph";
                 $TorC = "C";
                 }
+            else if($Ilangru)
+                {
+                $lang = "ru";
+                $flexrules = "/opt/texton/res/web/ru/lemmatiser/notags/1/flex.bra";
+                $traindata = "/opt/texton/res/web/ru/lemmatiser/training/wfl-ru.txt.ph";
+                $TorC = "C";
+                }
             else if($Ilangsr)
                 {
                 $lang = "sr";
@@ -589,9 +614,9 @@ try {
             logit('lemposfile='.$lemposfile);
             /* 20181001 $lang is not used by LemmaVal.bra, so it was removed as argument. */
             if($Ifacetseto)
-                $command = "../bin/bracmat 'get\$\"/opt/texton/lempos/LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
+                $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
             else
-                $command = "../bin/bracmat 'get\$\"/opt/texton/lempos/LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
+                $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
@@ -611,7 +636,7 @@ try {
 
         if($tmpf)
             {
-  //          logit('output from lempos:');
+//            logit('output from lempos:');
             while($line = fgets($tmpf))
                 {
 //                logit($line);
