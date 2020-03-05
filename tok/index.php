@@ -106,7 +106,7 @@ try {
 
         if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://130.225.251.141/toolsdata/";
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;
@@ -514,7 +514,7 @@ try {
         //if($Oappnrm && $Iappunn)
             $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile $convertaa";
         //else
-        //    $command = "/usr/local/bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile n";
+        //    $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile n";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
