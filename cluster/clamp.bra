@@ -1,0 +1,219 @@
+{clamp.bra
+
+Clump one or more files with two or more columns, so all words that are related
+directly or indirectly are in the same clump.
+
+Output: a Bracmat file called '<input>.clumps.bra' 
+        and a lemmatiser training file '<input>.ph'.
+}
+
+X=
+  ( doit
+  =   in ou keep ins
+    .     new$hash:?clp
+        & new$hash:?wrd
+        & 0:?n
+        & 0:?N
+        & :?Lines
+        & :?containsSpace
+        & :?containsNonAlpha
+        & ( reverse
+          =   a R
+            .   :?R
+              & whl'(!arg:%?a ?arg&!a !R:?R)
+              & !R
+          )
+        & !arg:(?in.?ou.?keep)
+        & (|put$(str$("in:" !in " ou:" !ou " keep:" !keep),"log.txt",APP))
+        & fil$(!in,r)
+        & fil$(,STR,\n)
+        &   whl
+          ' ( fil$:(?line.?)
+            & 1+!N:?N
+            & @(!line:?left \t ?right)
+            & ( @(!right:?right \t ?other)
+              | :?other
+              )
+            & (!keep:yes|:?other)
+            & (  (!left:|!right:)
+              |   ( @(!left:? " " ?)
+                  | @(!right:? " " ?)
+                  )
+                &   (!left.!right.!other) !containsSpace
+                  : ?containsSpace
+              |   ( @( !left
+                     :   ?
+                         ( %?c
+                         & utf$!c
+                         & upp$!c:low$!c
+                         )
+                         ?
+                     )
+                  | @( !right
+                     :   ?
+                         ( %?c
+                         & utf$!c
+                         & upp$!c:low$!c
+                         )
+                         ?
+                     )
+                  )
+                &   (!left.!right.!other) !containsNonAlpha
+                  : ?containsNonAlpha
+              | (!left.!right.!other) !Lines:?Lines
+              )
+            )
+        & (fil$(!in,SET,-1)|)
+        & !Lines:?Mines
+        & reverse$!Lines:?Lines
+        & reverse$!containsSpace:?containsSpace
+        & reverse$!containsNonAlpha:?containsNonAlpha
+        & !Mines:?Lines
+        & !Lines:?lines
+        &   whl
+          ' ( !lines:(?left.?right.?) ?lines
+            & low$!right:!right
+            )
+        & !Lines:?lines
+        & :?Lines
+        & ( adapt
+          =   ll rr q cc dd
+            .   !arg:(?ll.?rr)
+              & ( low$!rr:!rr&low$!ll:?ll
+                |   @(!rr:? [>1:~(? "'" ?))
+                  & upp$!rr:!rr
+                  & upp$!ll:?ll
+                |   :?q
+                  &   whl
+                    ' ( @(!ll:(%?cc&utf$!cc) ?ll)
+                      & (   @(!rr:(%?dd&utf$!dd) ?rr)
+                          & low$!cc:low$!dd
+                          & !dd !q:?q
+                        | !cc !q:?q&~
+                        )
+                      )
+                  & str$(reverse$(!ll !q)):?ll
+                )
+              & !ll
+          )
+        & (   !lines:
+            &   whl
+              ' ( !lines:(?left.?right.?other) ?lines
+                & adapt$(!right.!left):?right
+                & (!left.!right.!other) !Lines:?Lines
+                )
+          |   whl
+            ' ( !lines:(?left.?right.?other) ?lines
+              & adapt$(!left.!right):?left
+              & (!left.!right.!other) !Lines:?Lines
+              )
+          )
+        & !Lines:?lines
+        &   whl
+          ' ( !lines:(?left.?right.?) ?lines
+            & (   (wrd..find)$!left:(?.?L)
+                & (   (wrd..find)$!right:(?.?R)
+                    & ( !L:!R
+                      |   (clp..find)$!L:(?.?lw+[?LL)
+                        & (clp..find)$!R:(?.?rw+[?RL)
+                        & (clp..remove)$!L
+                        & (clp..remove)$!R
+                        & (   !LL:<!RL
+                            & (!rw.!lw.!L.!R):(?lw.?rw.?R.?L)
+                          | 
+                          )
+                        & (clp..insert)$(!L.!rw+!lw)
+                        &   whl
+                          ' ( !rw:?*%@?H+?rw
+                            & (wrd..remove)$!H
+                            & (wrd..insert)$(!H.!L)
+                            )
+                      )
+                  |   (clp..find)$!L:(?.?lw)
+                    & (clp..remove)$!L
+                    & (clp..insert)$(!L.!right+!lw)
+                    & (wrd..insert)$(!right.!L)
+                  )
+              |   (wrd..find)$!right:(?.?R)
+                & (clp..find)$!R:(?.?rw)
+                & (clp..remove)$!R
+                & (clp..insert)$(!R.!left+!rw)
+                & (wrd..insert)$(!left.!R)
+              |   1+!n:?n
+                & (wrd..insert)$(!left.!n)
+                & (   !left:!right
+                    & (clp..insert)$(!n.!left)
+                  |   (wrd..insert)$(!right.!n)
+                    & (clp..insert)$(!n.!left+!right)
+                  )
+              )
+            )
+        & :?clp
+        & new$hash:?clp
+        & 0:?n:?N
+        & !Lines:?lines
+        &   whl
+          ' ( !lines:(?left.?right.?other) ?lines
+            &     str
+                $ ( !left
+                    \t
+                    !right
+                    (!other:|\t !other)
+                  )
+              : ?line
+            & 1+!N:?N
+            & (wrd..find)$!left:(?.?L)
+            & (   (clp..find)$!L:(?.?block)
+                & (clp..remove)$!L
+                & (clp..insert)$(!L.!line+!block)
+              | (clp..insert)$(!L.!line)
+              )
+            )
+        & put$(,!ou,NEW)
+        & 0:?nc
+        &   (clp..forall)
+          $ ( 
+            =   B T S l r c
+              .   !arg:(?.?*%@?S+?B)
+                & @(!S:?l \t ?r)
+                & (!l.!r):?c
+                &   whl
+                  ' ( !B:?*%@?T+?B
+                    & !S \n !T:?S
+                    & @(!T:?l \t ?r)
+                    & (!l.!r) !c:?c
+                    )
+                &   (1+!nc:?nc.!c) !braclumps
+                  : ?braclumps
+                & put$(str$(!S \n\n),!ou,APP)
+            )
+      | 
+  )
+  (new=.(its.doit)$(arg$.arg$.arg$));
+
+r=
+  get'("clamp.bra",TXT)
+& rmv$(str$(clamp ".bak"))
+& ren$("clamp.bra".str$(clamp ".bak"))
+&   put
+  $ ( "{clamp.bra
+
+Clump one or more files with two or more columns, so all words that are related
+directly or indirectly are in the same clump.
+
+Output: a Bracmat file called '<input>.clumps.bra' 
+        and a lemmatiser training file '<input>.ph'.
+}
+
+"
+    , "clamp.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"clamp.bra",APP)
+& put'(\n,"clamp.bra",APP,BIN)
+& lst'(r,"clamp.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"clamp.bra",APP,BIN)
+& ;
+
+new'X;
