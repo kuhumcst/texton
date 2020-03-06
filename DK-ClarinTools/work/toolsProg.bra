@@ -6910,13 +6910,15 @@ toolsProg=
                           + (?.?fP&haz$(!fP.!restriction))
                           + ?
                       )
-                    & prunePipes$(!FP.!arg):?FP
-                    & ( !recentTasks:?recentTasks [3 ?
-                      | 
+                    & (   prunePipes$(!FP.!arg):?FP
+                        & ( !recentTasks:?recentTasks [3 ?
+                          | 
+                          )
+                        &   (!userInput.!FP) !recentTasks
+                          : ?recentTasks
+                        & (!FP.withRestriction)
+                      | (!FP.tooComplex)
                       )
-                    &   (!userInput.!FP) !recentTasks
-                      : ?recentTasks
-                    & (!FP.withRestriction)
                   |   !FP:(?,?) ?
                     & (!FP.triviallyFulfilled)
                   | (!FP.onlyWithoutRestriction)
@@ -9876,7 +9878,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   !arg:(?pipes.?parms)
           & 0:?newpipes
           &   whl
-            ' ( !pipes:((?.?):?incarnationpipes)+?pipes
+            ' ( !calls:<56789
+              & !pipes:((?.?):?incarnationpipes)+?pipes
               & "incarnationpipes is (<(user or declared tool) provided output specs> . <sum of unambiguous trees>)"
               & log$"now unfoldTree"
               & "TODO 20190917: do not have workflows with two or more tools that do exactly the same thing.
@@ -9917,6 +9920,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                   )
               )
+          & !calls:<56789
           & !newpipes
       )
       "
