@@ -1,0 +1,63 @@
+{freq.bra
+
+Sort and merge input lines, adding frequencies. Ignore empty lines.}
+
+X=
+  ( do
+  =   
+    .   !arg:(?in.?ut)
+      & get$(!in,STR):?in
+      &     vap
+          $ ( ( 
+              =   
+                .   (@(!arg:?arg \r)|)
+                  & !arg
+              )
+            . !in
+            . \n
+            )
+        : ?list
+      &   whl
+        ' ( !list:% %
+          & :?nist
+          &   whl
+            ' ( !list:%?A %?B ?list
+              & !A+!B !nist:?nist
+              )
+          & !list !nist:?list
+          )
+      & :?nist
+      &   whl
+        ' ( !list:#?N*%@?A+?list
+          & (!A.!N) !nist:?nist
+          )
+      & :?list
+      &   whl
+        ' ( !nist:(?A.?N) ?nist
+          & !A \t !N \n !list:?list
+          )
+      & put$(str$!list,!ut,NEW)
+  )
+  (new=.(its.do)$(arg$.arg$));
+
+r=
+  get'("freq.bra",TXT)
+& rmv$(str$(freq ".bak"))
+& ren$("freq.bra".str$(freq ".bak"))
+&   put
+  $ ( "{freq.bra
+
+Sort and merge input lines, adding frequencies. Ignore empty lines.}
+
+"
+    , "freq.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"freq.bra",APP)
+& put'(\n,"freq.bra",APP,BIN)
+& lst'(r,"freq.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"freq.bra",APP,BIN)
+& ;
+
+new'X;
