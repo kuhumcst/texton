@@ -1,0 +1,140 @@
+{pytokseg.bra
+
+Emulate function of pytokseg.py:
+Add breaks <br /> in token file at places indicated by segment file.
+Add an empty attribute where the POS-tagger can put its result.
+Parameter   Description
+inputTok    name of input file with tokens
+inputSeg    name of input file with segments
+output      name of output file
+attribute   name of attribute to add
+ancestor    name of ancestor element (optional)
+elem        name of element (optional)
+attr        name of attribute that has to be present (optional)}
+
+X=
+  ( doit
+  =   
+    .     !arg
+        : (?inputTok.?inputSeg.?output.?attribute.?ancestor.?elem.?attr)
+      &   get$(!inputSeg,X ML)
+        : ?sentTree
+        : ? ((span.?) ?:?sentRoot)
+      & nestML$(get$(!inputTok,X ML)):?root
+      & ( !root:?A (!ancestor.?at,?elements) ?Z
+        |   !root:?elements
+          & :?A:?Z:?at
+        )
+      &   (   !elem:"-"
+            & (   !attr:"-"
+                & '(!x.($attribute.) !y,!z)
+              |   
+                ' ( !y:? ($attr.?) ?
+                  & (!x.($attribute.) !y,!z)
+                  )
+              )
+          |   !attr:"-"
+            &   
+              ' ( $elem:!x
+                & ($elem.($attribute.) !y,!z)
+                )
+          |   
+            ' ( !y:? ($attr.?) ?
+              & $elem:!x
+              & ($elem.($attribute.) !y,!z)
+              )
+          | (=!arg)
+          )
+        : (=?expr)
+      &     map
+          $ ( ( 
+              =   
+                .     !arg:(?x.?y,?z)
+                    &   (   !y:? ("xml:id".?id) ?
+                          &   !sentRoot
+                            :   ( span
+                                .   ? (from.@(?:"#" !id)) ?
+                                  , ?
+                                )
+                                ?sentRoot
+                          & (br.,)
+                        | 
+                        )
+                        !expr
+                  | !arg
+              )
+            . !elements
+            )
+        : % ?elements
+      &   put
+        $ (   str
+            $ ( toML
+              $ (   !root:? (!ancestor.?,?) ?
+                  & !A (!ancestor.!at,!elements) !Z
+                | !elements
+                )
+              )
+          , !output
+          , NEW
+          )
+      & ( 
+        |   put
+          $ (   str
+              $ ( toML
+                $ (   !root:? (!ancestor.?,?) ?
+                    & !A (!ancestor.!at,!elements) !Z
+                  | !elements
+                  )
+                )
+            , brillinput
+            , NEW
+            )
+        )
+      & done
+  )
+  ( new
+  =   
+    .     (its.doit)
+        $ ( temp-2BrillTagger-IfacettokF
+          . temp-1BrillTagger-IfacetsegF
+          . temp-3combine-POS-attribute
+          . POS
+          . spanGrp
+          . span
+          . "xml:id"
+          )
+      |   (its.doit)
+        $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+  );
+
+r=
+  get'("pytokseg.bra",TXT)
+& rmv$(str$(pytokseg ".bak"))
+& ren$("pytokseg.bra".str$(pytokseg ".bak"))
+&   put
+  $ ( "{pytokseg.bra
+
+Emulate function of pytokseg.py:
+Add breaks <br /> in token file at places indicated by segment file.
+Add an empty attribute where the POS-tagger can put its result.
+Parameter   Description
+inputTok    name of input file with tokens
+inputSeg    name of input file with segments
+output      name of output file
+attribute   name of attribute to add
+ancestor    name of ancestor element (optional)
+elem        name of element (optional)
+attr        name of attribute that has to be present (optional)}
+
+"
+    , "pytokseg.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"pytokseg.bra",APP)
+& put'(\n,"pytokseg.bra",APP,BIN)
+& lst'(r,"pytokseg.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"pytokseg.bra",APP,BIN)
+& ;
+
+new'X;
