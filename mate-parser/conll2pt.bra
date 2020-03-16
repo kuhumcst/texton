@@ -1,0 +1,174 @@
+{conll2pt.bra
+
+Convert dependency tree in CONLL9 format to Penn Treebank format}
+
+X=
+  ( conll2pt
+  =   inp outp
+    .   !arg:(?inp.?outp)
+      & get$(!inp,STR):?conll
+      & :?trees:?sent
+      & put$(,!outp,NEW)
+      & ( rtrm
+        =   
+          .   @(!arg:?arg " ")&rtrm$!arg
+            | !arg
+        )
+      & ( trim
+        =   
+          .   @(!arg:" " ?arg)&trim$!arg
+            | rtrm$!arg
+            | !arg
+        )
+      &     vap
+          $ ( ( 
+              =   
+                .     "1	Kan	_	_	_	VERB	_	_	-1	0	_	ROOT	_	_"
+                    & @( !arg
+                       :   ?ID
+                           \t
+                           ?FORM
+                           \t
+                           ?
+                           \t
+                           ?
+                           \t
+                           ?
+                           \t
+                           ?CPOSTAG
+                           \t
+                           ?
+                           \t
+                           ?
+                           \t
+                           ?
+                           \t
+                           ?HEAD
+                           \t
+                           ?
+                           \t
+                           ?DEPREL
+                           \t
+                           ?
+                           \t
+                           ?
+                       )
+                    & ( trim$!HEAD
+                      . trim$!ID
+                      . trim$!FORM
+                      . trim$!CPOSTAG
+                      . trim$!DEPREL
+                      )
+                  | (.)
+              )
+            . !conll
+            . \n
+            )
+        : ?lines
+      & :?stnes
+      &   whl
+        ' ( !lines:?sent (.) ?lines
+          & (.!sent) !stnes:?stnes
+          )
+      & (.!lines) !stnes:?stnes
+      & :?sents
+      &   whl
+        ' ( !stnes:(.?sent) ?stnes
+          & ( !sent:
+            | (.!sent) !sents:?sents
+            )
+          )
+      & ( !stnes:
+        | (.!stnes) !sents:?sents
+        )
+      &   map
+        $ ( ( 
+            =   
+              .   ( PT
+                  =     deprel words left right lrem rrem
+                      , rrem2 id form cpostag babydeprel
+                    .     !arg:(?deprel.?words)
+                        &   !words
+                          :   ?left
+                              (!deprel.?id.?form.?cpostag.?babydeprel)
+                              ?right
+                        & PT$(!id.!left):(?left.?lrem)
+                        & PT$(!id.!lrem !right):(?right.?rrem)
+                        & PT$(!deprel.!rrem):(?next.?rrem2)
+                        & (   ( !babydeprel
+                              . !left (!cpostag.!form) !right
+                              )
+                              !next
+                          . !rrem2
+                          )
+                      | (.!words)
+                  )
+                & ( indent
+                  =   tree trees ind cl co Ou sep esc bck
+                    .   !arg:(?trees.?ind)
+                      & :?Ou
+                      & :?sep
+                      & ( bck
+                        =   A
+                          .     @(!arg:?A "\\" ?arg)
+                              & !A "\\\\" bck$!arg
+                            | !arg
+                        )
+                      & ( esc
+                        =   A
+                          .     @(!arg:?A \" ?arg)
+                              & bck$!A "\\\"" esc$!arg
+                            | bck$!arg
+                        )
+                      &   whl
+                        ' ( !trees:%?tree ?trees
+                          & (   !tree:(?cl.?co)
+                              &     !Ou
+                                    !sep
+                                    "("
+                                    str$(esc$!cl)
+                                    " "
+                                    indent$(!co."    " !ind)
+                                    ")"
+                                : ?Ou
+                            | !Ou str$(esc$!tree):?Ou
+                            )
+                          & \n !ind:?sep
+                          )
+                      & !Ou
+                  )
+                & !arg:(.?sent)
+                & PT$(0.!sent):(?tree.?rem)
+                & put$(str$(indent$(!tree.) \n\n),!outp,APP)
+                & :?sent
+            )
+          . !sents
+          )
+  )
+  ( new
+  =   
+    .   ~
+      |   (arg$:?outp|:?outp)
+        & (arg$:?inp|:?inp)
+        & (its.conll2pt)$(!inp.!outp)
+  );
+
+r=
+  get'"conll2pt.bra"
+& rmv$(str$(conll2pt ".bak"))
+& ren$("conll2pt.bra".str$(conll2pt ".bak"))
+&   put
+  $ ( "{conll2pt.bra
+
+Convert dependency tree in CONLL9 format to Penn Treebank format}
+
+"
+    , "conll2pt.bra"
+    , NEW
+    )
+& lst'(X,"conll2pt.bra",APP)
+& put'(\n,"conll2pt.bra",APP)
+& lst'(r,"conll2pt.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"conll2pt.bra",APP);
+
+new'X;
