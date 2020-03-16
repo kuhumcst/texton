@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/async.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/rtfreader.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -402,7 +402,8 @@ try {
         logit($command);
 
         $tool = "../bin/rtfreader";
-        $abbr = "";
+	$abbr = "";
+	$res = "../texton-linguistic-resources";
 
         if($Iappocr)
             $nopt = " -n- ";
@@ -421,7 +422,7 @@ try {
                     $abbr = "-a $lang.dat ";
                     break;
                 case "nb":
-                    $abbr = "-a ../res/web/no/tokeniser/abbr ";
+                    $abbr = "-a $res/no/tokeniser/abbr ";
                     break;
                 case "bg":
                 case "cs":
@@ -450,7 +451,7 @@ try {
                 case "sv":
                 case "tr":
                 case "uk":
-                    $abbr = "-a ../res/web/" . $lang . "/tokeniser/abbr ";
+                    $abbr = "-a $res/$lang/tokeniser/abbr ";
                     break;
                 default:
                     $abbr = "";
