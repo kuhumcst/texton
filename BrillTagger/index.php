@@ -581,7 +581,7 @@ try {
         $annotation = "POStags";
         $idprefix = "P";
         $toolbin = '../bin/';
-        $toolres = '../res/web/';
+        $toolres = '../texton-linguistic-resources/';
 
         logit("doit($language,$ancestor,$element,$annotation,$idprefix)");
         $filename = '';
