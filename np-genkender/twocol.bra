@@ -1,0 +1,89 @@
+{twocol.bra
+Combine standoff annotations for tokens, part of speech and lemmas into two column format
+}
+
+X=
+  ( doit
+  =   
+    .     !arg:(?tok.?seg.?pos.?lem.?outp)
+        & put$(,!outp,NEW)
+        & !tok:
+      |   get$(!tok,X ML):?T
+        &   (!seg:|get$(!seg,X ML TRM))
+          : ?S
+        &   (!pos:|get$(!pos,X ML TRM))
+          : ?P
+        &   (!lem:|get$(!lem,X ML TRM))
+          : ?L
+        &   whl
+          ' (   !T
+              :   ?
+                  (span.? ("xml:id".?tid) ?)
+                  ?token
+                  (.span.)
+                  ?T
+            & str$("#" !tid):?ref
+            & (   !P
+                :   ?
+                    (span.? (from.!ref) ?)
+                    ?POS
+                    (.span.)
+                    ?P
+              | "_":?POS
+              )
+            &   put
+              $ (   str
+                  $ ( !token
+                      (     !L
+                          :   ?
+                              (span.? (from.!ref) ?)
+                              ?lemma
+                              (.span.)
+                              ?L
+                        & " " !lemma
+                      | 
+                      )
+                      \t
+                      !POS
+                      \n
+                    )
+                , !outp
+                , APP
+                )
+            & (     !S
+                  : ? (span.? (to.!ref) ?,?) ?S
+                & put$(\n,!outp,APP)
+              | 
+              )
+            )
+  )
+  ( new
+  =   
+    .   ~
+      |   (arg$:?outp|:?outp)
+        & (arg$:?tok|:?tok)
+        & (arg$:?seg|:?seg)
+        & (arg$:?pos|:?pos)
+        & (arg$:?lem|:?lem)
+        & (its.doit)$(!tok.!seg.!pos.!lem.!outp)
+  );
+
+r=
+  get'"twocol.bra"
+& rmv$(str$(twocol ".bak"))
+& ren$("twocol.bra".str$(twocol ".bak"))
+&   put
+  $ ( "{twocol.bra
+Combine standoff annotations for tokens, part of speech and lemmas into two column format
+}
+
+"
+    , "twocol.bra"
+    , NEW
+    )
+& lst'(X,"twocol.bra",APP)
+& put'(\n,"twocol.bra",APP)
+& lst'(r,"twocol.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"twocol.bra",APP);
+
+new'X;
