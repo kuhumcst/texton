@@ -525,6 +525,11 @@ try {
                 $flexrules = "/opt/texton/res/web/et/lemmatiser/notags/0/flexrules.pretty.bra.2";
                 $traindata = "/opt/texton/res/web/et/lemmatiser/training/wfl-et.txt.ph";
                 $TorC = "C";
+                $lang = "et";
+                //$flexrules = "/opt/texton/res/web/et/lemmatiser/notags/0/flexrules.pretty.bra.2"; // wfl-et
+                $flexrules = "/opt/texton/res/web/et/lemmatiser/notags/1/flexrules.pretty.bra.2"; // estnltk
+                $traindata = "/opt/texton/res/web/et/lemmatiser/training/wfl-et.txt.ph"; // contains tags, estnltk has no tags
+                $TorC = "C";
                 }
             else if($Ilangfa)
                 {
