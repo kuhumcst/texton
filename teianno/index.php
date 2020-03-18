@@ -32,7 +32,7 @@ Inactive       : on
 /*******************
 * helper functions *
 *******************/
-$toollog = '/opt/texton/log/TEIanno.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/TEIanno.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;

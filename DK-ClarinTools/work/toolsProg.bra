@@ -5721,6 +5721,163 @@ toolsProg=
                    )
                )
       )
+      ( ItExplodes
+      =     spotSum OUT WAY M
+          , seen ID depend getID prun
+          , depends in pruns sums sumsizes
+        .   :?seen
+          & :?sumsizes
+          & -1:?ID
+          & !arg:?in
+          & ( getID
+            =   m l
+              .   !ID+1:?ID
+                & mod$(!ID,26):?m
+                & div$(!ID,26):?l
+                & str$(chr$(!m+asc$a) !l)
+            )
+          & ( spotSum
+            =   a b L M
+              .   !seen:? (!arg.?L) ?&!L
+                |   !arg:%*%
+                  & :?b
+                  &   whl
+                    ' ( !arg:%?a*?arg
+                      & (   !seen:? (!a.?L) ?
+                          & !b !L:?b
+                        |   spotSum$!a:?L
+                          & ( !L:
+                            |   (factor,getID$.!L):?L
+                              & (!a.!L) !seen:?seen
+                              & !b !L:?b
+                            )
+                        )
+                      )
+                  & ( !b:
+                    |   (!arg.prod,getID$.!b):?b
+                      & !b !seen:?seen
+                      & !b:(?.?b)
+                      & !b
+                    )
+                |   !arg:%+%
+                  &   ( !arg
+                      . sum,getID$:?M
+                      .   :?b
+                        &   whl
+                          ' ( !arg:%?a+?arg
+                            & (   !seen:? (!a.?L) ?
+                                & !b !L:?b
+                              |     (term,getID$.spotSum$!a)
+                                  : ?L
+                                & (!a.!L) !seen:?seen
+                                & !b !L:?b
+                              )
+                            )
+                        & !b:? [?L
+                      )
+                    : ?b
+                  & !b !seen:?seen
+                  & (!M.!L) !sumsizes:?sumsizes
+                  & !b:(?.?b)
+                  & !b
+                |   !arg:(?,(?.?.?.?arg))
+                  & spotSum$!arg
+                | 
+            )
+          & ( prun
+            =   a b L
+              .     !arg:(?a,?L.?b) ?arg
+                  & (!a,!L.prun$!b):?b
+                  &   (   !b:(prod,?.?,?.?b)
+                        & !b
+                      |   !b:(factor,?L.term,?.)
+                        & 
+                      |   !b:(factor,?L.term,?.?b)
+                        & (factor,!L.!b)
+                      |   !b:(term,?L.prod,?.)
+                        & (term,!L.)
+                      | !b:(factor,?.)&
+                      |   !b:(term,?L.term,?.)
+                        & (term,!L.)
+                      | !b
+                      )
+                      prun$!arg
+                | !arg
+            )
+          & ( depend
+            =   a b L d M e f s N
+              .     !arg:(?a,?L.?b) ?arg
+                  & (!a,!L.depend$!b):?b
+                  &   (   !b:(prod,?M.?s)
+                        & 1:?e
+                        & 1:?N
+                        &   map
+                          $ ( ( 
+                              =   f n
+                                .       !arg
+                                      : ((?.?f.?n),?.?)
+                                    & ( !e:?*!f*?
+                                      | !N*!n:?N
+                                      )
+                                    & !f*!e:?e
+                                  | 
+                              )
+                            . !s
+                            )
+                        & ((prod.!e.!N),!M.!s)
+                      |     !b
+                          : ( factor,?M
+                            . (sum.?e.?N),?L
+                            . ?f
+                            )
+                        & ( (factor.!L !e.!N),!M
+                          . sum !e,!L
+                          . !f
+                          )
+                      |   !b:(sum,?M.?s)
+                        & 0:?N
+                        & 0:?e
+                        &   map
+                          $ ( ( 
+                              =   f n
+                                .       !arg
+                                      : ((?.?f.?n),?.?)
+                                    & !N+!n:?N
+                                    & ( !f:
+                                      | !f+!e:?e
+                                      )
+                                  | 
+                              )
+                            . !s
+                            )
+                        & (   (sum.!e:~0|.!N)
+                            , !M
+                          . !s
+                          )
+                      |   !b:(?a,?M.)
+                        & ((!a..1),!M.)
+                      |     !b
+                          : (?a,?M.(?s.?e.?N),?f.?d)
+                        & ( (!a.!e.!N),!M
+                          . (!s.!e.!N),!f
+                          . !d
+                          )
+                      | !b
+                      )
+                      depend$!arg
+                | !arg
+            )
+          & 0:?bignumber
+          &   whl
+            ' ( !in:#*(?OUT.?WAY)+?in
+              & spotSum$!WAY:?sums
+              & prun$!sums:?pruns
+              & depend$!pruns:?depends
+              & !depends:((?.?.?bignumber),?.)
+              & !bignumber:<10000
+              )
+          & !bignumber:~<10000
+      )
       ( selectCommonTracks
       =   sum spotSum eliminate OUT WAY TERM result term M
         .   ( spotSum
@@ -6714,10 +6871,10 @@ toolsProg=
             =   SuperSets goal nwg
               .   !arg:?goal:?nwg
                 &   ( facet
-                    .   (pos.spo stp tlp stpl stplo stpd)
+                    .   (pos.spo stp tlp stlp stopl stpd)
                         (ner.stn)
-                        (lem.sl tl tlp stl stpl stplo)
-                        (cls.stplo)
+                        (lem.sl tl tlp stl stlp stopl)
+                        (cls.stopl)
                         (stx.stpd)
                         (tok.seto stn)
                         (seg.seto)
@@ -9890,35 +10047,41 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     term on that term. So if a sum contains the current term, ignore all terms but the current term.
                 (4) Repeat this for each new workflow.
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
-              & selectCommonTracks$!incarnationpipes:?As
-              & 0:?pipesN
-              &   whl
-                ' ( !As:%?Ax+?As
-                  & unfoldTree$(1.!Ax):?Z
+              & (   ItExplodes$!incarnationpipes
+                  & 100000000:?calls
+                |   selectCommonTracks$!incarnationpipes:?As
+                  & 0:?pipesN
                   &   whl
-                    ' ( !Z:(?.?ax)+?Z
-                      & !pipesN+!ax:?pipesN
+                    ' ( !As:%?Ax+?As
+                      & unfoldTree$(1.!Ax):?Z
+                      &   whl
+                        ' ( !Z:(?.?ax)+?Z
+                          & ( !pipesN:?+!ax+?
+                            | !pipesN+!ax:?pipesN
+                            )
+                          )
                       )
-                  )
-              & "The 1 is the initial stop list, which is formed as a product."
-              & log$"unfoldTree done"
-              & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
-              & !pipesN:?+[?NNN
-              & (   !parms:? (desiredtool.?restriction) ?
-                  & !restriction:~
-                  & filter$(!pipesN.!restriction):?pipesN
-                | 
-                )
-              & percolateForgottenFeatures$!pipesN:?pipesN
-              & !pipesN:?+[?NNN
-              &   whl
-                ' ( !pipesN:%?pipe+?pipesN
-                  & wantThis$!pipe:?pipe
-                  & ( !pipe:0
-                    | !newpipes:?+!pipe+?
-                    | !pipe+!newpipes:?newpipes
+                  & "The 1 is the initial stop list, which is formed as a product."
+                  & log$"unfoldTree done"
+                  & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
+                  & !pipesN:?+[?NNN
+                  & (     !parms
+                        : ? (desiredtool.?restriction) ?
+                      & !restriction:~
+                      & filter$(!pipesN.!restriction):?pipesN
+                    | 
                     )
-                  )
+                  & percolateForgottenFeatures$!pipesN:?pipesN
+                  & !pipesN:?+[?NNN
+                  &   whl
+                    ' ( !pipesN:%?pipe+?pipesN
+                      & wantThis$!pipe:?pipe
+                      & ( !pipe:0
+                        | !newpipes:?+!pipe+?
+                        | !pipe+!newpipes:?newpipes
+                        )
+                      )
+                )
               )
           & !calls:<56789
           & !newpipes
@@ -13314,7 +13477,7 @@ header(\"Content-type:text/plain; charset=UTF-8\");
  * This "
                     !arg
                     " script is generated by CLARIN-DK's tool registration form 
- * (https://clarin.dk/texton/register). It should, with no or few adaptations
+ * (http://localhost/texton/register). It should, with no or few adaptations
  * work out of the box as a dummy for your web service. The output returned
  * to the CLARIN-DK workflow manager is just a listing of the HTTP parameters
  * received by this web service from the CLARIN-DK workflow manager, and not
@@ -13594,10 +13757,13 @@ Version        : "
 Title          : "
                         getBoilerPlate$(!name.Title)
                         "
-ServiceURL     : "
-                        getBoilerPlate$(!name.ServiceURL)
+Path in URL    : "
+                        ( getBoilerPlate$(!name.ServiceURL):?path
+                        & @(str$!path:? "://" ? "/" ?path)
+                        & !path
+                        )
                         \t
-                        "*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+                        "*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : "
                         getBoilerPlate$(!name.Publisher)
                         "
@@ -13630,7 +13796,7 @@ Inactive       : "
 /*******************
 * helper functions *
 *******************/
-$toollog = '/var/log/tool/"
+$toollog = '../log/"
                         makeName$!name
                         ".log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
@@ -14164,12 +14330,12 @@ try {
 
         if($tmpf)
             {
-            logit('output from "
+            //logit('output from "
                         makeName$!name
                         ":');
             while($line = fgets($tmpf))
                 {
-                logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
