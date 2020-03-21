@@ -17,7 +17,7 @@ ToolID         : freq
 PassWord       : 
 Version        : 1.0
 Title          : Frequencies
-ServiceURL     : https://localjost/freq/	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+ServiceURL     : (http://localhost/texton/register).	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
 Publisher      : Københavns Universitet, Center for Sprogteknologi
 ContentProvider: Københavns Universitet, Center for Sprogteknologi
 Creator        : Bart Jongejan
