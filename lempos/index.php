@@ -469,7 +469,10 @@ try {
                 $lang = "da";
                 if($Iperiodc20 && $Operiodc20)
                     {
-                    $flexrules = "$res/da/lemmatiser/notags/c19/0/flexrules.bra";
+                    if($Iappnrm)
+			$flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
+		    else
+                        $flexrules = "$res/da/lemmatiser/notags/c19n/0/flexrules.bra";
                     //$traindata = "$res/da/lemmatiser/training/numedforadv";//ods_170412.csv.corrected-TAGS.ph";
                     $traindata = "$res/da/lemmatiser/training/ParoleBrandesDSLdictionary";
                     }
@@ -484,9 +487,9 @@ try {
                     }
                 else
                     {
-                    //$flexrules = "$res/da/lemmatiser/notags/c13-c18/0/flexrules.bra";
+                    $flexrules = "$res/da/lemmatiser/notags/c13-c18/0/flexrules.bra";
                     //$traindata = "$res/da/lemmatiser/training/tabfile";
-                    $flexrules = "$res/da/lemmatiser/notags/c13-c18/2/flex.bra";
+                    //$flexrules = "$res/da/lemmatiser/notags/c13-c18/2/flex.bra";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-B-2-4202-step2.4cole";
 		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
 		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
@@ -556,7 +559,8 @@ try {
             else if($Ilangis)
                 {
                 $lang = "is";
-                $flexrules = "$res/is/lemmatiser/notags/flexrules.pretty.bra.2";
+                //$flexrules = "$res/is/lemmatiser/notags/flexrules.pretty.bra.2";
+                $flexrules = "$res/is/lemmatiser/notags/flexrules.bra";
                 $traindata = "$res/is/lemmatiser/training/icelandic_without_doubles.UTF8";
                 }
             else if($Ilangit)

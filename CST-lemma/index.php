@@ -273,7 +273,7 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
             if($pos == 'n')
                 $flexrulessubdir = "/1";
             else
-                $flexrulessubdir = "/selected";
+                $flexrulessubdir = "/links";
             }
         }
     else if($language == 'de')
@@ -315,6 +315,10 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
     else if($language == 'hu')
         {
         $flexrulessubdir = "/0";
+        }
+    else if($language == 'is')
+        {
+        $flexrules = "icelandic.flexrules";
         }
     else if($language == 'it')
         {
