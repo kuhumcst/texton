@@ -17,7 +17,7 @@ ToolID         : lempos
 PassWord       : 
 Version        : 1
 Title          : LemPoS
-ServiceURL     : https://localhost/lempos	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+Path in URL    : lempos	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : Bart Jongejan
 ContentProvider: Bart Jongejan
 Creator        : Bart Jongejan
@@ -193,6 +193,7 @@ try {
         $Ilangis = false;	/* Language in input is Icelandic (islandsk) if true */
         $Ilangit = false;	/* Language in input is Italian (italiensk) if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
+        $Ilangmk = false;	/* Language in input is Macedonian (makedonsk) if true */
         $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
         $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
@@ -221,6 +222,7 @@ try {
         $Olangis = false;	/* Language in output is Icelandic (islandsk) if true */
         $Olangit = false;	/* Language in output is Italian (italiensk) if true */
         $Olangla = false;	/* Language in output is Latin (latin) if true */
+        $Olangmk = false;	/* Language in output is Macedonian (makedonsk) if true */
         $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
         $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
@@ -326,13 +328,14 @@ try {
             $Ilangis = existsArgumentWithValue("Ilang", "is");
             $Ilangit = existsArgumentWithValue("Ilang", "it");
             $Ilangla = existsArgumentWithValue("Ilang", "la");
+            $Ilangmk = existsArgumentWithValue("Ilang", "mk");
             $Ilangnl = existsArgumentWithValue("Ilang", "nl");
             $Ilangpt = existsArgumentWithValue("Ilang", "pt");
             $Ilangro = existsArgumentWithValue("Ilang", "ro");
             $Ilangru = existsArgumentWithValue("Ilang", "ru");
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangnl=$Ilangnl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
+            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -382,13 +385,14 @@ try {
             $Olangis = existsArgumentWithValue("Olang", "is");
             $Olangit = existsArgumentWithValue("Olang", "it");
             $Olangla = existsArgumentWithValue("Olang", "la");
+            $Olangmk = existsArgumentWithValue("Olang", "mk");
             $Olangnl = existsArgumentWithValue("Olang", "nl");
             $Olangpt = existsArgumentWithValue("Olang", "pt");
             $Olangro = existsArgumentWithValue("Olang", "ro");
             $Olangru = existsArgumentWithValue("Olang", "ru");
             $Olangsr = existsArgumentWithValue("Olang", "sr");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangnl=$Olangnl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
+            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
             }
         if( hasArgument("Operiod") )
             {
@@ -577,6 +581,13 @@ try {
                 $traindata = "$res/la/lemmatiser/training/WordLemmaTag.tab";
                 $TorC = "C";
                 }
+            else if($Ilangmk)
+                {
+                $lang = "mk";
+                $flexrules = "$res/mk/lemmatiser/notags/0/flexrules.bra";
+                $traindata = "$res/mk/lemmatiser/training/wfl-mk.txt.ph";
+                $TorC = "C";
+                }
             else if($Ilangpt)
                 {
                 $lang = "pt";
@@ -646,10 +657,10 @@ try {
 
         if($tmpf)
             {
-//            logit('output from lempos:');
+            //logit('output from lempos:');
             while($line = fgets($tmpf))
                 {
-//                logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
