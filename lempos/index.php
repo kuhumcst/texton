@@ -195,6 +195,7 @@ try {
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
         $Ilangmk = false;	/* Language in input is Macedonian (makedonsk) if true */
         $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
+        $Ilangpl = false;	/* Language in input is Polish (polsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
         $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
         $Ilangru = false;	/* Language in input is Russian (russisk) if true */
@@ -224,6 +225,7 @@ try {
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Olangmk = false;	/* Language in output is Macedonian (makedonsk) if true */
         $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
+        $Olangpl = false;	/* Language in output is Polish (polsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
         $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
         $Olangru = false;	/* Language in output is Russian (russisk) if true */
@@ -330,12 +332,13 @@ try {
             $Ilangla = existsArgumentWithValue("Ilang", "la");
             $Ilangmk = existsArgumentWithValue("Ilang", "mk");
             $Ilangnl = existsArgumentWithValue("Ilang", "nl");
+            $Ilangpl = existsArgumentWithValue("Ilang", "pl");
             $Ilangpt = existsArgumentWithValue("Ilang", "pt");
             $Ilangro = existsArgumentWithValue("Ilang", "ro");
             $Ilangru = existsArgumentWithValue("Ilang", "ru");
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
+            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -387,12 +390,13 @@ try {
             $Olangla = existsArgumentWithValue("Olang", "la");
             $Olangmk = existsArgumentWithValue("Olang", "mk");
             $Olangnl = existsArgumentWithValue("Olang", "nl");
+            $Olangpl = existsArgumentWithValue("Olang", "pl");
             $Olangpt = existsArgumentWithValue("Olang", "pt");
             $Olangro = existsArgumentWithValue("Olang", "ro");
             $Olangru = existsArgumentWithValue("Olang", "ru");
             $Olangsr = existsArgumentWithValue("Olang", "sr");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
+            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
             }
         if( hasArgument("Operiod") )
             {
@@ -586,6 +590,13 @@ try {
                 $lang = "mk";
                 $flexrules = "$res/mk/lemmatiser/notags/0/flexrules.bra";
                 $traindata = "$res/mk/lemmatiser/training/wfl-mk.txt.ph";
+                $TorC = "C";
+                }
+            else if($Ilangpl)
+                {
+                $lang = "pl";
+                $flexrules = "$res/pl/lemmatiser/notags/0/flexrules.bra";
+                $traindata = "$res/pl/lemmatiser/training/polimorfologik.wordclasses.txt";
                 $TorC = "C";
                 }
             else if($Ilangpt)
