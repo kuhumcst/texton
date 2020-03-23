@@ -597,7 +597,7 @@ try {
                 $lang = "pl";
                 $flexrules = "$res/pl/lemmatiser/notags/0/flexrules.bra";
                 $traindata = "$res/pl/lemmatiser/training/polimorfologik.wordclasses.txt";
-                $TorC = "C";
+                $TorC = "T";
                 }
             else if($Ilangpt)
                 {
