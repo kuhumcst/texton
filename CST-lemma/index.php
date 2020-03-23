@@ -372,7 +372,7 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
         }
     else if($language == 'sv')
         {
-        $flexrulessubdir = "/2";
+        $flexrulessubdir = "/0";
         }
     else if($language == 'tr')
         {
