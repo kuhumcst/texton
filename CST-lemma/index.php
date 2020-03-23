@@ -342,7 +342,8 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
         }
     else if($language == 'pl')
         {
-        $flexrulessubdir = "";
+        $flexrulessubdir = "0";
+	$flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
         }
     else if($language == 'pt')
         {
