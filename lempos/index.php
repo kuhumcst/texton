@@ -584,7 +584,7 @@ try {
                 $lang = "it";
                 $flexrules = "$res/it/lemmatiser/notags/0/flexrules.pretty.bra.2";
                 $traindata = "$res/it/lemmatiser/training/morph-it_048_utf8.txt.ph";
-                $TorC = "C";
+                $TorC = "T";
                 }
             else if($Ilangla)
                 {
