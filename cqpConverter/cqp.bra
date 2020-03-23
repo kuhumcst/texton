@@ -1,0 +1,148 @@
+{cqp.bra
+Combine standoff annotations for tokens, part of speech and lemmas into VRT (CQP) format
+
+e.g.
+
+<text title="Murværk opmulet med vådmørtel august" date= "20170830" datefrom="20170830" dateto="20170830" timefrom="000000" timeto="235959" >
+<p idp ="1">
+<sentence id ="1">
+Murværk         N         N.IND.SING  Murværk
+opmuret           V         V.PARTC.PAST        opmure
+med     PREP  PREP  med
+vådmørtler       N         N.IND.PLU    vådmørtel
+</sentence>
+}
+X=
+  ( doit
+  =   
+    .   !arg:(?tok.?seg.?pos.?lem.?outp.?today)
+      & ( !tok:
+        |   get$(!tok,X ML):?T
+          &   (!seg:|get$(!seg,X ML TRM))
+            : ?S
+          &   (!pos:|get$(!pos,X ML TRM))
+            : ?P
+          &   (!lem:|get$(!lem,X ML TRM))
+            : ?L
+          & 0:?ID
+          & :?p:?words
+          &   whl
+            ' (   !T
+                :   ?
+                    (span.? ("xml:id".?tid) ?)
+                    ?token
+                    (.span.)
+                    ?T
+              & str$("#" !tid):?ref
+              & (   !P
+                  :   ?
+                      (span.? (from.!ref) ?)
+                      ?POS
+                      (.span.)
+                      ?P
+                | "_":?POS
+                )
+              & (   !L
+                  :   ?
+                      (span.? (from.!ref) ?)
+                      ?lemma
+                      (.span.)
+                      ?L
+                | "_":?lemma
+                )
+              &       str
+                    $ ( !token
+                        \t
+                        ( ( @(!POS:?cl "_" ?)
+                          | !POS:?cl
+                          )
+                        & !cl
+                        )
+                        \t
+                        !POS
+                        \t
+                        !lemma
+                        \n
+                      )
+                    !words
+                : ?words
+              & :?sent
+              & (     !S
+                    : ? (span.? (to.!ref) ?,?) ?S
+                  & 1+!ID:?ID
+                  &   whl
+                    ' ( !words:%?line ?words
+                      & !line !sent:?sent
+                      )
+                  &   (   !p:
+                        &   \n
+                            (sentence.(id.!ID),str$(\n !sent))
+                            \n
+                      |   !p
+                          \n
+                          (sentence.(id.!ID),str$(\n !sent))
+                          \n
+                      )
+                    : ?p
+                | 
+                )
+              )
+          &     toML
+              $ ( ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
+                  \n
+                  ( text
+                  .     (title.TITLE)
+                        (date.!today)
+                        (datefrom.!today)
+                        (dateto.!today)
+                        (timefrom.000000)
+                        (timeto.235959)
+                    , \n (p.(idp.1),!p) \n\n
+                  )
+                )
+            : ?ML
+          & @(!ML:? \n ?ML)
+          & put$(!ML,!outp,NEW)
+        )
+  )
+  ( new
+  =   
+    .   ~
+      |   (arg$:?outp|:?outp)
+        & (arg$:?tok|:?tok)
+        & (arg$:?seg|:?seg)
+        & (arg$:?pos|:?pos)
+        & (arg$:?lem|:?lem)
+        & (arg$:?today|:?today)
+        & (its.doit)$(!tok.!seg.!pos.!lem.!outp.!today)
+  );
+
+r=
+  get'"cqp.bra"
+& rmv$(str$(cqp ".bak"))
+& ren$("cqp.bra".str$(cqp ".bak"))
+&   put
+  $ ( "{cqp.bra
+Combine standoff annotations for tokens, part of speech and lemmas into VRT (CQP) format
+
+e.g.
+
+<text title=\"Murværk opmulet med vådmørtel august\" date= \"20170830\" datefrom=\"20170830\" dateto=\"20170830\" timefrom=\"000000\" timeto=\"235959\" >
+<p idp =\"1\">
+<sentence id =\"1\">
+Murværk         N         N.IND.SING  Murværk
+opmuret           V         V.PARTC.PAST        opmure
+med     PREP  PREP  med
+vådmørtler       N         N.IND.PLU    vådmørtel
+</sentence>
+}
+"
+    , "cqp.bra"
+    , NEW
+    )
+& lst'(X,"cqp.bra",APP)
+& put'(\n,"cqp.bra",APP)
+& lst'(r,"cqp.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"cqp.bra",APP);
+
+new'X;
