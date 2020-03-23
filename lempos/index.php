@@ -541,13 +541,13 @@ try {
                 }
             else if($Ilanget)
                 {
-                $lang = "et";
-                $flexrules = "$res/et/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "$res/et/lemmatiser/training/wfl-et.txt.ph";
-                $TorC = "C";
+                //$lang = "et";
+                //$flexrules = "$res/et/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                //$traindata = "$res/et/lemmatiser/training/wfl-et.txt.ph";
+                //$TorC = "C";
                 $lang = "et";
                 //$flexrules = "$res/et/lemmatiser/notags/0/flexrules.pretty.bra.2"; // wfl-et
-                $flexrules = "$res/et/lemmatiser/notags/1/flexrules.pretty.bra.2"; // estnltk
+                $flexrules = "$res/et/lemmatiser/notags/0/flexrules.bra"; // estnltk
                 $traindata = "$res/et/lemmatiser/training/wfl-et.txt.ph"; // contains tags, estnltk has no tags
                 $TorC = "C";
                 }
