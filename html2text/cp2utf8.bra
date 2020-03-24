@@ -1,0 +1,116 @@
+{cp2utf8.bra
+
+Check HTML for non-UTF-8 encoding and convert.}
+
+X=
+  ( doit
+  =   
+    .   !arg:(?input.?output)
+      & get$(!input,HT ML):?html
+      & (     !html
+            : (   ?
+                  ( meta
+                  .   ?
+                      (http-equiv.Content-Type)
+                      ?
+                      (content.@(?:? "charset=" ?cp))
+                      ?
+                  )
+                  ?
+              |   ?
+                  ( meta
+                  .     ?
+                        (http-equiv.Content-Type)
+                        ?
+                        (content.@(?:? "charset=" ?cp))
+                        ?
+                    , 
+                  )
+                  ?
+              )
+          & !cp:~(utf-8|UTF-8)
+          &   sys
+            $ ( str
+              $ ( "python convertWindowsCodepageToUTF-8 "
+                  !input
+                  " "
+                  !cp
+                  " "
+                  !output
+                )
+              )
+          & get$(!output,HT ML):?html
+          &   put
+            $ (   str
+                $ ( toML
+                  $ (     !html
+                        :   ?A
+                            ( meta
+                            .   ?B
+                                (http-equiv.Content-Type)
+                                ?C
+                                (content.@(?:?a "charset=" ?cp))
+                                ?D
+                            )
+                            ?E
+                      &   !A
+                          ( meta
+                          .   !B
+                              (http-equiv.Content-Type)
+                              !C
+                              (content.str$(!a utf-8))
+                              !D
+                          )
+                          !E
+                    |     !html
+                        :   ?A
+                            ( meta
+                            .     ?B
+                                  (http-equiv.Content-Type)
+                                  ?C
+                                  (content.@(?:?a "charset=" ?cp))
+                                  ?D
+                              , 
+                            )
+                            ?E
+                      &   !A
+                          ( meta
+                          .     !B
+                                (http-equiv.Content-Type)
+                                !C
+                                (content.str$(!a utf-8))
+                                !D
+                            , 
+                          )
+                          !E
+                    )
+                  )
+              , !output
+              , NEW
+              )
+        | sys$(str$("cp " !input " " !output))
+        )
+  )
+  (new=.~|(its.doit)$(arg$.arg$));
+
+r=
+  get'("cp2utf8.bra",TXT)
+& rmv$(str$(cp2utf8 ".bak"))
+& ren$("cp2utf8.bra".str$(cp2utf8 ".bak"))
+&   put
+  $ ( "{cp2utf8.bra
+
+Check HTML for non-UTF-8 encoding and convert.}
+
+"
+    , "cp2utf8.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"cp2utf8.bra",APP)
+& put'(\n,"cp2utf8.bra",APP,BIN)
+& lst'(r,"cp2utf8.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"cp2utf8.bra",APP,BIN)
+& ;
+
+new'X;

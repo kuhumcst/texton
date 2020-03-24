@@ -1,0 +1,63 @@
+{removeLinks.bra
+
+Remove links from output of html2txt https://github.com/soundasleep/html2text}
+
+X=
+  ( doit
+  =   
+    .   !arg:(?input.?output)
+      & get$(!input,STR):?input
+      & :?txet
+      &   whl
+        ' ( @( !input
+             :   ?F
+                 "]("
+                 ?L
+                 ( ")"
+                 & @(!L:(~(? "(" ?)|? "(" ? ")" ?))
+                 )
+                 ?input
+             )
+          & @(rev$!F:?T "[" ?RF)
+          &     !T
+                (   @( !RF
+                     :   ( :!txet
+                         | \n
+                         | \r
+                         | \t
+                         | " "
+                         )
+                         ?
+                     )
+                  & 
+                | " "
+                )
+                !RF
+                !txet
+            : ?txet
+          )
+      & put$(rev$(str$(rev$!input !txet)),!output,NEW)
+  )
+  (new=.~|(its.doit)$(arg$.arg$));
+
+r=
+  get'("removeLinks.bra",TXT)
+& rmv$(str$(removeLinks ".bak"))
+& ren$("removeLinks.bra".str$(removeLinks ".bak"))
+&   put
+  $ ( "{removeLinks.bra
+
+Remove links from output of html2txt https://github.com/soundasleep/html2text}
+
+"
+    , "removeLinks.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"removeLinks.bra",APP)
+& put'(\n,"removeLinks.bra",APP,BIN)
+& lst'(r,"removeLinks.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"removeLinks.bra",APP,BIN)
+& ;
+
+new'X;
