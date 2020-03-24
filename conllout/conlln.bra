@@ -1,0 +1,167 @@
+{conlln.bra
+Combine standoff annotations for tokens, part of speech and lemmas into CoNLL format
+
+A CoNLL file as defined here contains one tab separated row per token. Each row contains exactly 14 columns. No blank characters are allowed. Sentences are separated by an empty row. The columns are the following:
+1	ID		The number of the token in the current sentence, starting with 1
+2	FORM 		The form of the token
+3	LEMMA 		The lemma of the token
+4	PLEMMA 	The predicted lemma of the token
+5	POS 		part-of-speech tag
+6	PPOS 		predicted part-of-speech tag
+7	FEAT 
+8	PFEAT 
+9	HEAD 		The head of the token: an ID or 0 for none
+10	PHEAD 		The projective head of the token: an ID or 0 for none
+11	DEPREL 	Dependency relation to HEAD
+12	PDEPREL 	Dependency relation to PHEAD
+13	FILLPRED 
+14	PRED
+
+Only fields 1, 2, 4, 5, 7 and 8 are guaranteed to contain non-dummy values. The other fields may contain an underscore as dummy value.
+The CoNLLImporter does not require the input files to satisfy all of these conditions strictly: only fields 1, 2 and 7 must not contain dummy values. Nevertheless, there will be warnings during the conversion if a value mandatory as to the first definition is missing.
+}
+X=
+  ( doit
+  =   
+    .     !arg:(?outp.?tok.?seg.?pos.?lem)
+        & !tok:
+        & put$(,!outp,NEW)
+      |     nestML$(get$(!tok,X ML))
+          : ? (spanGrp.?,?T) ?
+        &   ( !seg:
+            |   new$hash:?SEG
+              &   nestML$(get$(!seg,X ML))
+                : ? (spanGrp.?,?span) ?
+              &   map
+                $ ( ( 
+                    =   
+                      .     !arg
+                          : ( ?
+                            .   ? (to.@(?:"#" ?ref)) ?
+                              , ?
+                            )
+                        & (SEG..insert)$(!ref.)
+                    )
+                  . !span
+                  )
+            )
+          : ?S
+        &   ( !pos:
+            |   new$hash:?POS
+              &   nestML$(get$(!pos,X ML TRM))
+                : ? (spanGrp.?,?span) ?
+              &   map
+                $ ( ( 
+                    =   
+                      .     !arg
+                          : ( ?
+                            .   ? (from.@(?:"#" ?ref)) ?
+                              , ?t
+                            )
+                        & (POS..insert)$(!ref.!t)
+                    )
+                  . !span
+                  )
+            )
+          : ?P
+        &   ( !lem:
+            |   new$hash:?LEM
+              &   nestML$(get$(!lem,X ML TRM))
+                : ? (spanGrp.?,?span) ?
+              &   map
+                $ ( ( 
+                    =   
+                      .     !arg
+                          : ( ?
+                            .   ? (from.@(?:"#" ?ref)) ?
+                              , ?t
+                            )
+                        & (LEM..insert)$(!ref.!t)
+                    )
+                  . !span
+                  )
+            )
+          : ?L
+        & 0:?ID
+        &     map
+            $ ( ( 
+                =   
+                  .     !arg
+                      : (span.? ("xml:id".?tid) ?,?token)
+                    &   
+                        (1+!ID:?ID)
+                        \t
+                        !token
+                        \t
+                        (   (LEM..find)$!tid:(?.?t)
+                          & !t \t !t
+                        | "_\t_"
+                        )
+                        \t
+                        (   (POS..find)$!tid:(?.?t)
+                          & !t \t !t
+                        | "_\t_"
+                        )
+                        "	_	_	_	_	_	_	_	_
+"
+                        (   (SEG..find)$!tid
+                          & 0:?ID
+                          & \n
+                        |
+                        )
+                        
+                )
+              . !T
+              )
+          : ?t
+        & put$(str$!t,!outp,NEW)
+        & put$(\n,!outp,APP)
+  )
+  ( new
+  =   
+    .   ~
+      |   (arg$:?outp|:?outp)
+        & (arg$:?tok|:?tok)
+        & (arg$:?seg|:?seg)
+        & (arg$:?pos|:?pos)
+        & (arg$:?lem|:?lem)
+        & (its.doit)$(!outp.!tok.!seg.!pos.!lem)
+  );
+
+r=
+  get'"conlln.bra"
+& rmv$(str$(conlln ".bak"))
+& ren$("conlln.bra".str$(conlln ".bak"))
+&   put
+  $ ( "{conlln.bra
+Combine standoff annotations for tokens, part of speech and lemmas into CoNLL format
+
+A CoNLL file as defined here contains one tab separated row per token. Each row contains exactly 14 columns. No blank characters are allowed. Sentences are separated by an empty row. The columns are the following:
+1	ID		The number of the token in the current sentence, starting with 1
+2	FORM 		The form of the token
+3	LEMMA 		The lemma of the token
+4	PLEMMA 	The predicted lemma of the token
+5	POS 		part-of-speech tag
+6	PPOS 		predicted part-of-speech tag
+7	FEAT 
+8	PFEAT 
+9	HEAD 		The head of the token: an ID or 0 for none
+10	PHEAD 		The projective head of the token: an ID or 0 for none
+11	DEPREL 	Dependency relation to HEAD
+12	PDEPREL 	Dependency relation to PHEAD
+13	FILLPRED 
+14	PRED
+
+Only fields 1, 2, 4, 5, 7 and 8 are guaranteed to contain non-dummy values. The other fields may contain an underscore as dummy value.
+The CoNLLImporter does not require the input files to satisfy all of these conditions strictly: only fields 1, 2 and 7 must not contain dummy values. Nevertheless, there will be warnings during the conversion if a value mandatory as to the first definition is missing.
+}
+"
+    , "conlln.bra"
+    , NEW
+    )
+& lst'(X,"conlln.bra",APP)
+& put'(\n,"conlln.bra",APP)
+& lst'(r,"conlln.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"conlln.bra",APP);
+
+new'X;
