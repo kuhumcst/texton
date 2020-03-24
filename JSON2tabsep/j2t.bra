@@ -1,0 +1,78 @@
+{j2t.bra
+
+Convert from JSON word/lemma/pos to tab separated format, 4 columns (last column empty)}
+
+X=
+  ( doit
+  =   
+    .   !arg:(?input.?output)
+      & get$(!input,JSN):(,?sentences)
+      &   put
+        $ (   str
+            $ ( map
+              $ ( ( 
+                  =   
+                    .   !arg:((?sentno.,?sent),)
+                      &     map
+                          $ ( ( 
+                              =   
+                                .     !arg
+                                    : ( (   ?
+                                          + (Word..?Word)
+                                          + (lemma..?lemma)
+                                          + (pos..?pos)
+                                        , 
+                                        )
+                                      | ( 
+                                        ,   (   ?
+                                              + (Word..?Word)
+                                              + (lemma..?lemma)
+                                              + (pos..?pos)
+                                            , 
+                                            )
+                                            ?
+                                        )
+                                      )
+                                  & !Word \t !lemma \t !pos \t\n
+                              )
+                            . !sent
+                            )
+                          \n
+                  )
+                . !sentences
+                )
+              )
+          , !output
+          , NEW
+          )
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        &   (its.doit)
+          $ ("C:\\downloads\\text-47-3957-step3.json"."text-47-3957-step4.txt")
+      | (its.doit)$(arg$.arg$)
+  );
+
+r=
+  get'("j2t.bra",TXT)
+& rmv$(str$(j2t ".bak"))
+& ren$("j2t.bra".str$(j2t ".bak"))
+&   put
+  $ ( "{j2t.bra
+
+Convert from JSON word/lemma/pos to tab separated format, 4 columns (last column empty)}
+
+"
+    , "j2t.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"j2t.bra",APP)
+& put'(\n,"j2t.bra",APP,BIN)
+& lst'(r,"j2t.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"j2t.bra",APP,BIN)
+& ;
+
+new'X;
