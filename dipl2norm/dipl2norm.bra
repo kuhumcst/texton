@@ -1,0 +1,255 @@
+{dipl2norm.bra
+
+Take diplom text in org-mode format and add column with normalised tokens.
+}
+
+X=
+  ( doit
+  =   
+    .   (trim=.str$(vap$((=.!arg).!arg." ")))
+      & (spaces=.str$(vap$((=." ").!arg)))
+      & ( pad
+        =   s x Ls Ls L
+          .   !arg:(?s.?x)
+            & vap$((=.!arg).!x):? [?Lx
+            & vap$((=.!arg).!s):? [?Ls
+            & !Lx+-1*!Ls:?L
+            & @(spaces$!x:?x [!L ?)
+            & str$(!s !x)
+        )
+      & ( readOrg2colFile
+        =   table
+          .       vap
+                $ ( ( 
+                    =   token anno
+                      .   @(!arg:"|" ?token "|" ?anno "|")
+                        & (trim$!token.!anno)
+                    )
+                  . (|out$(file !arg))&get$(!arg,STR)
+                  . \n
+                  )
+              : (?H1.?H2) (?.?) ?table
+            & ((!H1.trim$!H2).!table)
+        )
+      & ( getFull
+        =   A Z
+          .       vap
+                $ ( ( 
+                    =   
+                      .       !arg
+                            : ( "("
+                              | ")"
+                              | "["
+                              | "]"
+                              | "{"
+                              | "}"
+                              | ⟨
+                              | ⟩
+                              | " "
+                              )
+                          & 
+                        | !arg
+                    )
+                  . !arg
+                  )
+              : ?arg
+            &   whl
+              ' ( !arg:?A "-" ¦ ?Z
+                & !A !Z:?arg
+                )
+            &   whl
+              ' (!arg:?A ¦ ?Z&!A !Z:?arg)
+            & !arg
+        )
+      & !arg:(?outp.?tok)
+      & (|out$(outp !outp))
+      & (|out$(tok !tok))
+      &   ( 
+          =   ?a
+              "|"
+              ?b
+              "|"
+              ?c
+              "|"
+              ?d
+              "|"
+              ?e
+              "|"
+              ?f
+              "|"
+              ?g
+              "|"
+              ?facs
+              "|"
+              ?dipl
+              "|"
+              ?h
+              "|"
+              ?i
+              "|"
+              ?j
+              "|"
+              ?k
+              "|"
+              ?l
+              "|"
+              ?m
+              "|"
+              ?n
+              "|"
+              ?o
+              "|"
+              ?p
+              "|"
+              ?q
+          )
+        : ?longpat
+      &   ( 
+          =   ?a
+              "|"
+              ?b
+              "|"
+              ?d
+              "|"
+              ?e
+              "|"
+              ?f
+              "|"
+              ?g
+              "|"
+              ?facs
+              "|"
+              ?dipl
+              "|"
+              ?h
+              "|"
+              ?i
+              "|"
+              ?j
+              "|"
+              ?k
+              "|"
+              ?l
+              "|"
+              ?m
+              "|"
+              ?n
+              "|"
+              ?o
+              "|"
+              ?p
+              "|"
+              ?q
+          )
+        : ?shortpat
+      &     vap
+          $ ( ( 
+              =   w full short
+                .     @( !arg
+                       : ? "|" ? "|" ? "|" ? "|" ?
+                       : ( !pat
+                         |   ?w
+                           & !shortpat:(=?pat)
+                           & " ":?c
+                           & !w:!pat
+                         )
+                       )
+                    & str$(getFull$!facs):?K
+                    &     pad
+                        $ (   str
+                            $ ( vap
+                              $ ( ( 
+                                  =   
+                                    .   !arg:v&u
+                                      | !arg:j&i
+                                      | !arg
+                                  )
+                                . low$!K
+                                )
+                              )
+                          . !facs
+                          )
+                      : ?g
+                    &   str
+                      $ ( !a
+                          "|"
+                          !b
+                          "|"
+                          !c
+                          "|"
+                          !d
+                          "|"
+                          !e
+                          "|"
+                          !f
+                          "|"
+                          !g
+                          "|"
+                          !facs
+                          "|"
+                          !dipl
+                          "|"
+                          !h
+                          "|"
+                          !i
+                          "|"
+                          !j
+                          "|"
+                          !k
+                          "|"
+                          !l
+                          "|"
+                          !m
+                          "|"
+                          !n
+                          "|"
+                          !o
+                          "|"
+                          !p
+                          "|"
+                          !q
+                          \n
+                        )
+                  | str$(!arg \n)
+              )
+            .   (|out$(file !arg))
+              & :?lang
+              & !longpat:(=?pat)
+              & get$(!tok,STR)
+            . \n
+            )
+        : ?diplom
+      & (|lst$(diplom,diplom,NEW))
+      & put$(str$!diplom,!outp,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   ( arg$:?outp&arg$:?tok
+          | "26.org":?tok&"26.norm.org":?outp
+          )
+        & (its.doit)$(!outp.!tok)
+  );
+
+r=
+  get'("dipl2norm.bra",TXT)
+& rmv$(str$(dipl2norm ".bak"))
+& ren$("dipl2norm.bra".str$(dipl2norm ".bak"))
+&   put
+  $ ( "{dipl2norm.bra
+
+Take diplom text in org-mode format and add column with normalised tokens.
+}
+
+"
+    , "dipl2norm.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"dipl2norm.bra",APP)
+& put'(\n,"dipl2norm.bra",APP,BIN)
+& lst'(r,"dipl2norm.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"dipl2norm.bra",APP,BIN)
+& ;
+
+new'X;
