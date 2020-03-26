@@ -1,0 +1,229 @@
+{brapostei}
+
+X=
+  ( convert2html
+  =   xml file Ent atts ent entn write,doamp
+    .   !arg:(?xml.?file)
+      & ( doamp
+        =   x y
+          .     @(!arg:?x ";" ?y)
+              & (   @( get$(str$("&" !x ";"),HT,ML,MEM)
+                     : "&" !x ";"
+                     )
+                  & amp
+                | !y:?arg&!x
+                )
+            | amp
+          . !arg
+        )
+      & ( Ent
+        =   a c amp
+          .     @( str$!arg
+                 :   ?a
+                     ( ( "<"
+                       | "&"
+                       | ">"
+                       | \"
+                       | "'"
+                       )
+                     : ?c
+                     )
+                     ?arg
+                 )
+              &   !a
+                  "&"
+                  ( !c:"<"&lt
+                  |   !c:"&"
+                    & doamp$!arg:(?amp.?arg)
+                    & !amp
+                  | !c:">"&gt
+                  | !c:\"&quot
+                  | apos
+                  )
+                  ";"
+                  Ent$!arg
+            | !arg
+        )
+      & ( ent
+        =   a c amp
+          .     @( !arg
+                 :   ?a
+                     (("<"|"&"|">"):?c)
+                     ?arg
+                 )
+              &   !a
+                  "&"
+                  ( !c:"<"&lt
+                  |   !c:"&"
+                    & doamp$!arg:(?amp.?arg)
+                    & !amp
+                  | gt
+                  )
+                  ";"
+                  ent$!arg
+            | !arg
+        )
+      & ( entn
+        =   A
+          .   !arg:%?A ?arg&ent$!A entn$!arg
+            | !arg
+        )
+      & ( atts
+        =   a v
+          .     !arg:(?a.?v) ?arg
+              & " " ent$!a "=\"" Ent$!v \" atts$!arg
+            | 
+        )
+      & ( write
+        =   xml car A B C att
+          .   !arg:?xml
+            &   whl
+              ' ( !xml:%?car ?xml
+                & (   !car:(?A.?B)
+                    & (   !B:(?att,?C)
+                        & (     !A
+                              : ( dl
+                                | table
+                                | ul
+                                | ol
+                                | blockquote
+                                | p
+                                | @(?:h #)
+                                )
+                            & fil$(,,,\n)
+                          | 
+                          )
+                        & (   !C:
+                            &   fil
+                              $ (,,,str$("<" !A atts$!att " />"))
+                          |   fil$(,,,str$("<" !A atts$!att ">"))
+                            & write$!C
+                            & fil$(,,,str$("</" !A ">"))
+                          )
+                      |   !A
+                        : (   
+                            & !B:(?B.)
+                            & fil$(,,,str$("</" ent$!B ">"))
+                          |   "!"
+                            & fil$(,,,str$("<!" !B ">"))
+                          |   "!--"
+                            & fil$(,,,str$("<!--" !B "-->"))
+                          |   "?"
+                            & fil$(,,,str$("<?" !B "?>"))
+                          |   "![CDATA["
+                            & fil$(,,,str$("<![CDATA[" !B "]]>"))
+                          |   "!DOCTYPE"
+                            & fil$(,,,str$("<!DOCTYPE" !B ">"))
+                          |   ?
+                            & fil$(,,,str$("<" !A atts$!B ">"))
+                          )
+                      )
+                  | fil$(,,,str$(entn$!car))
+                  )
+                )
+        )
+      & fil$(!file,w)
+      & fil$(,STR)
+      & write$!xml
+      & fil$(,SET,-1)
+      & ok
+  )
+  ( new
+  =   
+    .   !inputTok
+      & !inputPos
+      & !output
+      & ( get$(!inputTok,X,ML,TRM):?XMLtok
+        | put$(cannotopen !inputTok \n,"brapostei.log",APP)
+        )
+      & ( get$(!inputPos,STR):?pos
+        | put$(cannotopen !inputPos \n,"brapostei.log",APP)
+        )
+      & :?nXML:?oldt:?oldA
+      & 0:?nr
+      & 99999999999:?snold
+      & ( sentNo
+        =   sent
+          .   @(!arg:? #%?sent "." ?)&str$(!sent ".")
+            | 
+        )
+      &   whl
+        ' ( !XMLtok
+          : (   (?e.?a) @?A (.!e.) ?XMLtok
+              &   !a
+                : ? ("xml:id".?t) ?
+                : ? (from.?from) ?
+                : ( ? (to.?to) ?
+                  | ?&!from:?to
+                  )
+              & (@(!from:"#" ?from)|)
+              & (@(!to:"#" ?to)|)
+              & "3	take	_	_	_	VB	_	_	-1	_	_	_	_	_"
+              & @( !pos
+                 :   ?
+                     \t
+                     ?w
+                     \t
+                     "_"
+                     \t
+                     "_"
+                     \t
+                     "_"
+                     \t
+                     ?p
+                     \t
+                     ?
+                     (\n|\r)
+                     ?pos
+                 )
+              & @( rev$!w
+                 : ( ?w (" "|\n|\r) ?
+                   | ?w
+                   )
+                 )
+              & rev$!w:?w
+              &     !nXML
+                    ( !e
+                    .     (@(!A:? !w ?oldA)|@(low$!A:? !w ?oldA))
+                        & sentNo$!t:?sno
+                        & (!sno:!snold|0:?nr)
+                        &   ("xml:id".str$(p !sno (1+!nr:?nr)))
+                            (from.str$("#" !t))
+                      |   (@(!oldA:? !w ?oldA)|@(low$!oldA:? !w ?oldA))
+                        & sentNo$!oldt:?sno
+                        & (!sno:!snold|0:?nr)
+                        &   (!e.!a) !A (.!e.) !XMLtok
+                          : ?XMLtok
+                        &   ("xml:id".str$(p !sno (1+!nr:?nr)))
+                            (from.str$("#" !oldt))
+                    )
+                    !p
+                    (.!e.)
+                : ?nXML
+              & !t:?oldt
+              & !sno:?snold
+            |   %?v ?XMLtok
+              & (   !v:(spanGrp.ana.?)
+                  & (spanGrp.ana.str$("#" MatePOSTagger)):?v
+                | 
+                )
+              & !nXML !v:?nXML
+            )
+          )
+      & (its.convert2html)$(!nXML.!output)
+  );
+
+r=
+  get'brapostei
+& rmv$(str$(brapostei ".bak"))
+& ren$(brapostei.str$(brapostei ".bak"))
+& put$("{brapostei}
+
+",brapostei,NEW)
+& lst'(X,brapostei,APP)
+      & lst$(nXML,nXML,NEW)
+& put'(\n,brapostei,APP)
+& lst'(r,brapostei,APP)
+& put$(str$("\nnew'" X ";\n"),brapostei,APP);
+
+new'X;
