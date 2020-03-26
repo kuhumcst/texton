@@ -320,9 +320,9 @@ try {
             if($Ilangda)
                 $lang = "$res/da/BohnetsPOStagger/CoNLL2009-ST-English-ALL.anna-3.3.postagger.model";
             else if($Ilangde)
-                $lang = "$res/en/BohnetsPOStagger/CoNLL2009-ST-English-ALL.anna-3.3.postagger.model";
+                $lang = "$res/de/BohnetsPOStagger/CoNLL2009-ST-English-ALL.anna-3.3.postagger.model";
             else if($Ilangen)
-                $lang = "$res/de/BohnetsPOStagger/tag-ger-3.6.model";
+                $lang = "$res/en/BohnetsPOStagger/tag-ger-3.6.model";
             else if($Ilanges)
                 $lang = "$res/es/BohnetsPOStagger/CoNLL2009-ST-Spanish-ALL.anna-3.3.postagger.model";
             else if($Ilangfr)
