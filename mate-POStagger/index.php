@@ -317,16 +317,15 @@ try {
             $res = "../texton-linguistic-resources";
             $lang = "da";
 
-            if($Ilangda)
-                $lang = "$res/da/BohnetsPOStagger/CoNLL2009-ST-English-ALL.anna-3.3.postagger.model";
-            else if($Ilangde)
-                $lang = "$res/de/BohnetsPOStagger/CoNLL2009-ST-English-ALL.anna-3.3.postagger.model";
+            if($Ilangde)
+                $lang = "$res/de/BohnetsPOStagger/tag-ger-3.6.model";
             else if($Ilangen)
-                $lang = "$res/en/BohnetsPOStagger/tag-ger-3.6.model";
+                $lang = "$res/en/BohnetsPOStagger/CoNLL2009-ST-English-ALL.anna-3.3.postagger.model";
             else if($Ilanges)
                 $lang = "$res/es/BohnetsPOStagger/CoNLL2009-ST-Spanish-ALL.anna-3.3.postagger.model";
             else if($Ilangfr)
                 $lang = "$res/fr/BohnetsPOStagger/ftb6_1.conll09.crossannotated.anna-3.3-d8.jar.postagger.model";
+	    logit("$lang");logit(realpath($lang)); 
              http($conll,$matePOSfile,realpath($lang));
 
             //$utf8file = tempFileName("utf8file");
