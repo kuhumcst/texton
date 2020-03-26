@@ -307,6 +307,7 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
     else if($language == 'fr')
         {
         $flexrulessubdir = "/1";
+	$flexrules = "flexrules.frlexambi.uden.dubletter.ph_XC";
         }
     else if($language == 'hr')
         {
