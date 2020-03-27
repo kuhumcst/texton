@@ -1,0 +1,108 @@
+{toksent.bra
+
+Simple tokeniser/segmentiser. Parameter compatible with toksent.py.
+This script assumes that the text is already tokenised, so only elements indicating a white space
+separate tokens. Consecutive elements without intervening white space shall be concatenated.}
+
+X=
+  ( doit
+  =   
+    .   ( getTree
+        =   
+          .     !arg:? (?e.?a,?c) ?arg
+              &   ( ( !e:w&(!a.!c)
+                    |   !e:c
+                      & !a:?A (type.?t) ?Z
+                      & ( !t:s&(!A !Z.)
+                        | (!A !Z.!c)
+                        )
+                    )
+                  | !e:p&(.getTree$!c)
+                  | getTree$!c
+                  )
+                  getTree$!arg
+            | 
+        )
+      & ( concat
+        =   
+          .   map
+            $ ( ( 
+                =   P
+                  .   !arg:(.?P)
+                    &   whl
+                      ' (   !P
+                          :   ?A
+                              (?a1.~:?x)
+                              (?a2.~:?y)
+                              ?Z
+                        &   !A (!a1 !a2.str$(!x !y)) !Z
+                          : ?P
+                        )
+                    & !P
+                )
+              . !arg
+              )
+        )
+      & ( xmlise
+        =   
+          .   map
+            $ ( ( 
+                =   
+                  .   !arg:(?a.?c)&!c:
+                    | ( span
+                      .     !a:? ("xml:id".?from) ?a
+                          & ( !a:? ("xml:id".?to) ?
+                            | :?to
+                            )
+                          &   (from.str$("#" !from))
+                              ( !to:
+                              | (to.str$("#" !to))
+                              )
+                              ("xml:id".!id+1:?id)
+                        , !c
+                      )
+                )
+              . !arg
+              )
+        )
+      & !arg:(?F.?tokfile)
+      & nestML$(get$(!F,X ML)):?xml
+      & getTree$!xml:?tree
+      & concat$!tree:?tokens
+      & 0:?id
+      & xmlise$!tokens:?tokens
+      &   toML$(spanGrp.(ana.ClarinTokeniser),!tokens)
+        : ?toknes
+      & put$(!toknes,!tokfile,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   arg$:?F
+        & arg$:?tokfile
+        & (its.doit)$(!F.!tokfile)
+  );
+
+r=
+  get'("toksent.bra",TXT)
+& rmv$(str$(toksent ".bak"))
+& ren$("toksent.bra".str$(toksent ".bak"))
+&   put
+  $ ( "{toksent.bra
+
+Simple tokeniser/segmentiser. Parameter compatible with toksent.py.
+This script assumes that the text is already tokenised, so only elements indicating a white space
+separate tokens. Consecutive elements without intervening white space shall be concatenated.}
+
+"
+    , "toksent.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"toksent.bra",APP)
+& put'(\n,"toksent.bra",APP,BIN)
+& lst'(r,"toksent.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"toksent.bra",APP,BIN)
+& ;
+
+new'X;
