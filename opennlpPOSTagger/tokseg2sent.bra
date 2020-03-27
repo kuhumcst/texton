@@ -1,0 +1,200 @@
+{tokseg2sent.bra
+Produce file with one sentence per line from two annotation inputs, both TEIP5-DKCLARIN (XML).
+
+Parameter   Description
+inputTok    name of input file with tokens
+inputSeg    name of input file with segments
+output      name of output file
+
+e.g.
+bracmat inputTok="tokens.xml" inputSeg="segments.xml" output="sentenceLines.txt" get$"tokseg2sent.bra"
+
+../bin/bracmat 'inputTok="tokens.xml"' 'inputSeg="segments.xml"' 'output="sentenceLines.txt"' 'get$"../bin/tokseg2sent.bra"'
+
+
+Tokens:
+
+<spanGrp ana="#CstClarinDaTokeniser">
+    <span xml:id="t1" from="#i1.1">Tillægsaftale</span>
+    <span xml:id="t2" from="#i1.3">til</span>
+    <span xml:id="t3" from="#i1.5">aftalen</span>
+    <span xml:id="t4" from="#i1.7">vedrørende</span>
+    <span xml:id="t5" from="#i1.9">urmagervarer</span>
+    <span xml:id="t6" from="#i1.11">mellem</span>
+    <span xml:id="t7" from="#i1.13">Det</span>
+    <span xml:id="t8" from="#i1.15">europæiske</span>
+    <span xml:id="t9" from="#i1.17">økonomiske</span>
+    <span xml:id="t10" from="#i1.19">Fællesskab</span>
+    <span xml:id="t11" from="#i1.21">og</span>
+    <span xml:id="t12" from="#i1.23">medlemsstaterne</span>
+    <span xml:id="t13" from="#i1.25">på</span>
+    <span xml:id="t14" from="#i1.27">den</span>
+    <span xml:id="t15" from="#i1.29">ene</span>
+    <span xml:id="t16" from="#i1.31">side</span>
+    <span xml:id="t17" from="#i1.33">og</span>
+    <span xml:id="t18" from="#i1.35">Schweiz</span>
+    <span xml:id="t19" from="#i1.37">på</span>
+    <span xml:id="t20" from="#i1.39">den</span>
+    <span xml:id="t21" from="#i1.41">anden</span>
+    <span xml:id="t22" from="#i1.43">side</span>
+    <span xml:id="t23" from="#i2.1">TILLÆGSAFTALE</span>
+    <span xml:id="t24" from="#i2.3">til</span>
+    <span xml:id="t25" from="#i2.5">aftalen</span
+    ...
+    <span xml:id="t1132" from="#i47.8">></span>
+</spanGrp>
+
+Segments:
+
+<spanGrp ana="#CstClarinParagraphSegmenter">
+    <span xml:id="P1" type="Pseg" from="#t1" to="#t22"/>
+    <span xml:id="P2" type="Pseg" from="#t23" to="#t44"/>
+    <span xml:id="P47" type="Pseg" from="#t1126" to="#t1132"/>
+</spanGrp>
+}
+
+X=
+  new
+=   
+  .   ~
+    |   (|put$("tokseg2sent.log
+","tokseg2sent.log",NEW))
+      & !inputTok
+      & !inputSeg
+      & !output
+      & ( get$(!inputTok,X,ML,TRM):?XMLtok
+        | 
+        | put$(cannotopen !inputTok \n,"tokseg2sent.log",APP)
+        )
+      & ( get$(!inputSeg,X,ML,TRM):?XMLseg
+        | 
+        | put$(cannotopen !inputSeg \n,"tokseg2sent.log",APP)
+        )
+      & ( invert
+        =   g L
+          .   :?L
+            & whl'(!arg:%?g ?arg&!g !L:?L)
+            & !L
+        )
+      & :?tos
+      &   whl
+        ' (   !XMLseg
+            :   ?
+                (?.? (from.?) ?:? (to.?to) ?,)
+                ?XMLseg
+          & (@(!to:"#" ?to)|)
+          & !to !tos:?tos
+          )
+      & :?ntos
+      & whl'(!tos:%?to ?tos&!to !ntos:?ntos)
+      & :?ntok
+      &   whl
+        ' ( !ntos:%?to ?ntos
+          &   !XMLtok
+            :   ?A
+                (?e.?a (?m.!to) ?z)
+                ?C
+                (.!e.)
+                ?XMLtok
+          &     (br.,)
+                (.!e.)
+                !C
+                (!e.!a (!m.!to) !z)
+                invert$!A
+                !ntok
+            : ?ntok
+          )
+      & invert$!ntok !XMLtok:?XML
+      & :?sent
+      & ( trim
+        =   
+          .     @( rev$!arg
+                 : ? ((%@:~(" "|\n)) ?:?arg)
+                 )
+              & @( rev$!arg
+                 : ? ((%@:~(" "|\n)) ?:?arg)
+                 )
+            | !arg
+        )
+      &   whl
+        ' ( !XML
+          : (   (br.?) ?XML
+              & put$(low$(str$(!sent \n)),!output,APP)
+              & :?sent
+            |   (?e.?) @?A (.!e.) ?XML
+              & !sent trim$!A " ":?sent
+            | % ?XML
+            )
+          )
+      & put$(str$(!sent \n),!output,APP);
+
+r=
+  get'"tokseg2sent.bra"
+& rmv$"tokseg2sent.bak"
+& ren$("tokseg2sent.bra"."tokseg2sent.bak")
+&   put
+  $ ( "{tokseg2sent.bra
+Produce file with one sentence per line from two annotation inputs, both TEIP5-DKCLARIN (XML).
+
+Parameter   Description
+inputTok    name of input file with tokens
+inputSeg    name of input file with segments
+output      name of output file
+
+e.g.
+bracmat inputTok=\"tokens.xml\" inputSeg=\"segments.xml\" output=\"sentenceLines.txt\" get$\"tokseg2sent.bra\"
+
+../bin/bracmat 'inputTok=\"tokens.xml\"' 'inputSeg=\"segments.xml\"' 'output=\"sentenceLines.txt\"' 'get$\"../bin/tokseg2sent.bra\"'
+
+
+Tokens:
+
+<spanGrp ana=\"#CstClarinDaTokeniser\">
+    <span xml:id=\"t1\" from=\"#i1.1\">Tillægsaftale</span>
+    <span xml:id=\"t2\" from=\"#i1.3\">til</span>
+    <span xml:id=\"t3\" from=\"#i1.5\">aftalen</span>
+    <span xml:id=\"t4\" from=\"#i1.7\">vedrørende</span>
+    <span xml:id=\"t5\" from=\"#i1.9\">urmagervarer</span>
+    <span xml:id=\"t6\" from=\"#i1.11\">mellem</span>
+    <span xml:id=\"t7\" from=\"#i1.13\">Det</span>
+    <span xml:id=\"t8\" from=\"#i1.15\">europæiske</span>
+    <span xml:id=\"t9\" from=\"#i1.17\">økonomiske</span>
+    <span xml:id=\"t10\" from=\"#i1.19\">Fællesskab</span>
+    <span xml:id=\"t11\" from=\"#i1.21\">og</span>
+    <span xml:id=\"t12\" from=\"#i1.23\">medlemsstaterne</span>
+    <span xml:id=\"t13\" from=\"#i1.25\">på</span>
+    <span xml:id=\"t14\" from=\"#i1.27\">den</span>
+    <span xml:id=\"t15\" from=\"#i1.29\">ene</span>
+    <span xml:id=\"t16\" from=\"#i1.31\">side</span>
+    <span xml:id=\"t17\" from=\"#i1.33\">og</span>
+    <span xml:id=\"t18\" from=\"#i1.35\">Schweiz</span>
+    <span xml:id=\"t19\" from=\"#i1.37\">på</span>
+    <span xml:id=\"t20\" from=\"#i1.39\">den</span>
+    <span xml:id=\"t21\" from=\"#i1.41\">anden</span>
+    <span xml:id=\"t22\" from=\"#i1.43\">side</span>
+    <span xml:id=\"t23\" from=\"#i2.1\">TILLÆGSAFTALE</span>
+    <span xml:id=\"t24\" from=\"#i2.3\">til</span>
+    <span xml:id=\"t25\" from=\"#i2.5\">aftalen</span
+    ...
+    <span xml:id=\"t1132\" from=\"#i47.8\">></span>
+</spanGrp>
+
+Segments:
+
+<spanGrp ana=\"#CstClarinParagraphSegmenter\">
+    <span xml:id=\"P1\" type=\"Pseg\" from=\"#t1\" to=\"#t22\"/>
+    <span xml:id=\"P2\" type=\"Pseg\" from=\"#t23\" to=\"#t44\"/>
+    <span xml:id=\"P47\" type=\"Pseg\" from=\"#t1126\" to=\"#t1132\"/>
+</spanGrp>
+}
+
+"
+    , "tokseg2sent.bra"
+    , NEW
+    )
+& lst'(X,"tokseg2sent.bra",APP)
+& put'(\n,"tokseg2sent.bra",APP)
+& lst'(r,"tokseg2sent.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"tokseg2sent.bra",APP);
+
+new'X;
