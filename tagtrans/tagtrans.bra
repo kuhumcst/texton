@@ -1,0 +1,189 @@
+{tagtrans.bra
+
+Translate tags in TEI P5 DK Clarin annotation file.}
+
+X=
+  ( doit
+  =   in ou od nw A att spans Z lem
+    .   !arg:(?in.?lem.?ou.?la.?od.?nw)
+      & ( pos
+        =   a e d cond
+          .   !arg:(?a.?e:?d)
+            & (     (sb.xNC.(=))
+                    (præp.xIM.(=lemma$(at.!a)))
+                    (præp.xAP.(=))
+                    (interj.xIT.(=))
+                    (adj.xAJ.(=))
+                    (vb.xVB.(=))
+                    (adv.xRP.(=lemma$(sum.!a)))
+                    (adv.xAV.(=))
+                    ( konj
+                    . xCC
+                    . (=lemma$(ok æller mæthen.!a))
+                    )
+                    (konj.xCS.(=))
+                    (art.xAT.(=))
+                    ( num
+                    . xNO
+                    . (=lemma$(anner thrithje tolfte.!a))
+                    )
+                    (num.xNA.(=))
+                    (pron.xDD.(=lemma$(thænne.!a)))
+                    (pron.xDP.(=lemma$(sin var.!a)))
+                    (pron.xPD.(=))
+                    (prop.xNP.(=))
+                    ("enklit. pron"."xPD eE".(=))
+                :   ?
+                    (!e.?d.(=?cond)&!cond)
+                    ?
+              | 
+              )
+            & !d
+        )
+      & (   !in:!lem
+          & ( lemma
+            =   A B F
+              . !arg:(?A.?B)&!A:? !B ?
+            )
+          & get$(!in,JSN):(,?sents)
+          &   put
+            $ (   jsn
+                $ ( 
+                  ,   map
+                    $ ( ( 
+                        =   Sn ord
+                          .   !arg:((?Sn.,?ord),)
+                            & ( ( !Sn
+                                .   
+                                  ,   map
+                                    $ ( ( 
+                                        =   word a e alts
+                                          .       !arg
+                                                : (   (ID..?ID)
+                                                    + (Word..?word)
+                                                    + (lemma..?a)
+                                                    + (pos..?e)
+                                                  , 
+                                                  )
+                                              & (   (ID..!ID)
+                                                  + (Word..!word)
+                                                  + (lemma..!a)
+                                                  + (pos..pos$(!a.!e))
+                                                , 
+                                                )
+                                            |   !arg:(,?alts)
+                                              & out$(alts !alts)
+                                              & ( 
+                                                ,   map
+                                                  $ ( ( 
+                                                      =   word a e alts
+                                                        .     !arg
+                                                            : (   (ID..?ID)
+                                                                + ( Word
+                                                                  . 
+                                                                  . ?word
+                                                                  )
+                                                                + (lemma..?a)
+                                                                + (pos..?e)
+                                                              , 
+                                                              )
+                                                          & (   (ID..!ID)
+                                                              + (Word..!word)
+                                                              + (lemma..!a)
+                                                              + ( pos
+                                                                . 
+                                                                .   pos
+                                                                  $ (!a.!e)
+                                                                )
+                                                            , 
+                                                            )
+                                                      )
+                                                    . !alts
+                                                    )
+                                                )
+                                        )
+                                      . !ord
+                                      )
+                                )
+                              , 
+                              )
+                        )
+                      . !sents
+                      )
+                  )
+              , !ou
+              , NEW
+              )
+        |     nestML$(get$(!in,X ML))
+            : ?A (spanGrp.?att,?spans) ?Z
+          &   nestML$(get$(!lem,X ML))
+            : ?A (spanGrp.?att,?lems) ?Z
+          & ( lemma
+            =   A B F
+              .   !arg:(?A.? (from.?F) ?)
+                &   !lems
+                  :   ?
+                      (span.? (from.!F) ?,?B)
+                      ?lems
+                & !A:? !B ?
+            )
+          &   put
+            $ (   toML
+                $ ( !A
+                    ( spanGrp
+                    .   !att
+                      ,     !la:da
+                          &   map
+                            $ ( ( 
+                                =   a e d
+                                  .   !arg:(span.?a,?e)
+                                    & pos$(!a.!e):?d
+                                    & (span.!a,!d)
+                                )
+                              . !spans
+                              )
+                        | !spans
+                    )
+                    !Z
+                  )
+              , !ou
+              , NEW
+              )
+        )
+  )
+  ( new
+  =   
+    .   ~
+      |   
+        &   (its.doit)
+          $ ( "470-5.org-4262-step7.json"
+            . "470-5.org-4262-step7.json"
+            . uit
+            . da
+            . DSL
+            . Menotas
+            )
+      | (its.doit)$(arg$.arg$.arg$.arg$.arg$.arg$)
+  );
+
+r=
+  get'("tagtrans.bra",TXT)
+& rmv$(str$(tagtrans ".bak"))
+& ren$("tagtrans.bra".str$(tagtrans ".bak"))
+&   put
+  $ ( "{tagtrans.bra
+
+Translate tags in TEI P5 DK Clarin annotation file.}
+
+"
+    , "tagtrans.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"tagtrans.bra",APP)
+& put'(\n,"tagtrans.bra",APP,BIN)
+& lst'(r,"tagtrans.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"tagtrans.bra",APP,BIN)
+& ;
+
+new'X;
