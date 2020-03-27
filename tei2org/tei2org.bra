@@ -1,0 +1,155 @@
+{tei2org.bra
+Combine standoff annotations for part of speech or lemmas with tokens and output in Org-mode format
+}
+X=
+  ( doit
+  =   
+    .     !arg:(?outp.?tok.?posorlem.?what)
+        & !tok:
+        & put$(,!outp,NEW)
+      |     nestML$(get$(!tok,X ML))
+          : ? (spanGrp.?,?T) ?
+        & ( !posorlem:
+          |   new$hash:?POSorLEM
+            &   nestML$(get$(!posorlem,X ML TRM))
+              : ? (spanGrp.?,?span) ?
+            &   map
+              $ ( ( 
+                  =   
+                    .     !arg
+                        : ( ?
+                          .   ? (from.@(?:"#" ?ref)) ?
+                            , ?t
+                          )
+                      & (POSorLEM..insert)$(!ref.!t)
+                  )
+                . !span
+                )
+          )
+        & @(token:? [?Tsize)
+        & @(!what:? [?PLsize)
+        &     map
+            $ ( ( 
+                =   
+                  .     !arg
+                      : (span.? ("xml:id".?tid) ?,?token)
+                    & @( !token
+                       :   ?
+                           ( [?G
+                           & (!G:>!Tsize:?Tsize|)
+                           )
+                       )
+                    & ( !token
+                      .   (POSorLEM..find)$!tid:?PLs
+                        &     map
+                            $ ( ( 
+                                =   
+                                  .   !arg:(?.?PL)
+                                    & !PL ¦
+                                )
+                              . !PLs
+                              )
+                          : ?Ps ¦
+                        & @( str$!Ps
+                           :   ?
+                               ( [?G
+                               & ( !G:>!PLsize:?PLsize
+                                 | 
+                                 )
+                               )
+                           )
+                      )
+                )
+              . !T
+              )
+          : ?TPorL
+        & (!PLsize:>!Tsize|!Tsize):?size
+        & :?padding
+        &   whl
+          ' ( !size+-1:~<0:?size
+            & " " !padding:?padding
+            )
+        &     ( 
+              =   a b H
+                .   !arg:(?a.?b)
+                  & "-|":?H
+                  &   whl
+                    ' ( !a+-1:~<0:?a
+                      & "-" !H:?H
+                      )
+                  & "-|-" !H:?H
+                  &   whl
+                    ' ( !b+-1:~<0:?b
+                      & "-" !H:?H
+                      )
+                  & "|-" !H:?H
+                  & str$!H
+              )
+            $ (!PLsize.!Tsize)
+          : ?H
+        & ( pad
+          =   
+            .   !arg:(?s.?L)
+              & vap$((=.!arg).!s) !padding:?s [!L ?
+              & str$(" " !s " ")
+          )
+        &     "|"
+              pad$(token.!Tsize)
+              "|"
+              pad$(!what.!PLsize)
+              "|"
+              \n
+              !H
+              \n
+                map
+              $ ( ( 
+                  =   
+                    .   !arg:(?token.?PL)
+                      &   "|"
+                          pad$(!token.!Tsize)
+                          "|"
+                          pad$(!PL.!PLsize)
+                          "|\n"
+                  )
+                . !TPorL
+                )
+          : ?t
+        & put$(str$!t,!outp,NEW)
+        & put$(\n,!outp,APP)
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        & uit:?outp
+        & ( "C:\\downloads\\guldkorpus\\14-202.org-3691-step7.xml":?tok
+          | :?tok
+          )
+        & "C:\\downloads\\guldkorpus\\14-202.org-3691-step11.xml":?posorlem
+        & pos:?what
+        & (its.doit)$(!outp.!tok.!posorlem.!what)
+      |   (arg$:?outp|:?outp)
+        & (arg$:?tok|:?tok)
+        & (arg$:?posorlem|:?posorlem)
+        & (arg$:?what|:?what)
+        & (its.doit)$(!outp.!tok.!posorlem.!what)
+  );
+
+r=
+  get'"tei2org.bra"
+& rmv$(str$(tei2org ".bak"))
+& ren$("tei2org.bra".str$(tei2org ".bak"))
+&   put
+  $ ( "{tei2org.bra
+Combine standoff annotations for part of speech or lemmas with tokens and output in Org-mode format
+}
+"
+    , "tei2org.bra"
+    , NEW
+    )
+& lst'(X,"tei2org.bra",APP)
+& put'(\n,"tei2org.bra",APP)
+& lst'(r,"tei2org.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"tei2org.bra",APP);
+
+new'X;
