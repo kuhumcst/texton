@@ -151,7 +151,7 @@ try {
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
         {
         $posfile = tempFileName("split-".$attribute);
-        $command = "python3 ../bin/pysplit.py $filename $posfile $ancestor $element $attribute $annotation $idprefix Spos";
+        $command = "python3 ../shared_scripts/pysplit.py $filename $posfile $ancestor $element $attribute $annotation $idprefix Spos";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)

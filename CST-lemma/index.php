@@ -151,7 +151,7 @@ try {
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
         {
         $lemfile = tempFileName("split-".$attribute);
-        $command = "python3 $toolbin/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem";
+        $command = "python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem";
 
         logit($command);
 
