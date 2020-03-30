@@ -537,7 +537,7 @@ try {
 
         $conllfile = tempFileName("conllout-results");
         
-        $command = "../bin/bracmat 'get\$\"../conllout/conlln.bra\"' '$conllfile' '$Ifacettok' '$Ifacetseg' '$Ifacetpos' '$Ifacetlem'";
+        $command = "../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '$conllfile' '$Ifacettok' '$Ifacetseg' '$Ifacetpos' '$Ifacetlem'";
 
         logit($command);
 
