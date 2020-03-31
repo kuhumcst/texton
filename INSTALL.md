@@ -151,7 +151,7 @@ Install with:
 
     sudo apt install poppler-utils
 
-This installs /usr/bin/pdffonts, not /usr/local/bin/pdffonts as on ada.
+This installs /usr/bin/pdffonts.
 
 ## PDFminer
 
