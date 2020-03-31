@@ -145,15 +145,13 @@ Libraries must be installed for all users, so we install them as root:
 
 ## Wrapped 3rd party tools
 
-### pdffonts
+### PDFminer
 
-Install with:
+Install prerequisite:
 
     sudo apt install poppler-utils
 
 This installs /usr/bin/pdffonts.
-
-### PDFminer
 
 Visit https://github.com/pdfminer/pdfminer.six and follow installation instructions.
 
@@ -161,6 +159,53 @@ Visit https://github.com/pdfminer/pdfminer.six and follow installation instructi
     cd ~
     umask 022
     pip3 install pdfminer.six
+
+### Cuneiform
+
+A OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
+
+    sudo apt install cuneiform
+
+### daner
+
+Daner is at https://github.com/ITUnlp/daner
+
+    $> cd daner
+    $> git clone https://github.com/ITUnlp/daner.git
+
+Afterwards there will be a subdirectory `daner/daner`.
+
+### dapipe
+
+Dapipe is at https://github.com/ITUnlp/dapipe 
+
+    $> cd dapipe
+    $> git clone https://github.com/ITUnlp/dapipe.git
+
+Afterwards there will be a subdirectory `dapipe/dapipe`.
+
+### espeak
+
+This is simply installed by the following command:
+
+    $> apt-get install espeak
+
+### html2text
+
+    $> cd html2text
+    $> git clone https://github.com/soundasleep/html2text
+
+Afterwards there will be a subdirectory `html2text/html2text`.
+
+### Lapos
+
+    git clone https://github.com/cltk/lapos.git
+
+Follow the build instructions. Copy the executable fil "lapos" to /opt/texton/bin.
+
+### mate-POStagger
+
+This webservice calls another webservice,
 
 ### jsoncat
 
@@ -173,12 +218,6 @@ Visit https://github.com/pdfminer/pdfminer.six and follow installation instructi
 
     sudo apt install tesseract-ocr
 
-### Cuneiform
-
-Another OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
-
-    sudo apt install cuneiform
-
 ### LibreOffice (soffice)
 
 LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled by the tokenizer, RTFreader.
@@ -186,12 +225,6 @@ LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled 
     sudo apt install libreoffice
 
 Warning: it is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one.
-
-### Lapos
-
-    git clone https://github.com/cltk/lapos.git
-
-Follow the build instructions. Copy the executable fil "lapos" to /opt/texton/bin.
 
 ## set access rights
 
