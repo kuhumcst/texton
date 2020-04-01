@@ -197,6 +197,16 @@ This is simply installed by the following command:
 
 Afterwards there will be a subdirectory `html2text/html2text`.
 
+### jsoncat
+
+See https://github.com/kuhumcst/texton-bin#jsoncat
+
+    git clone https://github.com/pantuza/jsoncat.git
+    cd jsoncat
+    make
+    sudo cp bin/jsoncat /opt/texton/bin
+
+
 ### Lapos
 
     git clone https://github.com/cltk/lapos.git
@@ -205,36 +215,50 @@ Follow the build instructions. Copy the executable fil "lapos" to /opt/texton/bi
 
 ### mate-POStagger
 
-This webservice calls another webservice,
+This webservice calls another webservice, https://github.com/kuhumcst/mate-POStagger
 
-### jsoncat
+### mate-parser
 
-    git clone https://github.com/pantuza/jsoncat.git
-    cd jsoncat
-    make
-    sudo cp bin/jsoncat /opt/texton/bin
+This webservice calls another webservice, https://github.com/kuhumcst/mate-parser
 
-### Tesseract OCR
+### np-genkender
 
-    sudo apt install tesseract-ocr
+Go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
+
+### opennlpPOSTagger
+
+This webservice calls another webservice, https://github.com/kuhumcst/opennlpPOSTagger
+
+### rep-check
+
+See https://github.com/kuhumcst/texton-bin#repver
 
 ### LibreOffice (soffice)
 
 LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled by the tokenizer, RTFreader.
 
-    sudo apt install libreoffice
+    $> sudo apt install libreoffice
 
-Warning: it is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one.
+It is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one. Be warned.
+
+### Tesseract OCR
+
+    $> sudo apt install tesseract-ocr
+
+In addition
+
+    $> cd tesseract
+    $> git clone https://github.com/tesseract-ocr/tessdata_best.git
 
 ## set access rights
 
 Make all directories accessible and readable and give owner and group write rights
 
-    sudo find /opt/texton/res -type d -exec chmod 775 {} \; 
+    $> sudo find /opt/texton/res -type d -exec chmod 775 {} \; 
 
 Set group to www-data, recursively
 
-    sudo chown -R <user>:www-data /opt/texton/res
+    $> sudo chown -R <user>:www-data /opt/texton/res
 
 ## create cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
