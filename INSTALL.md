@@ -33,14 +33,14 @@ Installation requires
 
 ## git-lfs
 
-    sudo apt-get install -y git-lfs
+    $> sudo apt-get install -y git-lfs
 
 ## apache
 
-    sudo apt install apache2
-    sudo apt-get install php libapache2-mod-php
-    sudo a2enmod php7.2
-    sudo service apache2 restart
+    $> sudo apt install apache2
+    $> sudo apt-get install php libapache2-mod-php
+    $> sudo a2enmod php7.2
+    $> sudo service apache2 restart
 
 Copy apache2-sites/texton.conf to /etc/apache2/sites-available. 
 
@@ -48,16 +48,16 @@ Copy apache2-sites/texton.conf to /etc/apache2/sites-available.
 
 Some php scripts use the CURLFile class. To make that work
 
-    sudo apt-get install php-curl
+    $> sudo apt-get install php-curl
 
 The html2text converter (https://github.com/soundasleep/html2text.git) requires two PHP packages
 
-    sudo apt-get install php-mbstring
-    sudo apt-get install php-dom
+    $> sudo apt-get install php-mbstring
+    $> sudo apt-get install php-dom
 
 Restart apache
 
-    sudo service apache2 restart
+    $> sudo service apache2 restart
 
 ## java
 
@@ -66,7 +66,7 @@ Restart apache
 ## ant
 Ant is needed if you want to build tha DK-Clarin tools .war file from source.
 
-    sudo apt install ant
+    $> sudo apt install ant
 
 ## Tomcat
 
@@ -75,22 +75,22 @@ Therefore, if you install the Text Tonsorium under WSL, you must install Tomcat 
 
 Visit https://tomcat.apache.org/ to obtain a link to a recent archive.
 
-    sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
-    cd /tmp
-    wget http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.14/bin/apache-tomcat-9.0.14.tar.gz -P .
-    sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
-    sudo ln -s /opt/tomcat/apache-tomcat-9.0.14 /opt/tomcat/latest
-    sudo chown -RH tomcat: /opt/tomcat/latest
-    sudo chmod o+x /opt/tomcat/latest/bin/
+    $> sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
+    $> cd /tmp
+    $> wget http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.14/bin/apache-tomcat-9.0.14.tar.gz -P .
+    $> sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
+    $> sudo ln -s /opt/tomcat/apache-tomcat-9.0.14 /opt/tomcat/latest
+    $> sudo chown -RH tomcat: /opt/tomcat/latest
+    $> sudo chmod o+x /opt/tomcat/latest/bin/
    
-    sudo vi /opt/tomcat/latest/conf/tomcat-users.xml  
+    $> sudo vi /opt/tomcat/latest/conf/tomcat-users.xml  
 
 Add
 
     <role rolename="manager-gui"/>
     <user username="tomcat" password="hemmligt-password" roles="manager-gui"/>
 
-    sudo vi /opt/tomcat/latest/conf/server.xml
+    $> sudo vi /opt/tomcat/latest/conf/server.xml
 
    
 change
@@ -103,11 +103,11 @@ to
 
 Start Tomcat
 
-    sudo /opt/tomcat/latest/bin/startup.sh
+    $> sudo /opt/tomcat/latest/bin/startup.sh
 
 Stop Tomcat
 
-    sudo /opt/tomcat/latest/bin/shutdown.sh
+    $> sudo /opt/tomcat/latest/bin/shutdown.sh
 
 Add to classpath, create (or edit) the file /opt/tomcat/latest/bin/setenv.bin. For example
 
@@ -115,7 +115,7 @@ Add to classpath, create (or edit) the file /opt/tomcat/latest/bin/setenv.bin. F
 
 If there are several java versions, create 
 
-    sudo vi bin/setenv.sh
+    $> sudo vi bin/setenv.sh
 
 Enter the path to the version of java that tomcat must use, e.g.
 
@@ -123,7 +123,7 @@ Enter the path to the version of java that tomcat must use, e.g.
 
 Make the file executable
 
-    sudo chmod ugo+x bin/setenv.sh
+    $> sudo chmod ugo+x bin/setenv.sh
 
 
 ## Bracmat
@@ -134,74 +134,131 @@ See https://github.com/kuhumcst/texton-bin.
 
 We need pip3
 
-    sudo apt-get install python3-pip
+    $> sudo apt-get install python3-pip
     
 Libraries must be installed for all users, so we install them as root:
 
-    sudo su
-    cd ~
-    umask 022
-    pip3 install cltk
+    $> sudo su
+    $> cd ~
+    $> umask 022
+    $> pip3 install cltk
 
 ## Wrapped 3rd party tools
 
-### pdffonts
+### PDFminer
 
-Install with:
+Install prerequisite:
 
-    sudo apt install poppler-utils
+    $> sudo apt install poppler-utils
 
 This installs /usr/bin/pdffonts.
 
-### PDFminer
-
 Visit https://github.com/pdfminer/pdfminer.six and follow installation instructions.
 
-    sudo su
-    cd ~
-    umask 022
-    pip3 install pdfminer.six
-
-### jsoncat
-
-    git clone https://github.com/pantuza/jsoncat.git
-    cd jsoncat
-    make
-    sudo cp bin/jsoncat /opt/texton/bin
-
-### Tesseract OCR
-
-    sudo apt install tesseract-ocr
+    $> sudo su
+    $> cd ~
+    $> umask 022
+    $> pip3 install pdfminer.six
 
 ### Cuneiform
 
-Another OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
+A OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
 
-    sudo apt install cuneiform
+    $> sudo apt install cuneiform
+
+### daner
+
+Daner is at https://github.com/ITUnlp/daner
+
+    $> cd daner
+    $> git clone https://github.com/ITUnlp/daner.git
+
+Afterwards there will be a subdirectory `daner/daner`.
+
+### dapipe
+
+Dapipe is at https://github.com/ITUnlp/dapipe 
+
+    $> cd dapipe
+    $> git clone https://github.com/ITUnlp/dapipe.git
+
+Afterwards there will be a subdirectory `dapipe/dapipe`.
+
+### espeak
+
+This is simply installed by the following command:
+
+    $> apt-get install espeak
+
+### html2text
+
+    $> cd html2text
+    $> git clone https://github.com/soundasleep/html2text
+
+Afterwards there will be a subdirectory `html2text/html2text`.
+
+### jsoncat
+
+See https://github.com/kuhumcst/texton-bin#jsoncat
+
+    $> git clone https://github.com/pantuza/jsoncat.git
+    $> cd jsoncat
+    $> make
+    $> sudo cp bin/jsoncat /opt/texton/bin
+
+
+### Lapos
+
+    $> git clone https://github.com/cltk/lapos.git
+
+Follow the build instructions. Copy the executable fil "lapos" to /opt/texton/bin.
+
+### mate-POStagger
+
+This webservice calls another webservice, https://github.com/kuhumcst/mate-POStagger
+
+### mate-parser
+
+This webservice calls another webservice, https://github.com/kuhumcst/mate-parser
+
+### np-genkender
+
+Go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
+
+### opennlpPOSTagger
+
+This webservice calls another webservice, https://github.com/kuhumcst/opennlpPOSTagger
+
+### rep-check
+
+See https://github.com/kuhumcst/texton-bin#repver
 
 ### LibreOffice (soffice)
 
 LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled by the tokenizer, RTFreader.
 
-    sudo apt install libreoffice
+    $> sudo apt install libreoffice
 
-Warning: it is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one.
+It is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one. Be warned.
 
-### Lapos
+### Tesseract OCR
 
-    git clone https://github.com/cltk/lapos.git
+    $> sudo apt install tesseract-ocr
 
-Follow the build instructions. Copy the executable fil "lapos" to /opt/texton/bin.
+In addition
+
+    $> cd tesseract
+    $> git clone https://github.com/tesseract-ocr/tessdata_best.git
 
 ## set access rights
 
 Make all directories accessible and readable and give owner and group write rights
 
-    sudo find /opt/texton/res -type d -exec chmod 775 {} \; 
+    $> sudo find /opt/texton/res -type d -exec chmod 775 {} \; 
 
 Set group to www-data, recursively
 
-    sudo chown -R <user>:www-data /opt/texton/res
+    $> sudo chown -R <user>:www-data /opt/texton/res
 
 ## create cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
