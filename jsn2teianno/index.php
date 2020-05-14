@@ -17,7 +17,7 @@ ToolID         : JSON2TEIP5ANNO
 PassWord       : 
 Version        : 1
 Title          : JSON to TEI P5 annotation
-ServiceURL     : http://130.225.251.141/jsn2teianno	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+Path in URL    : jsn2teianno	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
@@ -41,7 +41,6 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +52,6 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
- //   return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -174,13 +172,14 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetstpl = false;	/* Type of content in input is segments,tokens,PoS-tags,lemmas (segmenter,tokens,PoS-tags,lemmaer) if true */
+        $Ifacetstlp = false;	/* Type of content in input is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatjsonxid = false;	/* Style of format JSON in input is With xml idMed xml id if true */
 
         if( hasArgument("base") )
             {
@@ -225,8 +224,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstpl = existsArgumentWithValue("Ifacet", "stpl");
-            $echos = $echos . "Ifacetstpl=$Ifacetstpl ";
+            $Ifacetstlp = existsArgumentWithValue("Ifacet", "stlp");
+            $echos = $echos . "Ifacetstlp=$Ifacetstlp ";
             }
         if( hasArgument("Iformat") )
             {
@@ -258,6 +257,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Iformatjson") )
+            {
+            $Iformatjsonxid = existsArgumentWithValue("Iformatjson", "xid");
+            $echos = $echos . "Iformatjsonxid=$Iformatjsonxid ";
+            }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $JSON2TEIP5ANNOfile = tempFileName("JSON2TEIP5ANNO-results");
@@ -281,10 +285,10 @@ try {
         if($Ofacetlem)
             {
             $command = "../bin/bracmat \"get'\\\"jsn2teianno.bra\\\"\" $F lemma $JSON2TEIP5ANNOfile";
-	    }
+            }
         else
-	    {
-	    $command = "../bin/bracmat \"get'\\\"jsn2teianno.bra\\\"\" $F pos $JSON2TEIP5ANNOfile";
+            {
+            $command = "../bin/bracmat \"get'\\\"jsn2teianno.bra\\\"\" $F pos $JSON2TEIP5ANNOfile";
             }
         logit($command);
         if(($cmd = popen($command, "r")) == NULL)
@@ -303,10 +307,10 @@ try {
 
         if($tmpf)
             {
-//            logit('output from JSON2TEIP5ANNO:');
+            //logit('output from JSON2TEIP5ANNO:');
             while($line = fgets($tmpf))
                 {
-  //              logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
@@ -333,5 +337,4 @@ catch (SystemExit $e)
     }
 
 ?>
-
 
