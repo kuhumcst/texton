@@ -17,7 +17,7 @@ ToolID         : PruLePo
 PassWord       : 
 Version        : 1.0
 Title          : PruneLemPos
-ServiceURL     : http://130.225.251.141/PruLePo/	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+Path in URL    : PruLePo/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
@@ -172,14 +172,18 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambigamb = false;	/* Ambiguity in input is ambiguous (tvetydig) if true */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetstpl = false;	/* Type of content in input is segments,tokens,PoS-tags,lemmas (segmenter,tokens,PoS-tags,lemmaer) if true */
+        $Ifacetstlp = false;	/* Type of content in input is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Ipresnml = false;	/* Presentation in input is normal if true */
         $Oambigpru = false;	/* Ambiguity in output is pruned (beskåret) if true */
         $Oappdrty = false;	/* Appearance in output is optimized for software (bedst for programmer) if true */
-        $Ofacetstpl = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas (segmenter,tokens,PoS-tags,lemmaer) if true */
+        $Ofacetstlp = false;	/* Type of content in output is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
         $Opresnml = false;	/* Presentation in output is normal if true */
+        $Iformatjsonnid = false;	/* Style of format JSON in input is No unique IDIngen unik ID if true */
+        $Iformatjsonxid = false;	/* Style of format JSON in input is With xml idMed xml id if true */
+        $Oformatjsonnid = false;	/* Style of format JSON in output is No unique IDIngen unik ID if true */
+        $Oformatjsonxid = false;	/* Style of format JSON in output is With xml idMed xml id if true */
 
         if( hasArgument("base") )
             {
@@ -224,8 +228,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstpl = existsArgumentWithValue("Ifacet", "stpl");
-            $echos = $echos . "Ifacetstpl=$Ifacetstpl ";
+            $Ifacetstlp = existsArgumentWithValue("Ifacet", "stlp");
+            $echos = $echos . "Ifacetstlp=$Ifacetstlp ";
             }
         if( hasArgument("Iformat") )
             {
@@ -249,8 +253,8 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetstpl = existsArgumentWithValue("Ofacet", "stpl");
-            $echos = $echos . "Ofacetstpl=$Ofacetstpl ";
+            $Ofacetstlp = existsArgumentWithValue("Ofacet", "stlp");
+            $echos = $echos . "Ofacetstlp=$Ofacetstlp ";
             }
         if( hasArgument("Oformat") )
             {
@@ -266,6 +270,18 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Iformatjson") )
+            {
+            $Iformatjsonnid = existsArgumentWithValue("Iformatjson", "nid");
+            $Iformatjsonxid = existsArgumentWithValue("Iformatjson", "xid");
+            $echos = $echos . "Iformatjsonnid=$Iformatjsonnid " . "Iformatjsonxid=$Iformatjsonxid ";
+            }
+        if( hasArgument("Oformatjson") )
+            {
+            $Oformatjsonnid = existsArgumentWithValue("Oformatjson", "nid");
+            $Oformatjsonxid = existsArgumentWithValue("Oformatjson", "xid");
+            $echos = $echos . "Oformatjsonnid=$Oformatjsonnid " . "Oformatjsonxid=$Oformatjsonxid ";
+            }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $PruLePofile = tempFileName("PruLePo-results");
@@ -327,10 +343,10 @@ try {
 
         if($tmpf)
             {
-            logit('output from PruLePo:');
+            //logit('output from PruLePo:');
             while($line = fgets($tmpf))
                 {
-                logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
