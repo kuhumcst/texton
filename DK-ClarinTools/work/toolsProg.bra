@@ -1819,34 +1819,43 @@ toolsProg=
                         )
                   )
                 & ( inoutdesc
-                  =     description featname featvals table
-                      , specificationTables featdesc
-                    .   :?description
-                      &   whl
-                        ' ( !arg:(?featname,?featvals) ?arg
-                          &   !features
-                            :   ?
-                              + ( ( ? (name.? !featname ?) ?
-                                  | ? (short.!featname) ?
-                                  )
-                                : ? (table.?table) ?
-                                : (   ?
-                                      (specificationTable.?specificationTables)
-                                      ?
-                                  |   ?
-                                    & :?specificationTables
-                                  )
+                  =   description
+                    .         map
+                            $ ( ( 
+                                =     featname featvals table
+                                    , specificationTables
+                                  .   !arg:(?featname,?featvals)
+                                    & log$(featname !featname)
+                                    &   !features
+                                      :   ?
+                                        + ( (   ?
+                                                (name.? !featname ?)
+                                                ?
+                                            | ? (short.!featname) ?
+                                            )
+                                          : ? (table.?table) ?
+                                          : (   ?
+                                                ( specificationTable
+                                                . ?specificationTables
+                                                )
+                                                ?
+                                            |   ?
+                                              & :?specificationTables
+                                            )
+                                          )
+                                        + ?
+                                    &   ", "
+                                          describefeature
+                                        $ ( !featvals
+                                          . !table
+                                          . !specificationTables
+                                          )
                                 )
-                              + ?
-                          &     describefeature
-                              $ (!featvals.!table.!specificationTables)
-                            : ?featdesc
-                          &     !description
-                                (!description:|", ")
-                                !featdesc
-                            : ?description
-                          )
-                      & !description
+                              . !arg
+                              )
+                          : ", " ?description
+                        & !description
+                      | 
                   )
                 & ( nice
                   =   i o
