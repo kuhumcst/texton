@@ -166,7 +166,7 @@ try {
         return $lemfile;
         }
 
-function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,$toptarg,$foptarg,$filename,$pos,$posattribute,$emptyattribute,$XMLinput,$Iperiodc13,$Iperiodc20)
+function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,$toptarg,$foptarg,$filename,$pos,$posattribute,$emptyattribute,$XMLinput,$Iperiodc13,$Iperiodc20)
     {
     $tmpno = tempFileName("lemma-results");
     $dict = "/dict";
@@ -176,7 +176,10 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
     //$c = "\$b1[[\$b~1]?\$B]";
     //$c = "\$b[[\$b0]?(\$B)]";
     $cx = "\$b1[[\$b?]~1\$B]";
-    $sep = " -s'\\011' ";
+    if($Oformatflat)
+	$sep = " -s'|' ";
+    else
+        $sep = " -s'\\011' ";
     $i = false;
 
     $wt = "\$w\\t";
@@ -1011,19 +1014,19 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
                 $uploadfileAnnotation = $IfacetposF;
                 $lemmainputfile = merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma');
                 logit("lemmatise with pos in stand off annotation.");
-                $CSTLemfile = lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
+                $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
                 }
             else
                 {
                 if($Iformatflat)
                     {
                     logit('lemmatise flat text that has pos tags embedded');
-                    $CSTLemfile = lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
                     }
                 else
                     {
                     logit('lemmatise TEI-P5 (not an annotation file)');
-                    $CSTLemfile = lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
                     }
                 }
             }
@@ -1038,19 +1041,19 @@ function lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Oface
                 
                 logit('lemmatise without pos, stand off tokens');
 
-                $CSTLemfile = lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20);
+                $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20);
                 }
             else
                 {
                 if($Iformatflat)
                     {
                     logit('lemmatise flat text');
-                    $CSTLemfile = lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
                     }
                 else
                     {
                     logit('lemmatise TEI-P5 (not an annotation file)');
-                    $CSTLemfile = lemmatiser($Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Ofacettl,$Ofacettlp,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
                     }
                 }
             }
