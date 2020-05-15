@@ -1825,14 +1825,9 @@ toolsProg=
                                 =     featname featvals table
                                     , specificationTables
                                   .   !arg:(?featname,?featvals)
-                                    & log$(featname !featname)
                                     &   !features
                                       :   ?
-                                        + ( (   ?
-                                                (name.? !featname ?)
-                                                ?
-                                            | ? (short.!featname) ?
-                                            )
+                                        + ( ? (short.!featname) ?
                                           : ? (table.?table) ?
                                           : (   ?
                                                 ( specificationTable
@@ -2247,56 +2242,6 @@ toolsProg=
                 , 
               )
               \r\n
-      )
-      ( ConstructUnionOfInputOutputParmsFromToolProp
-      =     f fs i o name short tools pairs
-          , iV oV TOOL out outs in ins
-        .   !arg:?TOOL
-          & :?i:?o
-          & readTable$features
-          & readTable$toolprop
-          & !features:?fs
-          &   whl
-            ' ( !fs:%?f+?fs
-              &   !f
-                : ? (name.?name) ?
-                : ? (short.?short) ?
-              & 0:?iV:?oV
-              & !toolprop:?tools
-              & localized$!name:?name
-              &   whl
-                ' (   !tools
-                    :   ?
-                      + ( !TOOL
-                        .   ? (!short,?pairs) ?
-                          | ? (!name,?pairs) ?
-                        )
-                      + ?tools
-                  &   whl
-                    ' ( !pairs:(?ins.?outs)+?pairs
-                      &   whl
-                        ' ( !ins:%(%?in ?)+?ins
-                          & ( !iV:?+!in+?
-                            | !in+!iV:?iV
-                            )
-                          )
-                      &   whl
-                        ' ( !outs:%?out+?outs
-                          & ( !oV:?+!out+?
-                            | !out+!oV:?oV
-                            )
-                          )
-                      )
-                  )
-              & ( !short:format
-                | !iV:0
-                | !i (str$(I !short).!iV):?i
-                )
-              & ( !oV:0
-                | !o (str$(O !short).!oV):?o
-                )
-              )
-          & (!i.!o)
       )
       ( style
       =   ( style
