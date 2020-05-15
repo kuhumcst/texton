@@ -177,7 +177,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
     //$c = "\$b[[\$b0]?(\$B)]";
     $cx = "\$b1[[\$b?]~1\$B]";
     if($Oformatflat)
-	$sep = " -s'|' ";
+        $sep = " -s'|' ";
     else
         $sep = " -s'\\011' ";
     $i = false;
@@ -290,10 +290,9 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
     else if($language == 'en')
         {
         $flexrulessubdir = "/2";
-        //$flexrules = "flexrules.en-dict_en_without_doubles.no_tags.ph_XC";
         $flexrules = "flexrules";
 	    if($toptarg == '')
-                $x = "-x'$toolres/en/lemmatiser/tags/translation'";
+            $x = "-x'$toolres/en/lemmatiser/tags/translation'";
         }
     else if($language == 'es')
         {
@@ -310,7 +309,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
     else if($language == 'fr')
         {
         $flexrulessubdir = "/1";
-	$flexrules = "flexrules.frlexambi.uden.dubletter.ph_XC";
+        $flexrules = "flexrules.frlexambi.uden.dubletter.ph_XC";
         }
     else if($language == 'hr')
         {
@@ -347,7 +346,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
     else if($language == 'pl')
         {
         $flexrulessubdir = "0";
-	$flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
+        $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
         }
     else if($language == 'pt')
         {
