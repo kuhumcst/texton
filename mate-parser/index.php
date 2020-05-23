@@ -441,9 +441,9 @@ try {
             );
         $ch = curl_init("http://localhost:8080/BohnetsParser/");
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POST, true); // enable posting
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true); // enable posting
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         curl_setopt($ch, CURLOPT_ACCEPT_ENCODING, 'UTF-8');
         curl_setopt($ch, CURLOPT_ENCODING, 'UTF-8');
