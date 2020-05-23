@@ -399,9 +399,9 @@ try {
         $ch = curl_init("http://localhost:8080/BohnetsTagger/");
         //$ch = curl_init("http://obi.cst.sc.ku.dk:8080/BohnetsTagger/");
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POST, true); // enable posting
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true); // enable posting
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         $fp = fopen($output, "w");
         curl_setopt($ch, CURLOPT_FILE, $fp);
