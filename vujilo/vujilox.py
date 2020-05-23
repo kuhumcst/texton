@@ -12,8 +12,9 @@ def get_tags(inputfile, outputfile):
     root = tree.getroot()
     j = JVReplacer()
     for w in root.iter('w'):
-        w.text = w.text.lower()
-        w.text = j.replace(w.text)
+        if not w.text is None:
+            w.text = w.text.lower()
+            w.text = j.replace(w.text)
 
     tree.write(outputfile, xml_declaration=True, encoding="utf-8")
 
