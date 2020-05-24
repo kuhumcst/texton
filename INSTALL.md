@@ -13,6 +13,7 @@ The instructions are valid under the following assumptions:
    Only programs that are installed using apt-get reside elsewhere.
 
 Installation requires 
+  * this repo
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
   * apache2
