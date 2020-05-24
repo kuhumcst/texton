@@ -31,6 +31,14 @@ Installation requires
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * Many tools wrapped in web services in `/opt/texton/`
 
+## This repo
+
+    $> cd /opt
+    $> sudo git clone https://github.com/kuhumcst/texton.git
+    $> cd texton
+    $> sudo chgrp -R www-data *
+    $> sudo sudo chmod -R g+w *
+
 ## git-lfs
 
     $> sudo apt-get install -y git-lfs
