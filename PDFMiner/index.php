@@ -124,7 +124,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("pdfminer_$requestParm_");
+                $tempfilename = tempFileName("pdfminer_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

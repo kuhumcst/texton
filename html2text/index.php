@@ -129,7 +129,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("html2text_$requestParm_");
+                $tempfilename = tempFileName("html2text_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

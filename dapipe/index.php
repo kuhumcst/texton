@@ -124,7 +124,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("dapipe_$requestParm_");
+                $tempfilename = tempFileName("dapipe_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

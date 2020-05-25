@@ -129,7 +129,7 @@ try {
                 }
             else
                 {
-                $tempfilename = fname("espeak_$requestParm_");
+                $tempfilename = fname("espeak_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
