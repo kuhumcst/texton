@@ -13,6 +13,7 @@ The instructions are valid under the following assumptions:
    Only programs that are installed using apt-get reside elsewhere.
 
 Installation requires 
+  * this repo
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
   * apache2
@@ -30,6 +31,14 @@ Installation requires
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * Many tools wrapped in web services in `/opt/texton/`
+
+## This repo
+
+    $> cd /opt
+    $> sudo git clone https://github.com/kuhumcst/texton.git
+    $> cd texton
+    $> sudo chgrp -R www-data *
+    $> sudo sudo chmod -R g+w *
 
 ## git-lfs
 
