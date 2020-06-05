@@ -102,7 +102,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("lempos_$requestParm_");
+                $tempfilename = tempFileName("lempos_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
@@ -170,13 +170,13 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with type of content segments (SÃ¦tningssegmenter) */
+        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (SÃ¦tningssegmenter,tokens) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -197,11 +197,12 @@ try {
         $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
         $Ilangpl = false;	/* Language in input is Polish (polsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
-        $Ilangro = false;	/* Language in input is Romanian (rumÃ¦nsk) if true */
+        $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
         $Ilangru = false;	/* Language in input is Russian (russisk) if true */
         $Ilangsk = false;	/* Language in input is Slovak (slovakisk) if true */
         $Ilangsl = false;	/* Language in input is Slovene (slovensk) if true */
         $Ilangsr = false;	/* Language in input is Serbian (serbisk) if true */
+        $Ilangsv = false;	/* Language in input is Swedish (svensk) if true */
         $Ilanguk = false;	/* Language in input is Ukrainian (ukrainsk) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
@@ -229,11 +230,12 @@ try {
         $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
         $Olangpl = false;	/* Language in output is Polish (polsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
-        $Olangro = false;	/* Language in output is Romanian (rumÃ¦nsk) if true */
+        $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
         $Olangru = false;	/* Language in output is Russian (russisk) if true */
         $Olangsk = false;	/* Language in output is Slovak (slovakisk) if true */
         $Olangsl = false;	/* Language in output is Slovene (slovensk) if true */
         $Olangsr = false;	/* Language in output is Serbian (serbisk) if true */
+        $Olangsv = false;	/* Language in output is Swedish (svensk) if true */
         $Olanguk = false;	/* Language in output is Ukrainian (ukrainsk) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
@@ -276,7 +278,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (SÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -343,8 +345,9 @@ try {
             $Ilangsk = existsArgumentWithValue("Ilang", "sk");
             $Ilangsl = existsArgumentWithValue("Ilang", "sl");
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
+            $Ilangsv = existsArgumentWithValue("Ilang", "sv");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsr=$Ilangsr " . "Ilanguk=$Ilanguk ";
+            $echos = $echos . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -403,8 +406,9 @@ try {
             $Olangsk = existsArgumentWithValue("Olang", "sk");
             $Olangsl = existsArgumentWithValue("Olang", "sl");
             $Olangsr = existsArgumentWithValue("Olang", "sr");
+            $Olangsv = existsArgumentWithValue("Olang", "sv");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsr=$Olangsr " . "Olanguk=$Olanguk ";
+            $echos = $echos . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
             }
         if( hasArgument("Operiod") )
             {
@@ -647,6 +651,13 @@ try {
                 $lang = "sr";
                 $flexrules = "$res/sr/lemmatiser/notags/0/flexrules.pretty.bra.2";
                 $traindata = "$res/sr/lemmatiser/training/wfl-sr.txt.ph";
+                $TorC = "C";
+                }
+            else if($Ilangsv)
+                {
+                $lang = "sv";
+                $flexrules = "$res/sv/lemmatiser/notags/0/flexrules.bra";
+                $traindata = "$res/sv/lemmatiser/training/suc2.training.tab";
                 $TorC = "C";
                 }
             else if($Ilanguk)
