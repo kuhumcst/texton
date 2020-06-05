@@ -902,11 +902,9 @@ toolsProg=
           &   whl
             ' ( !parms:?A (!parm.?val) ?parms
               & NEWSPEC
-              & log$(unpackIOparm !val)
               & ( lexan$(" " "+" "*" "^".!val):?val
                 | 
                 )
-              & log$(unpackIOparm2 !val)
               & !nparms !A (!parm.!val):?nparms
               )
           & !nparms !parms
@@ -5830,15 +5828,22 @@ toolsProg=
                 | !arg
             )
           & 0:?bignumber
+          & put$(,path$sums,NEW)
+          & put$(,path$pruns,NEW)
+          & put$(,path$depends,NEW)
           &   whl
             ' ( !in:#*(?OUT.?WAY)+?in
               & spotSum$!WAY:?sums
+              & lst$(sums,path$sums,APP)
               & prun$!sums:?pruns
+              & lst$(pruns,path$pruns,APP)
               & depend$!pruns:?depends
+              & lst$(depends,path$depends,APP)
               & !depends:((?.?.?bignumber),?.)
-              & !bignumber:<10000
+              & (|!bignumber:<10000)
               )
-          & !bignumber:~<10000
+          & log$(bignumber !bignumber)
+          & !bignumber:~<2500000
       )
       ( selectCommonTracks
       =   sum spotSum eliminate OUT WAY TERM result term M
@@ -5937,7 +5942,7 @@ toolsProg=
              Expects that the variable 'sources' is a list of input feature/value pairs. 
              (A single pair can contain more than one value. That is the case if there are more than one inputs.)"
           & !arg:(?stop.?arg)
-          & 1+!calls:?calls:<56789
+          & 1+!calls:?calls:<567890
           & ( @(!calls:? 000)&log$(calls !calls)
             | 
             )
@@ -5954,7 +5959,7 @@ toolsProg=
                 | log$(NOTCOMPATIBLE !af AND !bf)
                 )
               & !ret
-            |   !calls:<56789
+            |   !calls:<567890
               & !arg:%+%
               & LOG$SUMDETECTED
               & (   !stop:?*(!arg.?projectOnto)^?*?
@@ -5965,7 +5970,7 @@ toolsProg=
                   &   whl
                     ' ( !As:%?A+?As
                       & unfoldTree$(!stop.!A):?Z
-                      & !calls:<56789
+                      & !calls:<567890
                       &   whl
                         ' ( !Z:(?stp.?a)+?Z
                           & !ret+((!arg.!a)*!stop.!a):?ret
@@ -5973,17 +5978,17 @@ toolsProg=
                       )
                   & !ret
                 )
-            |   !calls:<56789
+            |   !calls:<567890
               & !arg:(?goal.?childstuff)
               & unfoldTree$(!stop.!childstuff):?Z
-              & !calls:<56789
+              & !calls:<567890
               & 0:?ret
               &   whl
                 ' ( !Z:(?stp.?A)+?Z
                   & !ret+(!stp.!goal.!A):?ret
                   )
               & !ret
-            |   !calls:<56789
+            |   !calls:<567890
               &   !arg
                 : ( ?tool
                   , ( ?A (?feature,%+%:?ou) ?Z
@@ -6000,7 +6005,7 @@ toolsProg=
                           . !childstuff
                           )
                       )
-                |   !calls:<56789
+                |   !calls:<567890
                   & !ou:?ou2
                   & 0:?ret
                   &   whl
@@ -6016,10 +6021,10 @@ toolsProg=
                         : ?rt
                       & !ret+!rt:?ret
                       )
-                  & !calls:<56789
+                  & !calls:<567890
                   & !ret
                 )
-            |   !calls:<56789
+            |   !calls:<567890
               & !arg:(?tool,(?ou.?inputprop.?childstuff))
               & unfoldTree$(!stop.!childstuff):?Z
               & 0:?ret
@@ -6028,7 +6033,7 @@ toolsProg=
                   & !ret+(!stp.!tool,(!ou.!inputprop.!A)):?ret
                   )
               & !ret
-            | !calls:<56789&(!stop.!arg)
+            | !calls:<567890&(!stop.!arg)
             )
       )
       ( createNewGoal
@@ -6467,13 +6472,19 @@ toolsProg=
           & !outp
       )
       ( fp
-      =     tool source goal restriction superset
-          , fulfil memoizedSteps activeTools calls
+      =     tool source goal restriction superset makeSmell
+          , fulfil memoizedSteps activeTools calls smell
           , memos reslt duplic impassages notttcnt
           , sourcegoalmatch unfulfillable notThisTool
           , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
           , getActiveTools getGoals getImplicatedGoals
-        .   ( isfulfilled
+        .   0:?smell
+          & ( makeSmell
+            = A Z o
+              . !arg:?A (sml,(?o.nsl)) ?Z &!A (sml,(!o.str$(S (1+!smell:?smell)))) !Z
+               | !arg
+            ) 
+          & ( isfulfilled
             =   source src goal gl tool pipe pipes
               .   !arg:(?source.?goal.?tool)
                 & product$!source:?src
@@ -6561,6 +6572,8 @@ toolsProg=
                                         :   ?
                                           + (!tool.~:?toolFeatures)
                                           + ?ltools
+                                      & makeSmell$!toolFeatures:?toolFeatures
+                                      & (!tool:(Tesseract-OCR|CuneiForm) & log$(toolFeatures !toolFeatures)|)
                                       & (       matchGoalWithFeatures
                                               $ (!goaly.!toolFeatures)
                                             : (?pathfields.?newGoal)
@@ -7030,13 +7043,15 @@ toolsProg=
                           + ?
                       )
                     & (   prunePipes$(!FP.!arg):?FP
+                        & log$(Pruned !FP)
                         & ( !recentTasks:?recentTasks [3 ?
                           | 
                           )
                         &   (!userInput.!FP) !recentTasks
                           : ?recentTasks
                         & (!FP.withRestriction)
-                      | (!FP.tooComplex)
+                      |   log$(tooComplex)
+                        & (!FP.tooComplex)
                       )
                   |   !FP:(?,?) ?
                     & (!FP.triviallyFulfilled)
@@ -9996,8 +10011,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , newpipes pipe pipes pipesN restriction
         .   !arg:(?pipes.?parms)
           & 0:?newpipes
+          & log$(prunePipesStartsWithCalls !calls)
           &   whl
-            ' ( !calls:<56789
+            ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
               & "incarnationpipes is (<(user or declared tool) provided output specs> . <sum of unambiguous trees>)"
               & log$"now unfoldTree"
@@ -10045,7 +10061,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                 )
               )
-          & !calls:<56789
+          & log$(prunePipesCallsNow !calls)
+          & !calls:<567890
           & !newpipes
       )
       "
@@ -11850,7 +11867,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?restriction.?restr.?calls)
                 &   log
                   $ (restriction !restriction restr !restr calls !calls)
-                & (   !calls:<56789
+                & (   !calls:<567890
                     & (   !restr:triviallyFulfilled
                         &   str
                           $ ( 404~~~
@@ -13858,7 +13875,7 @@ try {
         
     function requestFile($requestParm) // e.g. \"IfacettokF\"
         {
-        logit(\"requestFile(\" . $requestParm . \")\");
+        logit(\"requestFile({$requestParm})\");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -13881,7 +13898,7 @@ try {
                 {
                 $tempfilename = tempFileName(\""
                         makeName$!name
-                        "_$requestParm_\");
+                        "_{$requestParm}_\");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

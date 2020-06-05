@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("matePOS_$requestParm_");
+                $tempfilename = tempFileName("matePOS_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
@@ -315,7 +315,7 @@ try {
             logit("conllout DONE: $conll ");
             $matePOSfile = tempFileName("mateTagger-raw");
             $res = "../texton-linguistic-resources";
-            $lang = "da";
+            $lang = "en";
 
             if($Ilangde)
                 $lang = "$res/de/BohnetsPOStagger/tag-ger-3.6.model";
@@ -326,10 +326,10 @@ try {
             else if($Ilangfr)
                 $lang = "$res/fr/BohnetsPOStagger/ftb6_1.conll09.crossannotated.anna-3.3-d8.jar.postagger.model";
 	    logit("$lang");logit(realpath($lang)); 
-             http($conll,$matePOSfile,realpath($lang));
+            http($conll,$matePOSfile,realpath($lang));
 
             //$utf8file = tempFileName("utf8file");
-            //$command = "makeUTF8 $matePOSfile $utf8file";
+            /*$command = "makeUTF8 $matePOSfile $utf8file";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
@@ -342,7 +342,7 @@ try {
                 }
 
             pclose($cmd);
-
+            */
             //$matePOSfile = $utf8file;
             logit('Before TEI-conversion:'.$matePOSfile);
 
@@ -399,9 +399,9 @@ try {
         $ch = curl_init("http://localhost:8080/BohnetsTagger/");
         //$ch = curl_init("http://obi.cst.sc.ku.dk:8080/BohnetsTagger/");
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POST, true); // enable posting
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true); // enable posting
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         $fp = fopen($output, "w");
         curl_setopt($ch, CURLOPT_FILE, $fp);

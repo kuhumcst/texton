@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("json2org_$requestParm_");
+                $tempfilename = tempFileName("json2org_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

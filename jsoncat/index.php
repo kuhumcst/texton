@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("jsoncat_$requestParm_");
+                $tempfilename = tempFileName("jsoncat_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

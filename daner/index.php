@@ -130,7 +130,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("daner_$requestParm_");
+                $tempfilename = tempFileName("daner_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

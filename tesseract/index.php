@@ -125,7 +125,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("TesseractOCR_$requestParm_");
+                $tempfilename = tempFileName("TesseractOCR_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

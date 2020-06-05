@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("JSON2TEIP5ANNO_$requestParm_");
+                $tempfilename = tempFileName("JSON2TEIP5ANNO_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

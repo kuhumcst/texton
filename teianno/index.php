@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("TEIanno_$requestParm_");
+                $tempfilename = tempFileName("TEIanno_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {

@@ -123,7 +123,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("opennlpPOStagger_$requestParm_");
+                $tempfilename = tempFileName("opennlpPOStagger_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
@@ -387,7 +387,7 @@ try {
 
     function http($input,$output,$lang)
         {
-	curl_setopt($curl_handle, CURLOPT_POST, 1);
+	//curl_setopt($curl_handle, CURLOPT_POST, 1);
 	$CF = curl_file_create($input, 'text/plain', $input);
 	
         #$CF = new CURLFile($input);
@@ -398,9 +398,9 @@ try {
             );
         $ch = curl_init("http://localhost:8080/opennlpPOSTagger/");
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true); 
-        curl_setopt($curl, CURLOPT_POST, true); // enable posting
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+        curl_setopt($ch, CURLOPT_POST, true); // enable posting
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         $fp = fopen($output, "w");
         curl_setopt($ch, CURLOPT_FILE, $fp);

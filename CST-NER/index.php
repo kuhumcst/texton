@@ -126,7 +126,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("CSTNER_$requestParm_");
+                $tempfilename = tempFileName("CSTNER_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
