@@ -26,9 +26,13 @@ X=
             . "&"
             )
         : ?parms
-      & (   !parms:?A (end.?) ?Z
-          & !A (end.999) !Z:?parms
-        | 
+      &   (   !parms:?A (end.?) ?Z
+            & !A (end.999) !Z
+          | (end.999) !parms
+          )
+        : ?parms
+      & ( !parms:?A (start.?) ?Z
+        | (start.0) !parms:?parms
         )
       & (   !parms:?A (search.?s) ?Z
           & !A !Z:?parms
@@ -63,8 +67,11 @@ X=
                 )
             )
         : ?Q
-      & "C:\\texlive\\2020\\tlpkg\\installer\\wget\\wget.exe -O T.jsn \""
-      & sys$(str$("wget -O T.jsn \"" !Q \"))
+      &   ( ~&"C:\\texlive\\2020\\tlpkg\\installer\\wget\\wget.exe"
+          | wget
+          )
+        : ?wget
+      & sys$(str$(!wget " -O T.jsn \"" !Q \"))
       & get$("T.jsn",JSN):?jsn
       & !jsn:(?+(kwic.,?kwic)+?,)
       & 0:?N
@@ -185,7 +192,10 @@ X=
   )
   ( new
   =   outputfile
-    .     ~
+    .     
+        &   (its.doit)
+          $ "https://alf.hum.ku.dk/korp/?mode=threats#?stats_reduce=word&corpus=threatsjeb&cqp=%5Blemma%20%3D%20%22rette%22%5D&search_tab=1&search=cqp"
+      |   ~
         &   (its.doit)
           $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&start=0&end=999&context=&cache=true&defaultcontext=1%20sentence&corpus=threatsjeb&cqp=%5Bmsd%20%3D%20%22PRON.PERS.2.SING%22%5D&show=sentence,pos,msd,lemma,ref,prefix,suffix&stats_reduce=word&sort=random&random_seed=5002506&search_tab=1&search=cqp"
       |   ~
