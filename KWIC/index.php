@@ -26,7 +26,7 @@ Description    : This tool generates a tabulator separated file with all KWIC (k
 ExternalURI    : -
 XMLparms       : 
 PostData       : 
-Inactive       : on
+Inactive       : 
 */
 
 /*******************
@@ -171,7 +171,7 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Ifacetkwic = false;	/* Type of content in input is keyword-in-context (KWIC) if true */
-        $Iformathtml = false;	/* Format in input is HTML if true */
+        $Iformaturl = false;	/* Format in input is URL if true */
         $Ofacetkwic = false;	/* Type of content in output is keyword-in-context (KWIC) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
 
@@ -213,8 +213,8 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformathtml = existsArgumentWithValue("Iformat", "html");
-            $echos = $echos . "Iformathtml=$Iformathtml ";
+            $Iformaturl = existsArgumentWithValue("Iformat", "url");
+            $echos = $echos . "Iformaturl=$Iformaturl ";
             }
         if( hasArgument("Ofacet") )
             {
