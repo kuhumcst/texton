@@ -375,7 +375,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
         }
     else if($language == 'sv')
         {
-        $flexrulessubdir = "/0";
+        $flexrulessubdir = "/1";
         }
     else if($language == 'tr')
         {
