@@ -1,0 +1,228 @@
+{jsn2csv.bra
+
+Convert output from Korp to a tabulator separated fomat that can be imported in Excel.}
+
+X=
+  ( doit
+  =   
+    .       vap
+          $ ( ( 
+              =   
+                .     @(!arg:?K "=" ?V)
+                    &     start
+                          end
+                          context
+                          cache
+                          defaultcontext
+                          corpus
+                          cqp
+                          show
+                          search
+                      : ? !K ?
+                    & (!K.!V)
+                  | 
+              )
+            . !arg
+            . "&"
+            )
+        : ?parms
+      & (   !parms:?A (end.?) ?Z
+          & !A (end.999) !Z:?parms
+        | 
+        )
+      & (   !parms:?A (search.?s) ?Z
+          & !A !Z:?parms
+          & ( !s:cqp
+            |   @(!s:?k "%7C" ?v)
+              & (cqp."%5B" !k "+%3D+%22" !v "%22%5D"):?cqp
+              &   (   !parms:?A (cqp.?) ?Z
+                    & !A !cqp !Z
+                  | !parms !cqp
+                  )
+                : ?parms
+            )
+        | 
+        )
+      & ( !parms:? (show.?) ?
+        | !parms (show.pos%2Cmsd%2Clemma):?parms
+        )
+      & ( !parms:? ("show_struct".?) ?
+        |     !parms
+              ( "show_struct"
+              . "text_title%2Ctext_Instrument%2Ctext_Platform%2Ctext_Mediatype%2Ctext_Original%2Ctext_Domain%2Ctext_Exactdate%2Ctext_Notbeforedate%2Ctext_Notafterdate%2Ctext_Origplace%2Ctext_Juridoutcome%2Ctext_SenderTargetrelation%2Ctext_Sendertype%2Ctext_SenderID%2Ctext_Senderage%2Ctext_Sendergender%2Ctext_Victimtype%2Ctext_VictimID%2Ctext_Victimage%2Ctext_Victimgender%2Csentence_id"
+              )
+          : ?parms
+        )
+      &     str
+          $ ( "https://alf.hum.ku.dk/korp/cgi/korp.cgi?command=query"
+                map
+              $ ( ( 
+                  = .!arg:(?K.?V)&"&" !K "=" !V
+                  )
+                . !parms
+                )
+            )
+        : ?Q
+      & "C:\\texlive\\2020\\tlpkg\\installer\\wget\\wget.exe -O T.jsn \""
+      & sys$(str$("wget -O T.jsn \"" !Q \"))
+      & get$("T.jsn",JSN):?jsn
+      & !jsn:(?+(kwic.,?kwic)+?,)
+      & 0:?N
+      & 0:?maxstart
+      & 0:?maxendpos
+      &   map
+        $ ( ( 
+            =   
+              .     !arg
+                  : (   ?+(match.?+(start.?start)+?,)+?
+                      : ?+(tokens.,? [?ntokens)+?
+                    , 
+                    )
+                & (!start:>!maxstart:?maxstart|)
+                & !ntokens+-1*!start:>!maxendpos:?maxendpos
+            )
+          . !kwic
+          )
+      & -1*!maxstart:?maxstart
+      & ( tab
+        =   
+          .   !arg:<0&\t tab$(1+!arg)
+            | 
+        )
+      & ( countup
+        =   a b
+          .   !arg:(?a.?b)
+            &   \t
+                !a
+                ( !a+1:<!b&countup$(!a+1.!b)
+                | 
+                )
+        )
+      & ( head
+        =   cell
+          .   !arg:(?+(structs.?structs,)+?,) ?
+            & ( cell
+              =   k
+                .     !arg:(?k..?)+?arg
+                    & \t !k cell$!arg
+                  | 
+              )
+            & cell$!structs:\t ?cells
+            & !cells countup$(!maxstart.!maxendpos) \n
+        )
+      & ( empty
+        =   cell
+          .   !arg:(?+(structs.?structs,)+?,) ?
+            & ( cell
+              =   k
+                .     !arg:(?k..?)+?arg
+                    & \t cell$!arg
+                  | 
+              )
+            & cell$!structs:\t ?cells
+            & !cells
+        )
+      & ( meta
+        =   
+          .   !arg:(?+(structs.?structs,)+?,)
+            & ( cell
+              =   
+                .     !arg:(?..?v)+?arg
+                    & \t !v cell$!arg
+                  | 
+              )
+            & cell$!structs:\t ?cells
+            & !cells
+        )
+      & empty$!kwic:?emp
+      &     head$!kwic
+              map
+            $ ( ( 
+                =   
+                  .     !arg
+                      : (   ?+(match.?+(start.?start)+?,)+?
+                          : ?+(tokens.,?tokens)+?
+                        , 
+                        )
+                    &   meta$!arg
+                        (tab$(!maxstart+!start):?tabs)
+                          map
+                        $ ( ( 
+                            =   
+                              .   !arg:(?+(word..?word)+?,)
+                                & \t !word
+                            )
+                          . !tokens
+                          )
+                        \n
+                        !emp
+                        !tabs
+                          map
+                        $ ( ( 
+                            =   
+                              .   !arg:(?+(lemma..?lemma)+?,)
+                                & \t !lemma
+                            )
+                          . !tokens
+                          )
+                        \n
+                        !emp
+                        !tabs
+                          map
+                        $ ( ( 
+                            =   
+                              .   !arg:(?+(msd..?msd)+?,)
+                                & \t !msd
+                            )
+                          . !tokens
+                          )
+                        \n
+                )
+              . !kwic
+              )
+        : ?output
+      & put$(str$!output,!outputfile,NEW)
+  )
+  ( new
+  =   outputfile
+    .     ~
+        &   (its.doit)
+          $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&start=0&end=999&context=&cache=true&defaultcontext=1%20sentence&corpus=threatsjeb&cqp=%5Bmsd%20%3D%20%22PRON.PERS.2.SING%22%5D&show=sentence,pos,msd,lemma,ref,prefix,suffix&stats_reduce=word&sort=random&random_seed=5002506&search_tab=1&search=cqp"
+      |   ~
+        &   (its.doit)
+          $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&start=0&end=999&context=&cache=true&defaultcontext=1%20sentence&corpus=threatsjeb&cqp=%5Bmsd%20%3D%20%22PRON.PERS.1.SING%22%5D&show=sentence,pos,msd,lemma,ref,prefix,suffix&stats_reduce=word&sort=random&random_seed=5002506&search=word%7Csender&page=0"
+      |   ~
+        &   (its.doit)
+          $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&start=0&end=999&context=&cache=true&defaultcontext=1%20sentence&corpus=threatsjeb&cqp=%5Bmsd%20%3D%20%22PRON.PERS.1.SING%22%5D&show=sentence,pos,msd,lemma,ref,prefix,suffix&stats_reduce=word&sort=random&random_seed=5002506&search_tab=1&search=cqp"
+      |   ~
+        &   (its.doit)
+          $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&start=0&end=999&context=&cache=true&defaultcontext=1%20sentence&corpus=threatsjeb&cqp=%5Bword%20%3D%20%22jeg%22%20%26%20(lemma%20%3D%20%22jeg%22%20%7C%20_.text_Juridoutcome%20%3D%20%22juridical%22)%5D&show=sentence,pos,msd,lemma,ref,prefix,suffix&stats_reduce=word&sort=random&random_seed=5002506&search_tab=1&search=cqp"
+      |   get$(arg$,STR):?F
+        & arg$:?outputfile
+        & ( @(!F:?F (\n|\r|" ") ?)
+          | 
+          )
+        & (its.doit)$!F
+  );
+
+r=
+  get'("jsn2csv.bra",TXT)
+& rmv$(str$(jsn2csv ".bak"))
+& ren$("jsn2csv.bra".str$(jsn2csv ".bak"))
+&   put
+  $ ( "{jsn2csv.bra
+
+Convert output from Korp to a tabulator separated fomat that can be imported in Excel.}
+
+"
+    , "jsn2csv.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"jsn2csv.bra",APP)
+& put'(\n,"jsn2csv.bra",APP,BIN)
+& lst'(r,"jsn2csv.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"jsn2csv.bra",APP,BIN)
+& ;
+
+new'X;
