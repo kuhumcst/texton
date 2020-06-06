@@ -6480,10 +6480,13 @@ toolsProg=
           , getActiveTools getGoals getImplicatedGoals
         .   0:?smell
           & ( makeSmell
-            = A Z o
-              . !arg:?A (sml,(?o.nsl)) ?Z &!A (sml,(!o.str$(S (1+!smell:?smell)))) !Z
-               | !arg
-            ) 
+            =   A Z o
+              .     !arg:?A (sml,(?o.nsl)) ?Z
+                  &   !A
+                      (sml,(!o.str$(S (1+!smell:?smell))))
+                      !Z
+                | !arg
+            )
           & ( isfulfilled
             =   source src goal gl tool pipe pipes
               .   !arg:(?source.?goal.?tool)
@@ -6572,8 +6575,16 @@ toolsProg=
                                         :   ?
                                           + (!tool.~:?toolFeatures)
                                           + ?ltools
-                                      & makeSmell$!toolFeatures:?toolFeatures
-                                      & (!tool:(Tesseract-OCR|CuneiForm) & log$(toolFeatures !toolFeatures)|)
+                                      &   makeSmell$!toolFeatures
+                                        : ?toolFeatures
+                                      & (     !tool
+                                            : ( Tesseract-OCR
+                                              | CuneiForm
+                                              )
+                                          &   log
+                                            $ (toolFeatures !toolFeatures)
+                                        | 
+                                        )
                                       & (       matchGoalWithFeatures
                                               $ (!goaly.!toolFeatures)
                                             : (?pathfields.?newGoal)
@@ -7050,8 +7061,7 @@ toolsProg=
                         &   (!userInput.!FP) !recentTasks
                           : ?recentTasks
                         & (!FP.withRestriction)
-                      |   log$(tooComplex)
-                        & (!FP.tooComplex)
+                      | log$tooComplex&(!FP.tooComplex)
                       )
                   |   !FP:(?,?) ?
                     & (!FP.triviallyFulfilled)
@@ -10207,7 +10217,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           & (format.str$(!L col !empty))
                         |     vap$((=.trim$!arg).!arg.\n)
                             : ~(? @(?:? " " ?) ?)
-                          & (format.1col)
+                            : ?L
+                          & ( !L:% %&(format.1col)
+                            |   @(!L:"https://alf.hum.ku.dk/korp/?" ?)
+                              & (facet.kwic) (format.html)
+                            | (facet.txt) (format.flat)
+                            )
                         )
                   )
                 &   !ct
