@@ -1790,7 +1790,7 @@ toolsProg=
             )
           & ( translateToHumanLanguage
             =     circle Circle Describe nice inoutdesc
-                , description seqno struct abbrevs o
+                , description seqno struct abbrevs o diff
               .   ( circle
                   =   
                     .   !arg:~#&!arg
@@ -1994,75 +1994,6 @@ toolsProg=
                 & ( describeShort
                   =   describe
                     .   ( describe
-                        =   a b c m n an bn cn
-                          .     !arg:(?a,?b)
-                              & (     !b
-                                    : ( (?.?.?)
-                                      | ((?.?.?),?)
-                                      )
-                                  & (   ( describe$!a:(?a.?an)
-                                        & !a
-                                        )
-                                        " + "
-                                        ( describe$!b:(?b.?bn)
-                                        & !b
-                                        )
-                                    . !an+!bn
-                                    )
-                                |   !b:(?b,?c)
-                                  & (   ( describe$!a:(?a.?an)
-                                        & !a
-                                        )
-                                        " + ["
-                                        ( describe$!b:(?b.?bn)
-                                        & !b
-                                        )
-                                        "] + "
-                                        ( describe$!c:(?c.?cn)
-                                        & !c
-                                        )
-                                    . !an+!cn+1
-                                    )
-                                | (   ( describe$!a:(?a.?an)
-                                      & !a
-                                      )
-                                      " + ["
-                                      ( describe$!b:(?b.?bn)
-                                      & !b
-                                      )
-                                      "] "
-                                  . !an+1
-                                  )
-                                )
-                            |   !arg:%?a %?b
-                              & (   ( describe$!a:(?a.?an)
-                                    & !a
-                                    )
-                                    arrow$(!an.!b)
-                                    ( describe$!b:(?b.?bn)
-                                    & !b
-                                    )
-                                . !bn
-                                )
-                            |   !arg:(?m.?seqno.?n)
-                              & (   (   !m:
-                                      & Circle$!seqno
-                                    | infoabout$!m circle$!seqno
-                                    )
-                                    ( !m:
-                                    |   !abbrevs:?*(!m.!n)^?n*?
-                                      & nice$!n
-                                    )
-                                . 1
-                                )
-                            | (!arg.1)
-                        )
-                      & describe$!arg:(?arg.?)
-                      & !arg
-                  )
-                & ( describeShort
-                  =   describe
-                    .   ( describe
                         =   a b c m n an bn cn h L
                           .   !arg:(?h.?arg)
                             & (   !arg:(?a,?b)
@@ -2102,10 +2033,27 @@ toolsProg=
                                   )
                               |   !arg:(?m.?seqno.?n)
                                 & (   (   !m:
-                                        & Circle$!seqno
+                                        & (   !seqno:∵
+                                            & 
+                                          | Circle$!seqno
+                                          )
                                       | infoabout$!m circle$!seqno
                                       )
-                                      ( !m:
+                                      (   !m:
+                                        & (   !seqno:∵
+                                            & !n:(?.?c)
+                                            & ( !c:
+                                              | ( div
+                                                .   (class.tooltip)
+                                                  ,   ∵
+                                                      ( span
+                                                      .   (class.tooltiptext)
+                                                        , fullinoutdesc$!c
+                                                      )
+                                                )
+                                              )
+                                          | 
+                                          )
                                       |   !abbrevs:?*(!m.!n)^?n*?
                                         & nice$!n
                                       )
@@ -2167,7 +2115,8 @@ toolsProg=
                                             )
                                             !m
                                       )
-                                      ( !m:
+                                      (   !seqno:~∵
+                                        & !m:
                                       |   !n:(?.?c)
                                         & ( !c:
                                           | (dd.,fullinoutdescTable$!c)
@@ -2179,6 +2128,40 @@ toolsProg=
                         )
                       & describe$(.!arg):(?arg.?)
                       & (dl.,!arg)
+                  )
+                & ( subt
+                  =   plus A f v a x y z
+                    .   !arg:(?plus.?A)
+                      &   whl
+                        ' ( !A:(?f,?v) ?A
+                          & !plus:?a (!f,?x*!v*?y) ?z
+                          & ( !x*!y:1
+                            | !a (!f,!x*!y) !z:?plus
+                            )
+                          )
+                      & !plus
+                  )
+                & ( diff
+                  =   plus minus A
+                    .   !arg:(?plus.?refs.?minus)
+                      & ( !minus:
+                        |     whl
+                            ' (   !minus
+                                : (? (?.?.?.?A),?minus)
+                              & subt$(!plus.!A):?plus
+                              )
+                          & !minus:? (?.?.?.?A)
+                          & subt$(!plus.!A):?plus
+                        )
+                      & ( !refs:
+                        |     whl
+                            ' ( !refs:(? (?.?.?.?A),?refs)
+                              & subt$(!plus.!A):?plus
+                              )
+                          & !refs:? (?.?.?.?A)
+                          & subt$(!plus.!A):?plus
+                        )
+                      & !plus
                   )
                 & ( spotInput
                   =     max nrefs N A B spotting
@@ -2197,9 +2180,7 @@ toolsProg=
                                         ( ?
                                         ,   ?
                                           * ( [?P
-                                            : ( ?
-                                              & !P:>!max:?max
-                                              )
+                                            & !P:>!max:?max
                                             )
                                         )
                                         (?&~)
@@ -2217,9 +2198,15 @@ toolsProg=
                                   )
                                 & (   !max+!N+!nrefs:0
                                     & spotInput$!A
-                                  |   !A:
-                                    & (.∵..)
-                                  | (spotInput$!A,(.∵..))
+                                  |   ( ~
+                                      |     diff$(!inputs.!refs.!A)
+                                          : ?DATA
+                                        & log$(DATA !DATA)
+                                      )
+                                    & (   !A:
+                                        & (.∵..!DATA)
+                                      | (spotInput$!A,(.∵..!DATA))
+                                      )
                                   )
                               )
                               !B
@@ -2236,19 +2223,21 @@ toolsProg=
                       |   ?
                         & '$describeLong:(=?Describe)
                     )
-                & lst$(struct,path$spotting,NEW)
                 & spotInput$!struct:?struct
-                & lst$(struct,path$spotting2,NEW)
                 & Describe$!struct:?description
                 & (   !description:~
                     & !struct:? (?.?.?.?o)
                     &   !description
-                        ( div
-                        .   (class.tooltip)
-                          ,   ∴
-                              ( span
-                              . (class.tooltiptext),inoutdesc$!o
-                              )
+                        (   !arg:(?abbrevs.?struct.many)
+                          & ( div
+                            .   (class.tooltip)
+                              ,   ∴
+                                  ( span
+                                  .   (class.tooltiptext)
+                                    , inoutdesc$!o
+                                  )
+                            )
+                        | 
                         )
                   |   localized
                     $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
@@ -12621,7 +12610,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         & "Wind to the nth pipeline. That is the one the user has chosen."
                         & windFW$(!pipes.!nth):?pipe
                         & log$(Submit !Submit)
-                        & lst$(pipe,path$pipe,NEW)
                         & (     !Submit
                               : ( "View details"
                                 | @(?:(prev|next) ?)
