@@ -296,18 +296,92 @@ toolsProg=
       ( read
       = .get$(path$((!arg:~|all) ".bra"))
       )
+      ( prodtables
+      =   CTBs
+          jobAbout
+          jobNr
+          jobs
+          relations
+          Uploads
+          zippedresults
+          tooladm
+          jobNr
+      )
       ( importTables
-      =   
+      =   prod
         .     log$(importTables !arg)
+            & !arg:(?prod.?arg)
             & @(!arg:alltables ?)
-            & ( get$(path$!arg)&saveAllTables$
+            & ( (   !prod:
+                  &     map
+                      $ ((=.!arg.readTable$!arg).!prodtables)
+                    : ?productionTables
+                  & lst$(productionTables,path$productionTables,NEW)
+                  & get$(path$!arg)
+                  & saveAllTables$
+                  &   map
+                    $ ( ( 
+                        =     name productioncontent
+                            , anotool ToolID prodtool mergedtooladm
+                          .   !arg:(?name.?productioncontent)
+                            & (   !name:tooladm
+                                & "Use the imported non-production tooladm, but inject ContactEmail ServiceURL from current production tooladm"
+                                & 0:?mergedtooladm
+                                &   whl
+                                  ' (   !tooladm
+                                      :   ( ? (ToolID.?ToolID) ?
+                                          : ?anotool
+                                          )
+                                        + ?tooladm
+                                    & (     !productioncontent
+                                          :   ?
+                                            + ( ? (ToolID.!ToolID) ?
+                                              : ?prodtool
+                                              )
+                                            + ?
+                                        &   map
+                                          $ ( ( 
+                                              =   a z anoval prodval
+                                                .     !anotool
+                                                    :   ?a
+                                                        (!arg.?anoval)
+                                                        ?z
+                                                  &   !prodtool
+                                                    :   ?
+                                                        (!arg.?prodval)
+                                                        ?
+                                                  & ( !anoval:!prodval
+                                                    |     !a
+                                                          (!arg.!prodval)
+                                                          !z
+                                                      : ?anotool
+                                                    )
+                                              )
+                                            . ContactEmail ServiceURL
+                                            )
+                                      | 
+                                      )
+                                    &   !mergedtooladm !anotool
+                                      : ?mergedtooladm
+                                    )
+                                & !mergedtooladm:?productioncontent
+                              | 
+                              )
+                            &   !productioncontent
+                              : ?(&!name)
+                            & saveTable$!name
+                        )
+                      . !productionTables
+                      )
+                | get$(path$!arg)&saveAllTables$
+                )
               | str$("Cannot read " !arg)&~
               )
           |   str
             $ "Usage: importTables$\"<file name>\" .  <file name> must start with 'alltables'."
       )
       ( exportTables
-      =   tabs tab Tables folder error A Z prod
+      =   tabs tab Tables folder error A Z prod mssg
         .     ( !where:(?.?) ?
               | readTable$where
               )
@@ -350,30 +424,76 @@ toolsProg=
                       | 
                       )
                     & (   !prod:
-                        &   
-                          : ?CTBs
-                          : ?jobAbout
-                          : ?jobNr
-                          : ?jobs
-                          : ?relations
-                          : ?Uploads
-                          : ?zippedresults
+                        &     CTBs
+                              jobAbout
+                              jobNr
+                              jobs
+                              relations
+                              Uploads
+                              zippedresults
+                              tooladm
+                              jobNr
+                          : ?prodtables
+                        &   map
+                          $ ( (=.:?(&!arg))
+                            . !prodtables
+                            )
                         & 0:?jobNr
+                        & readTable$tooladm
+                        &     ( 
+                              =     anotooladm A Z a z
+                                  , ContactEmail ServiceURL
+                                .   0:?anotooladm
+                                  &   whl
+                                    ' (   !arg
+                                        :   ( ?A
+                                              (ContactEmail.?ContactEmail)
+                                              ?Z
+                                            )
+                                          + ?arg
+                                      &     !A
+                                            (ContactEmail."x@x.xxx")
+                                            !Z
+                                        :   ?A
+                                            (ServiceURL.?ServiceURL)
+                                            ?Z
+                                      & (   @( !ServiceURL
+                                             : ?a "://" ? "/" ?z
+                                             )
+                                          &   str$(!a "://localhost/" !z)
+                                            : ?ServiceURL
+                                        | 
+                                        )
+                                      &     !anotooladm
+                                          + ( !A
+                                              (ServiceURL.!ServiceURL)
+                                              !Z
+                                            )
+                                        : ?anotooladm
+                                      )
+                                  & !anotooladm
+                              )
+                            $ !tooladm
+                          : ?tooladm
                       | 
                       )
-                    & (   lst$(!tabs,path$!AAA,NEW)
-                        &   str
-                          $ ( "Saved all tables in '"
+                    &   (   lst$(!tabs,path$!AAA,NEW)
+                          &   str
+                            $ ("Saved all tables in '" path$!AAA "'. " !error)
+                        |   str
+                          $ ( "Cannot write to ["
                               path$!AAA
-                              "'. "
-                              !error
+                              "]. Check file access rights for JBoss/Tomcat."
                             )
-                      |   str
-                        $ ( "Cannot write to ["
-                            path$!AAA
-                            "]. Check file access rights for JBoss/Tomcat."
-                          )
+                        )
+                      : ?mssg
+                    & (   !prod:
+                        & map$((=.readTable$!arg).!prodtables)
+                        & readTable$jobNr
+                        & readTable$tooladm
+                      | 
                       )
+                    & !mssg
                   )
               |   str
                 $ "'exportTables$' must be called without argument or with the name of a file that must start with 'alltables'."
