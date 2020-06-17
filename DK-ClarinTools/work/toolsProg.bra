@@ -298,7 +298,8 @@ toolsProg=
       )
       ( importTables
       =   
-        .     @(!arg:alltables ?)
+        .     log$(importTables !arg)
+            & @(!arg:alltables ?)
             & ( get$(path$!arg)&saveAllTables$
               | str$("Cannot read " !arg)&~
               )
@@ -306,11 +307,14 @@ toolsProg=
             $ "Usage: importTables$\"<file name>\" .  <file name> must start with 'alltables'."
       )
       ( exportTables
-      =   tabs tab Tables folder error
+      =   tabs tab Tables folder error A Z prod
         .     ( !where:(?.?) ?
               | readTable$where
               )
-            & (   !arg:(|@(?:alltables ?))
+            & log$(exportTables !arg)
+            & lst$(arg,path$arg,NEW)
+            & !arg:(?prod.?arg)
+            & (   @(!arg:(|alltables ?))
                 & 0:?tabs
                 & :?error
                 & (   !where
@@ -345,14 +349,24 @@ toolsProg=
                         & !arg:?AAA
                       | 
                       )
+                    & (   !prod:
+                        &   
+                          : ?CTBs
+                          : ?jobAbout
+                          : ?jobNr
+                          : ?jobs
+                          : ?relations
+                          : ?Uploads
+                          : ?zippedresults
+                        & 0:?jobNr
+                      | 
+                      )
                     & (   lst$(!tabs,path$!AAA,NEW)
                         &   str
-                          $ ( "Read all tables and saved them in '"
+                          $ ( "Saved all tables in '"
                               path$!AAA
-                              "'. To restore, type importTables$\""
-                              !AAA
-                              "\"."
-                              (!error:|!error)
+                              "'. "
+                              !error
                             )
                       |   str
                         $ ( "Cannot write to ["
