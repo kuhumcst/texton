@@ -308,7 +308,7 @@ toolsProg=
           jobNr
       )
       ( importTables
-      =   prod
+      =   prod missingToolprop
         .     log$(importTables !arg)
             & !arg:(?prod.?arg)
             & @(!arg:alltables ?)
@@ -364,6 +364,22 @@ toolsProg=
                                     &   !mergedtooladm+!anotool
                                       : ?mergedtooladm
                                     )
+                                &   whl
+                                  ' (   !productioncontent
+                                      :   ( ? (ToolID.?ToolID) ?
+                                          : ?prodtool
+                                          )
+                                        + ?productioncontent
+                                    & (   !mergedtooladm
+                                        :   ?
+                                          + (? (ToolID.!ToolID) ?)
+                                          + ?
+                                      |     !prodtool+!mergedtooladm
+                                          : ?mergedtooladm
+                                        &   !ToolID !missingToolprop
+                                          : ?missingToolprop
+                                      )
+                                    )
                                 & !mergedtooladm:?productioncontent
                               | 
                               )
@@ -373,6 +389,22 @@ toolsProg=
                         )
                       . !productionTables
                       )
+                  & ( !missingToolprop:
+                    |     !productionTables
+                        : ? (toolprop.?prodtoolprop) ?
+                      & readTable$toolprop
+                      &   whl
+                        ' (   !prodtoolprop
+                            :   ?
+                              + (   ?tid
+                                  & !missingToolprop:? !tid ?
+                                . ?tdata
+                                )
+                              + ?prodtoolprop
+                          & (!tid.!tdata)+!toolprop:?toolprop
+                          )
+                      & saveTable$toolprop
+                    )
                 | get$(path$!arg)&saveAllTables$
                 )
               | str$("Cannot read " !arg)&~
