@@ -306,6 +306,7 @@ toolsProg=
           zippedresults
           tooladm
           jobNr
+          toolprop
       )
       ( importTables
       =   prod missingToolprop
@@ -316,9 +317,11 @@ toolsProg=
                   &     map
                       $ ((=.!arg.readTable$!arg).!prodtables)
                     : ?productionTables
-                  & lst$(productionTables,path$productionTables,NEW)
                   & get$(path$!arg)
                   & saveAllTables$
+                  & readTable$tooladm
+                  & readTable$toolprop
+                  & :?missingToolprop
                   &   map
                     $ ( ( 
                         =     name productioncontent
@@ -364,43 +367,57 @@ toolsProg=
                                     &   !mergedtooladm+!anotool
                                       : ?mergedtooladm
                                     )
+                                & log$OUTLIERS
                                 &   whl
                                   ' (   !productioncontent
                                       :   ( ? (ToolID.?ToolID) ?
                                           : ?prodtool
                                           )
                                         + ?productioncontent
-                                    & (   !mergedtooladm
-                                        :   ?
-                                          + (? (ToolID.!ToolID) ?)
-                                          + ?
+                                    & log$(ToolID !ToolID)
+                                    & (     !mergedtooladm
+                                          :   ?
+                                            + (? (ToolID.!ToolID) ?)
+                                            + ?
+                                        & log$(HAS !ToolID)
                                       |     !prodtool+!mergedtooladm
                                           : ?mergedtooladm
+                                        & log$(NOWITHAS !prodtool)
                                         &   !ToolID !missingToolprop
                                           : ?missingToolprop
+                                        &   log
+                                          $ (missingToolprop !missingToolprop)
                                       )
                                     )
                                 & !mergedtooladm:?productioncontent
                               | 
                               )
-                            &   !productioncontent
-                              : ?(&!name)
-                            & saveTable$!name
+                            & ( !name:toolprop
+                              |     !productioncontent
+                                  : ?(&!name)
+                                & log$(saving !name)
+                                & saveTable$!name
+                                & log$(!name saved)
+                              )
                         )
                       . !productionTables
                       )
-                  & ( !missingToolprop:
+                  & (   !missingToolprop:
+                      & log$NOTHINGMISSING
                     |     !productionTables
                         : ? (toolprop.?prodtoolprop) ?
+                      & log$HAVETOINSERT
                       & readTable$toolprop
                       &   whl
                         ' (   !prodtoolprop
                             :   ?
                               + (   ?tid
                                   & !missingToolprop:? !tid ?
+                                  & log$(tid !tid is missing)
                                 . ?tdata
                                 )
                               + ?prodtoolprop
+                          & log$(ADD !tdata)
                           & (!tid.!tdata)+!toolprop:?toolprop
                           )
                       & saveTable$toolprop
@@ -418,7 +435,6 @@ toolsProg=
               | readTable$where
               )
             & log$(exportTables !arg)
-            & lst$(arg,path$arg,NEW)
             & !arg:(?prod.?arg)
             & (   @(!arg:(|alltables ?))
                 & 0:?tabs
@@ -456,21 +472,12 @@ toolsProg=
                       | 
                       )
                     & (   !prod:
-                        &     CTBs
-                              jobAbout
-                              jobNr
-                              jobs
-                              relations
-                              Uploads
-                              zippedresults
-                              tooladm
-                              jobNr
-                          : ?prodtables
                         &   map
                           $ ( (=.:?(&!arg))
                             . !prodtables
                             )
                         & 0:?jobNr
+                        & readTable$toolprop
                         & readTable$tooladm
                         &     ( 
                               =     anotooladm A Z a z
