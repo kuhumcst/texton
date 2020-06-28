@@ -490,8 +490,8 @@ try {
                 if($Iperiodc20 && $Operiodc20)
                     {
                     if($Iappnrm)
-			$flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
-		    else
+                         $flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
+                    else
                         $flexrules = "$res/da/lemmatiser/notags/c19n/0/flexrules.bra";
                     //$traindata = "$res/da/lemmatiser/training/numedforadv";//ods_170412.csv.corrected-TAGS.ph";
                     $traindata = "$res/da/lemmatiser/training/ParoleBrandesDSLdictionary";
@@ -511,9 +511,9 @@ try {
                     //$traindata = "$res/da/lemmatiser/training/tabfile";
                     //$flexrules = "$res/da/lemmatiser/notags/c13-c18/2/flex.bra";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-B-2-4202-step2.4cole";
-		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
-		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
-		    $traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
+                    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
+                    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
+                    $traindata = "$res/da/lemmatiser/training/diplAndDSLFRQ";
                     }
                 }
             if($Ilangde)
