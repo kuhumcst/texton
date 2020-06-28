@@ -513,7 +513,8 @@ try {
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-B-2-4202-step2.4cole";
 		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
 		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
-		    $traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
+		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
+		    $traindata = "$res/da/lemmatiser/training/diplAndDSLFRQ";
                     }
                 }
             if($Ilangde)
