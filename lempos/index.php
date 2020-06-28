@@ -490,8 +490,8 @@ try {
                 if($Iperiodc20 && $Operiodc20)
                     {
                     if($Iappnrm)
-			$flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
-		    else
+                         $flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
+                    else
                         $flexrules = "$res/da/lemmatiser/notags/c19n/0/flexrules.bra";
                     //$traindata = "$res/da/lemmatiser/training/numedforadv";//ods_170412.csv.corrected-TAGS.ph";
                     $traindata = "$res/da/lemmatiser/training/ParoleBrandesDSLdictionary";
