@@ -263,7 +263,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
             {
             $periodsubdir = "/c13-c18";
             if($pos == 'n')
-                $flexrulessubdir = "/2";
+                $flexrulessubdir = "/1";
             else // Not the case, currently (May 2018)
                 {
                 $flexrulessubdir = "/links";
