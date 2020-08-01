@@ -1,0 +1,34 @@
+#! /usr/local/bin/perl
+
+$first = 1;
+while($_ = <>) {
+    if(/^<[swc] /) { #throw out anything that isn't a sent, word, or punct
+	if(/^<s /) { #add in end-of-sent markers
+	    if($first) {
+		$_ = "<s>\n";
+		$first = 0;
+	    } else {
+		$_ = "</s>\n<s>\n";
+	    }
+	}
+	#the next conditionals deal with some differences in 
+	#representing symbols
+	if(/(<.*>)(.*)&dollar;?([^\n]*)/) { 
+	    $_ = join('',("<w \$>$2\$\n",$1,$3,"\n"));
+	}
+	if(/(<.*>)(.*)&pound;?([^\n]*)/) { 
+	    $_ = join('',("<w \$>$2\$\n",$1,$3,"\n"));
+	}
+	if(/<w UNC>([\.\,\d]*)&percnt;?([^\n]*)/) { 
+	    $_ = join('',("<w CD>$1\n<w NN>%\n"));
+	    if($2) {
+		$_ = join('',($_,"<w IN>$2\n"));
+	    }
+	}
+	if(/<.*>&num/) { 
+	    $_ = "<w #>#\n";
+	}
+	print;
+    }
+}
+
