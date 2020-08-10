@@ -1037,7 +1037,6 @@ toolsProg=
                   & !abbrs !abbr:?abbrs
                   )
               )
-          & log$(hiddenData !hiddenData)
           & !abbrs
       )
       ( lexan
@@ -10721,7 +10720,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                      about the input(s)."
                 & readTable$Uploads
                 & !arg:?parms
-                & log$(analyzeInput !arg)
                 & ( !arg:? (DATE.?date) ?
                   | :?date
                   )
@@ -10816,7 +10814,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & ( retrieveFeatures
                   =   Items item feats n val presels
                     .   !arg:?Items
-                      & log$(retrieveFeatures !Items)
                       & :?presels
                       &   whl
                         ' (   !Items
@@ -11024,8 +11021,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , goalpicklists preselvals presels
                 , srcs createArgs
               .   !arg:(?presels.?createArgs.?)
-                & log$(presels !presels)
-                & log$(createArgs !createArgs)
                 & readTable$features
                 & !features:?fs
                 & :?preselvalsrows
@@ -11632,7 +11627,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( ShowAllPipes
             =   directedBy hiddenData pipes rstr
               .   !arg:(?directedBy.?hiddenData.?pipes)
-                & log$(ShowAllPipes hiddenData !hiddenData)
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
                   )
@@ -12375,9 +12369,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             & 
                           )
                       : (?itemGroups.?sourceAndGoal)
-                    & log$(formFields !formFields)
-                    & log$(itemGroups !itemGroups)
-                    & log$(sourceAndGoal !sourceAndGoal)
                     &     map
                         $ ( ( 
                             =   
@@ -12392,9 +12383,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       : ?hiddenData
                     &   !formFields !sourceAndGoal desiredTools$
                       : ?formFields
-                    & log$(itemGroups !itemGroups)
-                    & log$(hiddenData !hiddenData)
-                    & log$sourcesAndGoalsDONE
                     &   str
                       $ ( 200~~~
                             toML
@@ -12525,29 +12513,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . ?Items
                     . ?mail2
                     )
-                & log$(parms !parms)
-                & log$(hiddenData !hiddenData)
-                & log$(Items !Items)
-                & ( 
-                  |   ( !parms:? (itms.?itms) ?
-                      | 1:?itms
-                      )
-                    &     map
-                        $ ( ( 
-                            =   a v nt
-                              .     !arg:(@(?:?a ";" ?nt).?v)
-                                  & (   !nt:!itms
-                                      & (!a.!v)
-                                    | 
-                                    )
-                                | !arg:(itms.?)&
-                                | !arg
-                            )
-                          . !parms
-                          )
-                      : ?parms
-                    & log$(prunedParms !parms)
-                  )
                 & ( updateUploads
                   =     A nr Item Path stagingName
                       , meta feats visibility Z parms
@@ -12869,174 +12834,160 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & updateUploads$!parms
                 & 0:?calls:?allpipes
                 & :?restr
-                &   (   (   !directedBy:GoalChoice
-                          & !wrkflw:~
-                          &   precooked-DASISH$(!wrkflw.!A !Z)
-                            : (?arg:?parms.?errmsg)
-                          & !errmsg:
-                          & readTable$Workflows
-                          &   !Workflows
-                            :   ?
-                                (   ?reqs
-                                  &   whl
-                                    ' ( !reqs:%?req ?reqs
-                                      & log$(req !req)
-                                      & !parms:? !req ?
-                                      )
-                                  & !reqs:
+                & (   (   !directedBy:GoalChoice
+                        & !wrkflw:~
+                        &   precooked-DASISH$(!wrkflw.!A !Z)
+                          : (?arg:?parms.?errmsg)
+                        & !errmsg:
+                        & readTable$Workflows
+                        &   !Workflows
+                          :   ?
+                              (   ?reqs
+                                &   whl
+                                  ' ( !reqs:%?req ?reqs
+                                    & log$(req !req)
+                                    & !parms:? !req ?
+                                    )
+                                & !reqs:
+                              . ?pipes
+                              . ?descr
+                              )
+                              ?
+                        & log$FoundWorkflow
+                      |   log$(ComputePipelines !parms)
+                        & (     Pipelines$!parms
+                              : ( ?sources
                                 . ?pipes
-                                . ?descr
+                                .   ( withRestriction
+                                    | onlyWithoutRestriction
+                                    | triviallyFulfilled
+                                    )
+                                  : ?restr
+                                )
+                            & log$("Pipelines computed restr=[" !restr "]")
+                          |   log$(ComputePipelines failed)
+                            & ~
+                          )
+                        &   !restr
+                          : ( withRestriction
+                            | triviallyFulfilled
+                            )
+                      )
+                    &   log
+                      $ "We may have succeeded in computing one or more pipelines."
+                    & "We may have succeeded in computing one or more pipelines."
+                    & (   ( !pipes:#:?NNN
+                          |   !pipes:?+[?NNN
+                            & !NNN:>1000
+                          )
+                        & TooManyOrNone$(!calls.!NNN)
+                      |   !Submit:"next step"
+                        & log$"next step"
+                        & ShowAllPipes$(!directedBy.!hiddenData.!pipes)
+                      |     !parms
+                          : (   ?
+                                ( bsubmit
+                                . @(?:(prev|next) #?nth)
                                 )
                                 ?
-                          & log$FoundWorkflow
-                        |   log$(ComputePipelines !parms)
-                          & (     Pipelines$!parms
-                                : ( ?sources
-                                  . ?pipes
-                                  .   ( withRestriction
-                                      | onlyWithoutRestriction
-                                      | triviallyFulfilled
-                                      )
-                                    : ?restr
-                                  )
-                              & log$("Pipelines computed restr=[" !restr "]")
-                            |   log$(ComputePipelines failed)
-                              & ~
+                            | ? (nth.?nth) ?
+                            | ?&1:?nth
                             )
-                          &   !restr
-                            : ( withRestriction
-                              | triviallyFulfilled
+                        &   log
+                          $ ( str
+                            $ ( "Wind to the "
+                                !nth
+                                " pipeline. That is the one the user has chosen."
                               )
-                        )
-                      &   log
-                        $ "We may have succeeded in computing one or more pipelines."
-                      & "We may have succeeded in computing one or more pipelines."
-                      & (   ( !pipes:#:?NNN
-                            |   !pipes:?+[?NNN
-                              & !NNN:>1000
                             )
-                          & TooManyOrNone$(!calls.!NNN)
-                        |   !Submit:"next step"
-                          & log$"next step"
-                          & ShowAllPipes$(!directedBy.!hiddenData.!pipes)
-                        |     !parms
-                            : (   ?
-                                  ( bsubmit
-                                  . @( ?
-                                     : (prev|next) #?nth
+                        & "Wind to the nth pipeline. That is the one the user has chosen."
+                        & windFW$(!pipes.!nth):?pipe
+                        & log$(Submit !Submit)
+                        & (     !Submit
+                              : ( "View details"
+                                | @(?:(prev|next) ?)
+                                )
+                            &   ShowOnlyTheCurrentPipe
+                              $ (!pipe.!nth.!directedBy)
+                          |   !Submit:Metadata
+                            & (     !parms
+                                  : ~( ?
+                                       ( Iformat
+                                       .   ( txtbasis
+                                           | txtann
+                                           | teip5
+                                           )
+                                         ^ ?
+                                       )
+                                       ?
                                      )
-                                  )
-                                  ?
-                              | ? (nth.?nth) ?
-                              | ?&1:?nth
+                                & canConsumeMetadata$!pipe
+                                &   rememberMetadata$(TEImetadata.!parms)
+                                  : ?parms
+                                &   AddMetadata
+                                  $ (TEImetadata.!nth.!directedBy.!parms.)
+                              | NoNeedForMetadata$
                               )
-                          &   log
-                            $ ( str
-                              $ ( "Wind to the "
-                                  !nth
-                                  " pipeline. That is the one the user has chosen."
-                                )
-                              )
-                          & "Wind to the nth pipeline. That is the one the user has chosen."
-                          & windFW$(!pipes.!nth):?pipe
-                          & log$(Submit !Submit)
-                          & (     !Submit
-                                : ( "View details"
-                                  | @(?:(prev|next) ?)
-                                  )
-                              &   ShowOnlyTheCurrentPipe
-                                $ (!pipe.!nth.!directedBy)
-                            |   !Submit:Metadata
-                              & (     !parms
-                                    : ~( ?
-                                         ( Iformat
-                                         .   ( txtbasis
-                                             | txtann
-                                             | teip5
-                                             )
-                                           ^ ?
-                                         )
-                                         ?
+                          |   !Submit:Submit
+                            & (     !parms
+                                  : ~( ?
+                                       ( Iformat
+                                       .   ( txtbasis
+                                           | txtann
+                                           | teip5
+                                           )
+                                         ^ ?
                                        )
-                                  & canConsumeMetadata$!pipe
-                                  &   rememberMetadata$(TEImetadata.!parms)
-                                    : ?parms
-                                  &   AddMetadata
-                                    $ ( TEImetadata
-                                      . !nth
-                                      . !directedBy
-                                      . !parms
-                                      . 
-                                      )
-                                | NoNeedForMetadata$
-                                )
-                            |   !Submit:Submit
-                              & (     !parms
-                                    : ~( ?
-                                         ( Iformat
-                                         .   ( txtbasis
-                                             | txtann
-                                             | teip5
-                                             )
-                                           ^ ?
-                                         )
-                                         ?
-                                       )
-                                  & canConsumeMetadata$!pipe
-                                  & (     MetadataInParms
+                                       ?
+                                     )
+                                & canConsumeMetadata$!pipe
+                                & (   MetadataInParms$(TEImetadata.!parms)
+                                    &     errorInMetadata
                                         $ (TEImetadata.!parms)
-                                      &     errorInMetadata
-                                          $ (TEImetadata.!parms)
-                                        : ?ERR
-                                    |   ~( MetadataInParms
-                                         $ (TEImetadata.!parms)
-                                         )
-                                      &   !parms
-                                        :   ?
-                                            ( Oformat
-                                            .   ( txtbasis
-                                                | txtann
-                                                | teip5
-                                                )
-                                              ^ ?
-                                            )
-                                            ?
-                                      &     rememberMetadata
-                                          $ (TEImetadata.!parms)
-                                        : ?parms
-                                    )
-                                  &   AddMetadata
-                                    $ ( TEImetadata
-                                      . !nth
-                                      . !directedBy
-                                      . !parms
-                                      . !ERR
-                                      )
-                                |   ApplyThePipelineToTheInput
+                                      : ?ERR
+                                  |   ~(MetadataInParms$(TEImetadata.!parms))
+                                    &   !parms
+                                      :   ?
+                                          ( Oformat
+                                          .   ( txtbasis
+                                              | txtann
+                                              | teip5
+                                              )
+                                            ^ ?
+                                          )
+                                          ?
+                                    &     rememberMetadata
+                                        $ (TEImetadata.!parms)
+                                      : ?parms
+                                  )
+                                &   AddMetadata
                                   $ ( TEImetadata
-                                    . !pipe
-                                    . !batch
-                                    . !Items
-                                    . !mail2
-                                    . !parms
+                                    . !nth
                                     . !directedBy
+                                    . !parms
+                                    . !ERR
                                     )
-                                )
-                            )
-                        )
-                    |     !restr
-                        : ( onlyWithoutRestriction
-                          | triviallyFulfilled
+                              |   ApplyThePipelineToTheInput
+                                $ ( TEImetadata
+                                  . !pipe
+                                  . !batch
+                                  . !Items
+                                  . !mail2
+                                  . !parms
+                                  . !directedBy
+                                  )
+                              )
                           )
-                      &   !parms
-                        : ? (desiredtool.?restriction) ?
-                      & log$noway1
-                      & NoWay$(!restriction.!restr.!calls)
-                    | log$noway2&NoWay$(..!calls)
-                    )
-                  : ?XYZZ
-                & log$(XYZZ !XYZZ)
-                & !XYZZ
+                      )
+                  |     !restr
+                      : ( onlyWithoutRestriction
+                        | triviallyFulfilled
+                        )
+                    & !parms:? (desiredtool.?restriction) ?
+                    & log$noway1
+                    & NoWay$(!restriction.!restr.!calls)
+                  | log$noway2&NoWay$(..!calls)
+                  )
             )
           & ( computeWorkflow
             =     "Shall we treat all resources in one job (non-batch) or shall we
@@ -13079,12 +13030,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | 
                       )
                   : ?hiddenData
-                & log$(packedParms !parms)
                 & unpackIOparms$!parms:?parms
-                & log$(unpackedparms !parms)
-                & log$(hiddenData1 !hiddenData)
                 & checkIOparms$!parms
-                & log$(hiddenData2 !hiddenData)
                 & readTable$tooladm
                 & (   !parms:? (bsubmit.?Submit) ?
                     &   "We are past the first stage: the user has pressed a button"
@@ -13148,7 +13095,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 . !parms
                 )
             : ?parms
-          & log$(prunedParms !parms)
           & !HTMLbodyContainer:?BodyContainer
           & setLanguageNotPermanently$!arg
           & analyzeInput$!parms:(?parms.?Items.?presels)
