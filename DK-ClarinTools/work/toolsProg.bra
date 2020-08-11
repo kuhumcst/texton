@@ -65,7 +65,9 @@ rewritten, so all lay-out is normalized (Bracmat style).
 After changes have been made to the single table files, for example because
 new tools are registered, the 'alltablesxxx' file is made up to date with
 
-exportTables$
+exportTables$(<prod>.)
+
+where <prod> is either the string "prod" or the empty string "".
 
 This command reads all single file tables from the folder structure and saves
 them to 'alltablesxxx'. The command knows the actual name of the file to write
@@ -74,11 +76,17 @@ alongside all tables, and is therefore known after the last time
 importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
+If <prod> is the empty string "", then the table tooladm is anonymized by 
+chainging all domains in service URLs "http:\localhost" and by chaing all
+contact emails to "x@x.xxx".
+
 To export all tables to a different file, do
 
-exportTables$"alltableszzz"
+exportTables$(<prod>."alltableszzz")
 
 where alltableszzz must be a valid file name that starts with 'alltables'.
+
+
 
 To do a clean up, removing almost all that is not defined in this file from 
 Bracmat's memory, call the clean function
@@ -2402,7 +2410,7 @@ toolsProg=
                             .   (class.tooltip)
                               ,   ∴
                                   ( span
-                                  .   (class.tooltiptext)
+                                  .   (class.tooltiptextL)
                                     , inoutdesc$!o
                                   )
                             )
@@ -2752,7 +2760,7 @@ toolsProg=
                 \r\n
                 "    visibility: hidden;"
                 \r\n
-                "    width: 320px;"
+                "    width: 220px;"
                 \r\n
                 "    background-color: #555;"
                 \r\n
@@ -2760,7 +2768,7 @@ toolsProg=
                 \r\n
                 "    text-align: left;"
                 \r\n
-                "    padding: 5px 0;"
+                "    padding: 5px 10px;"
                 \r\n
                 "    border-radius: 6px;"
                 \r\n\r\n
@@ -2772,9 +2780,45 @@ toolsProg=
                 \r\n
                 "    bottom: 125%;"
                 \r\n
-                "    left: 50%;"
+                "    left: 0%;"
                 \r\n
-                "    margin-left: -60px;"
+                "    margin-left: 0px;"
+                \r\n\r\n
+                "    /* Fade in tooltip */"
+                \r\n
+                "    opacity: 0;"
+                \r\n
+                "    transition: opacity 0.3s;"
+                \r\n
+                "}"
+                \r\n\r\n
+                ".tooltip .tooltiptextL {"
+                \r\n
+                "    visibility: hidden;"
+                \r\n
+                "    width: 220px;"
+                \r\n
+                "    background-color: #555;"
+                \r\n
+                "    color: #fff;"
+                \r\n
+                "    text-align: left;"
+                \r\n
+                "    padding: 5px 10px;"
+                \r\n
+                "    border-radius: 6px;"
+                \r\n\r\n
+                "    /* Position the tooltip text */"
+                \r\n
+                "    position: absolute;"
+                \r\n
+                "    z-index: 1;"
+                \r\n
+                "    bottom: 125%;"
+                \r\n
+                "    right: 0%;"
+                \r\n
+                "    margin-left: 0px;"
                 \r\n\r\n
                 "    /* Fade in tooltip */"
                 \r\n
@@ -2786,7 +2830,7 @@ toolsProg=
                 \r\n\r\n
                 "/* Tooltip arrow */"
                 \r\n
-                ".tooltip .tooltiptext::after {"
+                ".tooltip .tooltiptext::after, .tooltip .tooltiptextL::after {"
                 \r\n
                 "    content: ;"
                 \r\n
@@ -2808,7 +2852,7 @@ toolsProg=
                 \r\n\r\n
                 "/* Show the tooltip text when you mouse over the tooltip container */"
                 \r\n
-                ".tooltip:hover .tooltiptext {"
+                ".tooltip:hover .tooltiptext,.tooltip:hover .tooltiptextL {"
                 \r\n
                 "    visibility: visible;"
                 \r\n
@@ -11122,6 +11166,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     .     !arg:(?short.?table.(=?pat))
                         & readTable$toolprop
                         & readTable$tooladm
+                        & readTable$features
                         &   map
                           $ ( ( 
                               =   tool full abbr YYY
@@ -11279,7 +11324,44 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     : ?servicedGoals
                                 )
                               &   row
-                                $ ( cell$(str$(!name ":"))
+                                $ (   cell
+                                    $ (     !features
+                                          :   ?
+                                            + ( ? (short.!short) ?
+                                              :   ?
+                                                  (description.?description)
+                                                  ?
+                                              )
+                                            + ?
+                                        & ( div
+                                          .   (class.tooltip)
+                                            ,   !name
+                                                ( span
+                                                .   (class.tooltiptext)
+                                                  , localized$!description
+                                                )
+                                          )
+                                      | !name
+                                      )
+                                      cell
+                                    $ (     !features
+                                          :   ?
+                                            + ( ? (short.!short) ?
+                                              :   ?
+                                                  (goalhelp.?goalhelp)
+                                                  ?
+                                              )
+                                            + ?
+                                        & ( div
+                                          .   (class.tooltip)
+                                            ,   (small.,chu$10068)
+                                                ( span
+                                                .   (class.tooltiptext)
+                                                  , localized$!goalhelp
+                                                )
+                                          )
+                                      | 
+                                      )
                                       cell
                                     $ ( makeSelectFormField
                                       $ ( 
@@ -11364,7 +11446,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             (strong.,localized$(blank blank))
                               localized
-                            $ ( ". In general, more filled out fields = fewer candidate workflows."
+                            $ ( ". In general, more filled out fields = fewer workflow candidates."
                                 ". Generelt gælder: jo flere udfyldte feldter, desto færre foreslåede arbejdsgange."
                               )
                             (br.,)
@@ -11374,7 +11456,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                         .     Table
                             $ ( id,goal
-                              . row$(cell$() cell$)
+                              . row$(cell$() cell$() cell$)
                               . !goalpicklists
                               )
                               makeCheckboxFormField
@@ -15411,7 +15493,9 @@ rewritten, so all lay-out is normalized (Bracmat style).
 After changes have been made to the single table files, for example because
 new tools are registered, the 'alltablesxxx' file is made up to date with
 
-exportTables$
+exportTables$(<prod>.)
+
+where <prod> is either the string \"prod\" or the empty string \"\".
 
 This command reads all single file tables from the folder structure and saves
 them to 'alltablesxxx'. The command knows the actual name of the file to write
@@ -15420,11 +15504,17 @@ alongside all tables, and is therefore known after the last time
 importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
+If <prod> is the empty string \"\", then the table tooladm is anonymized by 
+chainging all domains in service URLs \"http:\\localhost\" and by chaing all
+contact emails to \"x@x.xxx\".
+
 To export all tables to a different file, do
 
-exportTables$\"alltableszzz\"
+exportTables$(<prod>.\"alltableszzz\")
 
 where alltableszzz must be a valid file name that starts with 'alltables'.
+
+
 
 To do a clean up, removing almost all that is not defined in this file from 
 Bracmat's memory, call the clean function
