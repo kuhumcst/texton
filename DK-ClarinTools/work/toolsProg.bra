@@ -11200,6 +11200,49 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                       | !table
                   )
+                & ( namecell
+                  =   features short name
+                    .   !arg:(?features.?short.?name)
+                      &   cell
+                        $ (     !features
+                              :   ?
+                                + ( ? (short.!short) ?
+                                  : ? (description.?description) ?
+                                  )
+                                + ?
+                            & ( div
+                              .   (class.tooltip)
+                                ,   !name
+                                    ( span
+                                    .   (class.tooltiptext)
+                                      , localized$!description
+                                    )
+                              )
+                          | !name
+                          )
+                  )
+                & ( featurehelpcell
+                  =   features short inorout help
+                    .   !arg:(?features.?short.?inorout)
+                      &   cell
+                        $ (     !features
+                              :   ?
+                                + ( ? (short.!short) ?
+                                  : ? (!inorout.?help) ?
+                                  )
+                                + ?
+                            & ( div
+                              .   (class.tooltip)
+                                ,   (small.,chu$10068)
+                                    ( span
+                                    .   (class.tooltiptext)
+                                      , localized$!help
+                                    )
+                              )
+                          | 
+                          )
+                  )
+                & readTable$features
                 &     map
                     $ ( ( 
                         =   
@@ -11226,7 +11269,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 | :?exr
                                 )
                               &   row
-                                $ ( cell$!name
+                                $ ( namecell$(!features.!short.!name)
+                                      featurehelpcell
+                                    $ (!features.!short.sourcehelp)
                                       map
                                     $ ( ( 
                                         =   
@@ -11254,9 +11299,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                         .   str
                                                           $ (I !short !exr)
                                                         . options
-                                                        .     readTable
-                                                            $ features
-                                                          &   !features
+                                                        .     !features
                                                             :   ?
                                                               + (   ?
                                                                     ( short
@@ -11324,44 +11367,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     : ?servicedGoals
                                 )
                               &   row
-                                $ (   cell
-                                    $ (     !features
-                                          :   ?
-                                            + ( ? (short.!short) ?
-                                              :   ?
-                                                  (description.?description)
-                                                  ?
-                                              )
-                                            + ?
-                                        & ( div
-                                          .   (class.tooltip)
-                                            ,   !name
-                                                ( span
-                                                .   (class.tooltiptext)
-                                                  , localized$!description
-                                                )
-                                          )
-                                      | !name
-                                      )
-                                      cell
-                                    $ (     !features
-                                          :   ?
-                                            + ( ? (short.!short) ?
-                                              :   ?
-                                                  (goalhelp.?goalhelp)
-                                                  ?
-                                              )
-                                            + ?
-                                        & ( div
-                                          .   (class.tooltip)
-                                            ,   (small.,chu$10068)
-                                                ( span
-                                                .   (class.tooltiptext)
-                                                  , localized$!goalhelp
-                                                )
-                                          )
-                                      | 
-                                      )
+                                $ ( namecell$(!features.!short.!name)
+                                      featurehelpcell
+                                    $ (!features.!short.goalhelp)
                                       cell
                                     $ ( makeSelectFormField
                                       $ ( 
@@ -11387,6 +11395,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           $ ( id,inputs
                             .   row
                               $ ( cell$()
+                                  cell$()
                                     map
                                   $ ( ( 
                                       =   
@@ -11407,6 +11416,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   & 0:?nt
                                   &   row
                                     $ ( cell$Select
+                                        cell$()
                                           map
                                         $ ( ( 
                                             =   
