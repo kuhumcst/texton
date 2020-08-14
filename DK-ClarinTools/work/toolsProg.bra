@@ -61,14 +61,6 @@ work/
 
 (This folder structure must already exist.) Finally, the same file is
 rewritten, so all lay-out is normalized (Bracmat style).
-
-After changes have been made to the single table files, for example because
-new tools are registered, the 'alltablesxxx' file is made up to date with
-
-exportTables$(<prod>.)
-
-where <prod> is either the string "prod" or the empty string "".
-
 This command reads all single file tables from the folder structure and saves
 them to 'alltablesxxx'. The command knows the actual name of the file to write
 to because that name is stored in the variable AAA, which is itself stored
@@ -13659,6 +13651,154 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       "
 /**
+ * help
+ */"
+      ( help
+      =   tools
+        .   log$HELP toolsSorted
+          & ( toolsSorted
+            =   tool sorted tools L
+              .   readTable$tooladm
+                & 0:?sorted
+                &   whl
+                  ' (   !tooladm
+                      :   ?
+                        + ( ? (Inactive.) ?
+                          : ? (Title.?Title) ?
+                          : ?tool
+                          )
+                        + ?tooladm
+                    & (low$!Title.!tool)+!sorted:?sorted
+                    )
+                & :?tools
+                &   whl
+                  ' ( !sorted:(?L.%?sort)+?sorted
+                    & (!L.!sort) !tools:?tools
+                    )
+                & :?sorted
+                &   whl
+                  ' ( !tools:%?sort ?tools
+                    & !sort !sorted:?sorted
+                    )
+                & !sorted
+            )
+          & readTable$toolprop
+          & ( langlist
+            =   tp L R langs l a b
+              .     !toolprop:?+(!arg.~(? (lang,?) ?))+?
+                  & 
+                |   !toolprop:?tp
+                  & 0:?L
+                  &   whl
+                    ' (   !tp
+                        : ?+(!arg.? (lang,?langs) ?)+?tp
+                      &   whl
+                        ' ( !langs:(?a.?b)+?langs
+                          & !L+!a+!b:?L
+                          )
+                      )
+                  & :?R
+                  &   whl
+                    ' (!L:#*%@?l+?L&!l !R:?R)
+                  & :?L
+                  &   whl
+                    ' (!R:%?l ?R&", " !l !L:?L)
+                  & ( !L:", " ?L&str$!L
+                    | 
+                    )
+            )
+          & toolsSorted$:?tools
+          & log$(tools !tools)
+          & 0:?toolNr
+          &   toML
+            $ ( !HTMLbodyContainer
+              $ ( (h1.,"Text Tonsorium")
+                  (h2.,"Understand how data and tools are described")
+                  (h2.,"and become better at formulating your goal.")
+                  (h3.,Overview)
+                  ( dl
+                  .   
+                    ,   (dt.,Data)
+                        (dd.,Input)
+                        (dd.,Goal)
+                        (dt.,Facets)
+                        (dd.,)
+                        (dt.,Tools)
+                        ( dd
+                        .   
+                          , ( table
+                            .   
+                              ,   ( thead
+                                  .   
+                                    ,   (th.,"#")
+                                        (th.,"Name of the tool")
+                                        (th.,"Supported languages")
+                                  )
+                                  ( tbody
+                                  .   
+                                    ,   map
+                                      $ ( ( 
+                                          =   Title
+                                            .     !arg
+                                                : ( ?
+                                                  .     ?
+                                                        (Title.?Title)
+                                                        ?
+                                                    :   ?
+                                                        (ToolID.?ToolID)
+                                                        ?
+                                                  )
+                                              & ( tr
+                                                .   
+                                                  ,   ( td
+                                                      .   
+                                                        ,   !toolNr+1
+                                                          : ?toolNr
+                                                      )
+                                                      ( td
+                                                      .   
+                                                        , ( a
+                                                          .   ( href
+                                                              .   str
+                                                                $ ("#" !ToolID)
+                                                              )
+                                                            , !Title
+                                                          )
+                                                      )
+                                                      ( td
+                                                      . ,langlist$!ToolID
+                                                      )
+                                                )
+                                          )
+                                        . !tools
+                                        )
+                                  )
+                            )
+                        )
+                  )
+                    map
+                  $ ( ( 
+                      =   
+                        .       !arg
+                              : ( ?
+                                .   ? (ToolID.?ToolID) ?
+                                  : ? (Title.?Title) ?
+                                  : ? (Description.?Description) ?
+                                )
+                            &   ( a
+                                .   (id.!ToolID) (name.!ToolID)
+                                  , (h2.,!Title)
+                                )
+                                (p.,!Description)
+                          | 
+                      )
+                    . !tools
+                    )
+                )
+              )
+      )
+      "
+/**
  * cleanup
  *
  * Delete all references to files that no longer exist.
@@ -15499,14 +15639,6 @@ work/
 
 (This folder structure must already exist.) Finally, the same file is
 rewritten, so all lay-out is normalized (Bracmat style).
-
-After changes have been made to the single table files, for example because
-new tools are registered, the 'alltablesxxx' file is made up to date with
-
-exportTables$(<prod>.)
-
-where <prod> is either the string \"prod\" or the empty string \"\".
-
 This command reads all single file tables from the folder structure and saves
 them to 'alltablesxxx'. The command knows the actual name of the file to write
 to because that name is stored in the variable AAA, which is itself stored
