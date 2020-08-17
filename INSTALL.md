@@ -21,12 +21,12 @@ Installation requires
   * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
+  * python3
+  * this repo
   * bracmat  
    Interpreters are installed in two locations:  
    as a JNI (Java Native Interface) inside Tomcat  
    and as a command line tool in `/opt/texton/bin/`
-  * python3
-  * this repo
   * DK-ClarinTools
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
@@ -131,11 +131,6 @@ Make the file executable
 
     $> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
 
-
-## Bracmat
-
-See https://github.com/kuhumcst/texton-bin.
-
 ## Python3
 
 We need pip3
@@ -156,6 +151,10 @@ Libraries must be installed for all users, so we install them as root:
     $> cd texton
     $> sudo chgrp -R www-data *
     $> sudo sudo chmod -R g+w * 
+
+## Bracmat
+
+See https://github.com/kuhumcst/texton-bin.
 
 ## DK-ClarinTools
 
