@@ -151,7 +151,7 @@ Libraries must be installed for all users, so we install them as root:
     $> sudo git clone https://github.com/kuhumcst/texton.git
     $> cd texton
     $> sudo chgrp -R www-data *
-    $> sudo sudo chmod -R g+w * 
+    $> sudo chmod -R g+w * 
 
 ## Bracmat
 
