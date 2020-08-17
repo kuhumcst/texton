@@ -91,11 +91,13 @@ Visit https://tomcat.apache.org/ to obtain a link to a recent archive.
 Add
 
     <role rolename="manager-gui"/>
-    <user username="tomcat" password="hemmligt-password" roles="manager-gui"/>
+    <user username="tomcat" password="secret-password" roles="manager-gui"/>
 
     $> sudo vi /opt/tomcat/latest/conf/server.xml
 
-   
+Make sure that you use a good password instead of "secret-password".
+
+
 change
 
     <Connector port="8080" protocol="HTTP/1.1"
