@@ -154,7 +154,11 @@ Libraries must be installed for all users, so we install them as root:
 
 ## DK-ClarinTools
 
-   The repo https://github.com/kuhumcst/DK-ClarinTools contains the Java code 
+   The repo https://github.com/kuhumcst/DK-ClarinTools contains the Java code of the central hub.
+   The Bracmat code of the central hub is in this (https://github.com/kuhumcst/texton) repo.
+   
+   You can clone whereever you want. The Text Tonsorium only needs the .war file that is the result
+   of compiling the java source.
    
 ## Wrapped 3rd party tools
 
