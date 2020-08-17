@@ -95,10 +95,6 @@ Add
 
 Make sure that you use a good password instead of "secret-password".
 
-
-
-Make sure that you use a good password instead of "secret-password".
-
     $> sudo vi /opt/tomcat/latest/conf/server.xml
 
 change
@@ -117,21 +113,19 @@ Stop Tomcat
 
     $> sudo /opt/tomcat/latest/bin/shutdown.sh
 
-Add to classpath, create (or edit) the file /opt/tomcat/latest/bin/setenv.bin. For example
+Add "bracmat.jar" to classpath: create (or edit) the file /opt/tomcat/latest/bin/setenv.sh. For example
 
     CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar
 
-If there are several java versions, create 
+(See below how to make bracmat.jar.)
 
-    $> sudo vi bin/setenv.sh
-
-Enter the path to the version of java that tomcat must use, e.g.
+If there are several java versions, enter the path to the version of java that tomcat must use in setenv.sh, e.g.
 
     export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 Make the file executable
 
-    $> sudo chmod ugo+x bin/setenv.sh
+    $> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
 
 
 ## Bracmat
