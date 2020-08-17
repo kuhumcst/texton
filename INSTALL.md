@@ -143,6 +143,7 @@ Libraries must be installed for all users, so we install them as root:
     $> cd ~
     $> umask 022
     $> pip3 install cltk
+    $> exit
 
 ## This repo
 
