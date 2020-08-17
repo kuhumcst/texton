@@ -168,11 +168,11 @@ of compiling the java source.
 The installation instructions in https://github.com/kuhumcst/DK-ClarinTools are not up-to-data as of 2020.08.17
 Just do:
 
-   $> git clone https://github.com/kuhumcst/DK-ClarinTools.git
-   $> cd DK-ClarinTools/
-   $> sudo chmod ugo+x compileTomcat.sh
-   $> sudo ./compileTomcat.sh
-   $> sudo /opt/tomcat/latest/bin/startup.sh
+    $> git clone https://github.com/kuhumcst/DK-ClarinTools.git
+    $> cd DK-ClarinTools/
+    $> sudo chmod ugo+x compileTomcat.sh
+    $> sudo ./compileTomcat.sh
+    $> sudo /opt/tomcat/latest/bin/startup.sh
    
 (Assuming you installed Tomcat from a downloaded archive, see above.)
 
@@ -181,8 +181,8 @@ you defined in tomcat-users.xml. Then, in the "Path" column, click "/texton". Th
 
 Before proceeding, we need to install the metadata table that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
-   $> cd /opt/texton/DK-ClarinTools/work/
-   $> ls -lrt alltables*
+    $> cd /opt/texton/DK-ClarinTools/work/
+    $> ls -lrt alltables*
 
 Copy the file name of the most recent "alltables..." file to the clipboard. Now bavigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
