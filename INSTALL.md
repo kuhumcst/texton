@@ -93,10 +93,13 @@ Add
     <role rolename="manager-gui"/>
     <user username="tomcat" password="secret-password" roles="manager-gui"/>
 
-    $> sudo vi /opt/tomcat/latest/conf/server.xml
+Make sure that you use a good password instead of "secret-password".
+
+
 
 Make sure that you use a good password instead of "secret-password".
 
+    $> sudo vi /opt/tomcat/latest/conf/server.xml
 
 change
 
