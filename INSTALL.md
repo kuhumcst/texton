@@ -123,6 +123,10 @@ If there are several java versions, enter the path to the version of java that t
 
     export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
+If your computer has more than 8 GB RAM, you can add
+
+    JAVA_OPTS="-Djava.awt.headless=true -XX:+UseG1GC -Xms7168m -Xmx7168m"
+
 Make the file executable
 
     $> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
