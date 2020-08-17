@@ -13,7 +13,6 @@ The instructions are valid under the following assumptions:
    Only programs that are installed using apt-get reside elsewhere.
 
 Installation requires 
-  * this repo
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
   * apache2
@@ -27,18 +26,11 @@ Installation requires
    as a JNI (Java Native Interface) inside Tomcat  
    and as a command line tool in `/opt/texton/bin/`
   * python3
-  * DK-ClarinTools  
+  * this repo
+  * DK-ClarinTools
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * Many tools wrapped in web services in `/opt/texton/`
-
-## This repo
-
-    $> cd /opt
-    $> sudo git clone https://github.com/kuhumcst/texton.git
-    $> cd texton
-    $> sudo chgrp -R www-data *
-    $> sudo sudo chmod -R g+w *
 
 ## git-lfs
 
@@ -152,9 +144,21 @@ Libraries must be installed for all users, so we install them as root:
     $> umask 022
     $> pip3 install cltk
 
+## This repo
+
+    $> cd /opt
+    $> sudo git clone https://github.com/kuhumcst/texton.git
+    $> cd texton
+    $> sudo chgrp -R www-data *
+    $> sudo sudo chmod -R g+w * 
+
+## DK-ClarinTools
+
+   The repo https://github.com/kuhumcst/DK-ClarinTools contains the Java code 
+   
 ## Wrapped 3rd party tools
 
-### PDFminer
+## PDFminer
 
 Install prerequisite:
 
