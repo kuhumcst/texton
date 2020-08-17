@@ -217,7 +217,7 @@ A OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice
 Daner is at https://github.com/ITUnlp/daner
 
     $> cd daner
-    $> git clone https://github.com/ITUnlp/daner.git
+    $> sudo git clone https://github.com/ITUnlp/daner.git
 
 Afterwards there will be a subdirectory `daner/daner`.
 
@@ -226,7 +226,7 @@ Afterwards there will be a subdirectory `daner/daner`.
 Dapipe is at https://github.com/ITUnlp/dapipe 
 
     $> cd dapipe
-    $> git clone https://github.com/ITUnlp/dapipe.git
+    $> sudo git clone https://github.com/ITUnlp/dapipe.git
 
 Afterwards there will be a subdirectory `dapipe/dapipe`.
 
@@ -234,12 +234,12 @@ Afterwards there will be a subdirectory `dapipe/dapipe`.
 
 This is simply installed by the following command:
 
-    $> apt-get install espeak
+    $> sudo apt-get install espeak
 
 ### html2text
 
     $> cd html2text
-    $> git clone https://github.com/soundasleep/html2text
+    $> sudo git clone https://github.com/soundasleep/html2text
 
 Afterwards there will be a subdirectory `html2text/html2text`.
 
@@ -247,6 +247,7 @@ Afterwards there will be a subdirectory `html2text/html2text`.
 
 See https://github.com/kuhumcst/texton-bin#jsoncat
 
+    $> cd ~
     $> git clone https://github.com/pantuza/jsoncat.git
     $> cd jsoncat
     $> make
@@ -255,9 +256,10 @@ See https://github.com/kuhumcst/texton-bin#jsoncat
 
 ### Lapos
 
+    $> cd ~
     $> git clone https://github.com/cltk/lapos.git
 
-Follow the build instructions. Copy the executable fil "lapos" to /opt/texton/bin.
+Follow the build instructions. Copy the executable file "lapos" to /opt/texton/bin.
 
 ### mate-POStagger
 
@@ -294,7 +296,7 @@ It is difficult to get soffice to do what we want from PHP. What works on one ma
 In addition
 
     $> cd tesseract
-    $> git clone https://github.com/tesseract-ocr/tessdata_best.git
+    $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 
 ## set access rights
 
