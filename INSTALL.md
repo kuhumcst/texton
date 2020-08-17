@@ -31,6 +31,7 @@ Installation requires
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * Many tools wrapped in web services in `/opt/texton/`
+  * Linguistic resources
 
 ## git-lfs
 
@@ -298,6 +299,13 @@ In addition
     $> cd tesseract
     $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 
+## Install linguistic resources
+
+    $> cd /opt
+    $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+    $> cd texton
+    $> sudo ln -s /opt/texton-linguistic-resources res
+    
 ## set access rights
 
 Make all directories accessible and readable and give owner and group write rights
