@@ -40,9 +40,10 @@ Installation requires
 
     $> sudo apt install apache2
     $> sudo apt-get install php libapache2-mod-php
-    $> sudo a2enmod php7.2
+    $> sudo a2enmod php7.4
     $> sudo service apache2 restart
 
+Note "php7.4" is an example. Use the php version that you saw being installed in the presvious step. 
 Copy apache2-sites/texton.conf to /etc/apache2/sites-available. 
 
 ## PHP
