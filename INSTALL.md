@@ -190,9 +190,12 @@ Copy the file name of the most recent "alltables..." file to the clipboard. Now 
 You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
 
 
-## Wrapped 3rd party tools
+## Wrapped binaries
 
-## PDFminer
+Many of the tools require binary executable (i.e. compiled and linked) files.
+Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
+
+### PDFminer
 
 Install prerequisite:
 
@@ -209,15 +212,24 @@ Visit https://github.com/pdfminer/pdfminer.six and follow installation instructi
 
 ### Cuneiform
 
-A OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
+A somewhat old OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
 
     $> sudo apt install cuneiform
+
+### CST-lemma
+
+Binary is in https://github.com/kuhumcst/texton-bin.
+For building from source, see https://github.com/kuhumcst/texton-bin#cstlemma
+
+### taggerXML
+
+For building from source, see https://github.com/kuhumcst/texton-bin#taggerXML
 
 ### daner
 
 Daner is at https://github.com/ITUnlp/daner
 
-    $> cd daner
+    $> cd /opt/texton/daner
     $> sudo git clone https://github.com/ITUnlp/daner.git
 
 Afterwards there will be a subdirectory `daner/daner`.
@@ -226,7 +238,7 @@ Afterwards there will be a subdirectory `daner/daner`.
 
 Dapipe is at https://github.com/ITUnlp/dapipe 
 
-    $> cd dapipe
+    $> cd /opt/texton/dapipe
     $> sudo git clone https://github.com/ITUnlp/dapipe.git
 
 Afterwards there will be a subdirectory `dapipe/dapipe`.
@@ -239,7 +251,7 @@ This is simply installed by the following command:
 
 ### html2text
 
-    $> cd html2text
+    $> cd /opt/textom/html2text
     $> sudo git clone https://github.com/soundasleep/html2text
 
 Afterwards there will be a subdirectory `html2text/html2text`.
@@ -264,23 +276,28 @@ Follow the build instructions. Copy the executable file "lapos" to /opt/texton/b
 
 ### mate-POStagger
 
-This webservice calls another webservice, https://github.com/kuhumcst/mate-POStagger
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
+The .war file can also be built from source, see  https://github.com/kuhumcst/mate-POStagger.
 
 ### mate-parser
 
-This webservice calls another webservice, https://github.com/kuhumcst/mate-parser
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
+The .war file can also be built from source, see https://github.com/kuhumcst/mate-parser
 
 ### np-genkender
 
-Go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
+This tool uses a very old, but still functioning, 3rd party program, CASS. To install,
+go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
 
 ### opennlpPOSTagger
 
-This webservice calls another webservice, https://github.com/kuhumcst/opennlpPOSTagger
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
+The .war file can also be built from source, see https://github.com/kuhumcst/opennlpPOSTagger
 
 ### rep-check
 
-See https://github.com/kuhumcst/texton-bin#repver
+Binary is in https://github.com/kuhumcst/texton-bin.
+For building from source, see https://github.com/kuhumcst/texton-bin#repver
 
 ### LibreOffice (soffice)
 
@@ -296,7 +313,7 @@ It is difficult to get soffice to do what we want from PHP. What works on one ma
 
 In addition
 
-    $> cd tesseract
+    $> cd /opt/texton/tesseract
     $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 
 ## Install linguistic resources
