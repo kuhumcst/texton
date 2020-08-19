@@ -18,6 +18,8 @@ X=
                           cqp
                           show
                           search
+                          "default_within"
+                          within
                       : ? !K ?
                     & (!K.!V)
                   | 
@@ -53,12 +55,24 @@ X=
       & ( !parms:? ("show_struct".?) ?
         |     !parms
               ( "show_struct"
-              . "text_title%2Ctext_Instrument%2Ctext_Platform%2Ctext_Mediatype%2Ctext_Original%2Ctext_Domain%2Ctext_Exactdate%2Ctext_Notbeforedate%2Ctext_Notafterdate%2Ctext_Origplace%2Ctext_Juridoutcome%2Ctext_SenderTargetrelation%2Ctext_Sendertype%2Ctext_SenderID%2Ctext_Senderage%2Ctext_Sendergender%2Ctext_Victimtype%2Ctext_VictimID%2Ctext_Victimage%2Ctext_Victimgender%2Csentence_id"
+              . "text_title%2Ctext_Instrument%2Ctext_Platform%2Ctext_Mediatype%2Ctext_Original%2Ctext_Domain%2Ctext_Exactdate%2Ctext_Notbeforedate%2Ctext_Notafterdate%2Ctext_Origplace%2Ctext_Juridoutcome%2Ctext_SenderTargetrelation%2Ctext_Sendertype%2Ctext_SenderID%2Ctext_Senderage%2Ctext_Sendergender%2Ctext_Victimtype%2Ctext_VictimID%2Ctext_Victimage%2Ctext_Victimgender%2Csentence_id%2Cparagraph_id"
               )
           : ?parms
         )
+      & ( !parms:? ("default_within".?) ?
+        | !parms ("default_within".sentence):?parms
+        )
+      & ( !parms:? ("default_context".?) ?
+        | !parms ("default_context".1%20sentence):?parms
+        )
+      & (   !parms:? (corpus.?corpus) ?
+          &   vap$((=."," upp$!arg ":text").!corpus.",")
+            : "," ?within
+          & !parms (within.!within):?parms
+        | 
+        )
       &     str
-          $ ( "https://alf.hum.ku.dk/korp/cgi/korp.cgi?command=query"
+          $ ( "https://alf.hum.ku.dk/korp/backend/query?command=query"
                 map
               $ ( ( 
                   = .!arg:(?K.?V)&"&" !K "=" !V
