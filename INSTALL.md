@@ -304,7 +304,7 @@ In addition
     $> cd /opt
     $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
     $> cd texton
-    $> sudo ln -s /opt/texton-linguistic-resources res
+    $> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
     
 ## set access rights
 
@@ -314,7 +314,7 @@ Make all directories accessible and readable and give owner and group write righ
 
 Set group to www-data, recursively
 
-    $> sudo chown -R <user>:www-data /opt/texton/res
+    $> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
     
 ## Enabling webservices
 
