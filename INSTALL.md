@@ -315,6 +315,13 @@ Make all directories accessible and readable and give owner and group write righ
 Set group to www-data, recursively
 
     $> sudo chown -R <user>:www-data /opt/texton/res
+    
+## Enabling webservices
+
+    $> cd apache2-sites/
+    $> sudo cp texton.conf /etc/apache2/sites-available/
+    $> sudo a2ensite texton.conf
+    $> sudo service apache2 reload
 
 ## create cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
