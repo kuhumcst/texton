@@ -323,6 +323,26 @@ Set group to www-data, recursively
     $> sudo a2ensite texton.conf
     $> sudo service apache2 reload
 
+## Proxy
+
+    $> sudo vi /etc/apache2/mods-available/proxy.conf
+
+Add:
+
+        ProxyPass /texton/ http://127.0.0.1:8080/texton/
+        ProxyPass /texton/ http://127.0.0.1:8080/texton/
+        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
+        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
+        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
+        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
+        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
+        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
+
+    $> sudo a2enmod proxy
+    $> sudo a2enmod proxy_ajp
+    $> sudo a2enmod proxy_http
+    $> sudo service apache2 restart
+
 ## create cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
 
