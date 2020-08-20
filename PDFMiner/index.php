@@ -259,12 +259,33 @@ try {
 	logit('pdfminerfile:' . $pdfminerfile);
         $basepdfminerfile = basename($pdfminerfile);
 	copy($F,F);
+
+        if(($cmd = popen("python3 /usr/local/bin/pdf2txt.py --version", "r")) == NULL)
+            {
+            throw new SystemExit(); // instead of exit()
+	    }
+	$read = fgets($cmd);
+	while(fgets($cmd))
+            {
+            }
+        pclose($cmd);
+
+        $six = "pdfminer.six";
+
         if($Oformatflat)
-            $command = "python3 /usr/local/bin/pdf2txt.py -o $pdfminerfile $F"; // pdfminer
-          //$command = "python3 /usr/local/bin/pdf2txt.py $F -o $pdfminerfile"; // pdfminer.six
-        else
-            $command = "python3 /usr/local/bin/pdf2txt.py -t html -o $pdfminerfile $F";
-          //$command = "python3 /usr/local/bin/pdf2txt.py -t html $F -o $pdfminerfile";
+            {
+            if(substr($read,0,strlen($six)) == $six)
+                $command = "python3 /usr/local/bin/pdf2txt.py $F -o $pdfminerfile"; // pdfminer.six
+            else
+                $command = "python3 /usr/local/bin/pdf2txt.py -o $pdfminerfile $F"; // pdfminer EUSKE (original)
+            }
+	else
+            {
+            if(substr($read,0,strlen($six)) == $six)
+                $command = "python3 /usr/local/bin/pdf2txt.py -t html $F -o $pdfminerfile";
+	    else
+                $command = "python3 /usr/local/bin/pdf2txt.py -t html -o $pdfminerfile $F";
+            }
         logit($command);
 
 	//system($cmd);
