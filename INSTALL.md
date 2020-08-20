@@ -208,7 +208,12 @@ Visit https://github.com/pdfminer/pdfminer.six and follow installation instructi
     $> sudo su
     $> cd ~
     $> umask 022
+    $> pip3 install pdfminer
+
+If you like, you can instead install the newer pdfminer.six software. We do currently (2020.08.20) see no reason to do that.
+
     $> pip3 install pdfminer.six
+
 
 ### Cuneiform
 
