@@ -258,10 +258,13 @@ try {
         $pdfminerfile = tempFileName("pdfminerfile-results");
 	logit('pdfminerfile:' . $pdfminerfile);
         $basepdfminerfile = basename($pdfminerfile);
+	copy($F,F);
         if($Oformatflat)
-            $command = "python3 /usr/local/bin/pdf2txt.py $F -o $pdfminerfile";
+            $command = "python3 /usr/local/bin/pdf2txt.py -o $pdfminerfile $F"; // pdfminer
+          //$command = "python3 /usr/local/bin/pdf2txt.py $F -o $pdfminerfile"; // pdfminer.six
         else
-            $command = "python3 /usr/local/bin/pdf2txt.py -t html $F -o $pdfminerfile";
+            $command = "python3 /usr/local/bin/pdf2txt.py -t html -o $pdfminerfile $F";
+          //$command = "python3 /usr/local/bin/pdf2txt.py -t html $F -o $pdfminerfile";
         logit($command);
 
 	//system($cmd);
