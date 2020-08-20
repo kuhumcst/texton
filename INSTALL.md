@@ -22,6 +22,7 @@ Installation requires
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
   * python3
+  * xmllint
   * this repo
   * bracmat  
    Interpreters are installed in two locations:  
@@ -145,6 +146,13 @@ Libraries must be installed for all users, so we install them as root:
     $> umask 022
     $> pip3 install cltk
     $> exit
+
+## xmllint
+
+The teianno tool uses xmllint.
+Installing:
+
+    $> sudo apt install libxml2-utils
 
 ## This repo
 
