@@ -36,9 +36,45 @@ X=
       & ( !parms:?A (start.?) ?Z
         | (start.0) !parms:?parms
         )
+      & ( translate
+        =   A Z
+          .   !arg:?A (cqp.?cqp) ?Z
+            & ( trans
+              =   A Z a b M U
+                .   
+                  &   whl
+                    ' ( @(!arg:?A "%" %@?a %@?b ?Z)
+                      &   str$(!A chr$(x2d$(str$(!a !b))) !Z)
+                        : ?arg
+                      )
+                  &   (   @(!arg:?A "_=" ?M \" ?U \" ?Z)
+                        & str$(!A "=" !M "\".*" !U ".*\"" !Z)
+                      |   @(!arg:?A "^=" ?M \" ?U \" ?Z)
+                        & str$(!A "=" !M \" !U ".*\"" !Z)
+                      |   @(!arg:?A "&=" ?M \" ?U \" ?Z)
+                        & str$(!A "=" !M "\".*" !U \" !Z)
+                      | !arg
+                      )
+                    : ?arg
+                  &     str
+                      $ ( vap
+                        $ ( ( 
+                            =   
+                              .     !arg
+                                  : (~<a:~>z|~<Z:~>Z)
+                                | "%" d2x$(asc$!arg)
+                            )
+                          . !arg
+                          )
+                        )
+                    : ?arg
+                  & !arg
+              )
+            & !A (cqp.trans$!cqp) !Z
+        )
       & (   !parms:?A (search.?s) ?Z
           & !A !Z:?parms
-          & ( !s:cqp
+          & ( !s:cqp&translate$!parms:?parms
             |   @(!s:?k "%7C" ?v)
               & (cqp."%5B" !k "+%3D+%22" !v "%22%5D"):?cqp
               &   (   !parms:?A (cqp.?) ?Z
@@ -85,7 +121,8 @@ X=
           | wget
           )
         : ?wget
-      & sys$(str$(!wget " -O T.jsn \"" !Q \"))
+      & str$(!wget " -O T.jsn \"" !Q \"):?command
+      & sys$!command
       & get$("T.jsn",JSN):?jsn
       & !jsn:(?+(kwic.,?kwic)+?,)
       & 0:?N
@@ -215,6 +252,12 @@ X=
   =   outputfile
     .   output:?outputfile
       & (   ~
+          &   (its.doit)
+            $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&stats_reduce=word&corpus=threatsjeb&cqp=%5Bmsd%20%26%3D%20%22PLU%22%5D&search_tab=1&search=cqp"
+        |   ~
+          &   (its.doit)
+            $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&stats_reduce=word&corpus=threatsjeb&cqp=%5Bmsd%20_%3D%20%222%22%5D&search_tab=1&search=cqp"
+        |   ~
           &   (its.doit)
             $ "https://alf.hum.ku.dk/korp/?mode=threats#?stats_reduce=word&corpus=threatsjeb&cqp=%5Blemma%20%3D%20%22rette%22%5D&search_tab=1&search=cqp"
         |   ~
