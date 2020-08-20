@@ -170,13 +170,13 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
+        $IfacetsegF = "";	/* Input with type of content segments (SÃ¦tningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) if true */
+        $Ifacetseto = false;	/* Type of content in input is segments,tokens (SÃ¦tningssegmenter,tokens) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -197,7 +197,7 @@ try {
         $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
         $Ilangpl = false;	/* Language in input is Polish (polsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
-        $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
+        $Ilangro = false;	/* Language in input is Romanian (rumÃ¦nsk) if true */
         $Ilangru = false;	/* Language in input is Russian (russisk) if true */
         $Ilangsk = false;	/* Language in input is Slovak (slovakisk) if true */
         $Ilangsl = false;	/* Language in input is Slovene (slovensk) if true */
@@ -230,7 +230,7 @@ try {
         $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
         $Olangpl = false;	/* Language in output is Polish (polsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
-        $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
+        $Olangro = false;	/* Language in output is Romanian (rumÃ¦nsk) if true */
         $Olangru = false;	/* Language in output is Russian (russisk) if true */
         $Olangsk = false;	/* Language in output is Slovak (slovakisk) if true */
         $Olangsl = false;	/* Language in output is Slovene (slovensk) if true */
@@ -278,7 +278,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (SÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -490,8 +490,8 @@ try {
                 if($Iperiodc20 && $Operiodc20)
                     {
                     if($Iappnrm)
-			$flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
-		    else
+                         $flexrules = "$res/da/lemmatiser/notags/c20n/0/flexrules.bra";
+                    else
                         $flexrules = "$res/da/lemmatiser/notags/c19n/0/flexrules.bra";
                     //$traindata = "$res/da/lemmatiser/training/numedforadv";//ods_170412.csv.corrected-TAGS.ph";
                     $traindata = "$res/da/lemmatiser/training/ParoleBrandesDSLdictionary";
@@ -513,7 +513,8 @@ try {
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-B-2-4202-step2.4cole";
 		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
 		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
-		    $traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
+		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
+		    $traindata = "$res/da/lemmatiser/training/diplAndDSLFRQ";
                     }
                 }
             if($Ilangde)

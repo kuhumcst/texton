@@ -18,6 +18,8 @@ X=
                           cqp
                           show
                           search
+                          "default_within"
+                          within
                       : ? !K ?
                     & (!K.!V)
                   | 
@@ -34,9 +36,45 @@ X=
       & ( !parms:?A (start.?) ?Z
         | (start.0) !parms:?parms
         )
+      & ( translate
+        =   A Z
+          .   !arg:?A (cqp.?cqp) ?Z
+            & ( trans
+              =   A Z a b M U
+                .   
+                  &   whl
+                    ' ( @(!arg:?A "%" %@?a %@?b ?Z)
+                      &   str$(!A chr$(x2d$(str$(!a !b))) !Z)
+                        : ?arg
+                      )
+                  &   (   @(!arg:?A "_=" ?M \" ?U \" ?Z)
+                        & str$(!A "=" !M "\".*" !U ".*\"" !Z)
+                      |   @(!arg:?A "^=" ?M \" ?U \" ?Z)
+                        & str$(!A "=" !M \" !U ".*\"" !Z)
+                      |   @(!arg:?A "&=" ?M \" ?U \" ?Z)
+                        & str$(!A "=" !M "\".*" !U \" !Z)
+                      | !arg
+                      )
+                    : ?arg
+                  &     str
+                      $ ( vap
+                        $ ( ( 
+                            =   
+                              .     !arg
+                                  : (~<a:~>z|~<Z:~>Z)
+                                | "%" d2x$(asc$!arg)
+                            )
+                          . !arg
+                          )
+                        )
+                    : ?arg
+                  & !arg
+              )
+            & !A (cqp.trans$!cqp) !Z
+        )
       & (   !parms:?A (search.?s) ?Z
           & !A !Z:?parms
-          & ( !s:cqp
+          & ( !s:cqp&translate$!parms:?parms
             |   @(!s:?k "%7C" ?v)
               & (cqp."%5B" !k "+%3D+%22" !v "%22%5D"):?cqp
               &   (   !parms:?A (cqp.?) ?Z
@@ -53,12 +91,24 @@ X=
       & ( !parms:? ("show_struct".?) ?
         |     !parms
               ( "show_struct"
-              . "text_title%2Ctext_Instrument%2Ctext_Platform%2Ctext_Mediatype%2Ctext_Original%2Ctext_Domain%2Ctext_Exactdate%2Ctext_Notbeforedate%2Ctext_Notafterdate%2Ctext_Origplace%2Ctext_Juridoutcome%2Ctext_SenderTargetrelation%2Ctext_Sendertype%2Ctext_SenderID%2Ctext_Senderage%2Ctext_Sendergender%2Ctext_Victimtype%2Ctext_VictimID%2Ctext_Victimage%2Ctext_Victimgender%2Csentence_id"
+              . "text_title%2Ctext_Instrument%2Ctext_Platform%2Ctext_Mediatype%2Ctext_Original%2Ctext_Domain%2Ctext_Exactdate%2Ctext_Notbeforedate%2Ctext_Notafterdate%2Ctext_Origplace%2Ctext_Juridoutcome%2Ctext_SenderTargetrelation%2Ctext_Sendertype%2Ctext_SenderID%2Ctext_Senderage%2Ctext_Sendergender%2Ctext_Victimtype%2Ctext_VictimID%2Ctext_Victimage%2Ctext_Victimgender%2Csentence_id%2Cparagraph_id"
               )
           : ?parms
         )
+      & ( !parms:? ("default_within".?) ?
+        | !parms ("default_within".sentence):?parms
+        )
+      & ( !parms:? ("default_context".?) ?
+        | !parms ("default_context".1%20sentence):?parms
+        )
+      & (   !parms:? (corpus.?corpus) ?
+          &   vap$((=."," upp$!arg ":text").!corpus.",")
+            : "," ?within
+          & !parms (within.!within):?parms
+        | 
+        )
       &     str
-          $ ( "https://alf.hum.ku.dk/korp/cgi/korp.cgi?command=query"
+          $ ( "https://alf.hum.ku.dk/korp/backend/query?command=query"
                 map
               $ ( ( 
                   = .!arg:(?K.?V)&"&" !K "=" !V
@@ -71,7 +121,8 @@ X=
           | wget
           )
         : ?wget
-      & sys$(str$(!wget " -O T.jsn \"" !Q \"))
+      & str$(!wget " -O T.jsn \"" !Q \"):?command
+      & sys$!command
       & get$("T.jsn",JSN):?jsn
       & !jsn:(?+(kwic.,?kwic)+?,)
       & 0:?N
@@ -201,6 +252,12 @@ X=
   =   outputfile
     .   output:?outputfile
       & (   ~
+          &   (its.doit)
+            $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&stats_reduce=word&corpus=threatsjeb&cqp=%5Bmsd%20%26%3D%20%22PLU%22%5D&search_tab=1&search=cqp"
+        |   ~
+          &   (its.doit)
+            $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&stats_reduce=word&corpus=threatsjeb&cqp=%5Bmsd%20_%3D%20%222%22%5D&search_tab=1&search=cqp"
+        |   ~
           &   (its.doit)
             $ "https://alf.hum.ku.dk/korp/?mode=threats#?stats_reduce=word&corpus=threatsjeb&cqp=%5Blemma%20%3D%20%22rette%22%5D&search_tab=1&search=cqp"
         |   ~

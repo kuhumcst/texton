@@ -61,12 +61,6 @@ work/
 
 (This folder structure must already exist.) Finally, the same file is
 rewritten, so all lay-out is normalized (Bracmat style).
-
-After changes have been made to the single table files, for example because
-new tools are registered, the 'alltablesxxx' file is made up to date with
-
-exportTables$
-
 This command reads all single file tables from the folder structure and saves
 them to 'alltablesxxx'. The command knows the actual name of the file to write
 to because that name is stored in the variable AAA, which is itself stored
@@ -74,11 +68,17 @@ alongside all tables, and is therefore known after the last time
 importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
+If <prod> is the empty string "", then the table tooladm is anonymized by 
+chainging all domains in service URLs "http:\localhost" and by chaing all
+contact emails to "x@x.xxx".
+
 To export all tables to a different file, do
 
-exportTables$"alltableszzz"
+exportTables$(<prod>."alltableszzz")
 
 where alltableszzz must be a valid file name that starts with 'alltables'.
+
+
 
 To do a clean up, removing almost all that is not defined in this file from 
 Bracmat's memory, call the clean function
@@ -296,21 +296,147 @@ toolsProg=
       ( read
       = .get$(path$((!arg:~|all) ".bra"))
       )
+      ( prodtables
+      =   CTBs
+          jobAbout
+          jobNr
+          jobs
+          relations
+          Uploads
+          zippedresults
+          tooladm
+          jobNr
+          toolprop
+      )
       ( importTables
-      =   
-        .     @(!arg:alltables ?)
-            & ( get$(path$!arg)&saveAllTables$
+      =   prod missingToolprop
+        .     log$(importTables !arg)
+            & !arg:(?prod.?arg)
+            & @(!arg:alltables ?)
+            & ( (   !prod:
+                  &     map
+                      $ ((=.!arg.readTable$!arg).!prodtables)
+                    : ?productionTables
+                  & get$(path$!arg)
+                  & saveAllTables$
+                  & readTable$tooladm
+                  & readTable$toolprop
+                  & :?missingToolprop
+                  &   map
+                    $ ( ( 
+                        =     name productioncontent
+                            , anotool ToolID prodtool mergedtooladm
+                          .   !arg:(?name.?productioncontent)
+                            & (   !name:tooladm
+                                & "Use the imported non-production tooladm, but inject ContactEmail ServiceURL from current production tooladm"
+                                & 0:?mergedtooladm
+                                &   whl
+                                  ' (   !tooladm
+                                      :   ( ? (ToolID.?ToolID) ?
+                                          : ?anotool
+                                          )
+                                        + ?tooladm
+                                    & (     !productioncontent
+                                          :   ?
+                                            + ( ? (ToolID.!ToolID) ?
+                                              : ?prodtool
+                                              )
+                                            + ?
+                                        &   map
+                                          $ ( ( 
+                                              =   a z anoval prodval
+                                                .     !anotool
+                                                    :   ?a
+                                                        (!arg.?anoval)
+                                                        ?z
+                                                  &   !prodtool
+                                                    :   ?
+                                                        (!arg.?prodval)
+                                                        ?
+                                                  & ( !anoval:!prodval
+                                                    |     !a
+                                                          (!arg.!prodval)
+                                                          !z
+                                                      : ?anotool
+                                                    )
+                                              )
+                                            . ContactEmail ServiceURL
+                                            )
+                                      | 
+                                      )
+                                    &   !mergedtooladm+!anotool
+                                      : ?mergedtooladm
+                                    )
+                                & log$OUTLIERS
+                                &   whl
+                                  ' (   !productioncontent
+                                      :   ( ? (ToolID.?ToolID) ?
+                                          : ?prodtool
+                                          )
+                                        + ?productioncontent
+                                    & log$(ToolID !ToolID)
+                                    & (     !mergedtooladm
+                                          :   ?
+                                            + (? (ToolID.!ToolID) ?)
+                                            + ?
+                                        & log$(HAS !ToolID)
+                                      |     !prodtool+!mergedtooladm
+                                          : ?mergedtooladm
+                                        & log$(NOWITHAS !prodtool)
+                                        &   !ToolID !missingToolprop
+                                          : ?missingToolprop
+                                        &   log
+                                          $ (missingToolprop !missingToolprop)
+                                      )
+                                    )
+                                & !mergedtooladm:?productioncontent
+                              | 
+                              )
+                            & ( !name:toolprop
+                              |     !productioncontent
+                                  : ?(&!name)
+                                & log$(saving !name)
+                                & saveTable$!name
+                                & log$(!name saved)
+                              )
+                        )
+                      . !productionTables
+                      )
+                  & (   !missingToolprop:
+                      & log$NOTHINGMISSING
+                    |     !productionTables
+                        : ? (toolprop.?prodtoolprop) ?
+                      & log$HAVETOINSERT
+                      & readTable$toolprop
+                      &   whl
+                        ' (   !prodtoolprop
+                            :   ?
+                              + (   ?tid
+                                  & !missingToolprop:? !tid ?
+                                  & log$(tid !tid is missing)
+                                . ?tdata
+                                )
+                              + ?prodtoolprop
+                          & log$(ADD !tdata)
+                          & (!tid.!tdata)+!toolprop:?toolprop
+                          )
+                      & saveTable$toolprop
+                    )
+                | get$(path$!arg)&saveAllTables$
+                )
               | str$("Cannot read " !arg)&~
               )
           |   str
             $ "Usage: importTables$\"<file name>\" .  <file name> must start with 'alltables'."
       )
       ( exportTables
-      =   tabs tab Tables folder error
+      =   tabs tab Tables folder error A Z prod mssg
         .     ( !where:(?.?) ?
               | readTable$where
               )
-            & (   !arg:(|@(?:alltables ?))
+            & log$(exportTables !arg)
+            & !arg:(?prod.?arg)
+            & (   @(!arg:(|alltables ?))
                 & 0:?tabs
                 & :?error
                 & (   !where
@@ -345,21 +471,68 @@ toolsProg=
                         & !arg:?AAA
                       | 
                       )
-                    & (   lst$(!tabs,path$!AAA,NEW)
-                        &   str
-                          $ ( "Read all tables and saved them in '"
-                              path$!AAA
-                              "'. To restore, type importTables$\""
-                              !AAA
-                              "\"."
-                              (!error:|!error)
+                    & (   !prod:
+                        &   map
+                          $ ( (=.:?(&!arg))
+                            . !prodtables
                             )
-                      |   str
-                        $ ( "Cannot write to ["
-                            path$!AAA
-                            "]. Check file access rights for JBoss/Tomcat."
-                          )
+                        & 0:?jobNr
+                        & readTable$toolprop
+                        & readTable$tooladm
+                        &     ( 
+                              =     anotooladm A Z a z
+                                  , ContactEmail ServiceURL
+                                .   0:?anotooladm
+                                  &   whl
+                                    ' (   !arg
+                                        :   ( ?A
+                                              (ContactEmail.?ContactEmail)
+                                              ?Z
+                                            )
+                                          + ?arg
+                                      &     !A
+                                            (ContactEmail."x@x.xxx")
+                                            !Z
+                                        :   ?A
+                                            (ServiceURL.?ServiceURL)
+                                            ?Z
+                                      & (   @( !ServiceURL
+                                             : ? "://" ? "/" ?z
+                                             )
+                                          &   str$("http://localhost/" !z)
+                                            : ?ServiceURL
+                                        | 
+                                        )
+                                      &     !anotooladm
+                                          + ( !A
+                                              (ServiceURL.!ServiceURL)
+                                              !Z
+                                            )
+                                        : ?anotooladm
+                                      )
+                                  & !anotooladm
+                              )
+                            $ !tooladm
+                          : ?tooladm
+                      | 
                       )
+                    &   (   lst$(!tabs,path$!AAA,NEW)
+                          &   str
+                            $ ("Saved all tables in '" path$!AAA "'. " !error)
+                        |   str
+                          $ ( "Cannot write to ["
+                              path$!AAA
+                              "]. Check file access rights for JBoss/Tomcat."
+                            )
+                        )
+                      : ?mssg
+                    & (   !prod:
+                        & map$((=.readTable$!arg).!prodtables)
+                        & readTable$jobNr
+                        & readTable$tooladm
+                      | 
+                      )
+                    & !mssg
                   )
               |   str
                 $ "'exportTables$' must be called without argument or with the name of a file that must start with 'alltables'."
@@ -1789,8 +1962,8 @@ toolsProg=
                 & '$"#"
             )
           & ( translateToHumanLanguage
-            =     circle Circle describe nice inoutdesc
-                , description seqno struct abbrevs o
+            =     circle Circle Describe nice inoutdesc
+                , description seqno struct abbrevs o diff
               .   ( circle
                   =   
                     .   !arg:~#&!arg
@@ -1850,6 +2023,88 @@ toolsProg=
                         & !description
                       | 
                   )
+                & ( fullinoutdesc
+                  =   description
+                    .         map
+                            $ ( ( 
+                                =     featname featvals table
+                                    , specificationTables name
+                                  .   !arg:(?featname,?featvals)
+                                    &   !features
+                                      :   ?
+                                        + ( ? (short.!featname) ?
+                                          : ? (table.?table) ?
+                                          : ? (name.?name) ?
+                                          : (   ?
+                                                ( specificationTable
+                                                . ?specificationTables
+                                                )
+                                                ?
+                                            |   ?
+                                              & :?specificationTables
+                                            )
+                                          )
+                                        + ?
+                                    &   ", "
+                                        localized$!name
+                                        ":"
+                                          describefeature
+                                        $ ( !featvals
+                                          . !table
+                                          . !specificationTables
+                                          )
+                                )
+                              . !arg
+                              )
+                          : ", " ?description
+                        & !description
+                      | 
+                  )
+                & ( fullinoutdescTable
+                  =   description
+                    .   !arg:
+                      | ( table
+                        .   
+                          ,   map
+                            $ ( ( 
+                                =     featname featvals table
+                                    , specificationTables name
+                                  .   !arg:(?featname,?featvals)
+                                    &   !features
+                                      :   ?
+                                        + ( ? (short.!featname) ?
+                                          : ? (table.?table) ?
+                                          : ? (name.?name) ?
+                                          : (   ?
+                                                ( specificationTable
+                                                . ?specificationTables
+                                                )
+                                                ?
+                                            |   ?
+                                              & :?specificationTables
+                                            )
+                                          )
+                                        + ?
+                                    & ( tr
+                                      .   
+                                        ,   ( td
+                                            .   (style."font-size:small")
+                                              , localized$!name
+                                            )
+                                            ( td
+                                            .   (style."font-size:small")
+                                              ,   describefeature
+                                                $ ( !featvals
+                                                  . !table
+                                                  . !specificationTables
+                                                  )
+                                            )
+                                      )
+                                )
+                              . !arg
+                              )
+                        )
+                  )
                 & ( nice
                   =   i o
                     .   !arg:(?i.?o)
@@ -1882,43 +2137,276 @@ toolsProg=
                               )
                         )
                   )
-                & ( describe
-                  =   a b c m n
-                    .     !arg:(?a,?b)
-                        & (     !b
-                              : ((?.?.?)|((?.?.?),?))
-                            & describe$!a " + " describe$!b
-                          |   !b:(?b,?c)
-                            &   describe$!a
-                                " + ["
-                                describe$!b
-                                "] + "
-                                describe$!c
-                          | describe$!a " + [" describe$!b "] "
-                          )
-                      |   !arg:%?a %?b
-                        & describe$!a " → " describe$!b
-                      |   !arg:(?m.?seqno.?n)
-                        &   ( !m:&Circle$!seqno
-                            | infoabout$!m circle$!seqno
-                            )
-                            ( !m:
-                            |   !abbrevs:?*(!m.!n)^?n*?
-                              & nice$!n
-                            )
-                      | !arg
+                & ( arrow
+                  =   b i
+                    .   !arg:(?arg.?b)
+                      & !b:(?.?.?i.?) ?
+                      & ( div
+                        .   (class.tooltip)
+                          ,   ( !arg:1&" → "
+                              | !arg:2&" ⇒ "
+                              | !arg:3&" ⇛ "
+                              | " ⭆ "
+                              )
+                              ( span
+                              .   (class.tooltiptext)
+                                , fullinoutdesc$!i
+                              )
+                        )
                   )
-                & !arg:(?abbrevs.?struct)
-                & describe$!struct:?description
+                & ( simplearrow
+                  =   b i
+                    .   !arg:(?arg.?b)
+                      & !b:(?.?.?i.?) ?
+                      & ( !arg:1&" → "
+                        | !arg:2&" ⇒ "
+                        | !arg:3&" ⇛ "
+                        | " ⭆ "
+                        )
+                  )
+                & ( describeShort
+                  =   describe
+                    .   ( describe
+                        =   a b c m n an bn cn h L
+                          .   !arg:(?h.?arg)
+                            & (   !arg:(?a,?b)
+                                & describe$(.!a):(?L.?an)
+                                &   whl
+                                  ' ( !b:(?c,?b)
+                                    &     !L
+                                          "+"
+                                          (   describe$(h.!c)
+                                            : (?c.?cn)
+                                          & !c
+                                          )
+                                      : ?L
+                                    & !an+!cn:?an
+                                    )
+                                &     !L
+                                      "+"
+                                      ( describe$(h.!b):(?b.?bn)
+                                      & !b
+                                      )
+                                  : ?L
+                                & !an+!bn:?an
+                                & (!L.!an)
+                              |   !arg:%?a %?b
+                                & describe$(.!a):(?a.?an)
+                                & (       !a
+                                          arrow$(!an.!b)
+                                          (   describe$(.!b)
+                                            : (?b.?bn)
+                                          & !b
+                                          )
+                                      : ?c
+                                    & ( !h:&!c
+                                      | "[" !c "]"
+                                      )
+                                  . !bn
+                                  )
+                              |   !arg:(?m.?seqno.?n)
+                                & (   (   !m:
+                                        & (   !seqno:∵
+                                            & 
+                                          | Circle$!seqno
+                                          )
+                                      | infoabout$!m circle$!seqno
+                                      )
+                                      (   !m:
+                                        & (   !seqno:∵
+                                            & !n:(?.?c)
+                                            & ( !c:
+                                              | ( div
+                                                .   (class.tooltip)
+                                                  ,   ∵
+                                                      ( span
+                                                      .   (class.tooltiptext)
+                                                        , fullinoutdesc$!c
+                                                      )
+                                                )
+                                              )
+                                          | 
+                                          )
+                                      |   !abbrevs:?*(!m.!n)^?n*?
+                                        & nice$!n
+                                      )
+                                  . 1
+                                  )
+                              )
+                        )
+                      & describe$(.!arg):(?arg.?)
+                      & !arg
+                  )
+                & ( describeLong
+                  =   describe
+                    .   ( describe
+                        =   a b c m n an bn cn h L
+                          .   !arg:(?h.?arg)
+                            & (   !arg:(?a,?b)
+                                & describe$(.!a):(?L.?an)
+                                &   whl
+                                  ' ( !b:(?c,?b)
+                                    &     !L
+                                          (dt.,"+")
+                                          (   describe$(h.!c)
+                                            : (?c.?cn)
+                                          & !c
+                                          )
+                                      : ?L
+                                    & !an+!cn:?an
+                                    )
+                                &     !L
+                                      (dt.,"+")
+                                      ( describe$(h.!b):(?b.?bn)
+                                      & !b
+                                      )
+                                  : ?L
+                                & !an+!bn:?an
+                                & (!L.!an)
+                              |   !arg:%?a %?b
+                                & describe$(.!a):(?a.?an)
+                                & (       (dd.,(dl.,!a))
+                                          (dt.,simplearrow$(!an.!b))
+                                          (   describe$(.!b)
+                                            : (?b.?bn)
+                                          & !b
+                                          )
+                                      : ?c
+                                    & ( !h:&!c
+                                      | (dt.,"[") !c (dt.,"]")
+                                      )
+                                  . !bn
+                                  )
+                              |   !arg:(?m.?seqno.?n)
+                                & (   ( dt
+                                      .   
+                                        ,   (   Circle$!seqno
+                                              : ?c
+                                              : 
+                                            |   !c
+                                                (!m:|"-")
+                                            )
+                                            !m
+                                      )
+                                      (   !seqno:~∵
+                                        & !m:
+                                      |   !n:(?.?c)
+                                        & ( !c:
+                                          | (dd.,fullinoutdescTable$!c)
+                                          )
+                                      )
+                                  . 1
+                                  )
+                              )
+                        )
+                      & describe$(.!arg):(?arg.?)
+                      & (dl.,!arg)
+                  )
+                & ( subt
+                  =   plus A f v a x y z
+                    .   !arg:(?plus.?A)
+                      &   whl
+                        ' ( !A:(?f,?v) ?A
+                          & !plus:?a (!f,?x*!v*?y) ?z
+                          & ( !x*!y:1
+                            | !a (!f,!x*!y) !z:?plus
+                            )
+                          )
+                      & !plus
+                  )
+                & ( diff
+                  =   plus minus A
+                    .   !arg:(?plus.?refs.?minus)
+                      & ( !minus:
+                        |     whl
+                            ' (   !minus
+                                : (? (?.?.?.?A),?minus)
+                              & subt$(!plus.!A):?plus
+                              )
+                          & !minus:? (?.?.?.?A)
+                          & subt$(!plus.!A):?plus
+                        )
+                      & ( !refs:
+                        |     whl
+                            ' ( !refs:(? (?.?.?.?A),?refs)
+                              & subt$(!plus.!A):?plus
+                              )
+                          & !refs:? (?.?.?.?A)
+                          & subt$(!plus.!A):?plus
+                        )
+                      & !plus
+                  )
+                & ( spotInput
+                  =     max nrefs N A B spotting
+                      , refs inputs name P a N
+                    .   !arg:?spotting
+                      & (     !arg
+                            :   ?A
+                                ( (?name.?refs [?nrefs.?inputs.?)
+                                : ?B
+                                )
+                          &   ( !name:&spotInput$!A
+                              |   0:?nrefs
+                                & 1:?max
+                                & (   !inputs
+                                    :   ?
+                                        ( ?
+                                        ,   ?
+                                          * ( [?P
+                                            & !P:>!max:?max
+                                            )
+                                        )
+                                        (?&~)
+                                  | 
+                                  )
+                                & !max+-1*!nrefs:?N
+                                & !A:?a
+                                & 0:?N
+                                & ( !a:
+                                  |   -1:?N
+                                    &   whl
+                                      ' ( !a:(?,?a)
+                                        & !N+-1:?N
+                                        )
+                                  )
+                                & (   !max+!N+!nrefs:0
+                                    & spotInput$!A
+                                  |   diff$(!inputs..!A):?DATA
+                                    & (   !A:
+                                        & (.∵..!DATA)
+                                      | (spotInput$!A,(.∵..!DATA))
+                                      )
+                                  )
+                              )
+                              !B
+                        |   !arg:(?A,?B)
+                          & (spotInput$!A,spotInput$!B)
+                        | !arg
+                        )
+                  )
+                &   !arg
+                  : ( ?abbrevs
+                    . ?struct
+                    .     many
+                        & '$describeShort:(=?Describe)
+                      |   ?
+                        & '$describeLong:(=?Describe)
+                    )
+                & spotInput$!struct:?struct
+                & Describe$!struct:?description
                 & (   !description:~
                     & !struct:? (?.?.?.?o)
                     &   !description
-                        ( div
-                        .   (class.tooltip)
-                          ,   ∴
-                              ( span
-                              . (class.tooltiptext),inoutdesc$!o
-                              )
+                        (   !arg:(?abbrevs.?struct.many)
+                          & ( div
+                            .   (class.tooltip)
+                              ,   ∴
+                                  ( span
+                                  .   (class.tooltiptextL)
+                                    , inoutdesc$!o
+                                  )
+                            )
+                        | 
                         )
                   |   localized
                     $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
@@ -2043,19 +2531,6 @@ toolsProg=
           & :?workflowlist
           & 0:?n
           & log$enumerateToolsDetail
-          &   whl
-            ' ( 1+!n:?n:<1000000
-              & !pipes:%?pipe+?pipes
-              &   (!n.enumerateToolsDetail$!pipe) !workflowlist
-                : ?workflowlist
-              )
-          & log$enumerateToolsDetailDONE
-          & (   !n:<1000000
-              & log$("while enumerateToolsDetail:" !n)
-            |   log
-              $ "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
-            )
-          & "workflowlist is numbered list of workflows, with equal branches not merged yet."
           & ( saveio
             =   n i o x y
               .     !arg:(?n.?i.~(?.?):?o)
@@ -2064,10 +2539,40 @@ toolsProg=
                   & (saveio$!x)_(saveio$!y)
                 | !arg
             )
-          & map$(saveio.!workflowlist):?workflowlist
+          &   whl
+            ' ( 1+!n:?n:<1000000
+              & !pipes:%?pipe+?pipes
+              &   saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist
+                : ?workflowlist
+              )
+          & log$enumerateToolsDetailDONE
+          & (   !n:<1000000
+              & log$("while enumerateToolsDetail:" !n)
+            |   log
+              $ "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
+            )
           & "workflowlist is numbered list of workflows, with equal branches not merged yet, and with I/O duplicated."
           & :?groupedworkflowlist
           & :?toolPlumbing
+          & 0:?disambiguatedworkflowlist
+          & ( flatten
+            =   a b N O flat
+              .     !arg:(#?N,?a) ?b
+                  &   (!N,(flatten$!a.!a))
+                    + (flatten$!b:~|0)
+                |   !arg:%?a*%?b
+                  & flatten$!a flatten$!b
+                |   !arg:%?a^#%?N
+                  & flatten$!a:?flat:?O
+                  &   whl
+                    ' ( -1+!N:>0:?N
+                      & !flat !O:?O
+                      )
+                  & !O
+                |   !arg:%?a %?b
+                  & flatten$!a flatten$!b
+                | !arg
+            )
           &   whl
             ' ( 1+!n:?n:<1000000
               & !workflowlist:(#?nr.?workflow) ?workflowlist
@@ -2082,43 +2587,18 @@ toolsProg=
                   & (!nr,!wf) !wfs:?wfs
                   & !prev !workflowlist:?workflowlist
                   )
-              &   ('$toolPlumbing.!wfs) !groupedworkflowlist
-                : ?groupedworkflowlist
+              & '$toolPlumbing:?toolPlumbing
+              &     flatten$(disam$(!toolPlumbing.!wfs))
+                  + !disambiguatedworkflowlist
+                : ?disambiguatedworkflowlist
               )
           & ( !n:<1000000
             |   log
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
-          & 0:?disambiguatedworkflowlist
-          &   whl
-            ' (   !groupedworkflowlist
-                : (?toolPlumbing.?wfs) ?groupedworkflowlist
-              & ( flatten
-                =   a b N O flat
-                  .     !arg:(#?N,?a) ?b
-                      &   (!N,(flatten$!a.!a))
-                        + (flatten$!b:~|0)
-                    |   !arg:%?a*%?b
-                      & flatten$!a flatten$!b
-                    |   !arg:%?a^#%?N
-                      & flatten$!a:?flat:?O
-                      &   whl
-                        ' ( -1+!N:>0:?N
-                          & !flat !O:?O
-                          )
-                      & !O
-                    |   !arg:%?a %?b
-                      & flatten$!a flatten$!b
-                    | !arg
-                )
-              &     flatten$(disam$(!toolPlumbing.!wfs))
-                  + !disambiguatedworkflowlist
-                : ?disambiguatedworkflowlist
-              )
-          &   sameToolDifferentRoles$!disambiguatedworkflowlist
-            : ?disambiguatedworkflowlist
-          & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
-          & (   !disambiguatedworkflowlist:%+%
+          &   reorder$(sameToolDifferentRoles$!disambiguatedworkflowlist)
+            : ?reorderedworkflowlist
+          & (   !reorderedworkflowlist:%+%
               & :?buttons
               & 1:?nth
               & (   !reorderedworkflowlist
@@ -2145,19 +2625,18 @@ toolsProg=
                               (value.!nr)
                           , 
                         )
-                        translateToHumanLanguage$(!abbr.!struct)
+                        translateToHumanLanguage$(!abbr.!struct.many)
                         (br.,)
                         (br.,)
                     : ?buttons
                   & 1+!nth:?nth
                   )
+              & !buttons
             |     !reorderedworkflowlist
                 :   (?weight:(?goodness.?Ntools.?nr),(?abbr.?struct))
                   + ?
-              &   translateToHumanLanguage$(!abbr.!struct) (br.,)
-                : ?buttons
+              & translateToHumanLanguage$(!abbr.!struct.one) (br.,)
             )
-          & !buttons
       )
       ( makePasswordFormField
       =   text parm desc size required
@@ -2273,7 +2752,7 @@ toolsProg=
                 \r\n
                 "    visibility: hidden;"
                 \r\n
-                "    width: 320px;"
+                "    width: 220px;"
                 \r\n
                 "    background-color: #555;"
                 \r\n
@@ -2281,7 +2760,7 @@ toolsProg=
                 \r\n
                 "    text-align: left;"
                 \r\n
-                "    padding: 5px 0;"
+                "    padding: 5px 10px;"
                 \r\n
                 "    border-radius: 6px;"
                 \r\n\r\n
@@ -2293,9 +2772,45 @@ toolsProg=
                 \r\n
                 "    bottom: 125%;"
                 \r\n
-                "    left: 50%;"
+                "    left: 0%;"
                 \r\n
-                "    margin-left: -60px;"
+                "    margin-left: 0px;"
+                \r\n\r\n
+                "    /* Fade in tooltip */"
+                \r\n
+                "    opacity: 0;"
+                \r\n
+                "    transition: opacity 0.3s;"
+                \r\n
+                "}"
+                \r\n\r\n
+                ".tooltip .tooltiptextL {"
+                \r\n
+                "    visibility: hidden;"
+                \r\n
+                "    width: 220px;"
+                \r\n
+                "    background-color: #555;"
+                \r\n
+                "    color: #fff;"
+                \r\n
+                "    text-align: left;"
+                \r\n
+                "    padding: 5px 10px;"
+                \r\n
+                "    border-radius: 6px;"
+                \r\n\r\n
+                "    /* Position the tooltip text */"
+                \r\n
+                "    position: absolute;"
+                \r\n
+                "    z-index: 1;"
+                \r\n
+                "    bottom: 125%;"
+                \r\n
+                "    right: 0%;"
+                \r\n
+                "    margin-left: 0px;"
                 \r\n\r\n
                 "    /* Fade in tooltip */"
                 \r\n
@@ -2307,7 +2822,7 @@ toolsProg=
                 \r\n\r\n
                 "/* Tooltip arrow */"
                 \r\n
-                ".tooltip .tooltiptext::after {"
+                ".tooltip .tooltiptext::after, .tooltip .tooltiptextL::after {"
                 \r\n
                 "    content: ;"
                 \r\n
@@ -2329,7 +2844,7 @@ toolsProg=
                 \r\n\r\n
                 "/* Show the tooltip text when you mouse over the tooltip container */"
                 \r\n
-                ".tooltip:hover .tooltiptext {"
+                ".tooltip:hover .tooltiptext,.tooltip:hover .tooltiptextL {"
                 \r\n
                 "    visibility: visible;"
                 \r\n
@@ -2344,7 +2859,7 @@ toolsProg=
           & HTML5bodyContainer
         | log$noClarin&XHTMLbodyContainer
       )
-      ( HTML5bodyContainer
+      ( Move the mouse pointer over the tool names
       =   
         .   ("!DOCTYPE"." html")
             \r\n
@@ -6579,12 +7094,10 @@ toolsProg=
                                           + ?ltools
                                       &   makeSmell$!toolFeatures
                                         : ?toolFeatures
-                                      & (     !tool
-                                            : ( Tesseract-OCR
-                                              | CuneiForm
-                                              )
-                                          &   log
-                                            $ (toolFeatures !toolFeatures)
+                                      & (   !tool
+                                          : ( Tesseract-OCR
+                                            | CuneiForm
+                                            )
                                         | 
                                         )
                                       & (       matchGoalWithFeatures
@@ -7056,7 +7569,6 @@ toolsProg=
                           + ?
                       )
                     & (   prunePipes$(!FP.!arg):?FP
-                        & log$(Pruned !FP)
                         & ( !recentTasks:?recentTasks [3 ?
                           | 
                           )
@@ -9506,235 +10018,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?html
           & str$(!files !html)
       )
-      ( pipeSegmentFields
-      =     XML tool output input xml spec A
-          , values value feature vallist
-          , goal inputprop indent limitedTable
-          , featname
-          , whlvalues
-        .   ( limitedTable
-            =     featname row rows abbs table abbr
-                , feattable specificationTables YYY
-              .   !arg:(?featname.?abbs)
-                & readTable$features
-                &   !features
-                  :   ?
-                    + ( ( ? (short.!featname) ?
-                        | ? (name.? !featname ?) ?
-                        )
-                      : ? (table.?feattable) ?
-                      : (   ?
-                            (specificationTable.?specificationTables)
-                            ?
-                        | ?&:?specificationTables
-                        )
-                      )
-                    + ?
-                & readTable$!feattable
-                & !!feattable:?table
-                & :?rows
-                & (   !table
-                    :   ?
-                        ( ( (?.?abbr.?YYY)
-                          & !abbs:? !abbr ?
-                          )
-                        : (?row&!rows !row:?rows)
-                        )
-                        (?&~)
-                  | !rows
-                  )
-            )
-          & !arg:(?arg.?indent)
-          & :?XML
-          & ( whlvalues
-            =     values spec xml opt opts
-                , feature specificationTables table xm
-                , term
-                , getfullspec getfullvalue
-              .   !arg:(%?values ?opts.?xml.?feature)
-                & ( readTable$features
-                  &   !features
-                    :   ?
-                      + ( ( ? (short.!feature) ?
-                          | ? (name.? !feature ?) ?
-                          )
-                        : ? (table.?table) ?
-                        )
-                      + ?
-                  & (   !features
-                      :   ?
-                        + ( ( ? (short.!feature) ?
-                            | ? (name.? !feature ?) ?
-                            )
-                          :   ?
-                              (specificationTable.?specificationTables)
-                              ?
-                          )
-                        + ?
-                    | :?specificationTables
-                    )
-                  )
-                & readTable$!table
-                & ( getfullvalue
-                  =   full YYY
-                    .     !!table:? (?full.!arg.?YYY) ?
-                        & localized$!full
-                      | !arg
-                  )
-                & ( getfullspec
-                  =   table value spec full YYY
-                    .   !arg:(?value.?spec)
-                      & (   !spec:1
-                          & NEWSPEC
-                          & 
-                        |     !specificationTables
-                            :   ?
-                                (? (%@:!value) ?.?table)
-                                ?
-                          & readTable$!table
-                          & (     !!table
-                                : ? (?full.!spec.?YYY) ?
-                              & localized$!full
-                            | !spec
-                            )
-                        | !spec
-                        )
-                  )
-                &   whl
-                  ' ( !values:%?term+?values
-                    & :?xm
-                    &   whl
-                      ' ( !term:%?value^?spec*?term
-                        & NEWSPEC
-                        &     !xm
-                              (!xm:|", ")
-                              ( span
-                              .   
-                                ,   \r\n
-                                    getfullvalue$!value
-                                    (   !spec:1
-                                      & NEWSPEC
-                                      & 
-                                    | "(" getfullspec$(!value.!spec) ")"
-                                    )
-                              )
-                              \r\n
-                          : ?xm
-                        )
-                    & !xml !xm:?xml
-                    )
-                &   whl
-                  ' ( !opts:%?opt^?spec ?opts
-                    & NEWSPEC
-                    &     !xml
-                            Field
-                          $ ( optional
-                            . 
-                            .   !opt
-                                (   !spec:1
-                                  & NEWSPEC
-                                  & 
-                                |   Field
-                                  $ (spec..getfullspec$(!opt.!spec))
-                                )
-                            )
-                      : ?xml
-                    )
-                & !xml
-            )
-          & (   !arg:%+%
-              &   Field
-                $ ( pipes
-                  . 
-                  .     whl
-                      ' ( !arg:%?A+?arg
-                        &   !XML pipeSegmentFields$(!A.!indent+1)
-                          : ?XML
-                        )
-                    & !XML
-                  )
-            |   !arg:%*%
-              &   Field
-                $ ( merge
-                  . 
-                  .     whl
-                      ' ( !arg:%?A*?arg
-                        &   !XML pipeSegmentFields$(!A.!indent+1)
-                          : ?XML
-                        )
-                    & !XML
-                  )
-            |   !arg:(?tool,(?output.?inputprop.?input))
-              & ToolTitle$!tool:?tool
-              &     !XML
-                      Field
-                    $ ( pipe
-                      . 
-                      .   Field$(tool..!tool)
-                            Field
-                          $ ( output
-                            . 
-                            . pipeSegmentFields$(!output.!indent+1)
-                            )
-                            Field
-                          $ ( input
-                            . 
-                            . pipeSegmentFields$(!input.!indent+1)
-                            )
-                      )
-                : ?XML
-            |   !arg:(?goal.?arg)
-              & pipeSegmentFields$(!arg.!indent+1)
-            |   Field
-              $ ( features
-                . 
-                .     whl
-                    ' ( !arg:(?feature,?values) ?arg
-                      &   !features
-                        :   ?
-                          + ( ( ? (short.!feature) ?
-                              | ? (name.? !feature ?) ?
-                              )
-                            : ? (name.?featname) ?
-                            )
-                          + ?
-                      &     !XML
-                              Field
-                            $ ( localized$!featname
-                              . 
-                              .   :?xml
-                                & (   !values:%+%
-                                    & :?vallist
-                                    &   whl
-                                      ' ( !values:%?value^?+?values
-                                        & !value !vallist:?vallist
-                                        )
-                                    &     !xml
-                                            paragraph
-                                          $ ( makeSelectFormField
-                                            $ (     localized
-                                                  $ ("Choose a " "Vælg et ")
-                                                  !feature
-                                              . IETS
-                                              . options
-                                              .   makeOptionList
-                                                $ (   limitedTable
-                                                    $ (!feature.!vallist)
-                                                  . 
-                                                  )
-                                              )
-                                            )
-                                      : ?xml
-                                  | whlvalues$(!values.!xml.!feature)
-                                  )
-                              )
-                        : ?XML
-                      & 
-                      )
-                  & !XML
-                )
-            )
-      )
       (pipeAsXML=.str$(!XMLdeclaration pipeSegmentXML$!arg))
       ( Intersection
       =   x y f v I e g w V W h
@@ -10110,11 +10393,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       =     Tool item parms Items methodName
           , formFields val mail2 password ERR
           , Submit pipes pipe windFW reqs req descr
-          , JobStack JobNr presels hid feats analyzeInput
+          , JobStack JobNr presels feats analyzeInput
           , TOOL errors batch checkMail desiredTools
           , jobIDoffset subjobs Sources sourcesAndGoals
           , directedBy nth unpackIOparms BodyContainer
-          , nicify handle checkIOparms PIPE lookForLanguage
+          , handle checkIOparms PIPE lookForLanguage
           , precooked-DASISH A wrkflw Z errmsg
           , analyseContentType makeJobStack NoNeedForMetadata
           , ApplyThePipelineToTheInput NoWay TooManyOrNone
@@ -10473,24 +10756,39 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                      about the input(s)."
                 & readTable$Uploads
                 & !arg:?parms
-                & log$(analyzeInput !arg)
                 & ( !arg:? (DATE.?date) ?
                   | :?date
                   )
                 & "First build a list of items."
                 & ( buildItemList
-                  =   Items
-                    .   :?Items
-                      &   whl
-                        ' ( !arg
-                          :   ?
-                              ( (item|Item.?item)
-                              & (@(!item:\" ?item \")|)
-                              & !Items (Item.!item):?Items
-                              )
-                              ?arg
+                  =   
+                    .   map
+                      $ ( ( 
+                          =   item nt
+                            .       !arg
+                                  : ( @( ?
+                                       : ( item
+                                         |   Item
+                                             ( &:?nt
+                                             | ";" ?nt
+                                             )
+                                         )
+                                       )
+                                    . ?item
+                                    )
+                                & ( @(!item:\" ?item \")
+                                  | 
+                                  )
+                                & (   str
+                                    $ ( Item
+                                        (!nt:|";" !nt)
+                                      )
+                                  . !item
+                                  )
+                              | 
                           )
-                      & !Items
+                        . !arg
+                        )
                   )
                 & buildItemList$!parms:?Items
                 & ( buildItemListFromForeignData
@@ -10585,7 +10883,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( Sources
             =     f fs picklists name short srcs flds
                 , description itms itm Types preselvals
-                , table presel L PR
+                , table presel L PR hide
                 , preselvalsrows items item spec
               .   readTable$features
                 & !features:?fs
@@ -10598,6 +10896,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       : ? (short.?short) ?
                       : ? (description.?description) ?
                       : ? (table.?table) ?
+                    & ( !f:? (hide.?hide) ?
+                      | :?hide
+                      )
                     & readTable$!table
                     & :?preselvals
                     & !arg:?L
@@ -10609,14 +10910,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         & !preselvals (!presel.!item):?preselvals
                         )
                     &     !preselvalsrows
-                          (!short.localized$!name.!!table.!preselvals)
+                          (!short.localized$!name.!!table.!preselvals.!hide)
                       : ?preselvalsrows
                     )
                 & :?picklists
                 & !preselvalsrows:?PR
                 &   whl
                   ' (   !PR
-                      : (?short.?name.?table.?preselvals) ?PR
+                      : ? (?short.?name.?table.?preselvals.) ?PR
                     &     !picklists
                             row
                           $ ( cell$!name
@@ -10754,19 +11055,23 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , table presel L PR selectServicedValues
                 , preselvalsrows items item spec
                 , goalpicklists preselvals presels
-                , srcs fromRepo createArgs
-              .   !arg:(?presels.?createArgs.?fromRepo)
+                , srcs createArgs
+              .   !arg:(?presels.?createArgs.?)
                 & readTable$features
                 & !features:?fs
                 & :?preselvalsrows
-                & :?items
-                &   whl
-                  ' (   !createArgs
-                      :   ?
-                          (FieldName,?.Name,?item.?)
-                          ?createArgs
-                    & !items !item:?items
-                    )
+                &     map
+                    $ ( ( 
+                        =   
+                          .       !arg
+                                : (FieldName,?.Name,?arg.?)
+                              & !arg
+                            | 
+                        )
+                      . !createArgs
+                      )
+                  : ?items
+                & 1:?prod
                 &   whl
                   ' ( !fs:%?f+?fs
                     &   !f
@@ -10774,6 +11079,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       : ? (short.?short) ?
                       : ? (description.?description) ?
                       : ? (table.?table) ?
+                    & ( !f:? (hide.?hide) ?
+                      | :?hide
+                      )
                     & readTable$!table
                     & :?preselvals
                     & !presels:?L
@@ -10783,16 +11091,74 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           | !items !item:?items
                           )
                         & !preselvals (!presel.!item):?preselvals
+                        & !item^!presel*!prod:?prod
                         )
                     &     !preselvalsrows
-                          (!short.localized$!name.!!table.!preselvals)
+                          (!short.localized$!name.!!table.!preselvals.!hide)
                       : ?preselvalsrows
                     )
+                &   whl
+                  ' ( !prod:?A*%?B^%?x*?C*%?D^!x*?E
+                    & !A*(!B !D)^!x*!C*!E:?prod
+                    )
+                & :?items
+                & !prod:?p
+                & 0:?R
+                &   whl
+                  ' ( !p:(? [?n:%?itms)^%?*?p
+                    & (!n.!itms)+!R:?R
+                    )
+                &   whl
+                  ' ( !R:(?.?itms)+?R
+                    & (.!itms) !items:?items
+                    )
+                & 0:?nt
+                &     map
+                    $ ( ( 
+                        =   
+                          .   !arg:(.?arg)
+                            & (!nt+1:?nt.!arg)
+                        )
+                      . !items
+                      )
+                  : ?items
+                &     map
+                    $ ( ( 
+                        =   seen a b c d e
+                          .   !arg:(?a.?b.?c.?d.?e)
+                            & 0:?seen
+                            & ( !a
+                              . !b
+                              . !c
+                              .   map
+                                $ ( ( 
+                                    =   presel item comb
+                                      .     !arg:(?presel.?item)
+                                          &   !prod
+                                            :   ?
+                                              * (? !item ?:?comb)^?
+                                              * ?
+                                          & (   !seen:?+!comb+?
+                                              & 
+                                            |   !comb+!seen:?seen
+                                              & (!presel.!comb)
+                                            )
+                                        | !arg
+                                    )
+                                  . !d
+                                  )
+                              . !e
+                              )
+                        )
+                      . !preselvalsrows
+                      )
+                  : ?preselvalsrows
                 & ( selectServicedValues
                   =   short table pat
                     .     !arg:(?short.?table.(=?pat))
                         & readTable$toolprop
                         & readTable$tooladm
+                        & readTable$features
                         &   map
                           $ ( ( 
                               =   tool full abbr YYY
@@ -10826,143 +11192,193 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                       | !table
                   )
-                & :?picklists:?goalpicklists
-                & !preselvalsrows:?PR
-                &   whl
-                  ' (   !PR
-                      : (?short.?name.?table.?preselvals) ?PR
-                    & (   !servicedSources
-                        : ? (!short.?servicedSourcesTable) ?
-                      |       selectServicedValues
-                            $ ( !short
-                              . !table
-                              . (=?+?*!abbr^?*?+? ?.?)
+                & ( namecell
+                  =   features short name
+                    .   !arg:(?features.?short.?name)
+                      &   cell
+                        $ (     !features
+                              :   ?
+                                + ( ? (short.!short) ?
+                                  : ? (description.?description) ?
+                                  )
+                                + ?
+                            & ( div
+                              .   (class.tooltip)
+                                ,   !name
+                                    ( span
+                                    .   (class.tooltiptext)
+                                      , localized$!description
+                                    )
                               )
-                          : ?servicedSourcesTable
-                        &     (!short.!servicedSourcesTable)
-                              !servicedSources
-                          : ?servicedSources
-                      )
-                    & (   !servicedGoals
-                        : ? (!short.?servicedGoalsTable) ?
-                      |       selectServicedValues
-                            $ ( !short
-                              . !table
-                              . (=?.?+?*!abbr^?*?+? ?)
+                          | !name
+                          )
+                  )
+                & ( featurehelpcell
+                  =   features short inorout help
+                    .   !arg:(?features.?short.?inorout)
+                      &   cell
+                        $ (     !features
+                              :   ?
+                                + ( ? (short.!short) ?
+                                  : ? (!inorout.?help) ?
+                                  )
+                                + ?
+                            & ( div
+                              .   (class.tooltip)
+                                ,   (small.,chu$10068)
+                                    ( span
+                                    .   (class.tooltiptext)
+                                      , localized$!help
+                                    )
                               )
-                          : ?servicedGoalsTable
-                        &     (!short.!servicedGoalsTable)
-                              !servicedGoals
-                          : ?servicedGoals
-                      )
-                    &     !picklists
-                            row
-                          $ ( cell$!name
-                              ( :?flds
-                              & !items:?itms
-                              &   whl
-                                ' ( !itms:%?itm ?itms
-                                  &     !flds
-                                          cell
-                                        $ (     !preselvals
-                                              :   ?
-                                                  (%?presel^?spec.!itm)
-                                                  ?
-                                            & NEWSPEC
-                                            & (   !spec:1
-                                                & NEWSPEC
-                                                &   makeSelectFormField
+                          | 
+                          )
+                  )
+                & readTable$features
+                &     map
+                    $ ( ( 
+                        =   
+                          .       !arg
+                                : (?short.?name.?table.?preselvals.)
+                              & (   !servicedSources
+                                  :   ?
+                                      (!short.?servicedSourcesTable)
+                                      ?
+                                |       selectServicedValues
+                                      $ ( !short
+                                        . !table
+                                        . ( 
+                                          = ?+?*!abbr^?*?+? ?.?
+                                          )
+                                        )
+                                    : ?servicedSourcesTable
+                                  &     (!short.!servicedSourcesTable)
+                                        !servicedSources
+                                    : ?servicedSources
+                                )
+                              & (   !items:% %
+                                  & (exr=";" !nt)
+                                | :?exr
+                                )
+                              &   row
+                                $ ( namecell$(!features.!short.!name)
+                                      featurehelpcell
+                                    $ (!features.!short.sourcehelp)
+                                      map
+                                    $ ( ( 
+                                        =   
+                                          .   !arg:(?nt.?arg)
+                                            &   cell
+                                              $ (     !preselvals
+                                                    :   ?
+                                                        (%?presel^?spec.!arg)
+                                                        ?
+                                                  & NEWSPEC
+                                                  & (   !spec:1
+                                                      & NEWSPEC
+                                                      &   makeSelectFormField
+                                                        $ ( 
+                                                          .   str
+                                                            $ (I !short !exr)
+                                                          . options
+                                                          .   makeOptionList
+                                                            $ ( !servicedSourcesTable
+                                                              . !presel
+                                                              )
+                                                          )
+                                                    |   makeSelectFormField
+                                                      $ ( 
+                                                        .   str
+                                                          $ (I !short !exr)
+                                                        . options
+                                                        .     !features
+                                                            :   ?
+                                                              + (   ?
+                                                                    ( short
+                                                                    . !short
+                                                                    )
+                                                                    ?
+                                                                :   ?
+                                                                    ( specificationTable
+                                                                    .   ?
+                                                                        (   ?
+                                                                            ( %@
+                                                                            : !presel
+                                                                            )
+                                                                            ?
+                                                                        . ?Types
+                                                                        )
+                                                                        ?
+                                                                    )
+                                                                    ?
+                                                                )
+                                                              + ?
+                                                          & readTable$!Types
+                                                          &   makeOptionList
+                                                            $ ( !!Types
+                                                              . !spec
+                                                              .   str
+                                                                $ (!presel "^")
+                                                              )
+                                                        )
+                                                    )
+                                                |   makeSelectFormField
                                                   $ ( 
-                                                    . str$(I !short)
+                                                    . str$(I !short !exr)
                                                     . options
                                                     .   makeOptionList
                                                       $ ( !servicedSourcesTable
-                                                        . !presel
+                                                        . 
                                                         )
                                                     )
-                                              |   makeSelectFormField
-                                                $ ( 
-                                                  . str$(I !short)
-                                                  . options
-                                                  .   readTable$features
-                                                    &   !features
-                                                      :   ?
-                                                        + (   ?
-                                                              (short.!short)
-                                                              ?
-                                                          :   ?
-                                                              ( specificationTable
-                                                              .   ?
-                                                                  (   ?
-                                                                      ( %@
-                                                                      : !presel
-                                                                      )
-                                                                      ?
-                                                                  . ?Types
-                                                                  )
-                                                                  ?
-                                                              )
-                                                              ?
-                                                          )
-                                                        + ?
-                                                    & readTable$!Types
-                                                    &   makeOptionList
-                                                      $ ( !!Types
-                                                        . !spec
-                                                        . str$(!presel "^")
-                                                        )
-                                                  )
-                                              )
-                                          |   makeSelectFormField
-                                            $ ( 
-                                              . str$(I !short)
-                                              . options
-                                              .   makeOptionList
-                                                $ (!servicedSourcesTable.)
-                                              )
-                                          )
-                                    : ?flds
+                                                )
+                                        )
+                                      . !items
+                                      )
                                   )
-                              & !flds
-                              )
-                            )
-                      : ?picklists
-                    &     !goalpicklists
-                            row
-                          $ ( cell$(str$(!name ":"))
-                                cell
-                              $ ( makeSelectFormField
-                                $ ( 
-                                  . str$(O !short)
-                                  . options
-                                  . makeOptionList$(!servicedGoalsTable.)
+                            | 
+                        )
+                      . !preselvalsrows
+                      )
+                  : ?picklists
+                &     map
+                    $ ( ( 
+                        =   
+                          .       !arg
+                                : (?short.?name.?table.?preselvals.)
+                              & (   !servicedGoals
+                                  : ? (!short.?servicedGoalsTable) ?
+                                |       selectServicedValues
+                                      $ ( !short
+                                        . !table
+                                        . (=?.?+?*!abbr^?*?+? ?)
+                                        )
+                                    : ?servicedGoalsTable
+                                  &     (!short.!servicedGoalsTable)
+                                        !servicedGoals
+                                    : ?servicedGoals
+                                )
+                              &   row
+                                $ ( namecell$(!features.!short.!name)
+                                      featurehelpcell
+                                    $ (!features.!short.goalhelp)
+                                      cell
+                                    $ ( makeSelectFormField
+                                      $ ( 
+                                        . str$(O !short)
+                                        . options
+                                        .   makeOptionList
+                                          $ (!servicedGoalsTable.)
+                                        )
+                                      )
                                   )
-                                )
-                            )
-                      : ?goalpicklists
-                    )
-                & (   !fromRepo
-                    &     Table
-                        $ ( (style,"display:none;") (id,inputs)
-                          .   row
-                            $ ( cell$()
-                                ( !items:?itms
-                                & :?srcs
-                                &   whl
-                                  ' ( !itms:%?itm ?itms
-                                    & !srcs cell$!itm:?srcs
-                                    )
-                                & !srcs
-                                )
-                              )
-                          . !picklists
-                          )
-                          Table
-                        $ ( id,goal
-                          . row$(cell$() cell$)
-                          . !goalpicklists
-                          )
-                  |     fieldset
+                            | 
+                        )
+                      . !preselvalsrows
+                      )
+                  : ?goalpicklists
+                & ( !items
+                  .     fieldset
                       $ (   localized
                           $ ( "Input(s). Do not change these fields if you are not sure."
                               "Input. Lav ikke om på værdierne hvis du ikke er sikker."
@@ -10971,16 +11387,52 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           $ ( id,inputs
                             .   row
                               $ ( cell$()
-                                  ( !items:?itms
-                                  & :?srcs
-                                  &   whl
-                                    ' ( !itms:%?itm ?itms
-                                      & !srcs cell$!itm:?srcs
+                                  cell$()
+                                    map
+                                  $ ( ( 
+                                      =   
+                                        .   !arg:(?nt.?arg)
+                                          &     map
+                                              $ ( ( 
+                                                  = .!arg (br.,)
+                                                  )
+                                                . !arg
+                                                )
+                                            : ?arg (br.,)
+                                          & cell$!arg
                                       )
-                                  & !srcs
-                                  )
+                                    . !items
+                                    )
                                 )
-                            . !picklists
+                            .   (   !items:% %
+                                  & 0:?nt
+                                  &   row
+                                    $ ( cell$Select
+                                        cell$()
+                                          map
+                                        $ ( ( 
+                                            =   
+                                              .   !arg:(?nt.?arg)
+                                                &   cell
+                                                  $ ( input
+                                                    .     (type.radio)
+                                                          (name.itms)
+                                                          (value.!nt)
+                                                          (   !nt:1
+                                                            & ( checked
+                                                              . checked
+                                                              )
+                                                          | 
+                                                          )
+                                                      , 
+                                                    )
+                                            )
+                                          . !items
+                                          )
+                                      )
+                                | 
+                                )
+                                !picklists
                             )
                         )
                         fieldset
@@ -10996,7 +11448,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             (strong.,localized$(blank blank))
                               localized
-                            $ ( ". In general, more filled out fields = fewer candidate workflows."
+                            $ ( ". In general, more filled out fields = fewer workflow candidates."
                                 ". Generelt gælder: jo flere udfyldte feldter, desto færre foreslåede arbejdsgange."
                               )
                             (br.,)
@@ -11006,7 +11458,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                         .     Table
                             $ ( id,goal
-                              . row$(cell$() cell$)
+                              . row$(cell$() cell$() cell$)
                               . !goalpicklists
                               )
                               makeCheckboxFormField
@@ -11336,16 +11788,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             = .str$(create (!arg:|By) !arg)
             )
           & ( ShowOnlyTheCurrentPipe
-            =   formFields nicify pipe nth directedBy
+            =   formFields pipe nth directedBy seeninputs
               .   !arg:(?pipe.?nth.?directedBy)
-                & :?formFields
-                & ( nicify
-                  =   pipeAsFields
-                    .     (pipeAsFields=.pipeSegmentFields$(!arg.0))
-                        & pipeAsFields$!arg
-                      | !arg
-                  )
-                & !formFields nicify$!pipe:?formFields
+                & :?formFields:?seeninputs
+                & makeWorkflowRadioButtons$!pipe:?formFields
                 &   str
                   $ ( 200~~~
                         toML
@@ -11357,89 +11803,148 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ?formFields
                             )
                           & ( !formFields:
-                            |   "Workflow: Input → "
-                                enumerateTools$!pipe
-                                " → Output"
-                                (br.,)
-                                  form
-                                $ ( methodName$!directedBy
-                                  .   !formFields
-                                      ( !nth:<1&
-                                      |   makeHiddenFields
-                                        $ ((nth.!nth) !hiddenData)
-                                      )
-                                  )
+                            |   form
+                              $ ( methodName$!directedBy
+                                .   !formFields
+                                    ( !nth:<1&
+                                    |   makeHiddenFields
+                                      $ ((nth.!nth) !hiddenData)
+                                    )
+                                )
                             )
                           )
                         )
                     )
             )
           & ( AddMetadata
-            =     formFields metadataForm nth val
-                , directedBy Metadata parms ERR metadataType
+            =     formFields nth val
+                , directedBy parms ERR metadataType
               .   !arg:(?metadataType.?nth.?directedBy.?parms.?ERR)
-                & readTable$!metadataType:?Metadata
-                & :?formFields
-                & ( metadataForm
-                  =     formFields tekst inputs
-                      , "Tekst i grænsefladen"
-                      , "Required / optional  / automatic"
-                      , "Placering i header" Noter Hjælpetekst id
-                      , "line / lines / box / empty" URL
-                      , inputFields table typeOfError
-                    .   :?formFields
-                      &   whl
-                        ' ( !arg:? (?tekst,?inputs) ?arg
-                          &     !formFields
-                                  fieldset
-                                $ ( localized$!tekst
-                                  .   :?inputFields
-                                    &   whl
-                                      ' (   !inputs
-                                          :   ( ?id
-                                              . ?"Tekst i grænsefladen"
-                                              . ?"Required / optional  / automatic"
-                                              . ?"line / lines / box / empty"
-                                              . ?"Placering i header"
-                                              . ?Noter
-                                              . ?Hjælpetekst
-                                              . ?
-                                              . ?URL
-                                              )
-                                              ?inputs
-                                        & (     !"Required / optional  / automatic"
-                                              :   ?
-                                                  ( o
-                                                  | r
-                                                  | oneOrMore
-                                                  | zeroOrMore
+                & log$"Creating formFields"
+                &     ( style
+                      .   (type.text/css)
+                        , "div.row{display:table-row;} .row * {vertical-align: middle;} .row label{display: table-cell; text-align: right; padding: 5px;} span.autogen{font-style:italic; width:auto; display: table-cell; text-align: left; padding: 5px;} .row input{display: table-cell;} .row textarea{display: table-cell;} span.required{width: 20px;}"
+                      )
+                        map
+                      $ ( ( 
+                          =     tekst inputs
+                              , "Tekst i grænsefladen"
+                              , "Required / optional  / automatic"
+                              , "Placering i header" Noter Hjælpetekst id
+                              , "line / lines / box / empty" URL
+                              , table typeOfError
+                            .     !arg:(?tekst,?inputs)
+                                &   fieldset
+                                  $ ( localized$!tekst
+                                    .   map
+                                      $ ( ( 
+                                          =   
+                                            .     !arg
+                                                : ( ?id
+                                                  . ?"Tekst i grænsefladen"
+                                                  . ?"Required / optional  / automatic"
+                                                  . ?"line / lines / box / empty"
+                                                  . ?"Placering i header"
+                                                  . ?Noter
+                                                  . ?Hjælpetekst
+                                                  . ?
+                                                  . ?URL
                                                   )
-                                                  ?
-                                            &     !inputFields
-                                                  ( div
-                                                  .   (class.row)
-                                                    ,   (     !"line / lines / box / empty"
-                                                            : select ?table
-                                                          & readTable$!table
-                                                          &   makeSelectFormField
-                                                            $ (   addurl
-                                                                $ (   localized
-                                                                    $ !"Tekst i grænsefladen"
-                                                                  . !URL
+                                              & (     !"Required / optional  / automatic"
+                                                    :   ?
+                                                        ( o
+                                                        | r
+                                                        | oneOrMore
+                                                        | zeroOrMore
+                                                        )
+                                                        ?
+                                                  & ( div
+                                                    .   (class.row)
+                                                      ,   (     !"line / lines / box / empty"
+                                                              : select ?table
+                                                            &   readTable
+                                                              $ !table
+                                                            &   makeSelectFormField
+                                                              $ (   addurl
+                                                                  $ (   localized
+                                                                      $ !"Tekst i grænsefladen"
+                                                                    . !URL
+                                                                    )
+                                                                . !id
+                                                                .   ( options
+                                                                    .   makeOptionList
+                                                                      $ ( !!table
+                                                                        .       !parms
+                                                                              :   ?
+                                                                                  ( !id
+                                                                                  . ?val
+                                                                                  )
+                                                                                  ?
+                                                                            & !val
+                                                                          | 
+                                                                        )
+                                                                    )
+                                                                    ( desc
+                                                                    .   localized
+                                                                      $ !Hjælpetekst
+                                                                    )
+                                                                    ( required
+                                                                    .       !"Required / optional  / automatic"
+                                                                          :   ?
+                                                                              ( r
+                                                                              | oneOrMore
+                                                                              )
+                                                                              ?
+                                                                        & ( span
+                                                                          .   ( style
+                                                                              . "color:blue; width: auto; line-height: normal;"
+                                                                              )
+                                                                            , "*"
+                                                                          )
+                                                                      | 
+                                                                    )
+                                                                )
+                                                          |   (     !"line / lines / box / empty"
+                                                                  : ( box
+                                                                    | lines
+                                                                    )
+                                                                & makeTextAreaFormField
+                                                              | makeTextFormField
+                                                              )
+                                                            $ (     addurl
+                                                                  $ (   localized
+                                                                      $ !"Tekst i grænsefladen"
+                                                                    . !URL
+                                                                    )
+                                                                  (     !"Required / optional  / automatic"
+                                                                      :   ?
+                                                                          a
+                                                                          ?
+                                                                    & ( span
+                                                                      .   ( style
+                                                                          . "font-style:italic; width:auto;"
+                                                                          )
+                                                                        ,   str
+                                                                          $ ( " ("
+                                                                                localized
+                                                                              $ ( "autogenerated if left blank"
+                                                                                  "automatisk genereret hvis ikke udfyldt"
+                                                                                )
+                                                                              ") "
+                                                                            )
+                                                                      )
+                                                                  | 
                                                                   )
                                                               . !id
-                                                              .   ( options
-                                                                  .   makeOptionList
-                                                                    $ ( !!table
-                                                                      .       !parms
-                                                                            :   ?
-                                                                                ( !id
-                                                                                . ?val
-                                                                                )
-                                                                                ?
-                                                                          & !val
-                                                                        | 
-                                                                      )
+                                                              .   ( val
+                                                                  .       !parms
+                                                                        :   ?
+                                                                            ( !id
+                                                                            . ?val
+                                                                            )
+                                                                            ?
+                                                                      & !val
+                                                                    | 
                                                                   )
                                                                   ( desc
                                                                   .   localized
@@ -11461,120 +11966,52 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                                     | 
                                                                   )
                                                               )
-                                                        |   (     !"line / lines / box / empty"
-                                                                : ( box
-                                                                  | lines
+                                                          )
+                                                          (     !ERR
+                                                              : ( !id
+                                                                . ?typeOfError
+                                                                . ?
+                                                                )
+                                                            & ( span
+                                                              .   ( style
+                                                                  . "color:red;"
                                                                   )
-                                                              & makeTextAreaFormField
-                                                            | makeTextFormField
-                                                            )
-                                                          $ (     addurl
-                                                                $ (   localized
-                                                                    $ !"Tekst i grænsefladen"
-                                                                  . !URL
-                                                                  )
-                                                                (     !"Required / optional  / automatic"
-                                                                    : ? a ?
-                                                                  & ( span
-                                                                    .   ( style
-                                                                        . "font-style:italic; width:auto;"
-                                                                        )
-                                                                      ,   str
-                                                                        $ ( " ("
-                                                                              localized
-                                                                            $ ( "autogenerated if left blank"
-                                                                                "automatisk genereret hvis ikke udfyldt"
-                                                                              )
-                                                                            ") "
-                                                                          )
+                                                                , !typeOfError
+                                                              )
+                                                          | 
+                                                          )
+                                                    )
+                                                |     !"Required / optional  / automatic"
+                                                    : ? a ?
+                                                  &   !"Tekst i grænsefladen"
+                                                    : ~
+                                                  & ( div
+                                                    .   (class.row)
+                                                      ,   makeStaticTextFormField
+                                                        $ (   localized
+                                                            $ !"Tekst i grænsefladen"
+                                                          . span
+                                                          .   (class.autogen)
+                                                            ,   str
+                                                              $ ( " ("
+                                                                    localized
+                                                                  $ ( autogenerated
+                                                                      "automatisk genereret"
                                                                     )
-                                                                | 
+                                                                  ") "
                                                                 )
-                                                            . !id
-                                                            .   ( val
-                                                                .       !parms
-                                                                      :   ?
-                                                                          ( !id
-                                                                          . ?val
-                                                                          )
-                                                                          ?
-                                                                    & !val
-                                                                  | 
-                                                                )
-                                                                ( desc
-                                                                .   localized
-                                                                  $ !Hjælpetekst
-                                                                )
-                                                                ( required
-                                                                .       !"Required / optional  / automatic"
-                                                                      :   ?
-                                                                          ( r
-                                                                          | oneOrMore
-                                                                          )
-                                                                          ?
-                                                                    & ( span
-                                                                      .   ( style
-                                                                          . "color:blue; width: auto; line-height: normal;"
-                                                                          )
-                                                                        , "*"
-                                                                      )
-                                                                  | 
-                                                                )
-                                                            )
-                                                        )
-                                                        (     !ERR
-                                                            : ( !id
-                                                              . ?typeOfError
-                                                              . ?
-                                                              )
-                                                          & ( span
-                                                            .   ( style
-                                                                . "color:red;"
-                                                                )
-                                                              , !typeOfError
-                                                            )
-                                                        | 
-                                                        )
-                                                  )
-                                              : ?inputFields
-                                          |     !"Required / optional  / automatic"
-                                              : ? a ?
-                                            & !"Tekst i grænsefladen":~
-                                            &     !inputFields
-                                                  ( div
-                                                  .   (class.row)
-                                                    ,   makeStaticTextFormField
-                                                      $ (   localized
-                                                          $ !"Tekst i grænsefladen"
-                                                        . span
-                                                        .   (class.autogen)
-                                                          ,   str
-                                                            $ ( " ("
-                                                                  localized
-                                                                $ ( autogenerated
-                                                                    "automatisk genereret"
-                                                                  )
-                                                                ") "
-                                                              )
-                                                        )
-                                                  )
-                                              : ?inputFields
-                                          | 
+                                                          )
+                                                    )
+                                                | 
+                                                )
                                           )
+                                        . !inputs
                                         )
-                                    & !inputFields
-                                  )
-                            : ?formFields
+                                    )
+                              | 
                           )
-                      & !formFields
-                  )
-                & log$"Creating formFields"
-                &     !formFields
-                      ( style
-                      .   (type.text/css)
-                        , "div.row{display:table-row;} .row * {vertical-align: middle;} .row label{display: table-cell; text-align: right; padding: 5px;} span.autogen{font-style:italic; width:auto; display: table-cell; text-align: left; padding: 5px;} .row input{display: table-cell;} .row textarea{display: table-cell;} span.required{width: 20px;}"
-                      )
-                      metadataForm$!Metadata
+                        . readTable$!metadataType
+                        )
                   : ?formFields
                 & log$"formFields created"
                 &   str
@@ -11989,7 +12426,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( "We are at the start. Show an input form."
-            =   formFields presels,directedBy hiddenData Items
+            =     formFields presels
+                , directedBy hiddenData Items itemGroups
               .     !arg
                   : (?formFields.?presels.?directedBy.?hiddenData.?Items)
                 & log$"We are at the start. Show an input form."
@@ -12007,19 +12445,28 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             )
                         )
-                  |       !formFields
-                            sourcesAndGoals
-                          $ ( !presels
-                            . !arg
-                            .     !Items
-                                :   ?
-                                    (Item.@(?:"dkclarin:" ?))
-                                    ?
-                              & 
+                  |       sourcesAndGoals
+                        $ ( !presels
+                          . !arg
+                          .     !Items
+                              : ? (Item.@(?:"dkclarin:" ?)) ?
+                            & 
+                          )
+                      : (?itemGroups.?sourceAndGoal)
+                    &     map
+                        $ ( ( 
+                            =   
+                              .     !arg:(Item.?arg)
+                                  &   !itemGroups
+                                    : ? (?nt.? !arg ?) ?
+                                  & (str$(Item ";" !nt).!arg)
+                                | !arg
                             )
-                          desiredTools$
+                          . !hiddenData
+                          )
+                      : ?hiddenData
+                    &   !formFields !sourceAndGoal desiredTools$
                       : ?formFields
-                    & log$sourcesAndGoalsDONE
                     &   str
                       $ ( 200~~~
                             toML
@@ -12132,7 +12579,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( "We are past the first stage: the user has pressed a button"
-            =     parms TOOL pipes Submit directedBy hiddenData
+            =     TOOL pipes Submit directedBy hiddenData
                 , parms nth pipe batch Items mail2 ERR
                 , NNN pipesN calls allpipes
                 , Workflows incarnationpipes newpipes restr
@@ -12146,7 +12593,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . ?Submit
                     . ?directedBy
                     . ?hiddenData
-                    . ?parms
                     . ?batch
                     . ?Items
                     . ?mail2
@@ -12657,7 +13103,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     : ?errors
                   )
                 & !errors:
-                & !hiddenData !Items !hid:?hiddenData
+                & !hiddenData !Items:?hiddenData
                 &     !hiddenData
                       (   !arg:? (desiredtool.?rstr) ?
                         & (desiredtool.!rstr)
@@ -12678,7 +13124,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         . !Submit
                         . !directedBy
                         . !hiddenData
-                        . !parms
                         . !batch
                         . !Items
                         . !mail2
@@ -12706,7 +13151,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               | !errors
             )
           &   
-            : ?hid
             : ?errors
             : ?hiddenData
             : ?formFields
@@ -12719,6 +13163,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & startclock$
           & log$CREATELOGJE
           & !arg:(?parms:?arg.?directedBy)
+          & ( !parms:? (itms.?itms) ?
+            | 1:?itms
+            )
+          &     map
+              $ ( ( 
+                  =   a v nt
+                    .     !arg:(@(?:?a ";" ?nt).?v)
+                        & ( !nt:!itms&(!a.!v)
+                          | 
+                          )
+                      | !arg:(itms.?)&
+                      | !arg
+                  )
+                . !parms
+                )
+            : ?parms
           & !HTMLbodyContainer:?BodyContainer
           & setLanguageNotPermanently$!arg
           & analyzeInput$!parms:(?parms.?Items.?presels)
@@ -13188,6 +13648,154 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             & saveTable$relations
             & saveTable$jobAbout
             & no
+      )
+      "
+/**
+ * help
+ */"
+      ( help
+      =   tools
+        .   log$HELP toolsSorted
+          & ( toolsSorted
+            =   tool sorted tools L
+              .   readTable$tooladm
+                & 0:?sorted
+                &   whl
+                  ' (   !tooladm
+                      :   ?
+                        + ( ? (Inactive.) ?
+                          : ? (Title.?Title) ?
+                          : ?tool
+                          )
+                        + ?tooladm
+                    & (low$!Title.!tool)+!sorted:?sorted
+                    )
+                & :?tools
+                &   whl
+                  ' ( !sorted:(?L.%?sort)+?sorted
+                    & (!L.!sort) !tools:?tools
+                    )
+                & :?sorted
+                &   whl
+                  ' ( !tools:%?sort ?tools
+                    & !sort !sorted:?sorted
+                    )
+                & !sorted
+            )
+          & readTable$toolprop
+          & ( langlist
+            =   tp L R langs l a b
+              .     !toolprop:?+(!arg.~(? (lang,?) ?))+?
+                  & 
+                |   !toolprop:?tp
+                  & 0:?L
+                  &   whl
+                    ' (   !tp
+                        : ?+(!arg.? (lang,?langs) ?)+?tp
+                      &   whl
+                        ' ( !langs:(?a.?b)+?langs
+                          & !L+!a+!b:?L
+                          )
+                      )
+                  & :?R
+                  &   whl
+                    ' (!L:#*%@?l+?L&!l !R:?R)
+                  & :?L
+                  &   whl
+                    ' (!R:%?l ?R&", " !l !L:?L)
+                  & ( !L:", " ?L&str$!L
+                    | 
+                    )
+            )
+          & toolsSorted$:?tools
+          & log$(tools !tools)
+          & 0:?toolNr
+          &   toML
+            $ ( !HTMLbodyContainer
+              $ ( (h1.,"Text Tonsorium")
+                  (h2.,"Understand how data and tools are described")
+                  (h2.,"and become better at formulating your goal.")
+                  (h3.,Overview)
+                  ( dl
+                  .   
+                    ,   (dt.,Data)
+                        (dd.,Input)
+                        (dd.,Goal)
+                        (dt.,Facets)
+                        (dd.,)
+                        (dt.,Tools)
+                        ( dd
+                        .   
+                          , ( table
+                            .   
+                              ,   ( thead
+                                  .   
+                                    ,   (th.,"#")
+                                        (th.,"Name of the tool")
+                                        (th.,"Supported languages")
+                                  )
+                                  ( tbody
+                                  .   
+                                    ,   map
+                                      $ ( ( 
+                                          =   Title
+                                            .     !arg
+                                                : ( ?
+                                                  .     ?
+                                                        (Title.?Title)
+                                                        ?
+                                                    :   ?
+                                                        (ToolID.?ToolID)
+                                                        ?
+                                                  )
+                                              & ( tr
+                                                .   
+                                                  ,   ( td
+                                                      .   
+                                                        ,   !toolNr+1
+                                                          : ?toolNr
+                                                      )
+                                                      ( td
+                                                      .   
+                                                        , ( a
+                                                          .   ( href
+                                                              .   str
+                                                                $ ("#" !ToolID)
+                                                              )
+                                                            , !Title
+                                                          )
+                                                      )
+                                                      ( td
+                                                      . ,langlist$!ToolID
+                                                      )
+                                                )
+                                          )
+                                        . !tools
+                                        )
+                                  )
+                            )
+                        )
+                  )
+                    map
+                  $ ( ( 
+                      =   
+                        .       !arg
+                              : ( ?
+                                .   ? (ToolID.?ToolID) ?
+                                  : ? (Title.?Title) ?
+                                  : ? (Description.?Description) ?
+                                )
+                            &   ( a
+                                .   (id.!ToolID) (name.!ToolID)
+                                  , (h2.,!Title)
+                                )
+                                (p.,!Description)
+                          | 
+                      )
+                    . !tools
+                    )
+                )
+              )
       )
       "
 /**
@@ -15031,12 +15639,6 @@ work/
 
 (This folder structure must already exist.) Finally, the same file is
 rewritten, so all lay-out is normalized (Bracmat style).
-
-After changes have been made to the single table files, for example because
-new tools are registered, the 'alltablesxxx' file is made up to date with
-
-exportTables$
-
 This command reads all single file tables from the folder structure and saves
 them to 'alltablesxxx'. The command knows the actual name of the file to write
 to because that name is stored in the variable AAA, which is itself stored
@@ -15044,11 +15646,17 @@ alongside all tables, and is therefore known after the last time
 importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
+If <prod> is the empty string \"\", then the table tooladm is anonymized by 
+chainging all domains in service URLs \"http:\\localhost\" and by chaing all
+contact emails to \"x@x.xxx\".
+
 To export all tables to a different file, do
 
-exportTables$\"alltableszzz\"
+exportTables$(<prod>.\"alltableszzz\")
 
 where alltableszzz must be a valid file name that starts with 'alltables'.
+
+
 
 To do a clean up, removing almost all that is not defined in this file from 
 Bracmat's memory, call the clean function
