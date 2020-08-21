@@ -1,7 +1,5 @@
 # Text Tonsorium
 
-**WORK IN PROGRESS**
-
 This document explains how you can install the Text Tonsorium under Linux.
 
 The instructions are valid under the following assumptions:
