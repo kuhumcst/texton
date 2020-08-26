@@ -270,7 +270,7 @@ try {
 
         pclose($cmd);
 
-        
+
 
         $HtMl = file_get_contents($utf8file);
 	logit("Now convert_html_to_text");
