@@ -35,7 +35,7 @@ Inactive       :
 $toollog = '../log/CSTLem.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
-$dodelete = true;
+$dodelete = false;
 $tobedeleted = array();
 
 
@@ -289,9 +289,9 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
         }
     else if($language == 'en')
         {
-        $flexrulessubdir = "/2";
+        $flexrulessubdir = "/links";
         $flexrules = "flexrules";
-	    if($toptarg == '')
+        if($toptarg == '')
             $x = "-x'$toolres/en/lemmatiser/tags/translation'";
         }
     else if($language == 'es')
