@@ -289,7 +289,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
         }
     else if($language == 'en')
         {
-        $flexrulessubdir = "/links";
+	if($pos=='n')
+            $flexrulessubdir = "/2";
+	else
+            $flexrulessubdir = "/links";
         $flexrules = "flexrules";
         if($toptarg == '')
             $x = "-x'$toolres/en/lemmatiser/tags/translation'";
