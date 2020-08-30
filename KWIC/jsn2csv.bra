@@ -18,6 +18,51 @@ X=
   ( doit
   =   url
     .   @(!arg:?url "?" ?arg)
+      & ( percentencode
+        =   
+          .   str
+            $ ( map
+              $ ( ( 
+                  =   
+                    .       !arg
+                          : ( ";"
+                            | "/"
+                            | "?"
+                            | ":"
+                            | "@"
+                            | "&"
+                            | "="
+                            | "+"
+                            | "$"
+                            | ","
+                            | "<"
+                            | ">"
+                            | "#"
+                            | "%"
+                            | \"
+                            | "{"
+                            | "}"
+                            | "|"
+                            | "^"
+                            | "["
+                            | "]"
+                            | "`"
+                            )
+                        & "%" d2x$(asc$!arg)
+                      |   asc$!arg:>127
+                        & "%" d2x$(asc$!arg)
+                      | !arg
+                  )
+                . get$(!arg,MEM,VAP)
+                )
+              )
+        )
+      & ( percentdecode
+        =   A a b Z
+          .     @(!arg:?A "%" %@?a %@?b ?Z)
+              & !A chr$(x2d$(str$(!a !b))) percentdecode$!Z
+            | !arg
+        )
       &     vap
           $ ( ( 
               =   
@@ -54,12 +99,7 @@ X=
           .   !arg:?A (cqp.?cqp) ?Z
             & ( trans
               =   A Z a b M U
-                .   
-                  &   whl
-                    ' ( @(!arg:?A "%" %@?a %@?b ?Z)
-                      &   str$(!A chr$(x2d$(str$(!a !b))) !Z)
-                        : ?arg
-                      )
+                .   str$(percentdecode$!arg):?arg
                   &   (   @(!arg:?A "_=" ?M \" ?U \" ?Z)
                         & str$(!A "=" !M "\".*" !U ".*\"" !Z)
                       |   @(!arg:?A "^=" ?M \" ?U \" ?Z)
@@ -69,19 +109,7 @@ X=
                       | !arg
                       )
                     : ?arg
-                  &     str
-                      $ ( vap
-                        $ ( ( 
-                            =   
-                              .     !arg
-                                  : (~<a:~>z|~<Z:~>Z)
-                                | "%" d2x$(asc$!arg)
-                            )
-                          . !arg
-                          )
-                        )
-                    : ?arg
-                  & !arg
+                  & percentencode$!arg
               )
             & !A (cqp.trans$!cqp) !Z
         )
