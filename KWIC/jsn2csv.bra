@@ -4,8 +4,9 @@ Convert output from Korp to a tabulator separated fomat that can be imported in 
 
 X=
   ( doit
-  =   
-    .       vap
+  =   url
+    .   @(!arg:?url "?" ?arg)
+      &     vap
           $ ( ( 
               =   
                 .     @(!arg:?K "=" ?V)
@@ -101,14 +102,19 @@ X=
       & ( !parms:? ("default_context".?) ?
         | !parms ("default_context".1%20sentence):?parms
         )
-      & (   !parms:? (corpus.?corpus) ?
+      & (   ~
+          & !parms:? (corpus.?corpus) ?
           &   vap$((=."," upp$!arg ":text").!corpus.",")
             : "," ?within
           & !parms (within.!within):?parms
-        | 
+        | !parms (within.text):?parms
         )
       &     str
-          $ ( "https://alf.hum.ku.dk/korp/backend/query?command=query"
+          $ ( "https://alf.hum.ku.dk/korp/"
+              ( @(!url:? korp-old ?)&cgi
+              | backend
+              )
+              "/query?command=query"
                 map
               $ ( ( 
                   = .!arg:(?K.?V)&"&" !K "=" !V
@@ -117,6 +123,7 @@ X=
                 )
             )
         : ?Q
+      & lst$(Q,Q,NEW)
       &   ( ~&"C:\\texlive\\2020\\tlpkg\\installer\\wget\\wget.exe"
           | wget
           )
@@ -272,11 +279,15 @@ X=
         |   ~
           &   (its.doit)
             $ "https://alf.hum.ku.dk/korp/?mode=threats#?lang=en&start=0&end=999&context=&cache=true&defaultcontext=1%20sentence&corpus=threatsjeb&cqp=%5Bword%20%3D%20%22jeg%22%20%26%20(lemma%20%3D%20%22jeg%22%20%7C%20_.text_Juridoutcome%20%3D%20%22juridical%22)%5D&show=sentence,pos,msd,lemma,ref,prefix,suffix&stats_reduce=word&sort=random&random_seed=5002506&search_tab=1&search=cqp"
+        |   
+          &   (its.doit)
+            $ "https://alf.hum.ku.dk/korp-old/?mode=threats#?lang=en&stats_reduce=word&corpus=threatsjeb&cqp=%5Bmsd%20_%3D%20%222%22%5D&search_tab=1&within=text&search=cqp"
         |   get$(arg$,STR):?F
           & arg$:?outputfile
           & ( @(!F:?F (\n|\r|" ") ?)
             | 
             )
+          & lst$(F,F,NEW)
           & (its.doit)$!F
         )
   );
