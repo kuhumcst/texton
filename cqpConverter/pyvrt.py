@@ -53,6 +53,7 @@ else:
 today = date.today().strftime("%Y%m%d")
 
 foutput = open(output, "w", encoding="utf-8")
+#foutput = open(output, "w", encoding="iso-8859-1")
 
 sentenceCount = 0
 startSentence = True
@@ -61,6 +62,7 @@ mustWriteSentenceClose = False
 try:
     foutput.write("<text title='WRITE TITLE' date='"+today+"' datefrom='"+today+"' dateto='"+today+"' timefrom='000000' timeto='235959' >\n")
     with open(inp, 'r', encoding="utf-8") as fi:
+#    with open(inp, 'r', encoding="iso-8859-1") as fi:
         for l in fi:
             line = l.strip().split("\t")
             if line[0] == "":
@@ -83,7 +85,7 @@ try:
                     
                 if startSentence:
                     sentenceCount = sentenceCount + 1
-                    foutput.write("<sentence id ='"+str(sentenceCount)+"'>\n")
+                    foutput.write("<sentence id='"+str(sentenceCount)+"'>\n")
                     mustWriteSentenceClose = True
                     startSentence = False
                     
