@@ -9797,38 +9797,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   =     x items tool JobNr JobId
                       , format I O format stage
                     .       !arg
-                          :   ( ?JobNr
-                              . @(?:? #?JobId)
-                              . ?x
-                              . ?items
-                              . ?tool
-                              . ?I
-                              . ?O
-                              . ?stage
-                              )
-                              ?arg
-                        &   ( step
-                            .   
-                              ,   (JobNr.,!JobNr)
-                                  (JobId.,!JobId)
-                                  (name.,!x)
-                                  (tool.,!tool)
-                                  (items.,!items)
-                                  (input.,menneskesprog$!I)
-                                  (output.,menneskesprog$!O)
-                                  ( format
-                                  .   
-                                    ,       !O
-                                          : ?+(format.?format.?)+?
-                                        & !format
-                                      | 
-                                  )
-                                  (stage.,!stage)
+                          : ( ?JobNr
+                            . @(?:? #?JobId)
+                            . ?x
+                            . ?items
+                            . ?tool
+                            . ?I
+                            . ?O
+                            . ?stage
                             )
-                            Steps$!arg
+                        & ( step
+                          .   
+                            ,   (JobNr.,!JobNr)
+                                (JobId.,!JobId)
+                                (name.,!x)
+                                (tool.,!tool)
+                                (items.,!items)
+                                (input.,menneskesprog$!I)
+                                (output.,menneskesprog$!O)
+                                ( format
+                                .   
+                                  ,     !O:?+(format.?format.?)+?
+                                      & !format
+                                    | 
+                                )
+                                (stage.,!stage)
+                          )
                       | 
                   )
-                & (workflow.,!workflow) (steps.,Steps$!arg)
+                &   (workflow.,!workflow)
+                    (steps.,map$(Steps.!arg))
             )
           & letterData$!filelist
       )
@@ -10156,6 +10154,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   : ?body
                 & (dl.,!body)
             )
+          & log$(letter !arg)
           & !arg:(?arg.?shortletter)
           & "shortletter: y or n"
           &   ( 
@@ -10170,11 +10169,16 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   & saveTable$zippedresults
               )
             $ !arg
+          & readTable$zippedresults
+          & log$(zippedresults !zippedresults)
           & jobMetaData$!arg:(?metadata.?type)
+          & log$(metadata !metadata type !type)
           & readTable$fileFormats
           & readTable$Uploads
+          & log$doneAllJobSub
           &   doneAllJobSub$!arg
             : (workflow.,?workflow) (steps.,?steps)
+          & log$doneAllJobSubDONE
           & lst$(steps,path$steps,NEW)
           & :?resources:?files
           &     toML
