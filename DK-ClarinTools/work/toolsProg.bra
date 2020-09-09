@@ -13635,11 +13635,28 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  *
  * Called from data.java and cleanup.java
  */"
+      ( readJobTables
+      =   
+        .   readTable$jobs
+          & readTable$Uploads
+          & readTable$CTBs
+          & readTable$relations
+          & readTable$jobAbout
+          & readTable$ItemGroupsCache
+      )
+      ( saveJobTables
+      =   
+        .   saveTable$jobs
+          & saveTable$Uploads
+          & saveTable$CTBs
+          & saveTable$relations
+          & saveTable$jobAbout
+          & saveTable$ItemGroupsCache
+      )
       ( keep
       =     jobNr jobID jobstatus files toolURL parms file
           , A Z find
-        .   readTable$jobs
-          & log$(keep !arg)
+        .   log$(keep !arg)
           & (@(!arg:? "/" ?arg)|)
           & (     !jobs
                 :   ?
@@ -13669,12 +13686,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                     ?
               & yes
-            |   readTable$Uploads
-              & readTable$CTBs
-              & readTable$relations
-              & readTable$jobAbout
-              & readTable$ItemGroupsCache
-              &   whl
+            |     whl
                 ' ( !Uploads:?A (?.!arg.?) ?Z
                   & !A !Z:?Uploads
                   )
@@ -13699,14 +13711,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & (     !ItemGroupsCache
                     : ?A (?.? (?.? !arg ?) ?) ?Z
                   & !A !Z:?ItemGroupsCache
-                  & saveTable$ItemGroupsCache
                 | 
                 )
-              & saveTable$Uploads
-              & saveTable$jobs
-              & saveTable$CTBs
-              & saveTable$relations
-              & saveTable$jobAbout
               & no
             )
       )
