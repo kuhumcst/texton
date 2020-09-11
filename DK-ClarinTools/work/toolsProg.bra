@@ -104,8 +104,7 @@ is the location of this file, toolsprog.bra.
 }
 
 toolsProg=
-  (setLang$da|)
-&     (indent=0)
+      (indent=0)
       (logno=0)
       (tabind=0)
       (globval=)
@@ -633,7 +632,7 @@ toolsProg=
               | 
               )
             & (UIlanguage.!LaNg) !hiddenData:?hiddenData
-          | log$("failed to set language to " !arg)
+          | log$("failed to set language to " !arg)&~
       )
       "
 /**
@@ -651,6 +650,7 @@ toolsProg=
           $ ( ( 
               =   
                 .         MLencoding
+                          abs
                           arg
                           c
                           cat
@@ -662,11 +662,13 @@ toolsProg=
                           out
                           sgn
                           sin
+                          sub
                           tay
                           toML
+                          v
                           w
-                          Functions
-                          !Functions
+                          Globals
+                          !Globals
                       : ? !arg ?
                     & 
                   | tbl$(!arg,0)&!arg
@@ -9589,20 +9591,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & saveTable$jobs
       )
       ( deleteDepending
-      =   jobNr jobID a z
+      =   jobNr jobID
         .   !arg:(?jobNr.?jobID)
-          &   whl
-            ' ( !CTBs:?a (!jobNr.!jobID.?) ?z
-              & !a !z:?CTBs
-              )
-          &   whl
-            ' ( !relations:?a (!jobNr.!jobID.?) ?z
-              & !a !z:?relations
-              )
-          &   whl
-            ' ( !jobAbout:?a (!jobNr.?) ?z
-              & !a !z:?jobAbout
-              )
+          & !( 
+             ' (     map
+                   $ ( ( 
+                       =   
+                         .   !arg:($jobNr.$jobID.?)
+                           | 
+                       )
+                     . !CTBs
+                     )
+                 : ?CTBs
+               &     map
+                   $ ( ( 
+                       =   
+                         .   !arg:($jobNr.$jobID.?)
+                           | 
+                       )
+                     . relations
+                     )
+                 : ?relations
+               &     map
+                   $ ( ( 
+                       = .!arg:($jobNr.?)|
+                       )
+                     . $jobAbout
+                     )
+                 : ?jobAbout
+               )
+             )
       )
       ( addurl
       =   URL
@@ -9694,25 +9712,87 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               )
           | log$CannotReadjobAbout&(.)
       )
-      ( doneAllJobSub
-      =     A Z JobNr JobId filelist filename aborted done
-          , letterData items URL tool
-          , I O workflow
-        .   readTable$jobs
-          & log$("doneAllJobSub " !arg)
-          & :?filelist
-          & @(!arg:? #?JobNr)
-          & readTable$CTBs
-          & readTable$relations
+      ( letterData
+      =     Steps menneskesprog workflow JobNr jobs I O
+          , aborted done filelist filename items JobId URL tool
+        .   ( menneskesprog
+            =     desc featdesc feature featvals featname
+                , table specificationTables features
+              .   !arg:(?arg.?features)
+                & :?desc
+                &   whl
+                  ' ( !arg:(?feature.?featvals.?)+?arg
+                    &   !features
+                      :   ?
+                        + ( ? (short.!feature) ?
+                          : ? (name.?featname) ?
+                          : ? (table.?table) ?
+                          : (   ?
+                                (specificationTable.?specificationTables)
+                                ?
+                            | ?&:?specificationTables
+                            )
+                          )
+                        + ?
+                    &     describefeature
+                        $ (!featvals.!table.!specificationTables)
+                      : ?featdesc
+                    & ( !featdesc:
+                      |     !desc
+                            (!desc:|", ")
+                            localized$!featname
+                            "="
+                            !featdesc
+                        : ?desc
+                      )
+                    )
+                & str$!desc
+            )
+          & ( Steps
+            =     x items tool JobNr JobId
+                , format I O format stage
+              .       !arg
+                    : ( ?JobNr
+                      . @(?:? #?JobId)
+                      . ?x
+                      . ?items
+                      . ?tool
+                      . ?I
+                      . ?O
+                      . ?stage
+                      )
+                  & ( step
+                    .   
+                      ,   (JobNr.,!JobNr)
+                          (JobId.,!JobId)
+                          (name.,!x)
+                          (tool.,!tool)
+                          (items.,!items)
+                          (input.,menneskesprog$(!I.!features))
+                          (output.,menneskesprog$(!O.!features))
+                          ( format
+                          .   
+                            ,     !O:?+(format.?format.?)+?
+                                & !format
+                              | 
+                          )
+                          (stage.,!stage)
+                    )
+                | 
+            )
+          & readTable$features
           & readTable$jobAbout
           & (   !jobAbout
               : ? (!JobNr.? (human.?workflow) ?) ?
             | :?workflow
             )
+          & !arg:?JobNr
+          & readTable$jobs
+          & :?filelist
           &   whl
             ' ( :?aborted:?done
               &   !jobs
-                :   ?A
+                :   ?
                     ( !JobNr
                     .   %@?JobId
                         (   aborted:?aborted
@@ -9732,9 +9812,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | ?&:?I:?O
                     . ?filename
                     )
-                    ?Z
-              & !A !Z:?jobs
-              & deleteDepending$(!JobNr.!JobId)
+                    ?jobs
               &     !filelist
                     ( !JobNr
                     . !JobId
@@ -9745,7 +9823,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . !I
                     . !O
                     .     ( !aborted:aborted
-                          |   !Z
+                          |   !jobs
                             : ? (!JobNr.?.? !JobId ?.?) ?
                           )
                         & 
@@ -9753,95 +9831,44 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 : ?filelist
               )
+          &   (workflow.,!workflow)
+              (steps.,map$(Steps.!filelist))
+      )
+      ( doneAllJobSub
+      =   A Z JobNr
+        .   readTable$jobs
+          & log$("doneAllJobSub " !arg)
+          & @(!arg:? #?JobNr)
+          & readTable$CTBs
+          & readTable$relations
+          & readTable$jobAbout
+          &     map
+              $ ( ( 
+                  =   JobId
+                    .     !arg:(!JobNr.%@?JobId ?.?.?.?.?)
+                        & deleteDepending$(!JobNr.!JobId)
+                        & 
+                      | !arg
+                  )
+                . !jobs
+                )
+            : ?jobs
           & saveTable$jobs
           & saveTable$CTBs
           & saveTable$relations
           & saveTable$jobAbout
-          & ( letterData
-            =   Steps menneskesprog
-              .   readTable$features
-                & ( menneskesprog
-                  =     desc featdesc feature featvals featname
-                      , table specificationTables
-                    .   :?desc
-                      &   whl
-                        ' ( !arg:(?feature.?featvals.?)+?arg
-                          &   !features
-                            :   ?
-                              + ( ? (short.!feature) ?
-                                : ? (name.?featname) ?
-                                : ? (table.?table) ?
-                                : (   ?
-                                      (specificationTable.?specificationTables)
-                                      ?
-                                  |   ?
-                                    & :?specificationTables
-                                  )
-                                )
-                              + ?
-                          &     describefeature
-                              $ (!featvals.!table.!specificationTables)
-                            : ?featdesc
-                          & ( !featdesc:
-                            |     !desc
-                                  (!desc:|", ")
-                                  localized$!featname
-                                  "="
-                                  !featdesc
-                              : ?desc
-                            )
-                          )
-                      & str$!desc
-                  )
-                & ( Steps
-                  =     x items tool JobNr JobId
-                      , format I O format stage
-                    .       !arg
-                          : ( ?JobNr
-                            . @(?:? #?JobId)
-                            . ?x
-                            . ?items
-                            . ?tool
-                            . ?I
-                            . ?O
-                            . ?stage
-                            )
-                        & ( step
-                          .   
-                            ,   (JobNr.,!JobNr)
-                                (JobId.,!JobId)
-                                (name.,!x)
-                                (tool.,!tool)
-                                (items.,!items)
-                                (input.,menneskesprog$!I)
-                                (output.,menneskesprog$!O)
-                                ( format
-                                .   
-                                  ,     !O:?+(format.?format.?)+?
-                                      & !format
-                                    | 
-                                )
-                                (stage.,!stage)
-                          )
-                      | 
-                  )
-                &   (workflow.,!workflow)
-                    (steps.,map$(Steps.!arg))
-            )
-          & letterData$!filelist
-      )
-      ( filenameWithoutXMLextension
-      =   base
-        .   @(!arg:?base "." ~(? "." ?))&!base
-          | !arg
       )
       ( Filename
-      = .str$(filenameWithoutXMLextension$!arg ".withmetadata.xml")
+      =   base
+        .   str
+          $ ( ( @(!arg:?base ".xml")&!base
+              | !arg
+              )
+              ".withmetadata.xml"
+            )
       )
       (FilenameNoMetadata=.!arg)
-      ( FilenameRelations
-      = .str$(filenameWithoutXMLextension$!arg ".relations.csv")
-      )
+      (FilenameRelations=.str$(!arg ".relations.csv"))
       ( readme
       =     jobNr date yyyy mm dd letter File Files
           , inputs results
@@ -10162,21 +10189,26 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 .   ( readTable$zippedresults
                     | :?zippedresults
                     )
-                  & str$(!arg ".zip"):?zipfile
+                  &     str
+                      $ ( !arg
+                          ( !shortletter:y&"-final"
+                          | "-all"
+                          )
+                          ".zip"
+                        )
+                    : ?zipfile
                   & ( !zippedresults:? !zipfile ?
                     | !zipfile !zippedresults:?zippedresults
                     )
                   & saveTable$zippedresults
               )
             $ !arg
-          & readTable$zippedresults
-          & log$(zippedresults !zippedresults)
           & jobMetaData$!arg:(?metadata.?type)
           & log$(metadata !metadata type !type)
           & readTable$fileFormats
           & readTable$Uploads
           & log$doneAllJobSub
-          &   doneAllJobSub$!arg
+          &   (letterData$!arg|doneAllJobSub$!arg)
             : (workflow.,?workflow) (steps.,?steps)
           & log$doneAllJobSubDONE
           & lst$(steps,path$steps,NEW)
@@ -10579,7 +10611,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from create.java
  */"
       ( create
-      =     Tool item parms Items methodName
+      =     Tool item parms Items methodName items
           , formFields val mail2 password ERR
           , Submit pipes pipe windFW reqs req descr
           , JobStack JobNr presels feats analyzeInput
@@ -10587,7 +10619,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , jobIDoffset subjobs Sources sourcesAndGoals
           , directedBy nth unpackIOparms BodyContainer
           , handle checkIOparms PIPE lookForLanguage
-          , precooked-DASISH A wrkflw Z errmsg
+          , precooked-DASISH A wrkflw Z errmsg itms
           , analyseContentType makeJobStack NoNeedForMetadata
           , ApplyThePipelineToTheInput NoWay TooManyOrNone
           , ShowAllPipes ShowOnlyTheCurrentPipe AddMetadata
@@ -10963,7 +10995,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                 & "First build a list of items."
                 & ( buildItemList
-                  =   A Z
+                  =   
                     .   map
                       $ ( ( 
                           =   item
@@ -12617,7 +12649,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( "We are at the start. Show an input form."
-            =     formFields presels nt
+            =     formFields presels nt CLOCK
                 , directedBy hiddenData Items itemGroups
               .     !arg
                   : (?formFields.?presels.?directedBy.?hiddenData.?Items)
@@ -13215,7 +13247,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$ItemGroupsCache
           &     map
               $ ( ( 
-                  =   a v nt
+                  =   a v nt CLOCK
                     .     !arg:(@(?:?a ";" ?nt).?v)
                         & ( !nt:!itms&(!a.!v)
                           | 
@@ -13289,8 +13321,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( poll
       =     jobs n step secs steplinks links
-          , serviceurl title tooladm
-          , runningParagraphs JobNr hours
+          , serviceurl title tooladm DOWNLOAD
+          , runningParagraphs JobNr hours minutes
         .   ( steplinks
             =     links jobs file step outp ServiceURL JobNr
                 , seenInputs Title
@@ -13386,7 +13418,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$jobs
           & readTable$tooladm
           & readTable$Uploads
-          & div$(!deleteAfterMillisec*86400000^-1*24.1):?hours
+          &   div$(!deleteAfterMillisec*86400000^-1*24*60.1)
+            : ?minutes
           &   toML
             $ (   steplinks$(!JobNr.!jobs):?links
                 &     ( 
@@ -13441,41 +13474,56 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !jobs
                       )
                   : ?runningParagraphs
+                & ( DOWNLOAD
+                  =   
+                    .   ( a
+                        .   ( href
+                            .   !wwwServer
+                                "/texton/zipresults?shortletter=n&amp;JobNr="
+                                !arg
+                            )
+                          ,   localized
+                            $ ( "Download input and all results"
+                                "Download input og alle resultater"
+                              )
+                        )
+                        localized$(" OR " " ELLER ")
+                        ( a
+                        .   ( href
+                            .   !wwwServer
+                                "/texton/zipresults?shortletter=y&amp;JobNr="
+                                !arg
+                            )
+                          ,   localized
+                            $ ("Download final results" "Download slutresultater")
+                        )
+                  )
                 & (   !runningParagraphs:
                     &   !HTMLbodyContainer
-                      $ (   paragraph
-                          $ ( localized$("Done! " "Færdig! ")
-                              ( a
-                              .   ( href
-                                  .   !wwwServer
-                                      "/texton/zipresults?JobNr="
-                                      !JobNr
-                                  )
-                                ,   localized
-                                  $ ( "Download input and all results"
-                                      "Download input og alle resultater"
-                                    )
-                              )
-                              localized$(" OR " " ELLER ")
-                              ( a
-                              .   ( href
-                                  .   !wwwServer
-                                      "/texton/zipresults?shortletter=y&amp;JobNr="
-                                      !JobNr
-                                  )
-                                ,   localized
-                                  $ ( "Download final results"
-                                      "Download slutresultater"
-                                    )
-                              )
-                              ". ("
-                                localized
-                              $ ( "Re-run the workflow if you want to download both"
-                                  "Kør igen hvis du vil downloade begge"
-                                )
-                              ".)"
-                            )
+                      $ ( paragraph$(DOWNLOAD$!JobNr)
                           !links
+                            paragraph
+                          $ ( localized$("Done! " "Færdig! ")
+                              (br.,)
+                                localized
+                              $ ( "To download the results, see the links at the top of this page."
+                                  "Se links øverst på denne side hvis du vil downloade resultaterne."
+                                )
+                              (br.,)
+                                localized
+                              $ ( "Click the following link to immediately DELETE your input and the results from the workflow from the server. "
+                                  "Tryk på næste link for at fjerne din input og arbejdsgangens resultater fra serveren. "
+                                )
+                              ( a
+                              .   ( href
+                                  . !wwwServer "/texton/cleanup?JobNr=" !JobNr
+                                  )
+                                ,   localized
+                                  $ ( "DELETE input and results from server"
+                                      "FJERN input og resultaterne fra serveren"
+                                    )
+                              )
+                            )
                         )
                   |   refreshingXHTMLbodyContainer
                     $ ( !secs str$(!wwwServer "/texton/mypoll?job=" !JobNr)
@@ -13497,28 +13545,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 $ (     ( 
                         =   zippedresults zipfile
                           .   readTable$zippedresults
-                            & str$(!arg ".zip"):?zipfile
+                            &     str
+                                $ (!arg ("-all"|"-final") ".zip")
+                              : ?zipfile
                             & !zippedresults:? !zipfile ?
                         )
                       $ !JobNr
                     &   paragraph
-                      $ ( ( a
-                          .   ( href
-                              . !wwwServer "/texton/zipresults?JobNr=" !JobNr
-                              )
-                            ,   localized
-                              $ ("Download result. " "Download resultat. ")
-                          )
+                      $ ( DOWNLOAD$!JobNr
                             localized
                           $ (   str
                               $ ( " The zipped results are kept for no more than "
-                                  !hours
-                                  " hours! "
+                                  !minutes
+                                  " minutes! "
                                 )
                                 str
                               $ ( " De zippede resultater bliver bevaret is højst "
-                                  !hours
-                                  " timer!"
+                                  !minutes
+                                  " minutter!"
                                 )
                             )
                         )
@@ -13655,44 +13699,31 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( keep
       =     jobNr jobID jobstatus files toolURL parms file
-          , A Z find
-        .   log$(keep !arg)
-          & (@(!arg:? "/" ?arg)|)
-          & (     !jobs
-                :   ?
-                    ( ( ?jobNr
-                      . %?jobID ?jobstatus
-                      . ?files
-                      . ?toolURL
-                      . ?parms
-                      . ?file
-                      )
-                    & ( !files:? !arg ?
-                      | !file:!arg
-                      |   !parms:?+(I.?parms)+?
-                        & ( find
-                          =   x T L R
-                            .     !arg:(?x.?T)
-                                & !x:!T
-                              |   !T:?L_?R
-                                & ( find$(!x.!L)
-                                  | find$(!x.!R)
-                                  )
-                          )
-                        & find$(!arg.!parms)
-                      )
-                    &   !jobstatus
-                      : (|waiting|starting)
-                    )
-                    ?
-              & yes
-            |     whl
-                ' ( !Uploads:?A (?.!arg.?) ?Z
-                  & !A !Z:?Uploads
-                  )
-              &   whl
-                ' (   !jobs
-                    :   ?A
+          , find jobNrParm stagingName stem
+        .   ( find
+            =   x T L R
+              .   !arg:(?x.?T)&!x:!T
+                |   !T:?L_?R
+                  & (find$(!x.!L)|find$(!x.!R))
+            )
+          & log$(keep !arg)
+          & !arg:(?stagingName.?jobNrParm)
+          & (@(!stagingName:? "/" ?stagingName)|)
+          & (   (   @(!stagingName:?stem ".withmetadata.xml")
+                  & str$(!stem ".xml")
+                |   @(!stagingName:?stem ".relations.csv")
+                  & !stem
+                )
+              : ?stagingName
+            | 
+            )
+          & (   @( !stagingName
+                 : !jobNrParm ("-all"|"-final") ".zip"
+                 )
+              & no
+            |   !jobNrParm:
+              & (     !jobs
+                    :   ?
                         ( ( ?jobNr
                           . %?jobID ?jobstatus
                           . ?files
@@ -13700,20 +13731,91 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           . ?parms
                           . ?file
                           )
-                        & ( !files:? !arg ?
-                          | !file:!arg
+                        & ( !files:? !stagingName ?
+                          | !file:!stagingName
+                          |   !parms:?+(I.?parms)+?
+                            & find$(!stagingName.!parms)
                           )
+                        &   !jobstatus
+                          : ( 
+                            | waiting
+                            | starting
+                            )
                         )
-                        ?Z
-                  & !A !Z:?jobs
-                  & deleteDepending$(!jobNr.!jobID)
-                  )
-              & (     !ItemGroupsCache
-                    : ?A (?.? (?.? !arg ?) ?) ?Z
-                  & !A !Z:?ItemGroupsCache
-                | 
+                        ?
+                  & yes
+                |       map
+                      $ ( ( 
+                          =   jobNr jobID files file
+                            .       !arg
+                                  : ( ( ?jobNr
+                                      . %?jobID ?
+                                      . ?files
+                                      . ?
+                                      . ?
+                                      . ?file
+                                      )
+                                    & ( !files:? !stagingName ?
+                                      | !file:!stagingName
+                                      )
+                                    )
+                                & deleteDepending$(!jobNr.!jobID)
+                                & 
+                              | !arg
+                          )
+                        . !jobs
+                        )
+                    : ?jobs
+                  &     map
+                      $ ( ( 
+                          =   Name
+                            .     !arg:(?.?Name.?.!stagingName.?)
+                                &     map
+                                    $ ( ( 
+                                        =   
+                                          .       !arg
+                                                : ( ?
+                                                  .   ?
+                                                      (?.? !Name ?)
+                                                      ?
+                                                  )
+                                              & 
+                                            | !arg
+                                        )
+                                      . !ItemGroupsCache
+                                      )
+                                  : ?ItemGroupsCache
+                                & 
+                              | !arg
+                          )
+                        . !Uploads
+                        )
+                    : ?Uploads
+                  & no
                 )
+            |     !jobs
+                :   ?
+                    ( (!jobNrParm.?.?files.?.?parms.?file)
+                    & ( !files:? !stagingName ?
+                      | !file:!stagingName
+                      |   !parms:?+(I.?parms)+?
+                        & find$(!stagingName.!parms)
+                      )
+                    )
+                    ?
+              & ~( !jobs
+                 :   ?
+                     ( (~!jobNrParm.?.?files.?.?parms.?file)
+                     & ( !files:? !stagingName ?
+                       | !file:!stagingName
+                       |   !parms:?+(I.?parms)+?
+                         & find$(!stagingName.!parms)
+                       )
+                     )
+                     ?
+                 )
               & no
+            | yes
             )
       )
       "
@@ -13721,7 +13823,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * help
  */"
       ( help
-      =   tools langlist toolsSorted Title
+      =   tools langlist toolsSorted Title toolNr ToolID
         .   log$HELP
           & ( toolsSorted
             =   tool sorted tools L Title sort
@@ -13937,6 +14039,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & !jobs
             )
           & log$(cleanup !arg)
+          & readTable$ItemGroupsCache
           & readTable$Uploads
           & readTable$jobs
           & readTable$CTBs
@@ -13963,6 +14066,40 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &     map
               $ ( ( 
                   =   
+                    .       !arg
+                          : ( ?
+                            .   ?
+                                ( ?
+                                .   ?
+                                    ( %@?item
+                                    &   !Uploads
+                                      : ( ~(? (?.!item.?) ?)
+                                        |   ?
+                                            ( ?
+                                            . !item
+                                            . ?
+                                            .   ?stagingName
+                                              & ~( !existingFiles
+                                                 : ? !stagingName ?
+                                                 )
+                                            . ?
+                                            )
+                                            ?
+                                        )
+                                    )
+                                    ?
+                                )
+                                ?
+                            )
+                        & 
+                      | !arg
+                  )
+                . !ItemGroupsCache
+                )
+            : ?ItemGroupsCache
+          &     map
+              $ ( ( 
+                  =   
                     .     !arg
                         : ( ?nr
                           . ?item
@@ -13973,10 +14110,21 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           . ?visibility
                           )
                       & (   ~(!existingFiles:? !stagingName ?)
+                          &     map
+                              $ ( ( 
+                                  =   
+                                    .       !arg
+                                          : (?.? (?.? !item ?) ?)
+                                        & 
+                                      | !arg
+                                  )
+                                . !ItemGroupsCache
+                                )
+                            : ?ItemGroupsCache
                           &   deleteDependingJobs$(!stagingName.!jobs)
                             : ?jobs
                           & 
-                        | 
+                        | !arg
                         )
                   )
                 . !Uploads
@@ -14041,6 +14189,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & saveTable$CTBs
           & saveTable$relations
           & saveTable$jobAbout
+          & saveTable$ItemGroupsCache
       )
       "
 /*
@@ -15651,7 +15800,9 @@ try {
             )
       )
       (Uploads=)
-  : ?Functions;
+      (LaNg=)
+  : ?Globals
+& (setLang$da|);
 
 r=
   get'"toolsProg.bra"
