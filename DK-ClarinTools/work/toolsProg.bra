@@ -3622,6 +3622,7 @@ toolsProg=
                               )
                             )
                           submit$next
+                          helplink$(usedonly.n)
                             makeHiddenFields
                           $ ( (   !passwordAsHandle:(.)
                                 & 
@@ -5465,8 +5466,8 @@ toolsProg=
                     & (   !arg:? (bsubmit.?) ?
                         & "
                       User presses one of the 'submit' buttons 
-					  (!storeToolButton, !replaceToolButton,
-					  !deleteToolButton, !UpdateButton, !PHPbutton).
+                      (!storeToolButton, !replaceToolButton,
+                       !deleteToolButton, !UpdateButton, !PHPbutton).
                       The features as shown in the form should overrule the
                       properties as recorded in toolprop.table for this
                       incarnation of the tool, so ignore the preexisting
@@ -5506,6 +5507,7 @@ toolsProg=
                     | 
                     )
                 )
+              & !formFields helplink$:?formFields
               & !features:?feats
               & "
             Step through the (short) list of features (facet, format, language)
@@ -5623,6 +5625,7 @@ toolsProg=
                                       submit$!deleteToolButton
                                       submit$!UpdateButton
                                       submit$!PHPbutton
+                                      helplink$(usedonly.n)
                                   . POST
                                   )
                               )
@@ -11979,6 +11982,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   .   submit$"View details"
                                       submit$Metadata
                                       submit$Submit
+                                      helplink$()
                                       (br.,)
                                       makeHiddenFields$!hiddenData
                                       makeWorkflowRadioButtons$!pipes
@@ -12721,11 +12725,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   .   makeHiddenFields$!hiddenData
                                       (     !directedBy
                                           : (GoalChoice|)
-                                        & !formFields submit$"next step"
+                                        &   !formFields
+                                            submit$"next step"
+                                            helplink$
                                       |   Sources$!presels
                                             paragraph
                                           $ ( pickTool$(txt.!Items)
                                               submit$"next step"
+                                              helplink$
                                             )
                                       )
                                   )
@@ -13818,17 +13825,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             | yes
             )
       )
+      ( sum2list
+      =   L E
+        .   :?L
+          &   whl
+            ' ( !arg:%?E+?arg
+              & (.!E) !L:?L
+              )
+          & :?arg
+          & whl'(!L:%?E ?L&!E !arg:?arg)
+          & !arg
+      )
       "
 /**
  * help
  */"
       ( help
-      =   tools langlist toolsSorted Title toolNr ToolID
+      =     tools langlist toolsSorted Title toolNr ToolID
+          , features feats cumfeat usedonly
         .   log$HELP
+          & ( !arg:? (usedonly.?usedonly) ?
+            | y:?usedonly
+            )
+          & setLanguageNotPermanently$!arg
+          & log$(help !arg)
+          & readTable$tooladm
+          & readTable$toolprop
+          & readTable$features
           & ( toolsSorted
             =   tool sorted tools L Title sort
-              .   readTable$tooladm
-                & 0:?sorted
+              .   0:?sorted
                 &   whl
                   ' (   !tooladm
                       :   ?
@@ -13851,7 +13877,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 & !sorted
             )
-          & readTable$toolprop
           & ( langlist
             =   tp L R langs l a b
               .     !toolprop:?+(!arg.~(? (lang,?) ?))+?
@@ -13876,8 +13901,72 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     | 
                     )
             )
+          & sum2list$!features:?feats
           & toolsSorted$:?tools
-          & log$(tools !tools)
+          &   map
+            $ ( ( 
+                =   ToolID
+                  .   !arg:(?.? (ToolID.?ToolID) ?)
+                    & !ToolID
+                )
+              . !tools
+              )
+          & ( usedFeatures
+            =   ToolID id tools toolprp cumfeat coll fts
+              .   ( coll
+                  =   R
+                    .   1:?R
+                      &   map
+                        $ ( ( 
+                            =   r e
+                              .   1:?r
+                                &   whl
+                                  ' ( !arg:%?e+?arg
+                                    & !e*!r:?r
+                                    )
+                                & !r*!R:?R
+                                & 
+                            )
+                          . !arg
+                          )
+                      & !R
+                  )
+                & !arg:(?tools.?toolprp)
+                & 0:?cumfeat
+                &   whl
+                  ' (   !toolprp
+                      :   ?
+                        + (   ?ToolID
+                            &   !tools
+                              :   ?
+                                  ( ?
+                                  .   ? (ToolID.?id) ?
+                                    & !id:!ToolID
+                                  )
+                                  ?
+                          . ?fts
+                          )
+                        + ?toolprp
+                    &   map
+                      $ ( ( 
+                          =   feat in out inou in ou
+                            .   !arg:(?feat,?inou)
+                              &   whl
+                                ' ( !inou:(?in.?ou)+?inou
+                                  &   !feat\L(coll$!in*coll$!ou)+!cumfeat
+                                    : ?cumfeat
+                                  )
+                          )
+                        . !fts
+                        )
+                    )
+                & !cumfeat
+            )
+          &   (   !usedonly:y
+                & usedFeatures$(!tools.!toolprop)
+              | 
+              )
+            : ?cumfeat
           & 0:?toolNr
           &   toML
             $ ( !HTMLbodyContainer
@@ -13907,7 +13996,32 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         (dd.,Input)
                         (dd.,Goal)
                         (dt.,Facets)
-                        (dd.,)
+                        ( dd
+                        .   
+                          , ( dl
+                            .   
+                              ,   map
+                                $ ( ( 
+                                    =   n d t
+                                      .     !arg
+                                          : ( 
+                                            .   ? (name.?n) ?
+                                              : ? (description.?d) ?
+                                              : ? (table.?t) ?
+                                            )
+                                        &   ( dt
+                                            .   
+                                              , ( a
+                                                .   (href.str$("#" !t))
+                                                  , localized$!n
+                                                )
+                                            )
+                                            (dd.,localized$!d)
+                                    )
+                                  . !feats
+                                  )
+                            )
+                        )
                         (dt.,Tools)
                         ( dd
                         .   
@@ -13978,6 +14092,101 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           | 
                       )
                     . !tools
+                    )
+                    map
+                  $ ( ( 
+                      =   n t s sT description
+                        .     !arg
+                            : ( 
+                              .   ? (name.?n) ?
+                                : ? (table.?t) ?
+                                : ? (short.?s) ?
+                                : ( ? (specificationTable.?sT) ?
+                                  | ?&:?sT
+                                  )
+                                : ? (description.?description) ?
+                              )
+                          & readTable$!t
+                          &   ( a
+                              .   (id.!t) (name.!t)
+                                , (h2.,localized$!n)
+                              )
+                              (p.,localized$!description)
+                              ( dl
+                              .   
+                                ,   map
+                                  $ ( ( 
+                                      =   n d a p f
+                                        .   !arg:(?n.?a.?d)
+                                          & (     !cumfeat
+                                                : ( 
+                                                  | ?+!s\L(?*!a^?p*?)+?
+                                                  )
+                                              &   (dt.,localized$!n)
+                                                  ( !d:
+                                                  | (dd.,localized$!d)
+                                                  )
+                                                  (     !sT
+                                                      :   ?
+                                                          (? !a ?.?f)
+                                                          ?
+                                                    & readTable$!f
+                                                    & ( dd
+                                                      .   
+                                                        , ( dl
+                                                          .   
+                                                            ,   map
+                                                              $ ( ( 
+                                                                  =     full
+                                                                        short
+                                                                        dsc
+                                                                    .       !arg
+                                                                          : ( ?full
+                                                                            . ?short
+                                                                            . ?dsc
+                                                                            )
+                                                                        &   !cumfeat
+                                                                          : ( 
+                                                                            |   ?
+                                                                              +   !s
+                                                                                \L ( ?
+                                                                                  *   !a
+                                                                                    ^ ( ?
+                                                                                      +   ?
+                                                                                        * !short
+                                                                                        * ?
+                                                                                      + ?
+                                                                                      )
+                                                                                  * ?
+                                                                                  )
+                                                                              + ?
+                                                                            )
+                                                                        &   ( dt
+                                                                            .   
+                                                                              ,   localized
+                                                                                $ !full
+                                                                            )
+                                                                            ( dd
+                                                                            .   
+                                                                              ,   localized
+                                                                                $ !dsc
+                                                                            )
+                                                                      | 
+                                                                  )
+                                                                . !!f
+                                                                )
+                                                          )
+                                                      )
+                                                  | 
+                                                  )
+                                            | 
+                                            )
+                                      )
+                                    . !!t
+                                    )
+                              )
+                      )
+                    . !feats
                     )
                 )
               )
@@ -15238,6 +15447,21 @@ try {
               & readTable$UIlanguage:%?arg ?
             )
           & setLang$!arg
+      )
+      ( helplink
+      =   
+        . a
+        .   ( href
+            .   str
+              $ ( "help?UIlanguage="
+                  !LaNg
+                  "&usedonly="
+                  ( !arg:(usedonly.n)&n
+                  | y
+                  )
+                )
+            )
+          , localized$(help hjælp)
       )
       ( countGraphNodes
       =   count tools feats feat i o cnt tcnt fcnt tool
