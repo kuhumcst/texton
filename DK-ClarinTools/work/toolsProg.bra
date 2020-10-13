@@ -69,7 +69,7 @@ importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
 If <prod> is the empty string "", then the table tooladm is anonymized by 
-chainging all domains in service URLs "http:\localhost" and by chaing all
+changing all domains in service URLs "http:\localhost" and by changing all
 contact emails to "x@x.xxx".
 
 To export all tables to a different file, do
@@ -424,7 +424,10 @@ toolsProg=
                           )
                       & saveTable$toolprop
                     )
-                | get$(path$!arg)&saveAllTables$
+                  & "Imported file, but kept local production data."
+                |   get$(path$!arg)
+                  & saveAllTables$
+                  & "Initialized all tables from imported file."
                 )
               | str$("Cannot read " !arg)&~
               )
@@ -634,6 +637,17 @@ toolsProg=
               )
             & (UIlanguage.!LaNg) !hiddenData:?hiddenData
           | log$("failed to set language to " !arg)&~
+      )
+      ( setTypeFace
+      =   A Z
+        .   !arg:?TyPeFaCe
+          & log$(setTypeFace !Typeface)
+          & (   !hiddenData:?A (TyPeFaCe.?) ?Z
+              & !A !Z:?hiddenData
+            | 
+            )
+          & (TyPeFaCe.!TyPeFaCe) !hiddenData:?hiddenData
+          & log$(hiddenData !hiddenData)
       )
       "
 /**
@@ -2734,7 +2748,12 @@ toolsProg=
             ,   \r\n
                 ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
                 \r\n
-                "a, dd, dt, h1, h2, h3, span, p, td, input, legend, textarea {font-family:sans-serif, Comic Sans MS;}"
+                "a, dd, dt, h1, h2, h3, span, p, td, input, legend, textarea {font-family:"
+                (   !TyPeFaCe:sans-serif
+                  & "sans-serif, Comic Sans MS"
+                | "Comic Sans MS, sans-serif"
+                )
+                ";}"
                 \r\n
                 "legend {border:none;color:black;background-color:rgba(154,186,206,0.6);text-align:left;display:block;margin:0;padding:10px;float:left;width:100%;position:relative;font-size:15px; }"
                 \r\n
@@ -13270,6 +13289,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?parms
           & !HTMLbodyContainer:?BodyContainer
           & setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
           & analyzeInput$!parms:(?parms.?Items.?presels)
           & log$analyzeInputDONE
           &   checkMail$(!parms.!formFields.!hiddenData.!errors)
@@ -13847,6 +13867,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             | y:?usedonly
             )
           & setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
           & log$(help !arg)
           & readTable$tooladm
           & readTable$toolprop
@@ -13994,7 +14015,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   .   
                     ,   localized
                       $ ( "In contrast to other workflow management systems, the Text Tonsorium focuses on results rather than on tools, so a general understanding of how the desired result is described is useful. Still, you may like to also know which tools currently are integrated in the Text Tonsorium. This page gives you information about both."
-                          "Når du arbejder med Text Tonsorium, skal dit fokus være det resultat som du vil opnå, og ikke de værktøjer der er i værktøjskassen, og derfor er det nyttigt at vide hvordan det ønskede resultat bedst kan beskrives. Du vil måske alligevel også vide hvilke værktøjer er integreret i Text Tonsorium. Denne side giver dig information om begge dele."
+                          "Når du arbejder med Text Tonsorium, skal dit fokus være på det resultat som du vil opnå, og ikke på de værktøjer der er i værktøjskassen. Derfor er det nyttigt at vide hvordan det ønskede resultat bedst kan beskrives. Du vil måske alligevel også vide hvilke værktøjer er integreret i Text Tonsorium. Denne side giver dig information om begge dele."
                         )
                   )
                   (h3.,localized$(Overview Overblik))
@@ -15456,6 +15477,14 @@ try {
             )
           & setLang$!arg
       )
+      ( setTypefaceNotPermanently
+      =   
+        .   ( !arg:? (Typeface.?arg) ?
+            |   "reset to default"
+              & readTable$Typeface:%?arg ?
+            )
+          & setTypeFace$!arg
+      )
       ( helplink
       =   
         . a
@@ -15467,6 +15496,8 @@ try {
                   ( !arg:(usedonly.n)&n
                   | y
                   )
+                  "&Typeface="
+                  !TyPeFaCe
                 )
             )
           , localized$(help hjælp)
@@ -15581,6 +15612,7 @@ try {
       ( input
       =   
         .   setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
           &   toML
             $ ( ( "!DOCTYPE"
                 . " html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""
@@ -15608,7 +15640,12 @@ try {
                             )
                             ( style
                             .   (type.text/css)
-                              , "label, h1, h2, h3, span, p, td, input, legend, textarea { font-family:  sans-serif, \"Comic Sans MS\"; } input, textarea { font-size: 12pt; } p {margin: 0} p.indent {text-indent: 20px} body { font-size: 100%; } fieldset {padding: 10px;border-style: solid;border-radius: 5px;} td.textareawide {width:70%} .smallmargin {margin-top:0.5em; margin-bottom:0.5em;} /*Bold Blacks and Vibrant Highlights*/ /*.bodycanvas {background-color:#F5F5F5} .fileupload {background-color:#EC576b} .URLs {background-color:#4EC5C1} .typein {background-color:#E5E338}*/ /*Striking and Energetic .bodycanvas {background-color:#F2EEE2} .fileupload {background-color:#F5CE28} .typein {background-color:#F5CE28} .URLs {background-color:#F5CE28} */ /*blue, gradient*/ .bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;} .fileupload {background-color:rgba(154,186,206,0.6);padding: 10px;} .typein {background-color:rgba(154,186,206,0.6);padding: 10px;} .URLs {background-color:rgba(154,186,206,0.6);padding: 10px;} /*.typein {background-color:#43C0F6} .URLs {background-color:#F81B84}*/ label {font-weight: bold; display: block; width: 250px; float: left; padding-left: 9px;} label:after { content: \" \" } .alt {padding: 10px;}"
+                              ,   "label, h1, h2, h3, span, p, td, input, legend, textarea { font-family:"
+                                  (   !TyPeFaCe:sans-serif
+                                    & "sans-serif, Comic Sans MS"
+                                  | "Comic Sans MS, sans-serif"
+                                  )
+                                  "; } input, textarea { font-size: 12pt; } p {margin: 0} p.indent {text-indent: 20px} body { font-size: 100%; } fieldset {padding: 10px;border-style: solid;border-radius: 5px;} td.textareawide {width:70%} .smallmargin {margin-top:0.5em; margin-bottom:0.5em;} /*Bold Blacks and Vibrant Highlights*/ /*.bodycanvas {background-color:#F5F5F5} .fileupload {background-color:#EC576b} .URLs {background-color:#4EC5C1} .typein {background-color:#E5E338}*/ /*Striking and Energetic .bodycanvas {background-color:#F2EEE2} .fileupload {background-color:#F5CE28} .typein {background-color:#F5CE28} .URLs {background-color:#F5CE28} */ /*blue, gradient*/ .bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;} .fileupload {background-color:rgba(154,186,206,0.6);padding: 10px;} .typein {background-color:rgba(154,186,206,0.6);padding: 10px;} .URLs {background-color:rgba(154,186,206,0.6);padding: 10px;} /*.typein {background-color:#43C0F6} .URLs {background-color:#F81B84}*/ label {font-weight: bold; display: block; width: 250px; float: left; padding-left: 9px;} label:after { content: \" \" } .alt {padding: 10px;}"
                             )
                             ( meta
                             .     (name.description)
@@ -15644,6 +15681,8 @@ try {
                                                         $ ( "/texton/input?UIlanguage="
                                                               localized
                                                             $ (da en)
+                                                            "&Typeface="
+                                                            !TyPeFaCe
                                                           )
                                                       )
                                                     ,   localized
@@ -15677,7 +15716,7 @@ try {
                                         .   
                                           ,   localized
                                             $ ( " Upload your input using the form on this page. On the next page you specify the desired final result - there are several annotation types, file formats, languages and other traits to choose from. The hard part - picking and orchestrating the Natural Language Processing tools that are needed to achieve your goal - is handled by this service. "
-                                                "Upload din input ved hjælp af formularen på denne side. På næste side specificerer du dit mål - der er adskillge inholdstyper, filformater, sprog og andre træk at vælge imellem. Det svære - at finde og orkestere de sprogteknologiske værktøjer som er nødvendige for at opnå dit mål - bliver håndteret af denne service."
+                                                "Upload din input ved hjælp af formularen på denne side. På næste side specificerer du dit mål - der er adskillige inholdstyper, filformater, sprog og andre træk at vælge imellem. Det svære - at finde og orkestere de sprogteknologiske værktøjer som er nødvendige for at opnå dit mål - bliver håndteret af denne service."
                                               )
                                         )
                                         ( form
@@ -15826,6 +15865,12 @@ try {
                                                   )
                                                   ( input
                                                   .     (type.hidden)
+                                                        (name.Typeface)
+                                                        (value.!TyPeFaCe)
+                                                    , 
+                                                  )
+                                                  ( input
+                                                  .     (type.hidden)
                                                         (name.action)
                                                         (value.batch)
                                                         (checked.checked)
@@ -15874,6 +15919,29 @@ try {
                                                         . "https://theestablishment.co/hating-comic-sans-is-ableist-bc4a4de87093/"
                                                         )
                                                       , "Comic Sans"
+                                                    )
+                                                    "?"
+                                                      localized
+                                                    $ ( " Change typeface to "
+                                                        " Ændr skrifttype til "
+                                                      )
+                                                    ( a
+                                                    .   ( href
+                                                        .   str
+                                                          $ ( "/texton/input?UIlanguage="
+                                                              !LaNg
+                                                              "&Typeface="
+                                                              (     !TyPeFaCe
+                                                                  : "Comic Sans MS"
+                                                                & sans-serif
+                                                              | "Comic Sans MS"
+                                                              )
+                                                            )
+                                                        )
+                                                      ,       !TyPeFaCe
+                                                            : "Comic Sans MS"
+                                                          & sans-serif
+                                                        | "Comic Sans MS"
                                                     )
                                               )
                                               "."
@@ -16419,7 +16487,7 @@ importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
 If <prod> is the empty string \"\", then the table tooladm is anonymized by 
-chainging all domains in service URLs \"http:\\localhost\" and by chaing all
+changing all domains in service URLs \"http:\\localhost\" and by changing all
 contact emails to \"x@x.xxx\".
 
 To export all tables to a different file, do
