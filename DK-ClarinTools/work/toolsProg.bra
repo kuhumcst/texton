@@ -10602,6 +10602,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                )
             )
       )
+      ( helplink
+      =   usedonly linktext offset title
+        .   ( !arg:? (usedonly.?usedonly) ?
+            | y:?usedonly
+            )
+          & ( !arg:? (linktext.?linktext) ?
+            | help hjælp:?linktext
+            )
+          & ( !arg:? (offset.?offset) ?
+            | :?offset
+            )
+          & ( !arg:? (title.?title) ?
+            | :?title
+            )
+          & ( a
+            .     ( href
+                  .   str
+                    $ ( "help?UIlanguage="
+                        !LaNg
+                        "&usedonly="
+                        !usedonly
+                        "&Typeface="
+                        !TyPeFaCe
+                        (!offset:|"#" !offset)
+                      )
+                  )
+                  (!title:|(title.!title))
+              , localized$!linktext
+            )
+      )
       "
 /**
  * create
@@ -11436,23 +11466,21 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | !table
                   )
                 & ( namecell
-                  =   featurs short name
+                  =   featurs short name table
                     .   !arg:(?featurs.?short.?name)
                       &   cell
                         $ (     !featurs
                               :   ?
                                 + ( ? (short.!short) ?
                                   : ? (description.?description) ?
+                                  : ? (table.?table) ?
                                   )
                                 + ?
-                            & ( div
-                              .   (class.tooltip)
-                                ,   !name
-                                    ( span
-                                    .   (class.tooltiptext)
-                                      , localized$!description
-                                    )
-                              )
+                            &   helplink
+                              $ ( (title.localized$!description)
+                                  (offset.!table)
+                                  (linktext.!name)
+                                )
                           | !name
                           )
                   )
@@ -11468,7 +11496,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 + ?
                             & ( div
                               .   (class.tooltip)
-                                ,   (small.,chu$10068)
+                                ,   (small.,(small.,chu$10068))
                                     ( span
                                     .   (class.tooltiptext)
                                       , localized$!help
@@ -15484,23 +15512,6 @@ try {
               & readTable$Typeface:%?arg ?
             )
           & setTypeFace$!arg
-      )
-      ( helplink
-      =   
-        . a
-        .   ( href
-            .   str
-              $ ( "help?UIlanguage="
-                  !LaNg
-                  "&usedonly="
-                  ( !arg:(usedonly.n)&n
-                  | y
-                  )
-                  "&Typeface="
-                  !TyPeFaCe
-                )
-            )
-          , localized$(help hjælp)
       )
       ( countGraphNodes
       =   count tools feats feat i o cnt tcnt fcnt tool
