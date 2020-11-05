@@ -69,7 +69,7 @@ importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
 If <prod> is the empty string "", then the table tooladm is anonymized by 
-chainging all domains in service URLs "http:\localhost" and by chaing all
+changing all domains in service URLs "http:\localhost" and by changing all
 contact emails to "x@x.xxx".
 
 To export all tables to a different file, do
@@ -104,8 +104,7 @@ is the location of this file, toolsprog.bra.
 }
 
 toolsProg=
-  (setLang$da|)
-&     (indent=0)
+      (indent=0)
       (logno=0)
       (tabind=0)
       (globval=)
@@ -308,6 +307,7 @@ toolsProg=
           jobNr
           toolprop
           ItemGroupsCache
+          footer
       )
       ( importTables
       =     prod missingToolprop prodtoolprop productionTables tdata
@@ -424,7 +424,10 @@ toolsProg=
                           )
                       & saveTable$toolprop
                     )
-                | get$(path$!arg)&saveAllTables$
+                  & "Imported file, but kept local production data."
+                |   get$(path$!arg)
+                  & saveAllTables$
+                  & "Initialized all tables from imported file."
                 )
               | str$("Cannot read " !arg)&~
               )
@@ -633,7 +636,18 @@ toolsProg=
               | 
               )
             & (UIlanguage.!LaNg) !hiddenData:?hiddenData
-          | log$("failed to set language to " !arg)
+          | log$("failed to set language to " !arg)&~
+      )
+      ( setTypeFace
+      =   A Z
+        .   !arg:?TyPeFaCe
+          & log$(setTypeFace !Typeface)
+          & (   !hiddenData:?A (TyPeFaCe.?) ?Z
+              & !A !Z:?hiddenData
+            | 
+            )
+          & (TyPeFaCe.!TyPeFaCe) !hiddenData:?hiddenData
+          & log$(hiddenData !hiddenData)
       )
       "
 /**
@@ -651,6 +665,7 @@ toolsProg=
           $ ( ( 
               =   
                 .         MLencoding
+                          abs
                           arg
                           c
                           cat
@@ -662,11 +677,13 @@ toolsProg=
                           out
                           sgn
                           sin
+                          sub
                           tay
                           toML
+                          v
                           w
-                          Functions
-                          !Functions
+                          Globals
+                          !Globals
                       : ? !arg ?
                     & 
                   | tbl$(!arg,0)&!arg
@@ -2731,9 +2748,12 @@ toolsProg=
             ,   \r\n
                 ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
                 \r\n
-                "h1, h2, h3, span, p, td, input, legend, textarea {font-family: Comic"
-                Sans
-                "MS, cursive, sans-serif;}"
+                "a, dd, dt, h1, h2, h3, span, p, td, input, legend, textarea {font-family:"
+                (   !TyPeFaCe:sans-serif
+                  & "sans-serif, Comic Sans MS"
+                | "Comic Sans MS, sans-serif"
+                )
+                ";}"
                 \r\n
                 "legend {border:none;color:black;background-color:rgba(154,186,206,0.6);text-align:left;display:block;margin:0;padding:10px;float:left;width:100%;position:relative;font-size:15px; }"
                 \r\n
@@ -3620,6 +3640,7 @@ toolsProg=
                               )
                             )
                           submit$next
+                          helplink$(usedonly.n)
                             makeHiddenFields
                           $ ( (   !passwordAsHandle:(.)
                                 & 
@@ -5463,8 +5484,8 @@ toolsProg=
                     & (   !arg:? (bsubmit.?) ?
                         & "
                       User presses one of the 'submit' buttons 
-					  (!storeToolButton, !replaceToolButton,
-					  !deleteToolButton, !UpdateButton, !PHPbutton).
+                      (!storeToolButton, !replaceToolButton,
+                       !deleteToolButton, !UpdateButton, !PHPbutton).
                       The features as shown in the form should overrule the
                       properties as recorded in toolprop.table for this
                       incarnation of the tool, so ignore the preexisting
@@ -5504,6 +5525,7 @@ toolsProg=
                     | 
                     )
                 )
+              & !formFields helplink$:?formFields
               & !features:?feats
               & "
             Step through the (short) list of features (facet, format, language)
@@ -5621,6 +5643,7 @@ toolsProg=
                                       submit$!deleteToolButton
                                       submit$!UpdateButton
                                       submit$!PHPbutton
+                                      helplink$(usedonly.n)
                                   . POST
                                   )
                               )
@@ -9589,20 +9612,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & saveTable$jobs
       )
       ( deleteDepending
-      =   jobNr jobID a z
+      =   jobNr jobID
         .   !arg:(?jobNr.?jobID)
-          &   whl
-            ' ( !CTBs:?a (!jobNr.!jobID.?) ?z
-              & !a !z:?CTBs
-              )
-          &   whl
-            ' ( !relations:?a (!jobNr.!jobID.?) ?z
-              & !a !z:?relations
-              )
-          &   whl
-            ' ( !jobAbout:?a (!jobNr.?) ?z
-              & !a !z:?jobAbout
-              )
+          & !( 
+             ' (     map
+                   $ ( ( 
+                       =   
+                         .   !arg:($jobNr.$jobID.?)
+                           | 
+                       )
+                     . !CTBs
+                     )
+                 : ?CTBs
+               &     map
+                   $ ( ( 
+                       =   
+                         .   !arg:($jobNr.$jobID.?)
+                           | 
+                       )
+                     . relations
+                     )
+                 : ?relations
+               &     map
+                   $ ( ( 
+                       = .!arg:($jobNr.?)|
+                       )
+                     . $jobAbout
+                     )
+                 : ?jobAbout
+               )
+             )
       )
       ( addurl
       =   URL
@@ -9694,25 +9733,87 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               )
           | log$CannotReadjobAbout&(.)
       )
-      ( doneAllJobSub
-      =     A Z JobNr JobId filelist filename aborted done
-          , letterData items URL tool
-          , I O workflow
-        .   readTable$jobs
-          & log$("doneAllJobSub " !arg)
-          & :?filelist
-          & @(!arg:? #?JobNr)
-          & readTable$CTBs
-          & readTable$relations
+      ( letterData
+      =     Steps menneskesprog workflow JobNr jobs I O
+          , aborted done filelist filename items JobId URL tool
+        .   ( menneskesprog
+            =     desc featdesc feature featvals featname
+                , table specificationTables features
+              .   !arg:(?arg.?features)
+                & :?desc
+                &   whl
+                  ' ( !arg:(?feature.?featvals.?)+?arg
+                    &   !features
+                      :   ?
+                        + ( ? (short.!feature) ?
+                          : ? (name.?featname) ?
+                          : ? (table.?table) ?
+                          : (   ?
+                                (specificationTable.?specificationTables)
+                                ?
+                            | ?&:?specificationTables
+                            )
+                          )
+                        + ?
+                    &     describefeature
+                        $ (!featvals.!table.!specificationTables)
+                      : ?featdesc
+                    & ( !featdesc:
+                      |     !desc
+                            (!desc:|", ")
+                            localized$!featname
+                            "="
+                            !featdesc
+                        : ?desc
+                      )
+                    )
+                & str$!desc
+            )
+          & ( Steps
+            =     x items tool JobNr JobId
+                , format I O format stage
+              .       !arg
+                    : ( ?JobNr
+                      . @(?:? #?JobId)
+                      . ?x
+                      . ?items
+                      . ?tool
+                      . ?I
+                      . ?O
+                      . ?stage
+                      )
+                  & ( step
+                    .   
+                      ,   (JobNr.,!JobNr)
+                          (JobId.,!JobId)
+                          (name.,!x)
+                          (tool.,!tool)
+                          (items.,!items)
+                          (input.,menneskesprog$(!I.!features))
+                          (output.,menneskesprog$(!O.!features))
+                          ( format
+                          .   
+                            ,     !O:?+(format.?format.?)+?
+                                & !format
+                              | 
+                          )
+                          (stage.,!stage)
+                    )
+                | 
+            )
+          & readTable$features
           & readTable$jobAbout
           & (   !jobAbout
               : ? (!JobNr.? (human.?workflow) ?) ?
             | :?workflow
             )
+          & !arg:?JobNr
+          & readTable$jobs
+          & :?filelist
           &   whl
             ' ( :?aborted:?done
               &   !jobs
-                :   ?A
+                :   ?
                     ( !JobNr
                     .   %@?JobId
                         (   aborted:?aborted
@@ -9732,9 +9833,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | ?&:?I:?O
                     . ?filename
                     )
-                    ?Z
-              & !A !Z:?jobs
-              & deleteDepending$(!JobNr.!JobId)
+                    ?jobs
               &     !filelist
                     ( !JobNr
                     . !JobId
@@ -9745,7 +9844,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . !I
                     . !O
                     .     ( !aborted:aborted
-                          |   !Z
+                          |   !jobs
                             : ? (!JobNr.?.? !JobId ?.?) ?
                           )
                         & 
@@ -9753,97 +9852,44 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 : ?filelist
               )
+          &   (workflow.,!workflow)
+              (steps.,map$(Steps.!filelist))
+      )
+      ( doneAllJobSub
+      =   A Z JobNr
+        .   readTable$jobs
+          & log$("doneAllJobSub " !arg)
+          & @(!arg:? #?JobNr)
+          & readTable$CTBs
+          & readTable$relations
+          & readTable$jobAbout
+          &     map
+              $ ( ( 
+                  =   JobId
+                    .     !arg:(!JobNr.%@?JobId ?.?.?.?.?)
+                        & deleteDepending$(!JobNr.!JobId)
+                        & 
+                      | !arg
+                  )
+                . !jobs
+                )
+            : ?jobs
           & saveTable$jobs
           & saveTable$CTBs
           & saveTable$relations
           & saveTable$jobAbout
-          & ( letterData
-            =   Steps menneskesprog
-              .   readTable$features
-                & ( menneskesprog
-                  =     desc featdesc feature featvals featname
-                      , table specificationTables
-                    .   :?desc
-                      &   whl
-                        ' ( !arg:(?feature.?featvals.?)+?arg
-                          &   !features
-                            :   ?
-                              + ( ? (short.!feature) ?
-                                : ? (name.?featname) ?
-                                : ? (table.?table) ?
-                                : (   ?
-                                      (specificationTable.?specificationTables)
-                                      ?
-                                  |   ?
-                                    & :?specificationTables
-                                  )
-                                )
-                              + ?
-                          &     describefeature
-                              $ (!featvals.!table.!specificationTables)
-                            : ?featdesc
-                          & ( !featdesc:
-                            |     !desc
-                                  (!desc:|", ")
-                                  localized$!featname
-                                  "="
-                                  !featdesc
-                              : ?desc
-                            )
-                          )
-                      & str$!desc
-                  )
-                & ( Steps
-                  =     x items tool JobNr JobId
-                      , format I O format stage
-                    .       !arg
-                          :   ( ?JobNr
-                              . @(?:? #?JobId)
-                              . ?x
-                              . ?items
-                              . ?tool
-                              . ?I
-                              . ?O
-                              . ?stage
-                              )
-                              ?arg
-                        &   ( step
-                            .   
-                              ,   (JobNr.,!JobNr)
-                                  (JobId.,!JobId)
-                                  (name.,!x)
-                                  (tool.,!tool)
-                                  (items.,!items)
-                                  (input.,menneskesprog$!I)
-                                  (output.,menneskesprog$!O)
-                                  ( format
-                                  .   
-                                    ,       !O
-                                          : ?+(format.?format.?)+?
-                                        & !format
-                                      | 
-                                  )
-                                  (stage.,!stage)
-                            )
-                            Steps$!arg
-                      | 
-                  )
-                & (workflow.,!workflow) (steps.,Steps$!arg)
-            )
-          & letterData$!filelist
-      )
-      ( filenameWithoutXMLextension
-      =   base
-        .   @(!arg:?base "." ~(? "." ?))&!base
-          | !arg
       )
       ( Filename
-      = .str$(filenameWithoutXMLextension$!arg ".withmetadata.xml")
+      =   base
+        .   str
+          $ ( ( @(!arg:?base ".xml")&!base
+              | !arg
+              )
+              ".withmetadata.xml"
+            )
       )
       (FilenameNoMetadata=.!arg)
-      ( FilenameRelations
-      = .str$(filenameWithoutXMLextension$!arg ".relations.csv")
-      )
+      (FilenameRelations=.str$(!arg ".relations.csv"))
       ( readme
       =     jobNr date yyyy mm dd letter File Files
           , inputs results
@@ -10156,6 +10202,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   : ?body
                 & (dl.,!body)
             )
+          & log$(letter !arg)
           & !arg:(?arg.?shortletter)
           & "shortletter: y or n"
           &   ( 
@@ -10163,7 +10210,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 .   ( readTable$zippedresults
                     | :?zippedresults
                     )
-                  & str$(!arg ".zip"):?zipfile
+                  &     str
+                      $ ( !arg
+                          ( !shortletter:y&"-final"
+                          | "-all"
+                          )
+                          ".zip"
+                        )
+                    : ?zipfile
                   & ( !zippedresults:? !zipfile ?
                     | !zipfile !zippedresults:?zippedresults
                     )
@@ -10171,10 +10225,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               )
             $ !arg
           & jobMetaData$!arg:(?metadata.?type)
+          & log$(metadata !metadata type !type)
           & readTable$fileFormats
           & readTable$Uploads
-          &   doneAllJobSub$!arg
+          & log$doneAllJobSub
+          &   (letterData$!arg|doneAllJobSub$!arg)
             : (workflow.,?workflow) (steps.,?steps)
+          & log$doneAllJobSubDONE
           & lst$(steps,path$steps,NEW)
           & :?resources:?files
           &     toML
@@ -10545,6 +10602,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                )
             )
       )
+      ( helplink
+      =   usedonly linktext offset title
+        .   ( !arg:? (usedonly.?usedonly) ?
+            | y:?usedonly
+            )
+          & ( !arg:? (linktext.?linktext) ?
+            | help hjælp:?linktext
+            )
+          & ( !arg:? (offset.?offset) ?
+            | :?offset
+            )
+          & ( !arg:? (title.?title) ?
+            | :?title
+            )
+          & ( a
+            .     ( href
+                  .   str
+                    $ ( "help?UIlanguage="
+                        !LaNg
+                        "&usedonly="
+                        !usedonly
+                        "&Typeface="
+                        !TyPeFaCe
+                        (!offset:|"#" !offset)
+                      )
+                  )
+                  (!title:|(title.!title))
+              , localized$!linktext
+            )
+      )
       "
 /**
  * create
@@ -10575,7 +10662,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from create.java
  */"
       ( create
-      =     Tool item parms Items methodName
+      =     Tool item parms Items methodName items
           , formFields val mail2 password ERR
           , Submit pipes pipe windFW reqs req descr
           , JobStack JobNr presels feats analyzeInput
@@ -10583,7 +10670,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , jobIDoffset subjobs Sources sourcesAndGoals
           , directedBy nth unpackIOparms BodyContainer
           , handle checkIOparms PIPE lookForLanguage
-          , precooked-DASISH A wrkflw Z errmsg
+          , precooked-DASISH A wrkflw Z errmsg itms
           , analyseContentType makeJobStack NoNeedForMetadata
           , ApplyThePipelineToTheInput NoWay TooManyOrNone
           , ShowAllPipes ShowOnlyTheCurrentPipe AddMetadata
@@ -10959,7 +11046,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                 & "First build a list of items."
                 & ( buildItemList
-                  =   A Z
+                  =   
                     .   map
                       $ ( ( 
                           =   item
@@ -11379,23 +11466,21 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | !table
                   )
                 & ( namecell
-                  =   featurs short name
+                  =   featurs short name table
                     .   !arg:(?featurs.?short.?name)
                       &   cell
                         $ (     !featurs
                               :   ?
                                 + ( ? (short.!short) ?
                                   : ? (description.?description) ?
+                                  : ? (table.?table) ?
                                   )
                                 + ?
-                            & ( div
-                              .   (class.tooltip)
-                                ,   !name
-                                    ( span
-                                    .   (class.tooltiptext)
-                                      , localized$!description
-                                    )
-                              )
+                            &   helplink
+                              $ ( (title.localized$!description)
+                                  (offset.!table)
+                                  (linktext.!name)
+                                )
                           | !name
                           )
                   )
@@ -11411,7 +11496,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 + ?
                             & ( div
                               .   (class.tooltip)
-                                ,   (small.,chu$10068)
+                                ,   (small.,(small.,chu$10068))
                                     ( span
                                     .   (class.tooltiptext)
                                       , localized$!help
@@ -11651,7 +11736,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               makeCheckboxFormField
                             $ (   localized
                                 $ ( "Show workflows for similar goals"
-                                    "Hvis arbejdsgange for lignende mål"
+                                    "Vis arbejdsgange for lignende mål"
                                   )
                               . superset
                               .   (val.on)
@@ -11943,6 +12028,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   .   submit$"View details"
                                       submit$Metadata
                                       submit$Submit
+                                      helplink$()
                                       (br.,)
                                       makeHiddenFields$!hiddenData
                                       makeWorkflowRadioButtons$!pipes
@@ -12613,7 +12699,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( "We are at the start. Show an input form."
-            =     formFields presels nt
+            =     formFields presels nt CLOCK
                 , directedBy hiddenData Items itemGroups
               .     !arg
                   : (?formFields.?presels.?directedBy.?hiddenData.?Items)
@@ -12685,11 +12771,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   .   makeHiddenFields$!hiddenData
                                       (     !directedBy
                                           : (GoalChoice|)
-                                        & !formFields submit$"next step"
+                                        &   !formFields
+                                            submit$"next step"
+                                            helplink$
                                       |   Sources$!presels
                                             paragraph
                                           $ ( pickTool$(txt.!Items)
                                               submit$"next step"
+                                              helplink$
                                             )
                                       )
                                   )
@@ -13211,7 +13300,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$ItemGroupsCache
           &     map
               $ ( ( 
-                  =   a v nt
+                  =   a v nt CLOCK
                     .     !arg:(@(?:?a ";" ?nt).?v)
                         & ( !nt:!itms&(!a.!v)
                           | 
@@ -13228,6 +13317,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?parms
           & !HTMLbodyContainer:?BodyContainer
           & setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
           & analyzeInput$!parms:(?parms.?Items.?presels)
           & log$analyzeInputDONE
           &   checkMail$(!parms.!formFields.!hiddenData.!errors)
@@ -13285,8 +13375,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( poll
       =     jobs n step secs steplinks links
-          , serviceurl title tooladm
-          , runningParagraphs JobNr hours
+          , serviceurl title tooladm DOWNLOAD
+          , runningParagraphs JobNr hours minutes
         .   ( steplinks
             =     links jobs file step outp ServiceURL JobNr
                 , seenInputs Title
@@ -13382,7 +13472,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$jobs
           & readTable$tooladm
           & readTable$Uploads
-          & div$(!deleteAfterMillisec*86400000^-1*24.1):?hours
+          &   div$(!deleteAfterMillisec*86400000^-1*24*60.1)
+            : ?minutes
           &   toML
             $ (   steplinks$(!JobNr.!jobs):?links
                 &     ( 
@@ -13437,41 +13528,56 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !jobs
                       )
                   : ?runningParagraphs
+                & ( DOWNLOAD
+                  =   
+                    .   ( a
+                        .   ( href
+                            .   !wwwServer
+                                "/texton/zipresults?shortletter=n&amp;JobNr="
+                                !arg
+                            )
+                          ,   localized
+                            $ ( "Download input and all results"
+                                "Download input og alle resultater"
+                              )
+                        )
+                        localized$(" OR " " ELLER ")
+                        ( a
+                        .   ( href
+                            .   !wwwServer
+                                "/texton/zipresults?shortletter=y&amp;JobNr="
+                                !arg
+                            )
+                          ,   localized
+                            $ ("Download final results" "Download slutresultater")
+                        )
+                  )
                 & (   !runningParagraphs:
                     &   !HTMLbodyContainer
-                      $ (   paragraph
-                          $ ( localized$("Done! " "Færdig! ")
-                              ( a
-                              .   ( href
-                                  .   !wwwServer
-                                      "/texton/zipresults?JobNr="
-                                      !JobNr
-                                  )
-                                ,   localized
-                                  $ ( "Download input and all results"
-                                      "Download input og alle resultater"
-                                    )
-                              )
-                              localized$(" OR " " ELLER ")
-                              ( a
-                              .   ( href
-                                  .   !wwwServer
-                                      "/texton/zipresults?shortletter=y&amp;JobNr="
-                                      !JobNr
-                                  )
-                                ,   localized
-                                  $ ( "Download final results"
-                                      "Download slutresultater"
-                                    )
-                              )
-                              ". ("
-                                localized
-                              $ ( "Re-run the workflow if you want to download both"
-                                  "Kør igen hvis du vil downloade begge"
-                                )
-                              ".)"
-                            )
+                      $ ( paragraph$(DOWNLOAD$!JobNr)
                           !links
+                            paragraph
+                          $ ( localized$("Done! " "Færdig! ")
+                              (br.,)
+                                localized
+                              $ ( "To download the results, see the links at the top of this page."
+                                  "Se links øverst på denne side hvis du vil downloade resultaterne."
+                                )
+                              (br.,)
+                                localized
+                              $ ( "Click the following link to immediately DELETE your input and the results from the workflow from the server. "
+                                  "Tryk på næste link for at fjerne din input og arbejdsgangens resultater fra serveren. "
+                                )
+                              ( a
+                              .   ( href
+                                  . !wwwServer "/texton/cleanup?JobNr=" !JobNr
+                                  )
+                                ,   localized
+                                  $ ( "DELETE input and results from server"
+                                      "FJERN input og resultaterne fra serveren"
+                                    )
+                              )
+                            )
                         )
                   |   refreshingXHTMLbodyContainer
                     $ ( !secs str$(!wwwServer "/texton/mypoll?job=" !JobNr)
@@ -13493,28 +13599,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 $ (     ( 
                         =   zippedresults zipfile
                           .   readTable$zippedresults
-                            & str$(!arg ".zip"):?zipfile
+                            &     str
+                                $ (!arg ("-all"|"-final") ".zip")
+                              : ?zipfile
                             & !zippedresults:? !zipfile ?
                         )
                       $ !JobNr
                     &   paragraph
-                      $ ( ( a
-                          .   ( href
-                              . !wwwServer "/texton/zipresults?JobNr=" !JobNr
-                              )
-                            ,   localized
-                              $ ("Download result. " "Download resultat. ")
-                          )
+                      $ ( DOWNLOAD$!JobNr
                             localized
                           $ (   str
                               $ ( " The zipped results are kept for no more than "
-                                  !hours
-                                  " hours! "
+                                  !minutes
+                                  " minutes! "
                                 )
                                 str
                               $ ( " De zippede resultater bliver bevaret is højst "
-                                  !hours
-                                  " timer!"
+                                  !minutes
+                                  " minutter!"
                                 )
                             )
                         )
@@ -13631,52 +13733,51 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  *
  * Called from data.java and cleanup.java
  */"
+      ( readJobTables
+      =   
+        .   readTable$jobs
+          & readTable$Uploads
+          & readTable$CTBs
+          & readTable$relations
+          & readTable$jobAbout
+          & readTable$ItemGroupsCache
+      )
+      ( saveJobTables
+      =   
+        .   saveTable$jobs
+          & saveTable$Uploads
+          & saveTable$CTBs
+          & saveTable$relations
+          & saveTable$jobAbout
+          & saveTable$ItemGroupsCache
+      )
       ( keep
       =     jobNr jobID jobstatus files toolURL parms file
-          , A Z find
-        .   readTable$jobs
+          , find jobNrParm stagingName stem
+        .   ( find
+            =   x T L R
+              .   !arg:(?x.?T)&!x:!T
+                |   !T:?L_?R
+                  & (find$(!x.!L)|find$(!x.!R))
+            )
           & log$(keep !arg)
-          & (@(!arg:? "/" ?arg)|)
-          & (     !jobs
-                :   ?
-                    ( ( ?jobNr
-                      . %?jobID ?jobstatus
-                      . ?files
-                      . ?toolURL
-                      . ?parms
-                      . ?file
-                      )
-                    & ( !files:? !arg ?
-                      | !file:!arg
-                      |   !parms:?+(I.?parms)+?
-                        & ( find
-                          =   x T L R
-                            .     !arg:(?x.?T)
-                                & !x:!T
-                              |   !T:?L_?R
-                                & ( find$(!x.!L)
-                                  | find$(!x.!R)
-                                  )
-                          )
-                        & find$(!arg.!parms)
-                      )
-                    &   !jobstatus
-                      : (|waiting|starting)
-                    )
-                    ?
-              & yes
-            |   readTable$Uploads
-              & readTable$CTBs
-              & readTable$relations
-              & readTable$jobAbout
-              & readTable$ItemGroupsCache
-              &   whl
-                ' ( !Uploads:?A (?.!arg.?) ?Z
-                  & !A !Z:?Uploads
-                  )
-              &   whl
-                ' (   !jobs
-                    :   ?A
+          & !arg:(?stagingName.?jobNrParm)
+          & (@(!stagingName:? "/" ?stagingName)|)
+          & (   (   @(!stagingName:?stem ".withmetadata.xml")
+                  & str$(!stem ".xml")
+                |   @(!stagingName:?stem ".relations.csv")
+                  & !stem
+                )
+              : ?stagingName
+            | 
+            )
+          & (   @( !stagingName
+                 : !jobNrParm ("-all"|"-final") ".zip"
+                 )
+              & no
+            |   !jobNrParm:
+              & (     !jobs
+                    :   ?
                         ( ( ?jobNr
                           . %?jobID ?jobstatus
                           . ?files
@@ -13684,39 +13785,124 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           . ?parms
                           . ?file
                           )
-                        & ( !files:? !arg ?
-                          | !file:!arg
+                        & ( !files:? !stagingName ?
+                          | !file:!stagingName
+                          |   !parms:?+(I.?parms)+?
+                            & find$(!stagingName.!parms)
                           )
+                        &   !jobstatus
+                          : ( 
+                            | waiting
+                            | starting
+                            )
                         )
-                        ?Z
-                  & !A !Z:?jobs
-                  & deleteDepending$(!jobNr.!jobID)
-                  )
-              & (     !ItemGroupsCache
-                    : ?A (?.? (?.? !arg ?) ?) ?Z
-                  & !A !Z:?ItemGroupsCache
-                  & saveTable$ItemGroupsCache
-                | 
+                        ?
+                  & yes
+                |       map
+                      $ ( ( 
+                          =   jobNr jobID files file
+                            .       !arg
+                                  : ( ( ?jobNr
+                                      . %?jobID ?
+                                      . ?files
+                                      . ?
+                                      . ?
+                                      . ?file
+                                      )
+                                    & ( !files:? !stagingName ?
+                                      | !file:!stagingName
+                                      )
+                                    )
+                                & deleteDepending$(!jobNr.!jobID)
+                                & 
+                              | !arg
+                          )
+                        . !jobs
+                        )
+                    : ?jobs
+                  &     map
+                      $ ( ( 
+                          =   Name
+                            .     !arg:(?.?Name.?.!stagingName.?)
+                                &     map
+                                    $ ( ( 
+                                        =   
+                                          .       !arg
+                                                : ( ?
+                                                  .   ?
+                                                      (?.? !Name ?)
+                                                      ?
+                                                  )
+                                              & 
+                                            | !arg
+                                        )
+                                      . !ItemGroupsCache
+                                      )
+                                  : ?ItemGroupsCache
+                                & 
+                              | !arg
+                          )
+                        . !Uploads
+                        )
+                    : ?Uploads
+                  & no
                 )
-              & saveTable$Uploads
-              & saveTable$jobs
-              & saveTable$CTBs
-              & saveTable$relations
-              & saveTable$jobAbout
+            |     !jobs
+                :   ?
+                    ( (!jobNrParm.?.?files.?.?parms.?file)
+                    & ( !files:? !stagingName ?
+                      | !file:!stagingName
+                      |   !parms:?+(I.?parms)+?
+                        & find$(!stagingName.!parms)
+                      )
+                    )
+                    ?
+              & ~( !jobs
+                 :   ?
+                     ( (~!jobNrParm.?.?files.?.?parms.?file)
+                     & ( !files:? !stagingName ?
+                       | !file:!stagingName
+                       |   !parms:?+(I.?parms)+?
+                         & find$(!stagingName.!parms)
+                       )
+                     )
+                     ?
+                 )
               & no
+            | yes
             )
+      )
+      ( sum2list
+      =   L E
+        .   :?L
+          &   whl
+            ' ( !arg:%?E+?arg
+              & (.!E) !L:?L
+              )
+          & :?arg
+          & whl'(!L:%?E ?L&!E !arg:?arg)
+          & !arg
       )
       "
 /**
  * help
  */"
       ( help
-      =   tools langlist toolsSorted Title
+      =     tools langlist toolsSorted Title toolNr ToolID
+          , features feats cumfeat usedonly
         .   log$HELP
+          & ( !arg:? (usedonly.?usedonly) ?
+            | y:?usedonly
+            )
+          & setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
+          & log$(help !arg)
+          & readTable$tooladm
+          & readTable$toolprop
+          & readTable$features
           & ( toolsSorted
             =   tool sorted tools L Title sort
-              .   readTable$tooladm
-                & 0:?sorted
+              .   0:?sorted
                 &   whl
                   ' (   !tooladm
                       :   ?
@@ -13739,7 +13925,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 & !sorted
             )
-          & readTable$toolprop
           & ( langlist
             =   tp L R langs l a b
               .     !toolprop:?+(!arg.~(? (lang,?) ?))+?
@@ -13764,8 +13949,72 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     | 
                     )
             )
+          & sum2list$!features:?feats
           & toolsSorted$:?tools
-          & log$(tools !tools)
+          &   map
+            $ ( ( 
+                =   ToolID
+                  .   !arg:(?.? (ToolID.?ToolID) ?)
+                    & !ToolID
+                )
+              . !tools
+              )
+          & ( usedFeatures
+            =   ToolID id tools toolprp cumfeat coll fts
+              .   ( coll
+                  =   R
+                    .   1:?R
+                      &   map
+                        $ ( ( 
+                            =   r e
+                              .   1:?r
+                                &   whl
+                                  ' ( !arg:%?e+?arg
+                                    & !e*!r:?r
+                                    )
+                                & !r*!R:?R
+                                & 
+                            )
+                          . !arg
+                          )
+                      & !R
+                  )
+                & !arg:(?tools.?toolprp)
+                & 0:?cumfeat
+                &   whl
+                  ' (   !toolprp
+                      :   ?
+                        + (   ?ToolID
+                            &   !tools
+                              :   ?
+                                  ( ?
+                                  .   ? (ToolID.?id) ?
+                                    & !id:!ToolID
+                                  )
+                                  ?
+                          . ?fts
+                          )
+                        + ?toolprp
+                    &   map
+                      $ ( ( 
+                          =   feat in out inou in ou
+                            .   !arg:(?feat,?inou)
+                              &   whl
+                                ' ( !inou:(?in.?ou)+?inou
+                                  &   !feat\L(coll$!in*coll$!ou)+!cumfeat
+                                    : ?cumfeat
+                                  )
+                          )
+                        . !fts
+                        )
+                    )
+                & !cumfeat
+            )
+          &   (   !usedonly:y
+                & usedFeatures$(!tools.!toolprop)
+              | 
+              )
+            : ?cumfeat
           & 0:?toolNr
           &   toML
             $ ( !HTMLbodyContainer
@@ -13778,24 +14027,58 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                   ( p
                   .   
-                    , "The Text Tonsorium is a workflow management system that not only executes workflows, but also composes workflows from building blocks. Each building block encapsulates a Natural Language Processing tool."
+                    ,   localized
+                      $ ( "The Text Tonsorium is a workflow management system that not only executes workflows, but also composes workflows from building blocks. Each building block encapsulates a Natural Language Processing tool."
+                          "Text Tonsorium er et workflow management system som ikke kun fører data gennem workflows, men også designer workflows ved hjælp af 'byggeklodser'. Hver byggeklods indeholder et sprogteknologisk værktøj."
+                        )
                   )
                   ( p
                   .   
-                    , "The Text Tonsorium may compose many workflows that all lead to your goal. It will then ask you to choose one of the proposed workflows. In general, the more detail you add to your goal, the fewer solutions the Text Tonsorium will find, even zero. "
+                    ,   localized
+                      $ ( "The Text Tonsorium may compose many workflows that all lead to your goal. It will then ask you to choose one of the proposed workflows. In general, the more detail you add to your goal, the fewer solutions the Text Tonsorium will find, even zero. "
+                          "Ofte beregner Text Tonsorium mange workflows, som alle fører til dit mål, og så skal du vælge en af disse. Som tommelfingerregel gælder det at hvis du udtrykker dit mål i flere detaljer, vil der være færre forslag til workflows, og måske endda ingen."
+                        )
                   )
                   ( p
                   .   
-                    , "In contrast to other workflow management systems, the Text Tonsorium focuses on results rather than on tools, so a general understanding of how the desired result is described is useful. Still, you may like to also know which tools currently are integrated in the Text Tonsorium. This page gives you information about both."
+                    ,   localized
+                      $ ( "In contrast to other workflow management systems, the Text Tonsorium focuses on results rather than on tools, so a general understanding of how the desired result is described is useful. Still, you may like to also know which tools currently are integrated in the Text Tonsorium. This page gives you information about both."
+                          "Når du arbejder med Text Tonsorium, skal dit fokus være på det resultat som du vil opnå, og ikke på de værktøjer der er i værktøjskassen. Derfor er det nyttigt at vide hvordan det ønskede resultat bedst kan beskrives. Du vil måske alligevel også vide hvilke værktøjer er integreret i Text Tonsorium. Denne side giver dig information om begge dele."
+                        )
                   )
-                  (h3.,Overview)
+                  (h3.,localized$(Overview Overblik))
                   ( dl
                   .   
                     ,   (dt.,Data)
                         (dd.,Input)
-                        (dd.,Goal)
-                        (dt.,Facets)
-                        (dd.,)
+                        (dd.,localized$(Goal Mål))
+                        (dt.,localized$(Features Træk))
+                        ( dd
+                        .   
+                          , ( dl
+                            .   
+                              ,   map
+                                $ ( ( 
+                                    =   n d t
+                                      .     !arg
+                                          : ( 
+                                            .   ? (name.?n) ?
+                                              : ? (description.?d) ?
+                                              : ? (table.?t) ?
+                                            )
+                                        &   ( dt
+                                            .   
+                                              , ( a
+                                                .   (href.str$("#" !t))
+                                                  , localized$!n
+                                                )
+                                            )
+                                            (dd.,localized$!d)
+                                    )
+                                  . !feats
+                                  )
+                            )
+                        )
                         (dt.,Tools)
                         ( dd
                         .   
@@ -13867,6 +14150,101 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                     . !tools
                     )
+                    map
+                  $ ( ( 
+                      =   n t s sT description
+                        .     !arg
+                            : ( 
+                              .   ? (name.?n) ?
+                                : ? (table.?t) ?
+                                : ? (short.?s) ?
+                                : ( ? (specificationTable.?sT) ?
+                                  | ?&:?sT
+                                  )
+                                : ? (description.?description) ?
+                              )
+                          & readTable$!t
+                          &   ( a
+                              .   (id.!t) (name.!t)
+                                , (h2.,localized$!n)
+                              )
+                              (p.,localized$!description)
+                              ( dl
+                              .   
+                                ,   map
+                                  $ ( ( 
+                                      =   n d a p f
+                                        .   !arg:(?n.?a.?d)
+                                          & (     !cumfeat
+                                                : ( 
+                                                  | ?+!s\L(?*!a^?p*?)+?
+                                                  )
+                                              &   (dt.,localized$!n)
+                                                  ( !d:
+                                                  | (dd.,localized$!d)
+                                                  )
+                                                  (     !sT
+                                                      :   ?
+                                                          (? !a ?.?f)
+                                                          ?
+                                                    & readTable$!f
+                                                    & ( dd
+                                                      .   
+                                                        , ( dl
+                                                          .   
+                                                            ,   map
+                                                              $ ( ( 
+                                                                  =     full
+                                                                        short
+                                                                        dsc
+                                                                    .       !arg
+                                                                          : ( ?full
+                                                                            . ?short
+                                                                            . ?dsc
+                                                                            )
+                                                                        &   !cumfeat
+                                                                          : ( 
+                                                                            |   ?
+                                                                              +   !s
+                                                                                \L ( ?
+                                                                                  *   !a
+                                                                                    ^ ( ?
+                                                                                      +   ?
+                                                                                        * !short
+                                                                                        * ?
+                                                                                      + ?
+                                                                                      )
+                                                                                  * ?
+                                                                                  )
+                                                                              + ?
+                                                                            )
+                                                                        &   ( dt
+                                                                            .   
+                                                                              ,   localized
+                                                                                $ !full
+                                                                            )
+                                                                            ( dd
+                                                                            .   
+                                                                              ,   localized
+                                                                                $ !dsc
+                                                                            )
+                                                                      | 
+                                                                  )
+                                                                . !!f
+                                                                )
+                                                          )
+                                                      )
+                                                  | 
+                                                  )
+                                            | 
+                                            )
+                                      )
+                                    . !!t
+                                    )
+                              )
+                      )
+                    . !feats
+                    )
                 )
               )
       )
@@ -13927,6 +14305,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & !jobs
             )
           & log$(cleanup !arg)
+          & readTable$ItemGroupsCache
           & readTable$Uploads
           & readTable$jobs
           & readTable$CTBs
@@ -13953,6 +14332,40 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &     map
               $ ( ( 
                   =   
+                    .       !arg
+                          : ( ?
+                            .   ?
+                                ( ?
+                                .   ?
+                                    ( %@?item
+                                    &   !Uploads
+                                      : ( ~(? (?.!item.?) ?)
+                                        |   ?
+                                            ( ?
+                                            . !item
+                                            . ?
+                                            .   ?stagingName
+                                              & ~( !existingFiles
+                                                 : ? !stagingName ?
+                                                 )
+                                            . ?
+                                            )
+                                            ?
+                                        )
+                                    )
+                                    ?
+                                )
+                                ?
+                            )
+                        & 
+                      | !arg
+                  )
+                . !ItemGroupsCache
+                )
+            : ?ItemGroupsCache
+          &     map
+              $ ( ( 
+                  =   
                     .     !arg
                         : ( ?nr
                           . ?item
@@ -13963,10 +14376,21 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           . ?visibility
                           )
                       & (   ~(!existingFiles:? !stagingName ?)
+                          &     map
+                              $ ( ( 
+                                  =   
+                                    .       !arg
+                                          : (?.? (?.? !item ?) ?)
+                                        & 
+                                      | !arg
+                                  )
+                                . !ItemGroupsCache
+                                )
+                            : ?ItemGroupsCache
                           &   deleteDependingJobs$(!stagingName.!jobs)
                             : ?jobs
                           & 
-                        | 
+                        | !arg
                         )
                   )
                 . !Uploads
@@ -14031,6 +14455,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & saveTable$CTBs
           & saveTable$relations
           & saveTable$jobAbout
+          & saveTable$ItemGroupsCache
       )
       "
 /*
@@ -15080,6 +15505,14 @@ try {
             )
           & setLang$!arg
       )
+      ( setTypefaceNotPermanently
+      =   
+        .   ( !arg:? (Typeface.?arg) ?
+            |   "reset to default"
+              & readTable$Typeface:%?arg ?
+            )
+          & setTypeFace$!arg
+      )
       ( countGraphNodes
       =   count tools feats feat i o cnt tcnt fcnt tool
         .   "Unfold toolprop. Each subspecification doubles count due to specification.
@@ -15186,6 +15619,350 @@ try {
               & !cnt+!tcnt:?cnt
               )
           & !cnt
+      )
+      ( entry
+      =   
+        .   setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
+          &   toML
+            $ ( ( "!DOCTYPE"
+                . " html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""
+                )
+                ( html
+                .     (xmlns."http://www.w3.org/1999/xhtml")
+                      ("xmlns:xsi"."http://www.w3.org/2001/XMLSchema-instance")
+                      ( "xsi:schemaLocation"
+                      . "http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd"
+                      )
+                      ("xml:lang".en)
+                  ,   ( head
+                      .   
+                        ,   ( meta
+                            .     (http-equiv.Content-Type)
+                                  (content."text/html; charset=UTF-8")
+                              , 
+                            )
+                            ( title
+                            .   
+                              ,   localized
+                                $ ( "Text Tonsorium - Natural Language Processing toolchains automatically composed and scheduled for you"
+                                    "Text Tonsorium - automatisk sammensætning og aktivering af sprogteknologiske værktøjer"
+                                  )
+                            )
+                            ( style
+                            .   (type.text/css)
+                              ,   "label, h1, h2, h3, span, p, td, input, legend, textarea { font-family:"
+                                  (   !TyPeFaCe:sans-serif
+                                    & "sans-serif, Comic Sans MS"
+                                  | "Comic Sans MS, sans-serif"
+                                  )
+                                  "; } input, textarea { font-size: 12pt; } p {margin: 0} p.indent {text-indent: 20px} body { font-size: 100%; } fieldset {padding: 10px;border-style: solid;border-radius: 5px;} td.textareawide {width:70%} .smallmargin {margin-top:0.5em; margin-bottom:0.5em;} /*Bold Blacks and Vibrant Highlights*/ /*.bodycanvas {background-color:#F5F5F5} .fileupload {background-color:#EC576b} .URLs {background-color:#4EC5C1} .typein {background-color:#E5E338}*/ /*Striking and Energetic .bodycanvas {background-color:#F2EEE2} .fileupload {background-color:#F5CE28} .typein {background-color:#F5CE28} .URLs {background-color:#F5CE28} */ /*blue, gradient*/ .bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;} .fileupload {background-color:rgba(154,186,206,0.6);padding: 10px;} .typein {background-color:rgba(154,186,206,0.6);padding: 10px;} .URLs {background-color:rgba(154,186,206,0.6);padding: 10px;} /*.typein {background-color:#43C0F6} .URLs {background-color:#F81B84}*/ label {font-weight: bold; display: block; width: 250px; float: left; padding-left: 9px;} label:after { content: \" \" } .alt {padding: 10px;}"
+                            )
+                            ( meta
+                            .     (name.description)
+                                  ( content
+                                  .   localized
+                                    $ ( "This NLP workflow managment system automatically combines the necessary natural language processing tools to achieve your goal, in a way similar to how a trip planner computes the best route from your current position to your destination."
+                                        "Dette workflow managment system kombinerer automatisk de sprogteknologiske værktøjer som kan klare det mål du vil opnå, på en måde som ligner hvordan en routeplanner beregner den bedste route fra din nuværende position til din destination."
+                                      )
+                                  )
+                              , 
+                            )
+                      )
+                      ( body
+                      .   (class.bodycanvas)
+                        ,   ( "!--"
+                            . "div style=\"margin:0px auto;width:860px;text-align:left;border:1px solid #336699;\""
+                            )
+                            ( div
+                            .   ( style
+                                . "margin:0px auto;width:55em;text-align:left;"
+                                )
+                              ,   ( div
+                                  .   (style."overflow:auto;")
+                                    ,   ( div
+                                        .   (style."float:right;")
+                                          , ( p
+                                            .   
+                                              ,   helplink$()
+                                                  " "
+                                                  ( a
+                                                  .   ( href
+                                                      .   str
+                                                        $ ( "/texton/?UIlanguage="
+                                                              localized
+                                                            $ (da en)
+                                                            "&Typeface="
+                                                            !TyPeFaCe
+                                                          )
+                                                      )
+                                                    ,   localized
+                                                      $ (dansk English)
+                                                  )
+                                            )
+                                        )
+                                        ( div
+                                        .   (style."float:left;")
+                                          , ( h1
+                                            .   (class.smallmargin)
+                                              ,   "Text Tonsorium "
+                                                  ("!--"."&#128136;")
+                                                  "    "
+                                                  ( small
+                                                  .   
+                                                    , ( small
+                                                      .   
+                                                        ,   localized
+                                                          $ ( "A salon de beauté for Natural Language Processing"
+                                                              "En skønhedssalon for Sprogteknologi"
+                                                            )
+                                                      )
+                                                  )
+                                            )
+                                        )
+                                  )
+                                  ( div
+                                  .   
+                                    ,   ( p
+                                        .   
+                                          ,   localized
+                                            $ ( " Upload your input using the form on this page. On the next page you specify the desired final result - there are several annotation types, file formats, languages and other traits to choose from. The hard part - picking and orchestrating the Natural Language Processing tools that are needed to achieve your goal - is handled by this service. "
+                                                "Upload din input ved hjælp af formularen på denne side. På næste side specificerer du dit mål - der er adskillige inholdstyper, filformater, sprog og andre træk at vælge imellem. Det svære - at finde og orkestere de sprogteknologiske værktøjer som er nødvendige for at opnå dit mål - bliver håndteret af denne service."
+                                              )
+                                        )
+                                        ( form
+                                        .     (enctype.multipart/form-data)
+                                              (method.post)
+                                              (action.createByGoalChoice)
+                                          , ( fieldset
+                                            .   (style."margin-top:10px;")
+                                              ,   ( legend
+                                                  .   ( style
+                                                      . "font-weight: bold;"
+                                                      )
+                                                    ,   localized
+                                                      $ ( "Upload input"
+                                                          "Upload input"
+                                                        )
+                                                  )
+                                                  ( div
+                                                  .   (class.fileupload)
+                                                    ,   ( label
+                                                        .   (for.inp)
+                                                          ,   localized
+                                                            $ ( "Select one or more files"
+                                                                "Selektér en eller flere filer"
+                                                              )
+                                                        )
+                                                        ( input
+                                                        .     (type.file)
+                                                              (name.input)
+                                                              (id.inp)
+                                                              (value.)
+                                                              (size.50)
+                                                              ( alt
+                                                              .   localized
+                                                                $ ( "choose one or more files"
+                                                                    "vælg en eller flere filer"
+                                                                  )
+                                                              )
+                                                              ( multiple
+                                                              . multiple
+                                                              )
+                                                          , 
+                                                        )
+                                                  )
+                                                  ( p
+                                                  .   (class.smallmargin)
+                                                    , ( strong
+                                                      .   
+                                                        , ( small
+                                                          .   
+                                                            ,   localized
+                                                              $ ( "... or ..."
+                                                                  "... eller ..."
+                                                                )
+                                                          )
+                                                      )
+                                                  )
+                                                  ( div
+                                                  .   (class.URLs)
+                                                    ,   ( label
+                                                        .   (for.area)
+                                                          ,     localized
+                                                              $ ( "Enter addresses of web pages,"
+                                                                  "Indtast adresser af websider,"
+                                                                )
+                                                              (br.,)
+                                                                localized
+                                                              $ ( "one URL per line, each starting with http:// or https://"
+                                                                  "én URL pr. linje, startende med http:// eller https://"
+                                                                )
+                                                        )
+                                                        ( textarea
+                                                        .     (name.URLS)
+                                                              (rows.3)
+                                                              (cols.68)
+                                                              (id.area)
+                                                          , 
+                                                        )
+                                                  )
+                                                  ( p
+                                                  .   (class.smallmargin)
+                                                    , ( strong
+                                                      .   
+                                                        , ( small
+                                                          .   
+                                                            ,   localized
+                                                              $ ( "... or ..."
+                                                                  "... eller ..."
+                                                                )
+                                                          )
+                                                      )
+                                                  )
+                                                  ( div
+                                                  .   (class.typein)
+                                                    ,   ( label
+                                                        .   (for.free)
+                                                          ,   localized
+                                                            $ ( "Type or copy and paste some text"
+                                                                "Skriv eller kopiér tekst"
+                                                              )
+                                                        )
+                                                        ( textarea
+                                                        .     (name.text)
+                                                              (rows.3)
+                                                              (cols.68)
+                                                              (id.free)
+                                                          , 
+                                                        )
+                                                  )
+                                                  ( div
+                                                  .   (style."margin-top:10px;")
+                                                    ,   ( label
+                                                        .   ( style
+                                                            . "padding-left: 19px;"
+                                                            )
+                                                          ,   localized
+                                                            $ ( "Next step: "
+                                                                "Næste trin: "
+                                                              )
+                                                        )
+                                                        ( input
+                                                        .     (type.submit)
+                                                              ( value
+                                                              .   localized
+                                                                $ ( "Specify the required result"
+                                                                    "Specificer mål"
+                                                                  )
+                                                              )
+                                                              ( alt
+                                                              .   localized
+                                                                $ ( "create annotation"
+                                                                    "kreer annotation"
+                                                                  )
+                                                              )
+                                                          , 
+                                                        )
+                                                  )
+                                                  ( input
+                                                  .     (type.hidden)
+                                                        (name.UIlanguage)
+                                                        ( value
+                                                        .   localized
+                                                          $ (en da)
+                                                        )
+                                                    , 
+                                                  )
+                                                  ( input
+                                                  .     (type.hidden)
+                                                        (name.Typeface)
+                                                        (value.!TyPeFaCe)
+                                                    , 
+                                                  )
+                                                  ( input
+                                                  .     (type.hidden)
+                                                        (name.action)
+                                                        (value.batch)
+                                                        (checked.checked)
+                                                    , 
+                                                  )
+                                            )
+                                        )
+                                        ( p
+                                        .   (class.indent)
+                                          , ( small
+                                            .   
+                                              ,     localized
+                                                  $ ( "Find the most recent source code of the Text Tonsorium on "
+                                                      "Find den seneste version af kildekoden af Text Tonsorium på "
+                                                    )
+                                                  ( a
+                                                  .   ( href
+                                                      . "https://github.com/kuhumcst/texton"
+                                                      )
+                                                    , GitHub
+                                                  )
+                                                    localized
+                                                  $ ( ", where you can also contact us. "
+                                                      ". Der kan du også kontakte os."
+                                                    )
+                                            )
+                                        )
+                                        ( p
+                                        .   (class.indent)
+                                          , ( small
+                                            .   
+                                              ,   localized
+                                                $ ( "This service is free for small amounts of text. Do not send sensitive data to this service and use it at your own risk! "
+                                                    "Brug denne side for små mængder af tekst. Upload aldrig følsomme data. Brugen af tjenesten er på egen risiko!"
+                                                  )
+                                            )
+                                        )
+                                        ( p
+                                        .   (class.indent)
+                                          , ( small
+                                            .   
+                                              ,     localized
+                                                  $ ( "Change typeface to "
+                                                      "Skift skrifttype til "
+                                                    )
+                                                  ( a
+                                                  .   ( href
+                                                      .   str
+                                                        $ ( "/texton/?UIlanguage="
+                                                            !LaNg
+                                                            "&Typeface="
+                                                            (     !TyPeFaCe
+                                                                : "Comic Sans MS"
+                                                              & sans-serif
+                                                            | "Comic Sans MS"
+                                                            )
+                                                          )
+                                                      )
+                                                    ,       !TyPeFaCe
+                                                          : "Comic Sans MS"
+                                                        & sans-serif
+                                                      | "Comic Sans MS"
+                                                  )
+                                                  ". "
+                                                    localized
+                                                  $ ("Why " "Hvorfor ")
+                                                  ( a
+                                                  .   ( href
+                                                      . "https://theestablishment.co/hating-comic-sans-is-ableist-bc4a4de87093/"
+                                                      )
+                                                    , "Comic Sans"
+                                                  )
+                                                  "? "
+                                            )
+                                        )
+                                        readTable$footer
+                                  )
+                            )
+                      )
+                )
+              )
       )
       ( testsub
       =   pipeno in ou successcomment failurecomment res
@@ -15641,7 +16418,9 @@ try {
             )
       )
       (Uploads=)
-  : ?Functions;
+      (LaNg=)
+  : ?Globals
+& (setLang$da|);
 
 r=
   get'"toolsProg.bra"
@@ -15719,7 +16498,7 @@ importTables$alltablesxxx was called. It is possible to change context by
 reading an 'alltablesyyy' that is different from 'alltablesxxx'.
 
 If <prod> is the empty string \"\", then the table tooladm is anonymized by 
-chainging all domains in service URLs \"http:\\localhost\" and by chaing all
+changing all domains in service URLs \"http:\\localhost\" and by changing all
 contact emails to \"x@x.xxx\".
 
 To export all tables to a different file, do
