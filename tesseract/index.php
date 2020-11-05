@@ -580,6 +580,7 @@ try {
         if($Iformatimgpdf || $Iformatpdf)
             {
             $TIFF = tempFileName("convert-results");
+	    // See /etc/ImageMagick-6/policy.xml
             $command = "convert -density 300 $F -depth 8 -strip -background white -alpha off $TIFF.tiff";
             logit($command);
 
