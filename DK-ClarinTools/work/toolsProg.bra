@@ -6499,7 +6499,9 @@ toolsProg=
           & :?pathfields
           &   whl
             ' ( !goal:(?gfield,%?gvaluesAlts) ?ngoal
-              & (   ~(!toolFeatures:? (!gfield,?) ?)
+              & (   ( ~(!toolFeatures:? (!gfield,?) ?)
+                    | !goal:(sml,nsl)
+                    )
                   & "Assume that tool leaves field unchanged: percolate output requirement to input."
                   & !pathfields (!gfield,!gvaluesAlts):?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
@@ -6952,8 +6954,7 @@ toolsProg=
                 &   whl
                   ' ( !forkk:~0
                     & !goalterm:%?goaly*?goalterm
-                    &     (   
-                            &   (unfulfillable..find)$(str$!goaly)
+                    &     (     (unfulfillable..find)$(str$!goaly)
                               : ? (?.!source) ?
                             & 1+!impassages:?impassages
                             & 0
@@ -7316,7 +7317,6 @@ toolsProg=
                     )
                 & !nwg
             )
-          & log$(in fp)
           & !arg:(?source.?goal.?restriction.?superset)
           & readTable$toolprop
           & getActiveTools$!toolprop:?activeTools
@@ -7338,10 +7338,8 @@ toolsProg=
           & new$hash:?unfulfillable
           & new$hash:?notThisTool
           & 0:?Calls
-          & log$(calling fulfil)
           &   fulfil$(!activeTools.!source.!goal.0.!restriction)
             : ?reslt
-          & log$fulfilDONE
           & ( 
             |   :?ntt
               &   (notThisTool..forall)
