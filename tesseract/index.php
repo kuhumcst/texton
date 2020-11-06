@@ -579,9 +579,11 @@ try {
         $TesseractOCRfile = tempFileName("tesseract-results");
         if($Iformatimgpdf || $Iformatpdf)
             {
+            $command = "./ocr.sh $F $lang /opt/texton/tesseract/tessdata_best$script $TesseractOCRfile";
+	    /*
             $TIFF = tempFileName("convert-results");
 	    // See /etc/ImageMagick-6/policy.xml
-            $command = "convert -density 300 $F -depth 8 -strip -background white -alpha off $TIFF.tiff";
+            $command = "convert -density 300 $F -depth 8 -strip -background white -alpha off tiff64:$TIFF.tiff";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
@@ -595,7 +597,7 @@ try {
 
             pclose($cmd);
             $command = "tesseract --tessdata-dir tessdata_best$script -l $lang  ../log/tempFileName.tiff stdout > $TesseractOCRfile";
-
+ */
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
@@ -608,7 +610,7 @@ try {
                 }
 
             pclose($cmd);
-            rename($TIFF.".tiff",$TIFF);
+            //rename($TIFF.".tiff",$TIFF);
             }
         else
             {
