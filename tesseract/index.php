@@ -34,8 +34,6 @@ Inactive       :
 *******************/
 $toollog = '../log/TesseractOCR.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
 
-
-                
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
@@ -104,7 +102,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -174,6 +172,7 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappgot = false;	/* Appearance in input is blackletter (gotisk) if true */
+        $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iapprom = false;	/* Appearance in input is roman (roman) if true */
         $Ifacettxt = false;	/* Type of content in input is text (Ingen annotation) if true */
         $Iformatimg = false;	/* Format in input is image (billede) if true */
@@ -228,7 +227,8 @@ try {
         $Ilanguz = false;	/* Language in input is Uzbek (usbekisk) if true */
         $Ilangvi = false;	/* Language in input is Vietnamese (vietnamesisk) if true */
         $Ilangyi = false;	/* Language in input is Yiddish (jiddisch) if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Ismlsml = false;	/* Smell in input is any smell (lugt) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappocr = false;	/* Appearance in output is OCR if true */
         $Ofacettxt = false;	/* Type of content in output is text (Ingen annotation) if true */
@@ -283,7 +283,8 @@ try {
         $Olanguz = false;	/* Language in output is Uzbek (usbekisk) if true */
         $Olangvi = false;	/* Language in output is Vietnamese (vietnamesisk) if true */
         $Olangyi = false;	/* Language in output is Yiddish (jiddisch) if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Osmlnsl = false;	/* Smell in output is new smell (ny lugt) if true */
         $Iformatimggif = false;	/* Style of format image (billede) in input is 0 if true */
         $Iformatimgjpeg = false;	/* Style of format image (billede) in input is 0 if true */
         $Iformatimgpdf = false;	/* Style of format image (billede) in input is 0 if true */
@@ -330,8 +331,9 @@ try {
         if( hasArgument("Iapp") )
             {
             $Iappgot = existsArgumentWithValue("Iapp", "got");
+            $Iappnrm = existsArgumentWithValue("Iapp", "nrm");
             $Iapprom = existsArgumentWithValue("Iapp", "rom");
-            $echos = $echos . "Iappgot=$Iappgot " . "Iapprom=$Iapprom ";
+            $echos = $echos . "Iappgot=$Iappgot " . "Iappnrm=$Iappnrm " . "Iapprom=$Iapprom ";
             }
         if( hasArgument("Ifacet") )
             {
@@ -402,6 +404,11 @@ try {
             {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
             $echos = $echos . "Ipresnml=$Ipresnml ";
+            }
+        if( hasArgument("Isml") )
+            {
+            $Ismlsml = existsArgumentWithValue("Isml", "sml");
+            $echos = $echos . "Ismlsml=$Ismlsml ";
             }
         if( hasArgument("Oambig") )
             {
@@ -481,6 +488,11 @@ try {
             {
             $Opresnml = existsArgumentWithValue("Opres", "nml");
             $echos = $echos . "Opresnml=$Opresnml ";
+            }
+        if( hasArgument("Osml") )
+            {
+            $Osmlnsl = existsArgumentWithValue("Osml", "nsl");
+            $echos = $echos . "Osmlnsl=$Osmlnsl ";
             }
 
 /*******************************
@@ -597,7 +609,7 @@ try {
 
             pclose($cmd);
             $command = "tesseract --tessdata-dir tessdata_best$script -l $lang  ../log/tempFileName.tiff stdout > $TesseractOCRfile";
- */
+            */
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
@@ -634,10 +646,10 @@ try {
 
         if($tmpf)
             {
-            logit('output from TesseractOCR:');
+            //logit('output from TesseractOCR:');
             while($line = fgets($tmpf))
                 {
-                logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
