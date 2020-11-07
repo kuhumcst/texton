@@ -50,7 +50,7 @@ do
 # pagebreak marks at then end of each page
  
  cat ${BASE}.txt | tee -a $4;
- echo "[pagebreak]" | tee -a $4;
+# echo "[pagebreak]" | tee -a $4;
  
 # remove all TIFF and TXT files
  
