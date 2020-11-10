@@ -529,8 +529,16 @@ try {
 //        TODO your code!
         if($Iappgot)
             {
-            $lang = "Fraktur";
-            $script = "/script";
+            if($Olangda)
+                {
+		$lang = "dan_frak";
+		$script = "tesseract-dan-fraktur/dan_frak";
+                }
+	    else
+		{
+                $lang = "Fraktur";
+	        $script = "tessdata_best/script";
+	        }
             }
         else
             {
@@ -585,13 +593,13 @@ try {
             else if($Olangvi) $lang ="vie";
             else if($Olangyi) $lang ="yid";
             else              $lang ="eng";
-            $script = "";
+            $script = "tessdata_best";
             }
 
         $TesseractOCRfile = tempFileName("tesseract-results");
         if($Iformatimgpdf || $Iformatpdf)
             {
-            $command = "./ocr.sh $F $lang /opt/texton/tesseract/tessdata_best$script $TesseractOCRfile";
+            $command = "./ocr.sh $F $lang /opt/texton/tesseract/$script $TesseractOCRfile";
 	    /*
             $TIFF = tempFileName("convert-results");
 	    // See /etc/ImageMagick-6/policy.xml
@@ -626,7 +634,7 @@ try {
             }
         else
             {
-            $command = "tesseract --tessdata-dir tessdata_best$script -l $lang $F stdout > $TesseractOCRfile";
+            $command = "tesseract --tessdata-dir $script -l $lang $F stdout > $TesseractOCRfile";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
