@@ -11,7 +11,7 @@ The Text Tonsorium is written in the [Bracmat](https://github.com/BartJongejan/B
 
 The file textonInstall.txt gives a detailed description of how to install the Text Tonsorium in the Windows Subsystem for Linux.
 
-A number of NLP tools are included in this repositorium. More tools can by tried at the [Text Tonsorium homepage](https://nlpweb01.nors.ku.dk/texton/).
+A number of NLP tools are included in this repositorium. More tools can by tried at the [Text Tonsorium homepage](https://cst.dk/texton/).
 Resources for the NLP tools must be separately fetched from [GitHub](https://github.com/kuhumcst/texton-linguistic-resources). 
 
 ## Bibliography
