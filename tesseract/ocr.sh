@@ -29,7 +29,16 @@ pushd $TMP_DIR
 # depth of 8. Tesseract will misbehave with pixel depth > 8
 # or with color images.
  
-convert * -density 150 -depth 8 -colorspace gray -verbose -background white -alpha Off p%02d.tif
+# convert * -density 40 -depth 8 -colorspace gray -verbose -background white -alpha Off p%02d.tif
+# convert * -alpha Off p%02d.tif
+#convert -verbose -density 150 -trim * -quality 100 -sharpen 0x1.0 -alpha Off -depth 8 -colorspace gray p%02d.tif
+#convert -verbose -density 72 -trim * -quality 100 -sharpen 0x1.0 -alpha Off -depth 8 -colorspace gray p%02d.tif
+#convert -verbose -density 200 -trim * -quality 100 -sharpen 0x1.0 -alpha Off -depth 8 -colorspace gray p%02d.tif
+#convert -verbose -trim * -quality 100 -sharpen 0x1.0 -alpha Off -depth 8 -colorspace gray p%02d.tif
+#convert -verbose -trim -quality 100 -sharpen 0x1.0 -alpha Off -density 300 * p%02d.tif
+convert -verbose -trim -quality 100 -alpha Off -density 300 * p%02d.tif #***** -density 300 is sometimes too high, something chokes.
+#convert -verbose -trim -quality 100 -alpha Off -density 200 * p%02d.tif
+
  
 # For every TIFF file listed in numerical order in the temporary
 # directory (contd)
