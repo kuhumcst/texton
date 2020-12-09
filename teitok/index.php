@@ -309,7 +309,7 @@ try {
                 case "ca":
                 case "cy":
                 case "gl":
-                    $abbr = "$lang.dat";
+		    $abbr = "-a $res/$lang/tokeniser/$lang.dat ";
                     break;
                 case "nb":
                     $abbr = "$res/no/tokeniser/abbr";
