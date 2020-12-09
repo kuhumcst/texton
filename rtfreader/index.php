@@ -402,8 +402,8 @@ try {
         logit($command);
 
         $tool = "../bin/rtfreader";
-	$abbr = "";
-	$res = "../texton-linguistic-resources";
+        $abbr = "";
+        $res = "../texton-linguistic-resources";
 
         if($Iappocr)
             $nopt = " -n- ";
