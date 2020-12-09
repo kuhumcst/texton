@@ -4,8 +4,8 @@ Get the casing right for Danish TEI P5 texts}
 
 X=
   ( teitok
-  =   input
-    .   !arg:?input
+  =   input abbreviations
+    .   !arg:(?input.?abbreviations)
       & nestML$(get$(!input,X ML)):?xml
       &   !xml
         :   ?XXX
@@ -38,7 +38,8 @@ X=
               ' (   !arg
                   :   ?A
                       (w.?wa,?W)
-                      ( (add|del|ex):?ad
+                      (   (add|del|ex)
+                        : ?ad
                       .   ?att
                         ,   ~( ?
                                (c.? (type.p) ?,?)
@@ -57,7 +58,10 @@ X=
             &   whl
               ' (   !arg
                   :   ?A
-                      ((add|del|ex):?ad.?att,?XX)
+                      (   (add|del|ex)
+                        : ?ad
+                      . ?att,?XX
+                      )
                       (w.?wa,?W)
                       ?Z
                 &     !A
@@ -364,7 +368,14 @@ X=
               |   vap$((=.!arg).!arg):?chars
                 & (   !chars:?A "."
                     & getAll$(!A."."):(?A.?P)
-                    & (   (!abb:abbr|abbrev$!chars)
+                    & (   ( !abb:abbr
+                          | abbrev$!chars
+                          |   ( 
+                              =   
+                                . !('($abbreviations:? ()$arg ?))
+                              )
+                            $ (str$!chars)
+                          )
                         & Split$!chars
                       |   Split$!A
                           ( c
@@ -628,7 +639,8 @@ X=
                             space$!B
                       |   !e:del
                         & ecaps$(!A.!før) (!e.!aS) space$!B
-                      |   !e:(rdg|lem|app)
+                      |     !e
+                          : (rdg|lem|app)
                         & (!e.!aS)
                       | (   !e
                           : ( p&0:?tok
@@ -750,7 +762,22 @@ X=
             , NEW
             )
       |   
-        & put$(toML$((its.teitok)$(arg$)),arg$,NEW)
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        &   put
+          $ (   toML
+              $ ( (its.teitok)
+                $ ("C:\\projects\\parlamint\\dummy-ParlaMint-hr.xml".!abbr)
+                )
+            , "dummy-ParlaMint.out.xml"
+            , NEW
+            )
+      |   arg$:?input
+        & arg$:?output
+        &   ( vap$((=.!arg).get$(arg$.STR).\n)
+            | 
+            )
+          : ?abbr
+        & put$(toML$((its.teitok)$(!input.!abbr)),!output,NEW)
   );
 
 r=
