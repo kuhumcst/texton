@@ -4,14 +4,20 @@ Get the casing right for Danish TEI P5 texts}
 
 X=
   ( teitok
-  =   input abbreviations
-    .   !arg:(?input.?abbreviations)
+  =   input abbreviations style
+    .   !arg:(?input.?style.?abbreviations)
       & nestML$(get$(!input,X ML)):?xml
       &   !xml
         :   ?XXX
             (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD)
             ?YYY
-      & 0:?tok:?sen
+      & 0:?tok:?sen:?IS
+      & ( Sen
+        =   R
+          .   !IS:?R
+            & 0:?IS
+            & !R+!sen:?sen
+        )
       & ( trm
         =   
           .     whl
@@ -155,11 +161,15 @@ X=
       & ( renumber
         =   rbr S T ot nt s t
           .   ( rbr
-              =   att sub nm A Z a z
+              =   att sub nm A Z a z e
                 .   map
                   $ ( ( 
                       =   
                         .     !arg:(?e.?att,?sub)
+                            & (   !att:?a (PTB.?) ?z
+                                & (!e.!a !z,!sub):?arg
+                              | 
+                              )
                             & (   !e:(w|c)
                                 &   !att
                                   : ? (S.?s) ?
@@ -236,15 +246,203 @@ X=
               )
             & asn$!arg
         )
+      & ( inc1
+        =   a z T e c
+          .     !arg:(?e.?a (T.?T) ?z,?c)
+              & (!e.!a (T.1+!T) !z,!c)
+            | !arg
+        )
+      & ( inc2
+        =   a z T e c
+          .     !arg:(?e.?a (T.?T) ?z,?c)
+              & (!e.!a (T.2+!T) !z,!c)
+            | !arg
+        )
+      & ( contr
+        =   a b A B S T E
+          .     whl
+              ' (   !arg
+                  :   ?A
+                      (w.(S.?S) (T.?T),?B)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T)
+                        , "'"
+                      )
+                      ( w
+                      .   (S.!S) (T.!T)
+                        ,   ( ll
+                            | ve
+                            | re
+                            | s
+                            | m
+                            | d
+                            )
+                          : ?E
+                      )
+                      ?Z
+                &     !A
+                      (w.(S.!S) (T.!T),!B)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T+1)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T+1),!E)
+                      map$(inc1.!Z)
+                  : ?arg
+                )
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      (w.(S.?S) (T.?T),@(?:%?B n))
+                      ( c
+                      .   (type.p) (S.!S) (T.!T)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T),t)
+                      ?Z
+                &     !A
+                      (w.(S.!S) (T.!T),!B)
+                      (w.(S.!S) (T.!T+1),n)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T+1)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T+1),t)
+                      map$(inc1.!Z)
+                  : ?arg
+                )
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      (w.(S.?S) (T.?T),d)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T),ye)
+                      ?Z
+                &     !A
+                      (w.(S.!S) (T.!T),d)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T+1),ye)
+                      map$(inc1.!Z)
+                  : ?arg
+                )
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      (w.(S.?S) (T.?T),more)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T),n)
+                      ?Z
+                &     !A
+                      (w.(S.!S) (T.!T),more)
+                      ( c
+                      .   (type.p) (S.!S) (T.!T+1)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T+1),n)
+                      map$(inc1.!Z)
+                  : ?arg
+                )
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      ( c
+                      .   (type.p) (S.?S) (T.?T)
+                        , "'"
+                      )
+                      ( w
+                      .   (S.!S) (T.!T)
+                        , @(?:t ((is|was):?B))
+                      )
+                      ?Z
+                &     !A
+                      ( c
+                      .   (type.p) (S.!S) (T.?T)
+                        , "'"
+                      )
+                      (w.(S.!S) (T.!T),t)
+                      (w.(S.!S) (T.!T+1),!B)
+                      map$(inc1.!Z)
+                  : ?arg
+                )
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      ( w
+                      .   (S.?S) (T.?T)
+                        , [%(   (whaddya.wha dd ya)
+                                (whatcha.wha t cha)
+                            : ? (!sjt.%?a %?b %?c) ?
+                            )
+                      )
+                      ?Z
+                &     !A
+                      (w.(S.!S) (T.!T),!a)
+                      (w.(S.!S) (T.!T+1),!b)
+                      (w.(S.!S) (T.!T+2),!c)
+                      map$(inc2.!Z)
+                  : ?arg
+                )
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      ( w
+                      .   (S.?S) (T.?T)
+                        , [%(   (cannot.can not)
+                                (gimme.gim me)
+                                (gonna.gon na)
+                                (gotta.got ta)
+                                (lemme.lem me)
+                                (wanna.wan na)
+                            : ? (!sjt.%?a %?b) ?
+                            )
+                      )
+                      ?Z
+                &     !A
+                      (w.(S.!S) (T.!T),!a)
+                      (w.(S.!S) (T.!T+1),!b)
+                      map$(inc1.!Z)
+                  : ?arg
+                )
+            & !arg
+        )
+      & ( rcontr
+        =   rc S T ot nt s t
+          .   ( rc
+              =   att sub nm A Z a z e
+                .   map
+                  $ ( ( 
+                      =   
+                        .     !arg:(?e.?att,?sub)
+                            & contr$!sub:?sub
+                            & (!e.!att,rc$!sub)
+                          | !arg
+                      )
+                    . !arg
+                    )
+              )
+            & rc$!arg
+        )
       & ( Split
-        =   A k K
+        =   A k K it
           .   :?OO
-            & !tok+1:?tok
+            & 1:?it
             &   whl
               ' (   !arg
                   :   ?A
                       ( %?k
                       : ( "'"
+                        | "-"
+                        | …
+                        | "."
                         | "("
                         | ")"
                         | "["
@@ -253,12 +451,9 @@ X=
                         | "}"
                         | ":"
                         | ","
-                        | "-"
                         | –
                         | —
-                        | …
                         | "!"
-                        | "."
                         | ‹
                         | ›
                         | «
@@ -282,51 +477,60 @@ X=
                 &     !OO
                       ( !A:
                       | ( w
-                        .   (S.!sen) (T.!tok)
+                        .     (S.Sen$)
+                              ( T
+                              .   !it+!tok:?tok
+                                & 0:?it
+                                & !tok
+                              )
                           , trim$(str$!A)
                         )
                       )
                       ( c
                       .     (type.p)
-                            (S.!sen)
+                            (S.Sen$)
                             ( T
                             .       !K
-                                  : ( ","&~(!A:? #%@)
-                                    | "." "." "."
+                                  : ( "." "." "."
                                     | …
-                                    | "("
-                                    | ")"
-                                    | "["
-                                    | "]"
-                                    | "{"
-                                    | "}"
-                                    | ":"
-                                    | –
-                                    | —
-                                    | …
-                                    | "!"
                                     | "."
-                                    | ‹
-                                    | ›
-                                    | «
-                                    | »
-                                    | "?"
-                                    | ‘
-                                    | ’
-                                    | “
-                                    | ”
-                                    | ";"
-                                    | "\\"
-                                    | "/"
-                                    | \"
-                                    | "`"
+                                    |   ( "("
+                                        | ")"
+                                        | "["
+                                        | "]"
+                                        | "{"
+                                        | "}"
+                                        | ":"
+                                        | ","&~(!A:? #%@)
+                                        | –
+                                        | —
+                                        | "!"
+                                        | ‹
+                                        | ›
+                                        | «
+                                        | »
+                                        | "?"
+                                        | ‘
+                                        | ’
+                                        | “
+                                        | ”
+                                        | ";"
+                                        | "\\"
+                                        | "/"
+                                        | \"
+                                        | "`"
+                                        )
+                                        ?
                                     )
+                                & 0:?it
                                 & (   !arg:
                                     & 1+!tok:?tok
                                   |   2+!tok:?tok
                                     & -1+!tok
                                   )
-                              | !tok
+                              |   !it+!tok:?tok
+                                & 0:?it
+                                & !tok
                             )
                         , str$!K
                       )
@@ -334,18 +538,16 @@ X=
                 )
             &   !OO
                 ( !arg:
-                | (w.(S.!sen) (T.!tok),trim$(str$!arg))
+                | ( w
+                  .     (S.Sen$)
+                        ( T
+                        .   !it+!tok:?tok
+                          & 0:?it
+                          & !tok
+                        )
+                    , trim$(str$!arg)
+                  )
                 )
-        )
-      & ( abbrev
-        =   abb
-          .   ( abb
-              =   
-                .   !arg
-                  : (? "." ?arg&abb$!arg|)
-              )
-            & !arg:? "." ? "."
-            & abb$!arg
         )
       & ( getAll
         =   K p
@@ -362,14 +564,14 @@ X=
             & (!K.!P)
         )
       & ( toksplit
-        =   A N P Z tp PZ z F L abb
+        =   A N P Z tp PZ z F L abb TOK
           .   !arg:(?arg.?abb)
             & ( !arg:
               |   vap$((=.!arg).!arg):?chars
                 & (   !chars:?A "."
                     & getAll$(!A."."):(?A.?P)
                     & (   ( !abb:abbr
-                          | abbrev$!chars
+                          | !chars:% "." % ".":~(? ".." ?)
                           |   ( 
                               =   
                                 . !('($abbreviations:? ()$arg ?))
@@ -381,13 +583,13 @@ X=
                           ( c
                           .     (type.p)
                                 ( S
-                                .   (   !tok:0
+                                .   1+!tok:?TOK
+                                  & (   !tok:0
                                       & 1+!sen:?sen
-                                    | 
+                                    |   0:?tok
+                                      & 1:?IS
+                                      & !sen
                                     )
-                                  & 1+!tok:?TOK
-                                  & 0:?tok
-                                  & !sen
                                 )
                                 (T.!TOK)
                             , "."
@@ -397,13 +599,14 @@ X=
                       :   ?A
                           ((","|";"|":"):?P)
                     & getAll$(!A.!P):(?A.?P)
-                    & ( !tok:0&1+!sen:?sen
+                    & ( 
+                      | !tok:0&1+!sen:?sen
                       | 
                       )
                     &   Split$!A
                         ( c
                         .     (type.p)
-                              (S.!sen)
+                              (S.Sen$)
                               (T.1+!tok:?tok)
                           , !P
                         )
@@ -413,13 +616,13 @@ X=
                         ( c
                         .     (type.p)
                               ( S
-                              .   (   !tok:0
+                              .   1+!tok:?TOK
+                                & (   !tok:0
                                     & 1+!sen:?sen
-                                  | 
+                                  |   0:?tok
+                                    & 1:?IS
+                                    & !sen
                                   )
-                                & 1+!tok:?TOK
-                                & 0:?tok
-                                & !sen
                               )
                               (T.!TOK)
                           , !P
@@ -454,13 +657,7 @@ X=
                     & llAteg$(!A.!F):(?A.?F)
                     &   ( c
                         .     (type.p)
-                              ( S
-                              .   (   !tok:0
-                                    & 1+!sen:?sen
-                                  | 
-                                  )
-                                & !sen
-                              )
+                              (S.Sen$)
                               (T.1+!tok:?tok)
                           , !F
                         )
@@ -470,20 +667,11 @@ X=
                     &   toksplit$(str$!A.!abb)
                         ( c
                         .     (type.p)
-                              ( S
-                              .   (   !tok:0
-                                    & 1+!sen:?sen
-                                  | 
-                                  )
-                                & !sen
-                              )
+                              (S.Sen$)
                               (T.1+!tok:?tok)
                           , !F
                         )
-                  |   ( !tok:0&1+!sen:?sen
-                      | 
-                      )
-                    & Split$!chars
+                  | Split$!chars
                   )
               )
         )
@@ -606,13 +794,7 @@ X=
                         &   ecaps$(!A.!før)
                             ( w
                             .     !a
-                                  ( S
-                                  .   (   !tok:0
-                                        & 1+!sen:?sen
-                                      | 
-                                      )
-                                    & !sen
-                                  )
+                                  (S.Sen$)
                                   (T.1+!tok:?tok)
                               , trim$!S
                             )
@@ -621,7 +803,7 @@ X=
                         & !aS:(?a,?S)
                         &   ( c
                             .     !a
-                                  (S.!sen)
+                                  (S.Sen$)
                                   (T.1+!tok:?tok)
                               , !S
                             )
@@ -643,7 +825,9 @@ X=
                           : (rdg|lem|app)
                         & (!e.!aS)
                       | (   !e
-                          : ( p&0:?tok
+                          : (   (p|u)
+                              & 1:?IS
+                              & 0:?tok
                             | ?
                             )
                         .     !aS:(?a,?S)
@@ -677,7 +861,7 @@ X=
                             :   ?A
                                 ( ?e
                                 .     ( ~(? (S.?) ?)
-                                      | ? (S.!sen) ?
+                                      | ? (S.Sen$) ?
                                       )
                                     : ?a
                                   , ?s
@@ -698,14 +882,18 @@ X=
         )
       & trav$(!text..):?nbody
       & contractwadddel$!nbody:?nbody2
-      & assignIDs$!nbody2:?nnbody
+      &   ( !style:PT&rcontr$!nbody2
+          | !nbody2
+          )
+        : ?nmbody2
+      & assignIDs$!nmbody2:?nnbody
       & renumber$!nnbody:?nrbody
       &   !XXX
           (TEI.!teiatt,!AAA (text.!textatt,!nrbody) !DDD)
           !YYY
   )
   ( new
-  =   
+  =   input abbr style
     .   ~
       |   ~
         &   put
@@ -761,7 +949,7 @@ X=
             , "original-deposited-file-37.out.xml"
             , NEW
             )
-      |   
+      |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
         &   put
           $ (   toML
@@ -771,13 +959,18 @@ X=
             , "dummy-ParlaMint.out.xml"
             , NEW
             )
+      |   ~
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        & put$(toML$((its.teitok)$("FF.xml".PT.!abbr)),"G.xml",NEW)
       |   arg$:?input
         & arg$:?output
+        & arg$:(PT|simple):?style
         &   ( vap$((=.!arg).get$(arg$.STR).\n)
             | 
             )
           : ?abbr
-        & put$(toML$((its.teitok)$(!input.!abbr)),!output,NEW)
+        &   put
+          $ (toML$((its.teitok)$(!input.!style.!abbr)),!output,NEW)
   );
 
 r=

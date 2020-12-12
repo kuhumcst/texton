@@ -349,7 +349,10 @@ try {
             }
 
         $teitokfile = tempFileName("teitokfile-results");
-        $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile $abbr";
+        if($OfacetsetoPT)
+            $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile PT $abbr";
+        else
+            $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile simple $abbr";
 
         logit($command);
 
