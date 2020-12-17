@@ -1,0 +1,182 @@
+{dapipe.bra
+
+Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
+
+X=
+  ( doit
+  =   output tmp1 tmp2 A B C D E F G H xml
+    .   ( turnCONLLintoTEIP5
+        =   s segid sentnr
+          .   !arg:(? ("xml:id".?segid) ?,?arg)
+            & 1:?sentnr
+            & :?s
+            &   vap
+              $ ( ( 
+                  =   prefix sentid
+                    .     !arg:
+                        & :?S:?L
+                        & str$(!segid "." !sentnr):?sentid
+                        & str$(!segid "." !sentid "."):?prefix
+                        &   whl
+                          ' (   !s
+                              :   @( ?
+                                   :   ?from
+                                       \t
+                                       ?word
+                                       \t
+                                       ?lemma
+                                       \t
+                                       ?pos
+                                       \t
+                                       ?
+                                       \t
+                                       ?msd
+                                       \t
+                                       ?to
+                                       \t
+                                       ?h
+                                       \t
+                                       ?
+                                       \t
+                                       ?
+                                   )
+                                  ?s
+                            &     (   !pos:PUNCT
+                                    & ( pc
+                                      .     (msd."UPosTag=PUNCT")
+                                            ("xml:id".str$(!prefix !from))
+                                        , !word
+                                      )
+                                  | ( w
+                                    .     (lemma.!lemma)
+                                          ( msd
+                                          . str$("UPosTag=" !pos "|" !msd)
+                                          )
+                                          ("xml:id".str$(!prefix !from))
+                                      , !word
+                                    )
+                                  )
+                                  !S
+                              : ?S
+                            &     ( link
+                                  .     (ana.str$("ud-syn:" !h))
+                                        ( target
+                                        .   str
+                                          $ ( "#"
+                                              !prefix
+                                              (!to:~0|)
+                                              " #"
+                                              !prefix
+                                              !from
+                                            )
+                                        )
+                                    , 
+                                  )
+                                  !L
+                              : ?L
+                            )
+                        & ( !S:
+                          |   1+!sentnr:?sentnr
+                            & ( s
+                              .   ("xml:id".!sentid)
+                                ,   !S
+                                    ( linkGrp
+                                    .     (targFunc."head argument")
+                                          (type.UD-SYN)
+                                      , !L
+                                    )
+                              )
+                          )
+                      |   ( @(!arg:"#" ?)
+                          | !arg !s:?s
+                          )
+                        & 
+                  )
+                . !arg
+                . \n
+                )
+        )
+      & ( transform
+        =   
+          .   map
+            $ ( ( 
+                =   e a c
+                  .     !arg:(?e.?a,?c)
+                      & (   !e:seg
+                          & put$(!c,!tmp1,NEW)
+                          &     str
+                              $ ( "/opt/texton/dapipe/dapipe/udpipe.lin64 --tokenize --tag --parse /opt/texton/dapipe/dapipe/danish-ud-2.0-170801.udpipe "
+                                  !tmp1
+                                  " > "
+                                  !tmp2
+                                )
+                            : ?command
+                          & sys$!command
+                          & get$(!tmp2,STR):?c
+                          & turnCONLLintoTEIP5$(!a,!c):?c
+                          & (!e.!a,!c)
+                        | (!e.!a,transform$!c)
+                        )
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      & !arg:(?arg.?output.?tmp1.?tmp2)
+      & nestML$(get$(!arg,X ML)):?xml
+      &   !xml
+        :   ?A
+            ( TEI
+            . ?B,?C (text.?D,?E (body.?F,?body) ?G) ?H
+            )
+            ?I
+      & (     ( 
+              =   xmlid a z
+                .   !arg:?a ("xml:id".?xmlid) ?z
+                  & !a ("xml:id".str$(!xmlid "-ana")) !z
+              )
+            $ !B
+          : ?B
+        | 
+        )
+      &   (~&dapipe|transform$!body)
+        : ?body
+      &     !A
+            ( TEI
+            . !B,!C (text.!D,!E (body.!F,!body) !G) !H
+            )
+            !I
+        : ?xmln
+      & put$(toML$!xmln,!output,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |     ( ~&("test.xml"."testout.xml".tmp1.tmp2)
+            | (arg$.arg$.arg$.arg$)
+            )
+          : (?input.?output.?tmp1.?tmp2)
+        & (its.doit)$(!input.!output.!tmp1.!tmp2)
+  );
+
+r=
+  get'("dapipe.bra",TXT)
+& rmv$(str$(dapipe ".bak"))
+& ren$("dapipe.bra".str$(dapipe ".bak"))
+&   put
+  $ ( "{dapipe.bra
+
+Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
+
+"
+    , "dapipe.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"dapipe.bra",APP)
+& put'(\n,"dapipe.bra",APP,BIN)
+& lst'(r,"dapipe.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"dapipe.bra",APP,BIN)
+& ;
+
+new'X;
