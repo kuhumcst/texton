@@ -328,7 +328,22 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         logit("F:" . $F);
-        $dapipefile = dapipe($F);
+        copy($F,"F");
+        if($Iformatflat)
+            {
+            logit("Flat");
+
+            $dapipefile = dapipe($F);
+            }
+        else 
+            {
+            logit("not Flat");
+            $dapipefile = tempFileName("dapipe-results");
+            $tmp1 = tempFileName("dapipe-tmp1");
+            $tmp2 = tempFileName("dapipe-tmp2");
+            $command = "../bin/bracmat \"get'\\\"dapipe.bra\\\"\" $F $dapipefile $tmp1 $tmp2";
+            }
+
 
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dapipefile
 //*/

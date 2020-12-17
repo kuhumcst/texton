@@ -4,8 +4,8 @@ Get the casing right for Danish TEI P5 texts}
 
 X=
   ( teitok
-  =   input abbreviations
-    .   !arg:(?input.?abbreviations)
+  =   input abbreviations style
+    .   !arg:(?input.?abbreviations.?style)
       & nestML$(get$(!input,X ML)):?xml
       &   !xml
         :   ?XXX
@@ -337,16 +337,58 @@ X=
                 | (w.(S.!sen) (T.!tok),trim$(str$!arg))
                 )
         )
-      & ( abbrev
-        =   abb
-          .   ( abb
-              =   
-                .   !arg
-                  : (? "." ?arg&abb$!arg|)
+      &   (   !style:PT
+            & ( 
+              =   a b
+                .     (   @( !arg
+                           :   %
+                               ?
+                               a
+                               ( (   "'"
+                                     ( ll
+                                     | ve
+                                     | re
+                                     | s
+                                     | m
+                                     | d
+                                     )
+                                 | "n't"
+                                 )
+                               : ?b
+                               )
+                           )
+                        & !a !b
+                      | !arg:cannot&can not
+                      | !arg:"d'ye"&"d'" ye
+                      | !arg:gimme&gim me
+                      | !arg:gonna&gon na
+                      | !arg:gotta&got ta
+                      | !arg:lemme&lem me
+                      | !arg:"more'n"&more "'n"
+                      | !arg:"'tis"&"'t" is
+                      | !arg:"'twas"&"'t" was
+                      | !arg:wanna&wan na
+                      | !arg:whaddya&wha dd ya
+                      | !arg:whatcha&wha t cha
+                      )
+                    : ?arg
+                  & ( !tok:0&1+!sen:?sen
+                    | 
+                    )
+                  &   map
+                    $ ( ( 
+                        =   
+                          . w
+                          .   (S.!sen) (T.1+!tok:?tok)
+                            , !arg
+                        )
+                      . !arg
+                      )
               )
-            & !arg:? "." ? "."
-            & abb$!arg
-        )
+          | (=.~)
+          )
+        : (=?contractions)
+      & lst$contractions
       & ( getAll
         =   K p
           .   !arg:(?K.?p)
@@ -369,7 +411,7 @@ X=
                 & (   !chars:?A "."
                     & getAll$(!A."."):(?A.?P)
                     & (   ( !abb:abbr
-                          | abbrev$!chars
+                          | !chars:% "." % ".":~(? ".." ?)
                           |   ( 
                               =   
                                 . !('($abbreviations:? ()$arg ?))
@@ -480,6 +522,7 @@ X=
                               (T.1+!tok:?tok)
                           , !F
                         )
+                  | contractions$(str$!chars)
                   |   ( !tok:0&1+!sen:?sen
                       | 
                       )
@@ -705,7 +748,7 @@ X=
           !YYY
   )
   ( new
-  =   
+  =   input abbr style
     .   ~
       |   ~
         &   put
@@ -761,7 +804,7 @@ X=
             , "original-deposited-file-37.out.xml"
             , NEW
             )
-      |   
+      |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
         &   put
           $ (   toML
@@ -771,13 +814,23 @@ X=
             , "dummy-ParlaMint.out.xml"
             , NEW
             )
+      |   out$hello
+        &     vap
+            $ ( (=.!arg)
+              . get$("../texton-linguistic-resources/da/tokeniser/abbr",STR)
+              . \n
+              )
+          : ?abbr
+        & put$(toML$((its.teitok)$(FF.!abbr.PT)),G,NEW)
       |   arg$:?input
         & arg$:?output
+        & arg$:(PT|simple):?style
         &   ( vap$((=.!arg).get$(arg$.STR).\n)
             | 
             )
           : ?abbr
-        & put$(toML$((its.teitok)$(!input.!abbr)),!output,NEW)
+        &   put
+          $ (toML$((its.teitok)$(!input.!style.!abbr)),!output,NEW)
   );
 
 r=
