@@ -8,14 +8,13 @@ X=
     .   ( turnCONLLintoTEIP5
         =   s segid sentnr
           .   !arg:(? ("xml:id".?segid) ?,?arg)
-            & 0:?sentnr
+            & 1:?sentnr
             & :?s
             &   vap
               $ ( ( 
                   =   prefix sentid
                     .     !arg:
                         & :?S:?L
-                        & 1+!sentnr:?sentnr
                         & str$(!segid "." !sentnr):?sentid
                         & str$(!segid "." !sentid "."):?prefix
                         &   whl
@@ -76,14 +75,17 @@ X=
                                   !L
                               : ?L
                             )
-                        & ( s
-                          .   ("xml:id".!sentid)
-                            ,   (!S:~|!s)
-                                ( linkGrp
-                                .     (targFunc."head argument")
-                                      (type.UD-SYN)
-                                  , !L
-                                )
+                        & ( !S:
+                          |   1+!sentnr:?sentnr
+                            & ( s
+                              .   ("xml:id".!sentid)
+                                ,   !S
+                                    ( linkGrp
+                                    .     (targFunc."head argument")
+                                          (type.UD-SYN)
+                                      , !L
+                                    )
+                              )
                           )
                       |   ( @(!arg:"#" ?)
                           | !arg !s:?s
@@ -128,6 +130,15 @@ X=
             . ?B,?C (text.?D,?E (body.?F,?body) ?G) ?H
             )
             ?I
+      & (     ( 
+              =   xmlid a z
+                .   !arg:?a ("xml:id".?xmlid) ?z
+                  & !a ("xml:id".str$(!xmlid "-ana")) !z
+              )
+            $ !B
+          : ?B
+        | 
+        )
       &   (~&dapipe|transform$!body)
         : ?body
       &     !A
