@@ -200,20 +200,28 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
-        $Iformatflat = false;	/* Format in input is flat (flad) if true */
-        $Ilangda = false;	/* Language in input is Danish (dansk) if true */
-        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Assemblage in input is normal if true */
-        $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
-        $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
-        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $IfacetsegF = "";	/* Input with annotationstyper segments (Sætningssegmenter) */
+        $IfacettokF = "";	/* Input with annotationstyper tokens (Tokens) */
+        $Iambiguna = false;	/* Flertydighed in input is unambiguous (utvetydig) if true */
+        $Iappnrm = false;	/* Udseende in input is normalised (normaliseret) if true */
+        $Ifacetseg = false;	/* Annotationstyper in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Annotationstyper in input is tokens (Tokens) if true */
+        $Ifacettxt = false;	/* Annotationstyper in input is text (Ingen annotation) if true */
+        $Iformatflat = false;	/* Format in input is plain (flad) if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
+        $Ilangda = false;	/* Sprog in input is Danish (dansk) if true */
+        $Iperiodc21 = false;	/* Historisk periode in input is contemporary (efterkrigstiden) if true */
+        $Ipresnml = false;	/* Sammensætning in input is normal if true */
+        $Oambiguna = false;	/* Flertydighed in output is unambiguous (utvetydig) if true */
+        $Oappnrm = false;	/* Udseende in output is normalised (normaliseret) if true */
+        $Ofacetpls = false;	/* Annotationstyper in output is PoS-tags,lemmas,syntax (Pos-tags,lemma,syntaks) if true */
+        $Ofacetstx = false;	/* Annotationstyper in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Oformatconll = false;	/* Format in output is CoNLL2009 if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
-        $Olangda = false;	/* Language in output is Danish (dansk) if true */
-        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Oformattxtbasis = false;	/* Format in output is TEIP5DKCLARIN if true */
+        $Olangda = false;	/* Sprog in output is Danish (dansk) if true */
+        $Operiodc21 = false;	/* Historisk periode in output is contemporary (efterkrigstiden) if true */
+        $Opresnml = false;	/* Sammensætning in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -242,6 +250,26 @@ try {
                 }
             $echos = $echos . "F=$F ";
             }
+        if( hasArgument("IfacetsegF") )
+            {        
+            $IfacetsegF = requestFile("IfacetsegF");
+            if($IfacetsegF == '')
+                {
+                header("HTTP/1.0 404 Input with annotationstyper 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacetsegF=$IfacetsegF ";
+            }
+        if( hasArgument("IfacettokF") )
+            {        
+            $IfacettokF = requestFile("IfacettokF");
+            if($IfacettokF == '')
+                {
+                header("HTTP/1.0 404 Input with annotationstyper 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacettokF=$IfacettokF ";
+            }
 
 /************************
 * input/output features *
@@ -259,8 +287,9 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
             $Ifacettxt = existsArgumentWithValue("Ifacet", "txt");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettxt=$Ifacettxt ";
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
             }
         if( hasArgument("Iformat") )
             {
@@ -295,14 +324,16 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetpls = existsArgumentWithValue("Ofacet", "pls");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
-            $echos = $echos . "Ofacetstx=$Ofacetstx ";
+            $echos = $echos . "Ofacetpls=$Ofacetpls " . "Ofacetstx=$Ofacetstx ";
             }
         if( hasArgument("Oformat") )
             {
             $Oformatconll = existsArgumentWithValue("Oformat", "conll");
             $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
-            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformatteip5=$Oformatteip5 ";
+            $Oformattxtbasis = existsArgumentWithValue("Oformat", "txtbasis");
+            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformatteip5=$Oformatteip5 " . "Oformattxtbasis=$Oformattxtbasis ";
             }
         if( hasArgument("Olang") )
             {
@@ -348,9 +379,32 @@ try {
             logit("Flat");
             $dapipefile = dapipe($F);
             }
-        else 
+        else if($Ifacettok) // an also $Ifacetseg!
             {
-            logit("not Flat");
+            logit("segments and tokens input, PoS,Lemmas,syntax output");
+            $dapipefile = tempFileName("dapipe-results");
+            logit("dapipefile $dapipefile");
+            $tmp1 = tempFileName("dapipe-tmp1");
+            $tmp2 = tempFileName("dapipe-tmp2");
+            copy($IfacettokF,"IfacettokF");
+            copy($IfacetsegF,"IfacetsegF");
+            $command = "../bin/bracmat \"get'\\\"dapipex.bra\\\"\" $IfacettokF $IfacetsegF $dapipefile $tmp1 $tmp2";
+            logit($command);
+
+            if(($cmd = popen($command, "r")) == NULL)
+                {
+                throw new SystemExit();
+                }
+
+            while($read = fgets($cmd))
+                {
+                }
+
+            pclose($cmd);
+            }
+        else
+            {
+            logit("TEI P5 input");
             $dapipefile = tempFileName("dapipe-results");
             logit("dapipefile $dapipefile");
             $tmp1 = tempFileName("dapipe-tmp1");
