@@ -200,28 +200,29 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with annotationstyper segments (Sætningssegmenter) */
-        $IfacettokF = "";	/* Input with annotationstyper tokens (Tokens) */
-        $Iambiguna = false;	/* Flertydighed in input is unambiguous (utvetydig) if true */
-        $Iappnrm = false;	/* Udseende in input is normalised (normaliseret) if true */
-        $Ifacetseg = false;	/* Annotationstyper in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Annotationstyper in input is tokens (Tokens) if true */
-        $Ifacettxt = false;	/* Annotationstyper in input is text (Ingen annotation) if true */
+        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
+        $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
+        $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
+        $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $Ifacettxt = false;	/* Type of content in input is text (Ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
-        $Ilangda = false;	/* Sprog in input is Danish (dansk) if true */
-        $Iperiodc21 = false;	/* Historisk periode in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Sammensætning in input is normal if true */
-        $Oambiguna = false;	/* Flertydighed in output is unambiguous (utvetydig) if true */
-        $Oappnrm = false;	/* Udseende in output is normalised (normaliseret) if true */
-        $Ofacetpls = false;	/* Annotationstyper in output is PoS-tags,lemmas,syntax (Pos-tags,lemma,syntaks) if true */
-        $Ofacetstx = false;	/* Annotationstyper in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Ilangda = false;	/* Language in input is Danish (dansk) if true */
+        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
+        $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
+        $Ofacetpls = false;	/* Type of content in output is PoS-tags,lemmas,syntax (Pos-tags,lemma,syntaks) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Oformatconll = false;	/* Format in output is CoNLL2009 if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
-        $Oformattxtbasis = false;	/* Format in output is TEIP5DKCLARIN if true */
-        $Olangda = false;	/* Sprog in output is Danish (dansk) if true */
-        $Operiodc21 = false;	/* Historisk periode in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Sammensætning in output is normal if true */
+        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Olangda = false;	/* Language in output is Danish (dansk) if true */
+        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -255,7 +256,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -265,7 +266,7 @@ try {
             $IfacettokF = requestFile("IfacettokF");
             if($IfacettokF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'tokens (Tokens)' not found (IfacettokF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacettokF=$IfacettokF ";
@@ -295,7 +296,8 @@ try {
             {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
             $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
-            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformatteip5=$Iformatteip5 ";
+            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
+            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformatteip5=$Iformatteip5 " . "Iformattxtann=$Iformattxtann ";
             }
         if( hasArgument("Ilang") )
             {
@@ -332,8 +334,8 @@ try {
             {
             $Oformatconll = existsArgumentWithValue("Oformat", "conll");
             $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
-            $Oformattxtbasis = existsArgumentWithValue("Oformat", "txtbasis");
-            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformatteip5=$Oformatteip5 " . "Oformattxtbasis=$Oformattxtbasis ";
+            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
+            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformatteip5=$Oformatteip5 " . "Oformattxtann=$Oformattxtann ";
             }
         if( hasArgument("Olang") )
             {
