@@ -6,7 +6,7 @@ Retain elements that occur in the TEI P5 input in the output.}
 program-annotei=
   ( doit
   =   
-    .   !arg:(?tei.?tok.?pos.?lem.?stx.?output)
+    .   !arg:(?tei.?tok.?pos.?lem.?seg.?stx.?output)
       &   nestML$(get$(!tei,X ML))
         : (   ?teiA
               (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
@@ -20,8 +20,14 @@ program-annotei=
         : ? (spanGrp.?,?pos) ?
       &   nestML$(get$(!lem,X ML))
         : ? (spanGrp.?,?lem) ?
-      & (!stx:"*"&:?stx|nestML$(get$(!stx,X ML))
-        : ? (spanGrp.?,?stx) ?)
+      & ( !stx:"*"&:?stx
+        |   nestML$(get$(!stx,X ML))
+          : ? (spanGrp.?,?stx) ?
+        )
+      & ( !seg:"*"&:?seg
+        |   nestML$(get$(!seg,X ML))
+          : ? (spanGrp.?,?seg) ?
+        )
       &     map
           $ ( ( 
               =   
@@ -60,11 +66,12 @@ program-annotei=
                     | :?PS
                     )
                   & "Length of PS and LS must be the same or 1."
-                  & (!teiid.!toid.!PS.!LS)
+                  & (!teiid.!toid.!PS.!LS.!tokid)
               )
             . !tok
             )
         : ?PL
+      & "SP is a list of c elements containing white space chars."
       & ( getSP
         =   sp
           .   (!SP.):(?sp.?SP)
@@ -76,170 +83,738 @@ program-annotei=
       & ( getMWU
         = MWU.(!mwu.):(?MWU.?mwu)&!MWU
         )
+      & ( flattenMWU
+        =   
+          .   map
+            $ ( ( 
+                =   
+                  .       !arg
+                        : (w|c|pc.?,?arg)
+                      & !arg
+                    | !arg
+                )
+              . !arg
+              )
+        )
       & 0:?ID
       & ( anno
         =   A e a s lenPS lenLS id
-          .     !arg:?A (?e.?a,?s) ?arg
-              &   !A
-                  (     !e
-                      : ( w
-                        |   c
-                          & ( !a:? (type.s) ?
-                            | pc:?e
-                            )
-                        )
-                    & (   !a:? ("xml:id".?id) ?
-                        & (   !MWUend:
-                            &   !PL
-                              :   (!id.?to.?PS [?lenPS.?LS [?lenLS)
-                                  ?PL
-                            & "Current TEI element is w or pc"
-                            & :?excludes:?ids
-                            & (   !lenPS+!lenLS:>2
-                                &   (!lenPS:>1|!lenLS)
-                                  : ?len
-                                & :?alts
-                                &   whl
-                                  ' ( !len+-1:~<0:?len
-                                    &     !alts
-                                            str
-                                          $ ("#A" (!ID+1:?ID) " ")
-                                      : ?alts
-                                    )
-                                & (   !alts
-                                    :   ?A
-                                        @(?:"#" ?M " ")
-                                        ( ?Z
-                                        &     !excludes
-                                              ( exclude
-                                              .   @(str$(!A !Z):?A " ")
-                                                & !A
-                                              )
-                                          : ?excludes
-                                        & !ids ("xml:id".!M):?ids
-                                        & ~
-                                        )
-                                  | 
+          .   map
+            $ ( ( 
+                =   
+                  .   !arg:@
+                    |   !arg:(?e.?a,?s)
+                      & (     !e
+                            : ( w
+                              |   c
+                                & ( !a:? (type.s) ?
+                                  | pc:?e
                                   )
-                              | 
                               )
-                            & (   !to:!id
-                                &   getSP$()
-                                    (   !excludes:
-                                      & (   !PS:!LS:
-                                          & (!e.!a,!s)
-                                        | ( !e
-                                          .     !a
+                          & (   !a:? ("xml:id".?id) ?
+                              & (   !MWUend:
+                                  &   !PL
+                                    :   ( !id
+                                        . ?to
+                                        . ?PS [?lenPS
+                                        . ?LS [?lenLS
+                                        . ?tokid
+                                        )
+                                        ?PL
+                                  & "Current TEI element is w or pc"
+                                  & :?excludes:?ids
+                                  & (   !lenPS+!lenLS:>2
+                                      &   ( !lenPS:>1
+                                          | !lenLS
+                                          )
+                                        : ?len
+                                      & :?alts
+                                      &   whl
+                                        ' ( !len+-1:~<0:?len
+                                          &     !alts
+                                                  str
+                                                $ ( "#A"
+                                                    (!ID+1:?ID)
+                                                    " "
+                                                  )
+                                            : ?alts
+                                          )
+                                      & (   !alts
+                                          :   ?A
+                                              @(?:"#" ?M " ")
+                                              ( ?Z
+                                              &     !excludes
+                                                    ( exclude
+                                                    .   @( str$(!A !Z)
+                                                         : ?A " "
+                                                         )
+                                                      & !A
+                                                    )
+                                                : ?excludes
+                                              &   !ids ("xml:id".!M)
+                                                : ?ids
+                                              & ~
+                                              )
+                                        | 
+                                        )
+                                    | 
+                                    )
+                                  & (   !to:!id
+                                      &   getSP$()
+                                          (   !excludes:
+                                            & (   !PS:!LS:
+                                                & (!e.!a,!s)
+                                              |   
+                                                & (     !a
+                                                      :   ?aa
+                                                          ("xml:id".?XMLID)
+                                                          ?zz
+                                                    & !aa !zz:?a
+                                                  | 
+                                                  )
+                                                &   !a ("xml:id".!tokid)
+                                                  : ?a
+                                                & ( !e
+                                                  .     !a
+                                                        (pos.!PS)
+                                                        (lemma.!LS)
+                                                    , !s
+                                                  )
+                                              )
+                                          |   map
+                                            $ ( ( 
+                                                =   id
+                                                  .   !ids:%?id ?ids
+                                                    & ( !PS:%?P ?PS
+                                                      | 
+                                                      )
+                                                    & ( !LS:%?L ?LS
+                                                      | 
+                                                      )
+                                                    & (     !a
+                                                          :   ?aa
+                                                              ("xml:id".?XMLID)
+                                                              ?zz
+                                                        & !aa !zz:?a
+                                                      | 
+                                                      )
+                                                    &   !a ("xml:id".!tokid)
+                                                      : ?a
+                                                    & ( !e
+                                                      .     !a
+                                                            (pos.!P)
+                                                            (lemma.!L)
+                                                            !id
+                                                            !arg
+                                                        , !s
+                                                      )
+                                                )
+                                              . !excludes
+                                              )
+                                          )
+                                    |   !to:?MWUend
+                                      & (!e.!a,!s):?mwu
+                                      & 
+                                    )
+                                |   !id:!MWUend
+                                  & :?MWUend
+                                  & !mwu (!e.!a,!s):?mwu
+                                  & flattenMWU$(getMWU$):?theMWU
+                                  &   getSP$()
+                                      (   !excludes:
+                                        & ( w
+                                          .     ("xml:id".!tokid)
                                                 (pos.!PS)
                                                 (lemma.!LS)
-                                            , !s
+                                            , !theMWU
                                           )
-                                        )
-                                    |   map
-                                      $ ( ( 
-                                          =   id
-                                            .   !ids:%?id ?ids
-                                              & ( !PS:%?P ?PS
-                                                | 
-                                                )
-                                              & ( !LS:%?L ?LS
-                                                | 
-                                                )
-                                              & ( !e
-                                                .     !a
-                                                      (pos.!P)
-                                                      (lemma.!L)
-                                                      !id
-                                                      !arg
-                                                  , !s
-                                                )
+                                      |   map
+                                        $ ( ( 
+                                            =   
+                                              .   !ids:%?id ?ids
+                                                & ( !PS:%?P ?PS
+                                                  | 
+                                                  )
+                                                & ( !LS:%?L ?LS
+                                                  | 
+                                                  )
+                                                & ( w
+                                                  .     (pos.!P)
+                                                        (lemma.!L)
+                                                        !id
+                                                        !arg
+                                                    , !theMWU
+                                                  )
+                                            )
+                                          . !excludes
                                           )
-                                        . !excludes
-                                        )
-                                    )
-                              |   !to:?MWUend
-                                & (!e.!a,!s):?mwu
-                                & 
-                              )
-                          |   !id:!MWUend
-                            & :?MWUend
-                            & !mwu (!e.!a,!s):?mwu
-                            & getMWU$:?theMWU
-                            &   getSP$()
-                                (   !excludes:
-                                  & ( w
-                                    .   (pos.!PS) (lemma.!LS)
-                                      , !theMWU
-                                    )
-                                |   map
-                                  $ ( ( 
-                                      =   
-                                        .   !ids:%?id ?ids
-                                          & ( !PS:%?P ?PS
-                                            | 
-                                            )
-                                          & ( !LS:%?L ?LS
-                                            | 
-                                            )
-                                          & ( w
-                                            .     (pos.!P)
-                                                  (lemma.!L)
-                                                  !id
-                                                  !arg
-                                              , !theMWU
-                                            )
                                       )
-                                    . !excludes
+                                |   (   !mwu:
+                                      & !SP (!e.!a,!s):?SP
+                                    | !mwu (!e.!a,!s):?mwu
                                     )
+                                  & 
                                 )
-                          |   (   !mwu:
-                                & !SP (!e.!a,!s):?SP
-                              | !mwu (!e.!a,!s):?mwu
-                              )
-                            & 
-                          )
-                      | getSP$() (!e.!a,!s)
-                      )
-                  | "Not w or c"&getSP$() (!e.!a,anno$!s)
-                  )
-                  anno$!arg
-            | getSP$() !arg
+                            | getSP$() (!e.!a,!s)
+                            )
+                        |   "Not w or c"
+                          & getSP$() (!e.!a,anno$!s)
+                        )
+                    | getSP$() !arg
+                )
+              . !arg
+              )
         )
       & :?MWUend:?mwu:?to:?SP
       & anno$!tei:?tei
       & ( cleanup
-        =   A e a s aa zz
-          .     !arg:?A (?e.?a,?s) ?arg
+        =   A e a s aa zz pat
+          .   !arg:(?arg.(=?pat))
+            &   map
+              $ ( ( 
+                  =   
+                    .     !arg:(?e.?a,?s)
+                        & (     !e
+                              : (w|pc|c)
+                            & (   !a:? (type.s) ?
+                                & (!s:~|)
+                              |     whl
+                                  ' ( !a:!pat
+                                    & !aa !zz:?a
+                                    )
+                                & ( !a:&!s
+                                  | (!e.!a,cleanup$(!s.'$pat))
+                                  )
+                              )
+                          | (!e.!a,cleanup$(!s.'$pat))
+                          )
+                      | !arg
+                  )
+                . !arg
+                )
+        )
+      & ( getListOfLinkGrp
+        =     tei seg stx from to S A B C
+            , syn target ana skipped
+          .   !arg:(?tei.?seg.?stx)
+            & :?skipped
+            &   map
+              $ ( ( 
+                  =   
+                    .     !arg
+                        : ( span
+                          .     ? (from.?from) ?
+                              : ( ? (to.?to) ?
+                                | ?&!from:?to
+                                )
+                              : ? ("xml:id".?S) ?
+                            , 
+                          )
+                      &   !stx
+                        :   ?A
+                            ( (span.? (from.!from) ?,?)
+                            : ?syn
+                            )
+                            ?stx
+                      & ( !from:!to
+                        |     !stx
+                            :   ?B
+                                ( (span.? (from.!to) ?,?)
+                                : ?C
+                                )
+                                ?stx
+                          & !syn !B !C:?syn
+                        )
+                      & !skipped !A:?skipped
+                      & ( !from
+                        , !to
+                        , ( linkGrp
+                          .     (targFunc."head argument")
+                                (type.UD-SYN)
+                            ,   map
+                              $ ( ( 
+                                  =   
+                                    .     !arg
+                                        : ( span
+                                          .   (from.?from)
+                                            ,   (   ?
+                                                    ( link
+                                                    .   (target.?target)
+                                                      , 
+                                                    )
+                                                    ?
+                                                |   ?
+                                                  & root:?target
+                                                )
+                                              : ? (term.,?ana) ?
+                                          )
+                                      & ( link
+                                        .     (ana.!ana)
+                                              ( target
+                                              . str$(!target " " !from)
+                                              )
+                                          , 
+                                        )
+                                  )
+                                . !syn
+                                )
+                          )
+                        )
+                  )
+                . !seg
+                )
+        )
+      & 0:?divid
+      & ( insertStxEasyWay
+        =   A B M E Q id to linkGrp x parentID
+          .       
+                : ?A
+                : ?B
+                : ?M
+                : ?E
+                : ?Q
+                : ?to
+                : ?id
+                : ?x
+              & !arg:(?arg.?parentID)
+              &   !arg
+                :   ?A
+                    ( ( ?
+                      .     ?
+                            ( "xml:id"
+                            .   ?id
+                              &   !ListOfLinkGrp
+                                :   ?Q
+                                    ((!id,?to,?linkGrp):?x)
+                                    ?ListOfLinkGrp
+                              &   !listOfMissedLinkGrp !Q
+                                : ?listOfMissedLinkGrp
+                            )
+                            ?
+                        , ?
+                      )
+                    : ?B
+                    )
+                    ?M
+                    ( ( ?
+                      .     ?
+                            ("xml:id".!to&:?x)
+                            ?
+                        , ?
+                      )
+                    : ?E
+                    )
+                    ?arg
               &   !A
-                  (   !e:(w|pc|c)
-                    & (   !a:? (type.s) ?
-                        & (!s:~|)
-                      |   (   !a:?aa ("xml:id".?) ?zz
-                            & !aa !zz:?a
-                          | 
-                          )
-                        & (   !a:?aa (T.?) ?zz
-                            & !aa !zz:?a
-                          | 
-                          )
-                        & (   !a:?aa (S.?) ?zz
-                            & !aa !zz:?a
-                          | 
-                          )
-                        & (   !a:?aa (type.?) ?zz
-                            & !aa !zz:?a
-                          | 
-                          )
-                        & ( !a:&!s
-                          | (!e.!a,cleanup$!s)
+                  ( s
+                  .   ( "xml:id"
+                      .   str
+                        $ ( !parentID
+                            (!parentID:|"-")
+                            div-
+                            (1+!divid:?divid)
                           )
                       )
-                  | (!e.!a,cleanup$!s)
+                    , !B !M !E !linkGrp
                   )
-                  cleanup$!arg
-            | !arg
+                  insertStxEasyWay$(!arg.!parentID)
+            |   ( !x:
+                | !listOfMissedLinkGrp !x:?listOfMissedLinkGrp
+                )
+              & !arg
         )
-      & cleanup$!tei:?tei
+      & ( spotAndInsertSTXEasy
+        =   parentID
+          .   !arg:(?arg.?parentID)
+            &   map
+              $ ( ( 
+                  =   e a c d
+                    .   !arg:@
+                      |   !arg:(?e.?a,?c)
+                        & (     !a
+                              :   ?
+                                  ("xml:id"|id.?parentID)
+                                  ?
+                            & 
+                          | 
+                          )
+                        & insertStxEasyWay$(!c.!parentID):?d
+                        & (   !c:!d
+                            & (!e.!a,spotAndInsertSTXEasy$(!c.!parentID))
+                          | (!e.!a,!d)
+                          )
+                  )
+                . !arg
+                )
+        )
+      & ( trace
+        =   tei id a b c d
+          .   !arg:(?tei.?id)
+            & (     !tei
+                  : ? (?a.?b ("xml:id".!id) ?c,?d) ?
+                & (!a.!b ("xml:id".!id) !c,!d)
+              |     !tei
+                  :   ?
+                      (?a.?b,?c&trace$(!c.!id):?d)
+                      ?
+                & (!a.!b,!c) !d
+              )
+        )
+      & ( digDown1
+        =   tei startTrace linkGrp a b c d e f startStep
+          .     !arg
+              : (?tei.?parentID.%?startStep ?startTrace.?linkGrp)
+            & (   !startTrace:
+                & !tei:?a !startStep ?c
+                &   !a
+                    ( s
+                    .   ( "xml:id"
+                        .   str
+                          $ ( !parentID
+                              (!parentID:|"-")
+                              div-
+                              (1+!divid:?divid)
+                            )
+                        )
+                      , !startStep !linkGrp
+                    )
+                    !c
+              |   !startStep:(?b.?c,?d)
+                & (     !c
+                      : ? ("xml:id"|id.?parentID) ?
+                    & 
+                  | 
+                  )
+                & !tei:?a !startStep ?f
+                &   !a
+                    (!b.!c,digDown1$(!d.!parentID.!startTrace.!linkGrp))
+                    !f
+              )
+        )
+      & ( digDown
+        =     tei startTrace endTrace linkGrp
+            , a b c d e f startStep endStep
+          .     !arg
+              : ( ?tei
+                . ?parentID
+                . %?startStep ?startTrace
+                . %?endStep ?endTrace
+                . ?linkGrp
+                )
+            & (   !startStep:!endStep:(?b.?c,?d)
+                & (     !c
+                      : ? ("xml:id"|id.?parentID) ?
+                    & 
+                  | 
+                  )
+                & !tei:?a !startStep ?f
+                &   !a
+                    ( !b
+                    .   !c
+                      ,   digDown
+                        $ (!d.!parentID.!startTrace.!endTrace.!linkGrp)
+                    )
+                    !f
+              |   !tei:?a !startStep ?b !endStep ?c
+                &   !a
+                    ( div
+                    .   ( "xml:id"
+                        .   str
+                          $ ( !parentID
+                              (!parentID:|"-")
+                              div-
+                              (1+!divid:?divid)
+                            )
+                        )
+                      , !startStep !b !endStep !linkGrp
+                    )
+                    !c
+              )
+        )
+      & ( spotAndInsertSTXhard
+        =   TEIatt listOfMissedLinkGrp parentID tei textatt
+          .   !arg:(?tei.?listOfMissedLinkGrp.?parentID)
+            &   map
+              $ ( ( 
+                  =   start end linkGrp
+                    .   !arg:(?start,?end,?linkGrp)
+                      & trace$(!tei.!start):?startTrace
+                      &   (   !start:!end
+                            &   digDown1
+                              $ (!tei.!parentID.!startTrace.!linkGrp)
+                          |   trace$(!tei.!end):?endTrace
+                            &   digDown
+                              $ ( !tei
+                                . !parentID
+                                . !startTrace
+                                . !endTrace
+                                . !linkGrp
+                                )
+                          )
+                        : ?tei
+                  )
+                . !listOfMissedLinkGrp
+                )
+            & !tei
+        )
+      & ( !stx:
+        |   getListOfLinkGrp$(!tei.!seg.!stx):?ListOfLinkGrp
+          & :?listOfMissedLinkGrp
+          & (   !textatt
+              : ? ("xml:id"|id.?parentID) ?
+            |   !TEIatt
+              : ? ("xml:id"|id.?parentID) ?
+            | :?parentID
+            )
+          & spotAndInsertSTXEasy$(!tei.!parentID):?tei
+          & ( ~
+            |   spotAndInsertSTXhard$(!tei.!listOfMissedLinkGrp.!parentID)
+              : ?tei
+            )
+        )
+      & ( rm#
+        =   
+          .   map
+            $ ( ( 
+                =   e a c A Z id v
+                  .   !arg:@
+                    |   !arg:(?e.?a,?c)
+                      & (     !a
+                            :   ?A
+                                ( ("xml:id"|id):?id
+                                . @(?:"#" ?v)
+                                )
+                                ?Z
+                          & !A (!id.!v) !Z:?a
+                        | 
+                        )
+                      & (!e.!a,rm#$!c)
+                )
+              . !arg
+              )
+        )
+      & rm#$!tei:?tei
+      & ( adaptid
+        =   parentID tei subid id subsubid
+          .   !arg:(?id.?subid.?parentID.?tei)
+            & 0:?subsubid
+            &   map
+              $ ( ( 
+                  =   e a c A Z ID v
+                    .   !arg:@
+                      |   !arg:(?e.?a,?c)
+                        &   (     !a
+                                :   ?A
+                                    ( ("xml:id"|id):?ID
+                                    . ?v
+                                    )
+                                    ?Z
+                              & ( (IDS..find)$!v:(?.?v)
+                                |   (IDS..insert)
+                                  $ ( !v
+                                    .     str
+                                        $ ( !parentID
+                                            "."
+                                            (1+!subid:?subid)
+                                          )
+                                      : ?v
+                                    )
+                                )
+                              & !A (!ID.!v) !Z
+                            |   !e:~s
+                              & !parentID:?v
+                              & !subid:?subsubid
+                              & !a
+                            |   ( !id
+                                .     str
+                                    $ ( !parentID
+                                        "."
+                                        (1+!subid:?subid)
+                                      )
+                                  : ?v
+                                )
+                                !a
+                            )
+                          : ?a
+                        & (!e.!a,adaptid$(!id.!subsubid.!v.!c))
+                  )
+                . !tei
+                )
+        )
+      & ( reidentify
+        =   
+          .   map
+            $ ( ( 
+                =   e a c A Z id v
+                  .   !arg:@
+                    |   !arg:(?e.?a,?c)
+                      & (     !a
+                            :   ?A
+                                (("xml:id"|id):?id.?v)
+                                ?Z
+                          & (!e.!a,adaptid$(!id.0.!v.!c))
+                        | (!e.!a,reidentify$!c)
+                        )
+                )
+              . !arg
+              )
+        )
+      & ( relink
+        =   parentID tei
+          .   !arg:(?parentID.?tei)
+            &   map
+              $ ( ( 
+                  =   e attr content A Z id v newParentID
+                    .   !arg:@
+                      |   !arg:(?e.?attr,?content)
+                        & :?newParentID
+                        & ( !e
+                          .     map
+                              $ ( ( 
+                                  =   val
+                                    .       !arg
+                                          : (   (from|to)
+                                              : ?ID
+                                            . @(?:"#" ?val)
+                                            )
+                                        &   (IDS..find)$!val
+                                          : (?.?val)
+                                        & (!ID.str$("#" !val))
+                                      |   !arg:(target.?val)
+                                        &     vap
+                                            $ ( ( 
+                                                =   t
+                                                  .   " "
+                                                      (   @(!arg:"#" ?t)
+                                                        &     (IDS..find)
+                                                            $ !t
+                                                          : (?.?t)
+                                                        & str$("#" !t)
+                                                      |   !arg:root
+                                                        & str$("#" !parentID)
+                                                      | !arg
+                                                      )
+                                                )
+                                              . !val
+                                              . " "
+                                              )
+                                          : " " ?val
+                                        & (target.str$!val)
+                                      |   !arg
+                                        : ( "xml:id"|id
+                                          . ?newParentID
+                                          )
+                                      | !arg
+                                  )
+                                . !attr
+                                )
+                            ,   relink
+                              $ (   !newParentID:~
+                                  | !parentID
+                                . !content
+                                )
+                          )
+                  )
+                . !tei
+                )
+        )
+      & new$hash:?IDS
+      & reidentify$!tei:?tei
+      & relink$(.!tei):?tei
+      & :?IDS
+      & ( TagUsage
+        =   
+          .   map
+            $ ( ( 
+                =   e c a
+                  .     !arg:(?e.?a,?c)
+                      & !e+!occurs:?occurs
+                      & (     !a
+                            : ? ("xml:id"|id.?) ?
+                          & !e+!withId:?withId
+                        | 
+                        )
+                      & TagUsage$!c
+                    | 
+                )
+              . !arg
+              )
+        )
+      & ( replList
+        =   headstuff el nw
+          .   !arg:(?headstuff.?el.?nw)
+            &   map
+              $ ( ( 
+                  =   e a c
+                    .     !arg:(?e.?a,?c)
+                        & (   !c:? (!el.?,?) ?
+                            & (!e.!a,!nw)
+                          | (!e.!a,replList$(!c.!el.!nw))
+                          )
+                      | !arg
+                  )
+                . !headstuff
+                )
+        )
+      & ( computeTagUsage
+        =   occurs withId tagUsage n name m atts
+          .   0:?occurs:?withId
+            & TagUsage$!arg
+            & :?tagUsage
+            &   whl
+              ' ( !occurs:?n*%@?name+?occurs
+                & (gi.!name) (occurs.!n):?atts
+                & (   !withId:?+?m*!name+?
+                    & !atts (withId.!m):?atts
+                  | 
+                  )
+                & !tagUsage (tagUsage.!atts,):?tagUsage
+                )
+            & !tagUsage
+        )
+      & ( updateHead
+        =   head tei
+          .   !arg:(?head.?tei)
+            &   map
+              $ ( ( 
+                  =   e a c
+                    .     !arg:(?e.?a,?c)
+                        & (   !e:tagsDecl
+                            & ( !e
+                              .   !a
+                                ,   replList
+                                  $ (!c.tagUsage.computeTagUsage$!tei)
+                              )
+                          | (!e.!a,updateHead$(!c.!tei))
+                          )
+                      | !arg
+                  )
+                . !head
+                )
+        )
+      & updateHead$(!head.!tei):?head
+      & ( ~
+        |     cleanup
+            $ ( !tei
+              .     !stx:
+                  & ( 
+                    =   ?aa
+                        (   "xml:id"
+                          | T
+                          | S
+                          | type
+                        . ?
+                        )
+                        ?zz
+                    )
+                | ( 
+                  =   ?aa
+                      (T|S|type.?)
+                      ?zz
+                  )
+              )
+          : ?tei
+        )
       & "Modified toML. No space before slash in empty tags."
       & ( toML
         =   O d t g l "&" w \" "'" H G S D E F I U
@@ -428,9 +1003,10 @@ program-annotei=
                 & !tail:
                 & !TEIatt:
                 & (text.!textatt,(body.,!tei))
-              |   !teiA
-                  (TEI.!TEIatt,!head (text.!textatt,!tei) !tail)
-                  !teiZ
+              |     !teiA
+                    (TEI.!TEIatt,!head (text.!textatt,!tei) !tail)
+                    !teiZ
+                : ?tei
               )
           , !output
           , NEW
@@ -449,25 +1025,29 @@ program-annotei=
           : ?lem
         &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step10.xml"
           : ?pos
-        & (its.doit)$(!tei.!tok.!pos.!lem."*"."middelgrunden.output.xml")
+        &   (its.doit)
+          $ (!tei.!tok.!pos.!lem."*"."*"."middelgrunden.output.xml")
       |   ~
         & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step64.xml":?tei
         & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step66.xml":?tok
         & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step71.xml":?pos
         & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step70.xml":?lem
-        & (its.doit)$(!tei.!tok.!pos.!lem."*"."JEB-106-142.output.xml")
+        &   (its.doit)
+          $ (!tei.!tok.!pos.!lem."*"."*"."JEB-106-142.output.xml")
       |   ~
         & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step19.xml":?tei
         & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step21.xml":?tok
         & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step26.xml":?pos
         & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step25.xml":?lem
-        & (its.doit)$(!tei.!tok.!pos.!lem."*"."JEB-081-161.output.xml")
+        &   (its.doit)
+          $ (!tei.!tok.!pos.!lem."*"."*"."JEB-081-161.output.xml")
       |   ~
         & "C:\\downloads\\dsl_brandes-15.xml-3881-step1.xml":?tei
         & "C:\\downloads\\dsl_brandes-15.xml-3881-step3.xml":?tok
         & "C:\\downloads\\dsl_brandes-15.xml-3881-step7.xml":?pos
         & "C:\\downloads\\dsl_brandes-15.xml-3881-step8.xml":?lem
-        & (its.doit)$(!tei.!tok.!pos.!lem."*"."dsl_brandes.output.xml")
+        &   (its.doit)
+          $ (!tei.!tok.!pos.!lem."*"."*"."dsl_brandes.output.xml")
       |   ~
         &   "C:\\tekster\\output\\original-deposited-file-37-1.xml-21-step1.xml"
           : ?tei
@@ -483,9 +1063,21 @@ program-annotei=
             . !pos
             . !lem
             . "*"
+            . "*"
             . "original-deposited-file-37-1.xml-18-step.output.xml"
             )
-      | (its.doit)$(arg$.arg$.arg$.arg$.arg$.arg$)
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\projects\\parlamint\\IfacetsetoF"
+            . "C:\\projects\\parlamint\\IfacettokF"
+            . "C:\\projects\\parlamint\\IfacetposF"
+            . "C:\\projects\\parlamint\\IfacetlemF"
+            . "C:\\projects\\parlamint\\IfacetsegF"
+            . "C:\\projects\\parlamint\\IfacetstxF"
+            . "C:\\projects\\parlamint\\ParlaMint-DK_20151_M103_2016-05-27-93.out.xml"
+            )
+      |   (its.doit)
+        $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
   );
 
 r=
