@@ -388,8 +388,6 @@ try {
             logit("dapipefile $dapipefile");
             $tmp1 = tempFileName("dapipe-tmp1");
             $tmp2 = tempFileName("dapipe-tmp2");
-            copy($IfacettokF,"IfacettokF");
-            copy($IfacetsegF,"IfacetsegF");
             $command = "../bin/bracmat \"get'\\\"dapipex.bra\\\"\" $IfacettokF $IfacetsegF $dapipefile $tmp1 $tmp2";
             logit($command);
 
