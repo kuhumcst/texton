@@ -1,0 +1,58 @@
+{anasplit.bra
+
+Extract a single annotation group (spanGrp) from a composite TEI annotation file.}
+
+X=
+  ( doit
+  =   output tmp1 tmp2 A B C D E F G H xmlseg xmltok
+    .   ( find
+        =   e a c wat
+          .   !arg:(?arg.?wat)
+            & !arg:? (?e.?a,?c) ?arg
+            & (   !e:spanGrp
+                & !a:? (ana.[%(!wat:? !sjt ?)) ?
+                & (!e.!a,!c)
+              | find$(!arg.!wat)
+              | find$(!c.!wat)
+              )
+        )
+      & !arg:(?input.?output.?wat)
+      & nestML$(get$(!input,X ML TRM)):?xml
+      &     (lem.lemma)
+            (pos.pos msd)
+            (stx.syntax dep depencies)
+        : ? (!wat.?wat) ?
+      & find$(!xml.!wat):?annot
+      & put$(toML$!annot,!output,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |     ( ~&(F."uit.xml".stx)
+            | (arg$.arg$.arg$)
+            )
+          : (?input.?output.?wat)
+        & (its.doit)$(!input.!output.!wat)
+  );
+
+r=
+  get'("anasplit.bra",TXT)
+& rmv$(str$(anasplit ".bak"))
+& ren$("anasplit.bra".str$(anasplit ".bak"))
+&   put
+  $ ( "{anasplit.bra
+
+Extract a single annotation group (spanGrp) from a composite TEI annotation file.}
+
+"
+    , "anasplit.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"anasplit.bra",APP)
+& put'(\n,"anasplit.bra",APP,BIN)
+& lst'(r,"anasplit.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"anasplit.bra",APP,BIN)
+& ;
+
+new'X;
