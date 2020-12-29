@@ -171,6 +171,7 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $IfacetlemF = "";	/* Input with type of content lemmas (Lemma) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
+        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
         $IfacetsetoF = "";	/* Input with type of content segments,tokens (Sætningssegmenter,tokens) */
         $IfacetstxF = "";	/* Input with type of content syntax (dependency structure) (Syntaks (dependensstruktur)) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
@@ -180,6 +181,7 @@ try {
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
@@ -231,6 +233,16 @@ try {
                 }
             $echos = $echos . "IfacetposF=$IfacetposF ";
             }
+        if( hasArgument("IfacetsegF") )
+            {        
+            $IfacetsegF = requestFile("IfacetsegF");
+            if($IfacetsegF == '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacetsegF=$IfacetsegF ";
+            }
         if( hasArgument("IfacetsetoF") )
             {        
             $IfacetsetoF = requestFile("IfacetsetoF");
@@ -281,10 +293,11 @@ try {
             {
             $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
             $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
             $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseto=$Ifacetseto " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -350,18 +363,21 @@ try {
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
 
+        copy($IfacetsetoF,"IfacetsetoF"); 
+        copy($IfacettokF,"IfacettokF"); 
+        copy($IfacetposF,"IfacetposF"); 
+        copy($IfacetlemF,"IfacetlemF"); 
+        copy($IfacetsegF,"IfacetsegF"); 
+        copy($IfacetstxF,"IfacetstxF");
+
         if($Ofacetstpld)
             {
-            copy($IfacetsetoF,"IfacetsetoF"); 
-	    copy($IfacettokF,"IfacettokF"); 
-	    copy($IfacetposF,"IfacetposF"); 
-	    copy($IfacetlemF,"IfacetlemF"); 
-	    copy($IfacetstxF,"IfacetstxF");
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $IfacetsegF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
+	    copy($rawXML,"rawXML");
             }
         else if($Ofacettlp)
             {
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF "*" $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF "*" "*" $rawXML && xmllint --format --output $TEIannofile $rawXML";
             }
 //        $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $TEIannofile";
         logit($command);
