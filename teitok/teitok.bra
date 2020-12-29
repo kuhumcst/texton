@@ -716,33 +716,50 @@ X=
                 : (c.(type.s) ?,?) ?arg
               )
             & ( concS
-              =   A s S
-                .   !arg:
-                  |   :?S
-                    &   whl
-                      ' (   !arg
-                          : (c.(type.s) ?,?A) ?arg
-                        & !A !S:?S
-                        )
-                    &   (   !S:
-                          & !arg:%?A ?arg
-                          & !A
-                        |   :?s
-                          &   whl
-                            ' ( !S:%?A ?S
-                              & !A !s:?s
-                              )
-                          & (     !før
-                                : (c|lb|space)
-                              & 
-                            |   !arg:
-                              &   !efter
-                                : (c|lb|space)
-                              & 
-                            | (c.(type.s),str$!s)
+              =   A s S SER RES res
+                .   :?SER:?RES
+                  &   whl
+                    ' ( !arg:~
+                      & :?S
+                      &   whl
+                        ' (   !arg
+                            :   (c.(type.s) ?,?A)
+                                ?arg
+                          & !A !S:?S
+                          )
+                      &     (   !S:
+                              & !arg:%?A ?arg
+                              & !A
+                            |   :?s
+                              &   whl
+                                ' ( !S:%?A ?S
+                                  & !A !s:?s
+                                  )
+                              & (     !før
+                                    : ( c
+                                      | lb
+                                      | space
+                                      )
+                                  & 
+                                |   !arg:
+                                  &   !efter
+                                    : ( c
+                                      | lb
+                                      | space
+                                      )
+                                  & 
+                                | (c.(type.s),str$!s)
+                                )
                             )
-                        )
-                        (:?før&concS$!arg)
+                            !SER
+                        : ?SER
+                      & :?før
+                      )
+                  &   whl
+                    ' ( !SER:%?res ?SER
+                      & !res !RES:?RES
+                      )
+                  & !RES
               )
             & concS$!arg
         )
@@ -981,9 +998,11 @@ X=
             , "dummy-ParlaMint.out.xml"
             , NEW
             )
-      |   ~
+      |   
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
-        & put$(toML$((its.teitok)$("FF.xml".PT.!abbr)),"G.xml",NEW)
+        & (its.teitok)$(F.simple.!abbr):?XMLL
+        & toML$!XMLL:?XMLLL
+        & put$(!XMLLL,"F.xml",NEW)
       |   arg$:?input
         & arg$:?output
         & arg$:(PT|simple):?style
