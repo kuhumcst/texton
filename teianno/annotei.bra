@@ -8,9 +8,44 @@ program-annotei=
   =   
     .   !arg:(?tei.?tok.?pos.?lem.?seg.?stx.?output)
       &   nestML$(get$(!tei,X ML))
-        : (   ?teiA
-              (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
-              ?teiZ
+        : (     ?teiA
+                (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
+                ?teiZ
+            &   (     !head
+                    :   ?
+                        ( teiHeader
+                        .   ?
+                          ,   ?
+                              ( encodingDesc
+                              .   
+                                ,   ?
+                                    ( projectDesc
+                                    .   ?
+                                      ,   ?
+                                          ( p
+                                          .   ?
+                                            ,   ?
+                                                ( ref
+                                                .   ( target
+                                                    . "https://www.clarin.eu/content/parlamint"
+                                                    )
+                                                  , ParlaMint
+                                                )
+                                                ?
+                                          )
+                                          ?
+                                    )
+                                    ?
+                              )
+                              ?
+                        )
+                        ?
+                  & (msd.n.seg)
+                | (pos.y.text)
+                )
+              : (?POS.?PCLEMMA.?ANNOTATE)
+            & !TEIatt:?A ("xml:id".?B) ?C
+            & !A ("xml:id".str$(!B "-ana")) !C:?TEIatt
           |   ? (text.?textatt,? (body.,?tei) ?) ?
             & :?TEIatt:?head:?tail
           )
@@ -175,9 +210,15 @@ program-annotei=
                                                 &   !a ("xml:id".!tokid)
                                                   : ?a
                                                 & ( !e
-                                                  .     !a
-                                                        (pos.!PS)
-                                                        (lemma.!LS)
+                                                  .     (   ( !e:~pc
+                                                            |   !PCLEMMA
+                                                              : y
+                                                            )
+                                                          & (lemma.!LS)
+                                                        | 
+                                                        )
+                                                        (!POS.!PS)
+                                                        !a
                                                     , !s
                                                   )
                                               )
@@ -201,9 +242,16 @@ program-annotei=
                                                     &   !a ("xml:id".!tokid)
                                                       : ?a
                                                     & ( !e
-                                                      .     !a
-                                                            (pos.!P)
-                                                            (lemma.!L)
+                                                      .     (   (   !e
+                                                                  : ~pc
+                                                                |   !PCLEMMA
+                                                                  : y
+                                                                )
+                                                              & (lemma.!L)
+                                                            | 
+                                                            )
+                                                            (!POS.!P)
+                                                            !a
                                                             !id
                                                             !arg
                                                         , !s
@@ -223,9 +271,9 @@ program-annotei=
                                   &   getSP$()
                                       (   !excludes:
                                         & ( w
-                                          .     ("xml:id".!tokid)
-                                                (pos.!PS)
-                                                (lemma.!LS)
+                                          .     (lemma.!LS)
+                                                (!POS.!PS)
+                                                ("xml:id".!tokid)
                                             , !theMWU
                                           )
                                       |   map
@@ -239,8 +287,8 @@ program-annotei=
                                                   | 
                                                   )
                                                 & ( w
-                                                  .     (pos.!P)
-                                                        (lemma.!L)
+                                                  .     (lemma.!L)
+                                                        (!POS.!P)
                                                         !id
                                                         !arg
                                                     , !theMWU
@@ -291,6 +339,25 @@ program-annotei=
                       | !arg
                   )
                 . !arg
+                )
+        )
+      & ( filter
+        =   tei elm
+          .   !arg:(?tei.?elm)
+            &   map
+              $ ( ( 
+                  =   e a s
+                    .     !arg:(?e.?a,?s)
+                        & ( !e:!elm&!arg
+                          | !e:s&filter$(!s.!elm)
+                          |   !e:(w|pc)
+                            & !s
+                          | !e:linkGrp&
+                          | (!e.!a,filter$(!s.!elm))
+                          )
+                      | !arg
+                  )
+                . !tei
                 )
         )
       & ( getListOfLinkGrp
@@ -365,63 +432,122 @@ program-annotei=
                 )
         )
       & 0:?divid
+      & ( reverseList
+        =   L a
+          .   :?L
+            & whl'(!arg:%?a ?arg&!a !L:?L)
+            & !L
+        )
       & ( insertStxEasyWay
-        =   A B M E Q id to linkGrp x parentID
-          .       
-                : ?A
-                : ?B
-                : ?M
-                : ?E
-                : ?Q
-                : ?to
-                : ?id
-                : ?x
-              & !arg:(?arg.?parentID)
-              &   !arg
-                :   ?A
-                    ( ( ?
-                      .     ?
-                            ( "xml:id"
-                            .   ?id
-                              &   !ListOfLinkGrp
-                                :   ?Q
-                                    ((!id,?to,?linkGrp):?x)
-                                    ?ListOfLinkGrp
-                              &   !listOfMissedLinkGrp !Q
-                                : ?listOfMissedLinkGrp
-                            )
-                            ?
-                        , ?
+        =     A B M E P Q id to Id
+            , linkGrp x parentID tsil
+          .     
+              : ?A
+              : ?B
+              : ?M
+              : ?E
+              : ?P
+              : ?Q
+              : ?to
+              : ?id
+              : ?tsil
+            & !arg:(?arg.?parentID)
+            & 0:?Id
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      ( ( ?
+                        .     ?
+                              ( "xml:id"
+                              .   ?id
+                                &   !ListOfLinkGrp
+                                  : ?Q (!id,?to,?linkGrp) ?P
+                              )
+                              ?
+                          , ?
+                        )
+                      : ?B
                       )
-                    : ?B
-                    )
-                    ?M
-                    ( ( ?
-                      .     ?
-                            ("xml:id".!to&:?x)
-                            ?
-                        , ?
-                      )
-                    : ?E
-                    )
-                    ?arg
-              &   !A
-                  ( s
-                  .   ( "xml:id"
-                      .   str
-                        $ ( !parentID
-                            (!parentID:|"-")
-                            div-
-                            (1+!divid:?divid)
+                      ?M
+                      ((?.? ("xml:id".!to) ?,?):?E)
+                      ?arg
+                & !listOfMissedLinkGrp !Q:?listOfMissedLinkGrp
+                & !P:?ListOfLinkGrp
+                &     ( s
+                      .   ( "xml:id"
+                          .   str
+                            $ ( !parentID
+                                ( !parentID:&div-
+                                | "."
+                                )
+                                (1+!Id:?Id)
+                              )
                           )
+                        , !B !M !E !linkGrp
                       )
-                    , !B !M !E !linkGrp
-                  )
-                  insertStxEasyWay$(!arg.!parentID)
-            |   ( !x:
-                | !listOfMissedLinkGrp !x:?listOfMissedLinkGrp
+                      reverseList$!A
+                      !tsil
+                  : ?tsil
                 )
-              & !arg
+            & reverseList$!tsil !arg
+        )
+      & ( insertStxEasyWay5
+        =   A B M E Q id to linkGrp x parentID
+          .     
+              : ?A
+              : ?B
+              : ?M
+              : ?E
+              : ?Q
+              : ?to
+              : ?id
+              : ?x
+            & !arg:(?arg.?parentID)
+            & (     !arg
+                  :   ?A
+                      ( ( ?
+                        .     ?
+                              ( "xml:id"
+                              .   ?id
+                                &   !ListOfLinkGrp
+                                  :   ?Q
+                                      ((!id,?to,?linkGrp):?x)
+                                      ?ListOfLinkGrp
+                                &   !listOfMissedLinkGrp !Q
+                                  : ?listOfMissedLinkGrp
+                              )
+                              ?
+                          , ?
+                        )
+                      : ?B
+                      )
+                      ?M
+                      ( ( ?
+                        .     ?
+                              ("xml:id".!to&:?x)
+                              ?
+                          , ?
+                        )
+                      : ?E
+                      )
+                      ?arg
+                &   !A
+                    ( s
+                    .   ( "xml:id"
+                        .   str
+                          $ ( !parentID
+                              ( !parentID:&div-
+                              | "."
+                              )
+                              (1+!divid:?divid)
+                            )
+                        )
+                      , !B !M !E !linkGrp
+                    )
+                    insertStxEasyWay$(!arg.!parentID)
+              |   !listOfMissedLinkGrp !x:?listOfMissedLinkGrp
+                & !arg
+              )
         )
       & ( spotAndInsertSTXEasy
         =   parentID
@@ -471,8 +597,9 @@ program-annotei=
                     .   ( "xml:id"
                         .   str
                           $ ( !parentID
-                              (!parentID:|"-")
-                              div-
+                              ( !parentID:&div-
+                              | "."
+                              )
                               (1+!divid:?divid)
                             )
                         )
@@ -521,8 +648,9 @@ program-annotei=
                     .   ( "xml:id"
                         .   str
                           $ ( !parentID
-                              (!parentID:|"-")
-                              div-
+                              ( !parentID:&div-
+                              | "."
+                              )
                               (1+!divid:?divid)
                             )
                         )
@@ -568,7 +696,8 @@ program-annotei=
             )
           & spotAndInsertSTXEasy$(!tei.!parentID):?tei
           & ( ~
-            |   spotAndInsertSTXhard$(!tei.!listOfMissedLinkGrp.!parentID)
+            |     spotAndInsertSTXhard
+                $ (!tei.!listOfMissedLinkGrp !ListOfLinkGrp.!parentID)
               : ?tei
             )
         )
@@ -652,7 +781,20 @@ program-annotei=
                             :   ?A
                                 (("xml:id"|id):?id.?v)
                                 ?Z
-                          & (!e.!a,adaptid$(!id.0.!v.!c))
+                          & (     !c
+                                :   ?
+                                    ( ?
+                                    .     ?
+                                          ( "xml:id"|id
+                                          . @(?:!v ?)
+                                          )
+                                          ?
+                                      , ?
+                                    )
+                                    ?
+                              & (!e.!a,reidentify$!c)
+                            | (!e.!a,adaptid$(!id.0.!v.!c))
+                            )
                         | (!e.!a,reidentify$!c)
                         )
                 )
@@ -794,26 +936,29 @@ program-annotei=
         )
       & updateHead$(!head.!tei):?head
       & ( ~
-        |     cleanup
-            $ ( !tei
-              .     !stx:
-                  & ( 
+        |       cleanup
+              $ ( !tei
+                .     !stx:
+                    & ( 
+                      =   ?aa
+                          (   "xml:id"
+                            | T
+                            | S
+                            | type
+                          . ?
+                          )
+                          ?zz
+                      )
+                  | ( 
                     =   ?aa
-                        (   "xml:id"
-                          | T
-                          | S
-                          | type
-                        . ?
-                        )
+                        (T|S|type.?)
                         ?zz
                     )
-                | ( 
-                  =   ?aa
-                      (T|S|type.?)
-                      ?zz
-                  )
-              )
-          : ?tei
+                )
+            : ?tei
+          & ( !ANNOTATE:text
+            | filter$(!tei.!ANNOTATE):?tei
+            )
         )
       & "Modified toML. No space before slash in empty tags."
       & ( toML
@@ -1066,7 +1211,7 @@ program-annotei=
             . "*"
             . "original-deposited-file-37-1.xml-18-step.output.xml"
             )
-      |   ~
+      |   
         &   (its.doit)
           $ ( "C:\\projects\\parlamint\\IfacetsetoF"
             . "C:\\projects\\parlamint\\IfacettokF"
