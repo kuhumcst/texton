@@ -4,8 +4,8 @@ Get the casing right for Danish TEI P5 texts}
 
 X=
   ( teitok
-  =   input abbreviations style
-    .   !arg:(?input.?style.?abbreviations)
+  =   input abbreviations style language
+    .   !arg:(?input.?style.?abbreviations.?language)
       & nestML$(get$(!input,X ML)):?xml
       &   !xml
         :   ?XXX
@@ -431,8 +431,8 @@ X=
               )
             & rc$!arg
         )
-      & ( Split
-        =   A k K it
+      & ( SplitAbbr
+        =   A k K it OO
           .   :?OO
             & 1:?it
             &   whl
@@ -490,6 +490,93 @@ X=
                       .     (type.p)
                             (S.Sen$)
                             ( T
+                            .   !it+!tok:?tok
+                              & 0:?it
+                              & !tok
+                            )
+                        , str$!K
+                      )
+                  : ?OO
+                )
+            &   !OO
+                ( !arg:
+                | ( w
+                  .     (S.Sen$)
+                        ( T
+                        .   !it+!tok:?tok
+                          & 0:?it
+                          & !tok
+                        )
+                    , trim$(str$!arg)
+                  )
+                )
+        )
+      & ( Split
+        =   A k K it OO
+          .   :?OO
+            & 1:?it
+            &   whl
+              ' (   !arg
+                  :   ?A
+                      ( %?k
+                      : ( "'"
+                        | "-"
+                        | …
+                        | "."
+                        | "("
+                        | ")"
+                        | "["
+                        | "]"
+                        | "{"
+                        | "}"
+                        | ":"
+                        | ","
+                        | –
+                        | —
+                        | "!"
+                        | ‹
+                        | ›
+                        | «
+                        | »
+                        | "?"
+                        | ‘
+                        | ’
+                        | “
+                        | ”
+                        | ";"
+                        | "\\"
+                        | "/"
+                        | \"
+                        | "`"
+                        )
+                      )
+                      ?arg
+                & !k:?K
+                &   whl
+                  ' (!arg:%@!k ?arg&!k !K:?K)
+                & "K is a list of punct chars
+                   '    does not increase token id
+                   -    does not increase token id
+                   …    increases token id if nothing comes after it
+                   .    increases token id if nothing comes after it
+                
+                   Other (sequences of) punctuation always increase token id."
+                &     !OO
+                      ( !A:
+                      | ( w
+                        .     (S.Sen$)
+                              ( T
+                              .   !it+!tok:?tok
+                                & 0:?it
+                                & !tok
+                              )
+                          , trim$(str$!A)
+                        )
+                      )
+                      ( c
+                      .     (type.p)
+                            (S.Sen$)
+                            ( T
                             .       !K
                                   : ( "." "." "."
                                     | …
@@ -524,8 +611,10 @@ X=
                                     )
                                 & 0:?it
                                 & (   !arg:
+                                    & "If nothing follows after punct, increase token id."
                                     & 1+!tok:?tok
                                   |   2+!tok:?tok
+                                    & Why?
                                     & -1+!tok
                                   )
                               |   !it+!tok:?tok
@@ -571,6 +660,7 @@ X=
                 & (   !chars:?A "."
                     & getAll$(!A."."):(?A.?P)
                     & (   ( !abb:abbr
+                          | !language:da & !A:~(? (@%:~(#|"."|",")) ?)
                           | !chars:% "." % ".":~(? ".." ?)
                           |   ( 
                               =   
@@ -578,7 +668,7 @@ X=
                               )
                             $ (str$!chars)
                           )
-                        & Split$!chars
+                        & SplitAbbr$!chars
                       |   Split$!A
                           ( c
                           .     (type.p)
@@ -998,7 +1088,17 @@ X=
             , "dummy-ParlaMint.out.xml"
             , NEW
             )
-      |   
+      |   ~
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        &   put
+          $ (   toML
+              $ ( (its.teitok)
+                $ ("C:\\projects\\parlamint\\ParlaMint-dvs.xml".simple.!abbr)
+                )
+            , "ParlaMint-dvs.out.xml"
+            , NEW
+            )
+      |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
         & (its.teitok)$(F.simple.!abbr):?XMLL
         & toML$!XMLL:?XMLLL
@@ -1006,12 +1106,16 @@ X=
       |   arg$:?input
         & arg$:?output
         & arg$:(PT|simple):?style
-        &   ( vap$((=.!arg).get$(arg$.STR).\n)
+        & arg$:?abbreviations
+        & arg$:?language
+        &   ( !abbreviations:"-"&
+            | vap$((=.!arg).get$(!abbreviations.STR).\n)
             | 
             )
           : ?abbr
+        & (!language:~"-"|):?lang
         &   put
-          $ (toML$((its.teitok)$(!input.!style.!abbr)),!output,NEW)
+          $ (toML$((its.teitok)$(!input.!style.!abbr.!lang)),!output,NEW)
   );
 
 r=
