@@ -367,19 +367,20 @@ try {
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
         copy($IfacetlemF,"IfacetlemF"); 
-        copy($IfacetsegF,"IfacetsegF"); 
-        copy($IfacetstxF,"IfacetstxF");
-
         if($Ofacetstpld)
             {
+            logit("Ofacetstpld");
+            copy($IfacetsegF,"IfacetsegF");
+            copy($IfacetstxF,"IfacetstxF");
             $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $IfacetsegF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
 	    copy($rawXML,"rawXML");
             }
         else if($Ofacettlp)
             {
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF "*" "*" $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            logit("Ofacettlp");
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF \"*\" \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            //$command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF \"*\" \"*\" $TEIannofile";
             }
-//        $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $TEIannofile";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
