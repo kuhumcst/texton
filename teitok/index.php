@@ -297,9 +297,9 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        $abbr = "";
+        $abbr = "-";
         $res = "../texton-linguistic-resources";
-
+        $lang = "-";
         if( hasArgument("Ilang") )
             {
             $lang = getArgument("Ilang");
@@ -344,15 +344,15 @@ try {
                     $abbr = "$res/$lang/tokeniser/abbr";
                     break;
                 default:
-                    $abbr = "";
+                    $abbr = "-";
                 }
             }
 
         $teitokfile = tempFileName("teitokfile-results");
         if($OfacetsetoPT)
-            $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile PT $abbr";
+            $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile PT $abbr $lang";
         else
-            $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile simple $abbr";
+            $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile simple $abbr $lang";
 
         logit($command);
 
