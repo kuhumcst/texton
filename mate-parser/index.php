@@ -189,7 +189,6 @@ try {
         $Ofacetstpd = false;	/* Type of content in output is segments,tokens,PoS-tags,dependency relations (segmenter,tokens,PoS-tags,dependency relations) if true */
         $Ofacetstpld = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas,dependency relations (segmenter,tokens,PoS-tags,lemmaer,dependency relations) if true */
         $Oformatconll = false;	/* Format in output is CoNLL if true */
-        $Oformatpt = false;	/* Format in output is Penn Treebank if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
@@ -306,8 +305,7 @@ try {
         if( hasArgument("Oformat") )
             {
             $Oformatconll = existsArgumentWithValue("Oformat", "conll");
-            $Oformatpt = existsArgumentWithValue("Oformat", "pt");
-            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformatpt=$Oformatpt ";
+            $echos = $echos . "Oformatconll=$Oformatconll ";
             }
         if( hasArgument("Olang") )
             {
