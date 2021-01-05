@@ -23,7 +23,7 @@ Publisher      : ITU
 ContentProvider: ITU
 Creator        : ITU
 InfoAbout      : https://github.com/ITUnlp/dapipe
-Description    : UDPipe tools for Danish
+Description    : UDPipe tools for Danish. udpipe does pos-tagging, lemmatization and syntactic analysis. The syntactic analysis and lemmatization is always based on UDPipe's own pos-tagging. Using dapipe with TEI P5 input is discouraged, unless tokenisation and sentence extraction is done in separate steps, and not by dapipe itself.
 ExternalURI    : 
 XMLparms       : 
 PostData       : 
@@ -200,11 +200,11 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with type of content segments (SÃ¦tningssegmenter) */
+        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Ifacettxt = false;	/* Type of content in input is text (Ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -216,13 +216,14 @@ try {
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Ofacetpls = false;	/* Type of content in output is PoS-tags,lemmas,syntax (Pos-tags,lemma,syntaks) if true */
-        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
-        $Oformatconll = false;	/* Format in output is CoNLL2009 if true */
+        $Ofacetstpld = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas,dependency relations (segmenter,tokens,PoS-tags,lemmaer,dependency relations) if true */
+        $Oformatconll = false;	/* Format in output is CoNLL if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $OformatconllclU = false;	/* Style of format CoNLL in output is CoNLL-U (10 columns)CoNLL-U (10 kolonner) if true */
 
         if( hasArgument("base") )
             {
@@ -256,7 +257,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (SÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -327,8 +328,8 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetpls = existsArgumentWithValue("Ofacet", "pls");
-            $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
-            $echos = $echos . "Ofacetpls=$Ofacetpls " . "Ofacetstx=$Ofacetstx ";
+            $Ofacetstpld = existsArgumentWithValue("Ofacet", "stpld");
+            $echos = $echos . "Ofacetpls=$Ofacetpls " . "Ofacetstpld=$Ofacetstpld ";
             }
         if( hasArgument("Oformat") )
             {
@@ -356,6 +357,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Oformatconll") )
+            {
+            $OformatconllclU = existsArgumentWithValue("Oformatconll", "clU");
+            $echos = $echos . "OformatconllclU=$OformatconllclU ";
+            }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $dapipefile = tempFileName("dapipe-results");
