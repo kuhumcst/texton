@@ -1,0 +1,162 @@
+{tei2conll.bra
+
+Create CoNLL-U formatted output from TEI P5 input containing POS, lemma and dependency annotations.}
+
+X=
+  ( doit
+  =   input output
+    .   !arg:(?input.?output)
+      & nestML$(get$(!input.X ML TRM)):?xml
+      & !xml:? (TEI.?,? (text.?,?text) ?) ?
+      & 0:?sentno
+      & new$hash:?tokids
+      & ( write
+        =   att s
+          .   !arg:(?att.?s)
+            & ( !att:? ("xml:id".?id) ?
+              | 1+!sentno:?sentno:?id
+              )
+            & (tokids..insert)$(!id.0)
+            &   ( 
+                =   id n
+                  .   0:?n
+                    &   whl
+                      ' (   !arg
+                          :   ?
+                              ( w|pc
+                              .     ?
+                                    ("xml:id"|id.?id)
+                                    ?
+                                , ?
+                              )
+                              ?arg
+                        & (tokids..insert)$(!id.1+!n:?n)
+                        )
+                )
+              $ !s
+            & !s:? (linkGrp.?,?linkGrp) ?
+            &     map
+                $ ( ( 
+                    =   to from ana
+                      .       !arg
+                            : ( link
+                              .     (ana.?ana)
+                                    ( target
+                                    . @( ?
+                                       :   ?
+                                           "#"
+                                           ?to
+                                           ( " "
+                                           | \n
+                                           | \r
+                                           | \t
+                                           )
+                                           ?
+                                           "#"
+                                           ?from
+                                       )
+                                    )
+                                , ?
+                              )
+                          & (tokids..find)$!to:(?.?to)
+                          & (tokids..find)$!from:(?.?from)
+                          & (!from.!ana.!to)
+                        | 
+                    )
+                  . !linkGrp
+                  )
+              : ?linkGrp
+            &   str
+              $ ( "#"
+                  !id
+                  \n
+                    map
+                  $ ( ( 
+                      =   
+                        .     !arg:(w|pc.?a,?c)
+                            &   !a
+                              : ( ? (lemma.?lemma) ?
+                                | ?&"_":?lemma
+                                )
+                              : (   ? (msd.?msd) ?
+                                  & (   @(!msd:? "UPosTag=" ?pos)
+                                      & ( @(!pos:?pos "|" ?msd)
+                                        | "_":?msd
+                                        )
+                                    | "_":?pos
+                                    )
+                                |   ? (pos.?pos) ?
+                                  & "_":?msd
+                                )
+                              : ? ("xml:id".?id) ?
+                            & (tokids..find)$!id:(?.?id)
+                            & !linkGrp:? (!id.?ana.?to) ?
+                            &   !id
+                                \t
+                                !c
+                                \t
+                                !lemma
+                                \t
+                                !pos
+                                "\t_\t"
+                                !msd
+                                \t
+                                !to
+                                \t
+                                !ana
+                                "\t_\t_\n"
+                          | 
+                      )
+                    . !s
+                    )
+                  \n
+                )
+        )
+      & ( makeCoNLL
+        =   
+          .   map
+            $ ( ( 
+                =   
+                  .     !arg:(?.?att,?arg)
+                      & (   !arg:? (linkGrp.?,?) ?
+                          & write$(!att.!arg)
+                        | makeCoNLL$!arg
+                        )
+                    | 
+                )
+              . !arg
+              )
+        )
+      & put$(str$(makeCoNLL$!text),!output,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   (its.doit)
+        $ ( "C:\\projects\\parlamint\\416-all\\ParlaMint-DK_20141_M1_2014-10-07-110.xml-416-step9.xml"
+          . "output.conll"
+          )
+      | (its.doit)$(arg$.arg$)
+  );
+
+r=
+  get'("tei2conll.bra",TXT)
+& rmv$(str$(tei2conll ".bak"))
+& ren$("tei2conll.bra".str$(tei2conll ".bak"))
+&   put
+  $ ( "{tei2conll.bra
+
+Create CoNLL-U formatted output from TEI P5 input containing POS, lemma and dependency annotations.}
+
+"
+    , "tei2conll.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"tei2conll.bra",APP)
+& put'(\n,"tei2conll.bra",APP,BIN)
+& lst'(r,"tei2conll.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"tei2conll.bra",APP,BIN)
+& ;
+
+new'X;
