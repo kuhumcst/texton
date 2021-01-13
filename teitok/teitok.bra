@@ -432,13 +432,14 @@ X=
             & rc$!arg
         )
       & ( SplitAbbr
-        =   A k K it OO
+        =   A k K it OO wcount
           .   :?OO
             & 1:?it
+            & 0:?wcount
             &   whl
               ' (   !arg
                   :   ?A
-                      ( %?k
+                      ( %@?k
                       : ( "'"
                         | "-"
                         | …
@@ -479,7 +480,12 @@ X=
                       | ( w
                         .     (S.Sen$)
                               ( T
-                              .   !it+!tok:?tok
+                              .       (   0:!wcount
+                                        & 1:?wcount
+                                      | !it
+                                      )
+                                    + !tok
+                                  : ?tok
                                 & 0:?it
                                 & !tok
                               )
@@ -653,20 +659,38 @@ X=
             & (!K.!P)
         )
       & ( toksplit
-        =   A N P Z tp PZ z F L abb TOK
+        =     A N P Z tp PZ z F L
+            , abb TOK chars kars kar
           .   !arg:(?arg.?abb)
             & ( !arg:
               |   vap$((=.!arg).!arg):?chars
                 & (   !chars:?A "."
                     & getAll$(!A."."):(?A.?P)
                     & (   ( !abb:abbr
-                          | !language:da & !A:~(? (@%:~(#|"."|",")) ?)
+                          |   !language:da
+                            &   !A
+                              : ~( ?
+                                   ( %@
+                                   : ~(#|"."|",")
+                                   )
+                                   ?
+                                 )
                           | !chars:% "." % ".":~(? ".." ?)
-                          |   ( 
-                              =   
-                                . !('($abbreviations:? ()$arg ?))
-                              )
-                            $ (str$!chars)
+                          |     !chars
+                              :   ?
+                                  (   ( %@?kar
+                                      & ~(upp$!kar:low$!kar)
+                                      )
+                                      ?
+                                  : ?kars
+                                  )
+                            &   ( 
+                                =   
+                                  . !( 
+                                     ' ($abbreviations:? ()$arg ?)
+                                     )
+                                )
+                              $ (str$!kars)
                           )
                         & SplitAbbr$!chars
                       |   Split$!A
@@ -1103,6 +1127,18 @@ X=
         & (its.teitok)$(F.simple.!abbr):?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"F.xml",NEW)
+      |   
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        &     (its.teitok)
+            $ ( "test\\ParlaMint-DK_20141_M4_2014-10-10-jf.xml"
+              . simple
+              . !abbr
+              . lang
+              )
+          : ?XMLL
+        & toML$!XMLL:?XMLLL
+        &   put
+          $ (!XMLLL,"test\\ParlaMint-DK_20141_M4_2014-10-10-jf-out.xml",NEW)
       |   arg$:?input
         & arg$:?output
         & arg$:(PT|simple):?style
@@ -1115,7 +1151,10 @@ X=
           : ?abbr
         & (!language:~"-"|):?lang
         &   put
-          $ (toML$((its.teitok)$(!input.!style.!abbr.!lang)),!output,NEW)
+          $ ( toML$((its.teitok)$(!input.!style.!abbr.!lang))
+            , !output
+            , NEW
+            )
   );
 
 r=
