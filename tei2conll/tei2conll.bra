@@ -67,8 +67,19 @@ X=
                   )
               : ?linkGrp
             &   str
-              $ ( "#"
+              $ ( "# sent_id = "
                   !id
+                  \n
+                  "# text ="
+                    map
+                  $ ( ( 
+                      =   
+                        .     !arg:(w|pc.?a,?c)
+                            & " " !c
+                          | 
+                      )
+                    . !s
+                    )
                   \n
                     map
                   $ ( ( 
@@ -76,11 +87,14 @@ X=
                         .     !arg:(w|pc.?a,?c)
                             &   !a
                               : ( ? (lemma.?lemma) ?
-                                | ?&"_":?lemma
+                                | ?&!c:?lemma
                                 )
                               : (   ? (msd.?msd) ?
                                   & (   @(!msd:? "UPosTag=" ?pos)
-                                      & ( @(!pos:?pos "|" ?msd)
+                                      & (   @(!pos:?pos "|" ?msd)
+                                          & ( (!msd.":"):("_".?msd)
+                                            | 
+                                            )
                                         | "_":?msd
                                         )
                                     | "_":?pos
@@ -103,8 +117,12 @@ X=
                                 \t
                                 !to
                                 \t
-                                !ana
-                                "\t_\t_\n"
+                                ( ( @(!ana:"ud-syn:" ?ana)
+                                  | 
+                                  )
+                                & !ana
+                                )
+                                "\t_\tNER=O\n"
                           | 
                       )
                     . !s
@@ -116,26 +134,35 @@ X=
         =   
           .   map
             $ ( ( 
-                =   
-                  .     !arg:(?.?att,?arg)
+                =   e att id
+                  .     !arg:(?e.?att,?arg)
                       & (   !arg:? (linkGrp.?,?) ?
                           & write$(!att.!arg)
-                        | makeCoNLL$!arg
+                        |   (   !att:? ("xml:id".?id) ?
+                              & (   !e:u
+                                  & "# newdoc id = " !id \n
+                                |   !e:seg
+                                  & "# newpar id = " !id \n
+                                )
+                            | 
+                            )
+                            makeCoNLL$!arg
                         )
                     | 
                 )
               . !arg
               )
         )
-      & put$(str$(makeCoNLL$!text),!output,NEW)
+      & put$(str$(makeCoNLL$!text),!output,NEW,BIN)
   )
   ( new
   =   
     .   ~
-      |   (its.doit)
-        $ ( "C:\\projects\\parlamint\\416-all\\ParlaMint-DK_20141_M1_2014-10-07-110.xml-416-step9.xml"
-          . "output.conll"
-          )
+      |   ~
+        &   (its.doit)
+          $ ( ".\\BIG\\425-all\\ParlaMint-DK_20151_M78_2016-04-19-115.xml-425-step9.xml"
+            . ".\\BIG\\step10-bracmat.conll"
+            )
       | (its.doit)$(arg$.arg$)
   );
 
