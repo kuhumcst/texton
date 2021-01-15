@@ -362,18 +362,22 @@ try {
 //        TODO your code!
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
-
+/*
         copy($IfacetsetoF,"IfacetsetoF"); 
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
         copy($IfacetlemF,"IfacetlemF"); 
+ */	
         if($Ofacetstpld)
             {
             logit("Ofacetstpld");
+
+/*
             copy($IfacetsegF,"IfacetsegF");
-            copy($IfacetstxF,"IfacetstxF");
+	    copy($IfacetstxF,"IfacetstxF");
+ */
             $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $IfacetsegF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
-	    copy($rawXML,"rawXML");
+	    //copy($rawXML,"rawXML");
             }
         else if($Ofacettlp)
             {
