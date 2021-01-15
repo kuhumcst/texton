@@ -658,66 +658,65 @@ X=
             & whl'(!K:!p ?K&!p !P:?P)
             & (!K.!P)
         )
+      & ( considerAbbrev
+        =   A P kar kars nxt
+          .   !arg:(?arg.?nxt)
+            & !arg:?A "."
+            & getAll$(!A."."):(?A.?P)
+            & (   ( !abb:abbr
+                  |   !language:da
+                    &   !A
+                      : ~( ?
+                           (%@:~(#|"."|","))
+                           ?
+                         )
+                  | !arg:% "." % ".":~(? ".." ?)
+                  |     !arg
+                      :   ?
+                          (   ( %@?kar
+                              & ~(upp$!kar:low$!kar)
+                              )
+                              ?
+                          : ?kars
+                          )
+                    & (   ( 
+                          = .!('($abbreviations:? ()$arg ?))
+                          )
+                        $ (str$!kars)
+                      |   !nxt
+                        : (","|";"|":") ?
+                      )
+                  )
+                & SplitAbbr$!arg
+              |   Split$!A
+                  ( c
+                  .     (type.p)
+                        ( S
+                        .   1+!tok:?TOK
+                          & (   !tok:0
+                              & 1+!sen:?sen
+                            |   0:?tok
+                              & 1:?IS
+                              & !sen
+                            )
+                        )
+                        (T.!TOK)
+                    , "."
+                  )
+              )
+        )
       & ( toksplit
         =     A N P Z tp PZ z F L
             , abb TOK chars kars kar
           .   !arg:(?arg.?abb)
             & ( !arg:
               |   vap$((=.!arg).!arg):?chars
-                & (   !chars:?A "."
-                    & getAll$(!A."."):(?A.?P)
-                    & (   ( !abb:abbr
-                          |   !language:da
-                            &   !A
-                              : ~( ?
-                                   ( %@
-                                   : ~(#|"."|",")
-                                   )
-                                   ?
-                                 )
-                          | !chars:% "." % ".":~(? ".." ?)
-                          |     !chars
-                              :   ?
-                                  (   ( %@?kar
-                                      & ~(upp$!kar:low$!kar)
-                                      )
-                                      ?
-                                  : ?kars
-                                  )
-                            &   ( 
-                                =   
-                                  . !( 
-                                     ' ($abbreviations:? ()$arg ?)
-                                     )
-                                )
-                              $ (str$!kars)
-                          )
-                        & SplitAbbr$!chars
-                      |   Split$!A
-                          ( c
-                          .     (type.p)
-                                ( S
-                                .   1+!tok:?TOK
-                                  & (   !tok:0
-                                      & 1+!sen:?sen
-                                    |   0:?tok
-                                      & 1:?IS
-                                      & !sen
-                                    )
-                                )
-                                (T.!TOK)
-                            , "."
-                          )
-                      )
+                & ( considerAbbrev$(!chars.)
                   |     !chars
                       :   ?A
                           ((","|";"|":"):?P)
                     & getAll$(!A.!P):(?A.?P)
-                    & ( 
-                      | !tok:0&1+!sen:?sen
-                      | 
-                      )
-                    &   Split$!A
+                    &   (considerAbbrev$(!A.!P)|Split$!A)
                         ( c
                         .     (type.p)
                               (S.Sen$)
@@ -726,7 +725,7 @@ X=
                         )
                   |   !chars:?A (("!"|"?"):?P)
                     & getAll$(!A.!P):(?A.?P)
-                    &   Split$!A
+                    &   (considerAbbrev$(!A.!P)|Split$!A)
                         ( c
                         .     (type.p)
                               ( S
@@ -1117,7 +1116,7 @@ X=
         &   put
           $ (   toML
               $ ( (its.teitok)
-                $ ("C:\\projects\\parlamint\\ParlaMint-dvs.xml".simple.!abbr)
+                $ ("C:\\projects\\parlamint\\ParlaMint-dvs.xml".simple.!abbr.da)
                 )
             , "ParlaMint-dvs.out.xml"
             , NEW
@@ -1127,7 +1126,7 @@ X=
         & (its.teitok)$(F.simple.!abbr):?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"F.xml",NEW)
-      |   ~ 
+      |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
         &     (its.teitok)
             $ ( "test\\ParlaMint-DK_20141_M4_2014-10-10-jf.xml"
