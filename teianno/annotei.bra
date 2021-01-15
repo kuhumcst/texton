@@ -5,7 +5,7 @@ Retain elements that occur in the TEI P5 input in the output.}
 
 program-annotei=
   ( doit
-  =   
+  =   Id
     .   !arg:(?tei.?tok.?pos.?lem.?seg.?stx.?output)
       &   nestML$(get$(!tei,X ML))
         : (     ?teiA
@@ -454,7 +454,7 @@ program-annotei=
             & !L
         )
       & ( insertStxEasyWay
-        =     A B M E P Q id to Id
+        =     A B M E P Q id to
             , linkGrp x parentID tsil
           .     
               : ?A
@@ -467,7 +467,6 @@ program-annotei=
               : ?id
               : ?tsil
             & !arg:(?arg.?parentID)
-            & 0:?Id
             &   whl
               ' (   !arg
                   :   ?A
@@ -505,64 +504,6 @@ program-annotei=
                   : ?tsil
                 )
             & reverseList$!tsil !arg
-        )
-      & ( insertStxEasyWay5
-        =   A B M E Q id to linkGrp x parentID
-          .     
-              : ?A
-              : ?B
-              : ?M
-              : ?E
-              : ?Q
-              : ?to
-              : ?id
-              : ?x
-            & !arg:(?arg.?parentID)
-            & (     !arg
-                  :   ?A
-                      ( ( ?
-                        .     ?
-                              ( "xml:id"
-                              .   ?id
-                                &   !ListOfLinkGrp
-                                  :   ?Q
-                                      ((!id,?to,?linkGrp):?x)
-                                      ?ListOfLinkGrp
-                                &   !listOfMissedLinkGrp !Q
-                                  : ?listOfMissedLinkGrp
-                              )
-                              ?
-                          , ?
-                        )
-                      : ?B
-                      )
-                      ?M
-                      ( ( ?
-                        .     ?
-                              ("xml:id".!to&:?x)
-                              ?
-                          , ?
-                        )
-                      : ?E
-                      )
-                      ?arg
-                &   !A
-                    ( s
-                    .   ( "xml:id"
-                        .   str
-                          $ ( !parentID
-                              ( !parentID:&div-
-                              | "."
-                              )
-                              (1+!divid:?divid)
-                            )
-                        )
-                      , !B !M !E !linkGrp
-                    )
-                    insertStxEasyWay$(!arg.!parentID)
-              |   !listOfMissedLinkGrp !x:?listOfMissedLinkGrp
-                & !arg
-              )
         )
       & ( spotAndInsertSTXEasy
         =   parentID
@@ -709,6 +650,7 @@ program-annotei=
               : ? ("xml:id"|id.?parentID) ?
             | :?parentID
             )
+          & 0:?Id
           & spotAndInsertSTXEasy$(!tei.!parentID):?tei
           & ( ~
             |     spotAndInsertSTXhard
@@ -733,6 +675,7 @@ program-annotei=
                         | 
                         )
                       & (!e.!a,rm#$!c)
+                    | !arg
                 )
               . !arg
               )
@@ -781,6 +724,7 @@ program-annotei=
                             )
                           : ?a
                         & (!e.!a,adaptid$(!id.!subsubid.!v.!c))
+                      | !arg
                   )
                 . !tei
                 )
@@ -812,6 +756,7 @@ program-annotei=
                             )
                         | (!e.!a,reidentify$!c)
                         )
+                    | !arg
                 )
               . !arg
               )
@@ -871,6 +816,7 @@ program-annotei=
                                 . !content
                                 )
                           )
+                      | !arg
                   )
                 . !tei
                 )
@@ -1158,20 +1104,16 @@ program-annotei=
                 $ !O
                 )
         )
-      &   put
-        $ (   toML
-            $ (   !head:
-                & !tail:
-                & !TEIatt:
-                & (text.!textatt,(body.,!tei))
-              |     !teiA
-                    (TEI.!TEIatt,!head (text.!textatt,!tei) !tail)
-                    !teiZ
-                : ?tei
-              )
-          , !output
-          , NEW
+      &   (   !head:
+            & !tail:
+            & !TEIatt:
+            & (text.!textatt,(body.,!tei))
+          |   !teiA
+              (TEI.!TEIatt,!head (text.!textatt,!tei) !tail)
+              !teiZ
           )
+        : ?tei
+      & put$(toML$!tei,!output,NEW)
   )
   ( new
   =   
@@ -1227,7 +1169,7 @@ program-annotei=
             . "*"
             . "original-deposited-file-37-1.xml-18-step.output.xml"
             )
-      |   ~ 
+      |   ~
         &   (its.doit)
           $ ( "C:\\projects\\parlamint\\IfacetsetoF"
             . "C:\\projects\\parlamint\\IfacettokF"
@@ -1245,7 +1187,7 @@ program-annotei=
             . "C:\\projects\\parlamint\\IfacetlemF"
             . "C:\\projects\\parlamint\\IfacetsegF"
             . "C:\\projects\\parlamint\\IfacetstxF"
-            . "C:\\projects\\parlamint\\ParlaMint-DK_20151_M103_2016-05-27-93.out.xml"
+            . "C:\\projects\\parlamint\\JEB-058.out.xml"
             )
       |   (its.doit)
         $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
