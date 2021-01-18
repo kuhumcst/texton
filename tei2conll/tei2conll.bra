@@ -10,31 +10,114 @@ X=
       & !xml:? (TEI.?,? (text.?,?text) ?) ?
       & 0:?sentno
       & new$hash:?tokids
+      & ( content
+        =   
+          .   map
+            $ ( ( 
+                =   a e c
+                  .     !arg:(~del:?e.?a,?c)
+                      & (     !a
+                            : ? ("xml:id"|id.?) ?
+                          & str$(content$!c)
+                        | content$!c
+                        )
+                    | !arg:(?.?)&
+                    | !arg:~" "
+                    | 
+                )
+              . !arg
+              )
+        )
+      & ( getIDs
+        =   id n e a c
+          .   !arg:(?arg.?n)
+            &   whl
+              ' ( !arg:? (?e.?a,?c) ?arg
+                & (   !e:(w|c)
+                    &   !a
+                      : ? ("xml:id"|id.?id) ?
+                    & (tokids..insert)$(!id.1+!n:?n)
+                  | getIDs$(!c.!n):?n
+                  )
+                )
+            & !n
+        )
+      & ( doLine
+        =   a c C msd pos id lemma ana to
+          .     !arg:(?.?a,?c)
+              & (     !a
+                    : (   ? (msd.?msd) ?
+                        & (   @(!msd:? "UPosTag=" ?pos)
+                            & (   @(!pos:?pos "|" ?msd)
+                                & ( (!msd.":"):("_".?msd)
+                                  | 
+                                  )
+                              | "_":?msd
+                              )
+                          | "_":?pos
+                          )
+                      |   ? (pos.?pos) ?
+                        & "_":?msd
+                      )
+                    : ? ("xml:id".?id) ?
+                  & str$(content$!c):?C
+                  &   !a
+                    : ( ? (lemma.?lemma) ?
+                      | ?&!C:?lemma
+                      )
+                  & (tokids..find)$!id:(?.?id)
+                  & !linkGrp:? (!id.?ana.?to) ?
+                  &   !id
+                      \t
+                      !C
+                      \t
+                      !lemma
+                      \t
+                      !pos
+                      "\t_\t"
+                      !msd
+                      \t
+                      !to
+                      \t
+                      ( (@(!ana:"ud-syn:" ?ana)|)
+                      & !ana
+                      )
+                      "\t_\tNER=O\n"
+                | map$(doLine.!c)
+                )
+            | 
+        )
       & ( write
-        =   att s
+        =   att s U V
           .   !arg:(?att.?s)
             & ( !att:? ("xml:id".?id) ?
               | 1+!sentno:?sentno:?id
               )
             & (tokids..insert)$(!id.0)
+            & ( aggIDS
+              =   
+                .   map
+                  $ ( ( 
+                      =   id c
+                        .       !arg
+                              : ( w|pc
+                                .     ?
+                                      ("xml:id"|id.?id)
+                                      ?
+                                  , ?
+                                )
+                            & (tokids..insert)$(!id.1+!n:?n)
+                          | !arg:(?.?,?c)&aggIDS$!c
+                      )
+                    . !arg
+                    )
+              )
             &   ( 
-                =   id n
-                  .   0:?n
-                    &   whl
-                      ' (   !arg
-                          :   ?
-                              ( w|pc
-                              .     ?
-                                    ("xml:id"|id.?id)
-                                    ?
-                                , ?
-                              )
-                              ?arg
-                        & (tokids..insert)$(!id.1+!n:?n)
-                        )
+                = id n.0:?n&aggIDS$!arg
                 )
               $ !s
-            & !s:? (linkGrp.?,?linkGrp) ?
+            & !s:?U (linkGrp.?,?linkGrp) ?V
+            & !U !V:?s
             &     map
                 $ ( ( 
                     =   to from ana
@@ -71,62 +154,9 @@ X=
                   !id
                   \n
                   "# text ="
-                    map
-                  $ ( ( 
-                      =   
-                        .     !arg:(w|pc.?a,?c)
-                            & " " !c
-                          | 
-                      )
-                    . !s
-                    )
+                  map$((=." " !arg).content$!s)
                   \n
-                    map
-                  $ ( ( 
-                      =   
-                        .     !arg:(w|pc.?a,?c)
-                            &   !a
-                              : ( ? (lemma.?lemma) ?
-                                | ?&!c:?lemma
-                                )
-                              : (   ? (msd.?msd) ?
-                                  & (   @(!msd:? "UPosTag=" ?pos)
-                                      & (   @(!pos:?pos "|" ?msd)
-                                          & ( (!msd.":"):("_".?msd)
-                                            | 
-                                            )
-                                        | "_":?msd
-                                        )
-                                    | "_":?pos
-                                    )
-                                |   ? (pos.?pos) ?
-                                  & "_":?msd
-                                )
-                              : ? ("xml:id".?id) ?
-                            & (tokids..find)$!id:(?.?id)
-                            & !linkGrp:? (!id.?ana.?to) ?
-                            &   !id
-                                \t
-                                !c
-                                \t
-                                !lemma
-                                \t
-                                !pos
-                                "\t_\t"
-                                !msd
-                                \t
-                                !to
-                                \t
-                                ( ( @(!ana:"ud-syn:" ?ana)
-                                  | 
-                                  )
-                                & !ana
-                                )
-                                "\t_\tNER=O\n"
-                          | 
-                      )
-                    . !s
-                    )
+                  map$(doLine.!s)
                   \n
                 )
         )
@@ -162,6 +192,16 @@ X=
         &   (its.doit)
           $ ( ".\\BIG\\425-all\\ParlaMint-DK_20151_M78_2016-04-19-115.xml-425-step9.xml"
             . ".\\BIG\\step10-bracmat.conll"
+            )
+      |   ~
+        &   (its.doit)
+          $ ( ".\\BIG\\271-all\\JEB-058-74.xml-271-step9.xml"
+            . ".\\BIG\\JEB-058-74.xml-271-step9-bracmat.conll"
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\projects\\parlamint\\BIG\\457-all\\JEB-103ab-121.xml-457-step9.xml"
+            . "C:\\projects\\parlamint\\JEB-103ab-121.xml-457-step9.conll"
             )
       | (its.doit)$(arg$.arg$)
   );
