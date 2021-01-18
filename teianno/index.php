@@ -367,7 +367,8 @@ try {
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
         copy($IfacetlemF,"IfacetlemF"); 
- */	
+/*/
+//*/	
         if($Ofacetstpld)
             {
             logit("Ofacetstpld");
@@ -375,7 +376,8 @@ try {
 /*
             copy($IfacetsegF,"IfacetsegF");
 	    copy($IfacetstxF,"IfacetstxF");
- */
+/*/
+//*/
             $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetlemF $IfacetsegF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
 	    //copy($rawXML,"rawXML");
             }

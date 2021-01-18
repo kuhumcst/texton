@@ -446,7 +446,6 @@ program-annotei=
                 . !seg
                 )
         )
-      & 0:?divid
       & ( reverseList
         =   L a
           .   :?L
@@ -556,7 +555,7 @@ program-annotei=
                               ( !parentID:&div-
                               | "."
                               )
-                              (1+!divid:?divid)
+                              (1+!Id:?Id)
                             )
                         )
                       , !startStep !linkGrp
@@ -607,7 +606,7 @@ program-annotei=
                               ( !parentID:&div-
                               | "."
                               )
-                              (1+!divid:?divid)
+                              (1+!Id:?Id)
                             )
                         )
                       , !startStep !b !endStep !linkGrp
@@ -652,10 +651,49 @@ program-annotei=
             )
           & 0:?Id
           & spotAndInsertSTXEasy$(!tei.!parentID):?tei
-          & ( ~
-            |     spotAndInsertSTXhard
-                $ (!tei.!listOfMissedLinkGrp !ListOfLinkGrp.!parentID)
-              : ?tei
+          & ( !listOfMissedLinkGrp:
+            |       spotAndInsertSTXhard
+                  $ ( !tei
+                    . !listOfMissedLinkGrp !ListOfLinkGrp
+                    . !parentID
+                    )
+                : ?tei
+              & ( getIDsRight
+                =   
+                  .   map
+                    $ ( ( 
+                        =   e a c b d v S I F A Z id
+                          .     !arg:(?e.?a,?c)
+                              & ( !e
+                                .         !a
+                                        :   ?b
+                                            (   ("xml:id"|id)
+                                              : ?id
+                                            . ?v
+                                            )
+                                            ?d
+                                      & @(!v:?S "." ~/#%?I)
+                                      &   (     !prefi
+                                              : ?A (!S.?F) ?Z
+                                            &   (!S.!F+1:?F)
+                                                !A
+                                                !Z
+                                          | (!S.1:?F) !prefi
+                                          )
+                                        : ?prefi
+                                      &   !b
+                                          (!id.str$(!S "." !F))
+                                          !d
+                                    | !a
+                                  , getIDsRight$!c
+                                )
+                            | !arg
+                        )
+                      . !arg
+                      )
+                )
+              & :?prefi
+              & getIDsRight$!tei:?tei
             )
         )
       & ( rm#
@@ -682,23 +720,41 @@ program-annotei=
         )
       & rm#$!tei:?tei
       & ( adaptid
-        =   parentID tei subid id subsubid
+        =   parentID tei subid id
           .   !arg:(?id.?subid.?parentID.?tei)
-            & 0:?subsubid
-            &   map
-              $ ( ( 
-                  =   e a c A Z ID v
-                    .   !arg:@
-                      |   !arg:(?e.?a,?c)
-                        &   (     !a
-                                :   ?A
-                                    ( ("xml:id"|id):?ID
-                                    . ?v
-                                    )
-                                    ?Z
-                              & ( (IDS..find)$!v:(?.?v)
-                                |   (IDS..insert)
-                                  $ ( !v
+            & (   map
+                $ ( ( 
+                    =   e a c A Z ID v nc
+                      .   !arg:@
+                        |   !arg:(?e.?a,?c)
+                          &   (     !a
+                                  :   ?A
+                                      (   ("xml:id"|id)
+                                        : ?ID
+                                      . ?v
+                                      )
+                                      ?Z
+                                & ( (IDS..find)$!v:(?.?v)
+                                  |   (IDS..insert)
+                                    $ ( !v
+                                      .     str
+                                          $ ( !parentID
+                                              "."
+                                              (1+!subid:?subid)
+                                            )
+                                        : ?v
+                                      )
+                                  )
+                                &   adaptid$(!id.!subid.!v.!c)
+                                  : (?nc.?subid)
+                                & !A (!ID.!v) !Z
+                              |   !e:~s
+                                & !parentID:?v
+                                &   adaptid$(!id.!subid.!v.!c)
+                                  : (?nc.?subid)
+                                & !a
+                              |   adaptid$(!id.0.!v.!c):(?nc.?)
+                                &   ( !id
                                     .     str
                                         $ ( !parentID
                                             "."
@@ -706,34 +762,22 @@ program-annotei=
                                           )
                                       : ?v
                                     )
-                                )
-                              & !A (!ID.!v) !Z
-                            |   !e:~s
-                              & !parentID:?v
-                              & !subid:?subsubid
-                              & !a
-                            |   ( !id
-                                .     str
-                                    $ ( !parentID
-                                        "."
-                                        (1+!subid:?subid)
-                                      )
-                                  : ?v
-                                )
-                                !a
-                            )
-                          : ?a
-                        & (!e.!a,adaptid$(!id.!subsubid.!v.!c))
-                      | !arg
+                                    !a
+                              )
+                            : ?a
+                          & (!e.!a,!nc)
+                        | !arg
+                    )
+                  . !tei
                   )
-                . !tei
-                )
+              . !subid
+              )
         )
       & ( reidentify
         =   
           .   map
             $ ( ( 
-                =   e a c A Z id v
+                =   e a c A Z id v nc
                   .   !arg:@
                     |   !arg:(?e.?a,?c)
                       & (     !a
@@ -752,7 +796,8 @@ program-annotei=
                                     )
                                     ?
                               & (!e.!a,reidentify$!c)
-                            | (!e.!a,adaptid$(!id.0.!v.!c))
+                            |   adaptid$(!id.0.!v.!c):(?nc.?)
+                              & (!e.!a,!nc)
                             )
                         | (!e.!a,reidentify$!c)
                         )
@@ -1187,7 +1232,7 @@ program-annotei=
             . "C:\\projects\\parlamint\\IfacetlemF"
             . "C:\\projects\\parlamint\\IfacetsegF"
             . "C:\\projects\\parlamint\\IfacetstxF"
-            . "C:\\projects\\parlamint\\JEB-058.out.xml"
+            . "C:\\projects\\parlamint\\JEB-103ab.out.xml"
             )
       |   (its.doit)
         $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
