@@ -4,7 +4,8 @@ Extract a single annotation group (spanGrp) from a composite TEI annotation file
 
 X=
   ( doit
-  =   output tmp1 tmp2 A B C D E F G H xmlseg xmltok
+  =     output tmp1 tmp2 A B C D E F G H
+      , xmlseg xmltok posstyle wat Wat
     .   ( find
         =   e a c wat
           .   !arg:(?arg.?wat)
@@ -16,23 +17,44 @@ X=
               | find$(!c.!wat)
               )
         )
-      & !arg:(?input.?output.?wat)
+      & !arg:(?input.?output.?wat.?posstyle)
       & nestML$(get$(!input,X ML TRM)):?xml
       &     (lem.lemma)
             (pos.pos msd)
             (stx.syntax dep depencies)
-        : ? (!wat.?wat) ?
-      & find$(!xml.!wat):?annot
+        : ? (!wat.?Wat) ?
+      & find$(!xml.!Wat):?annot
+      & (   !wat:pos
+          & !posstyle:Uni
+          & !annot:? (spanGrp.?a,?spans) ?
+          &   ( !spanGrp
+              .   !a
+                ,   map
+                  $ ( ( 
+                      =   a c
+                        .   !arg
+                          : ( span
+                            .   ?a
+                              ,   @(?:"UPosTag=" ?c "|" ?)
+                                & !c
+                            )
+                      )
+                    . !spans
+                    )
+              )
+            : ?annot
+        | 
+        )
       & put$(toML$!annot,!output,NEW)
   )
   ( new
   =   
     .   ~
-      |     ( ~&(F."uit.xml".stx)
-            | (arg$.arg$.arg$)
+      |     ( ~&(F."uit.xml".stx.UMSD)
+            | (arg$.arg$.arg$.arg$)
             )
-          : (?input.?output.?wat)
-        & (its.doit)$(!input.!output.!wat)
+          : (?input.?output.?wat.?posstyle)
+        & (its.doit)$(!input.!output.!wat.!posstyle)
   );
 
 r=
