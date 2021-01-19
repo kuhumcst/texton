@@ -276,7 +276,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
             if($pos == 'n')
                 $flexrulessubdir = "/1";
             else
+		{
                 $flexrulessubdir = "/links";
+		$x = "-x'$toolres/da/lemmatiser/tags/c21/translationTable'";
+	        }
             }
         }
     else if($language == 'de')
