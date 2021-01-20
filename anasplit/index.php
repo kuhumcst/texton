@@ -170,8 +170,9 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetpls = false;	/* Type of content in input is PoS-tags,lemmas,syntax (Pos-tags,lemma,syntaks) if true */
+        $Ifacetpmls = false;	/* Type of content in input is PoS-tags,morphology,lemmas,syntax (Pos-tags,morfologi,lemma,syntaks) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
 
@@ -208,15 +209,16 @@ try {
 ************************/
         if( hasArgument("Ifacet") )
             {
-            $Ifacetpls = existsArgumentWithValue("Ifacet", "pls");
-            $echos = $echos . "Ifacetpls=$Ifacetpls ";
+            $Ifacetpmls = existsArgumentWithValue("Ifacet", "pmls");
+            $echos = $echos . "Ifacetpmls=$Ifacetpmls ";
             }
         if( hasArgument("Ofacet") )
             {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetmrf = existsArgumentWithValue("Ofacet", "mrf");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetstx=$Ofacetstx ";
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetpos=$Ofacetpos " . "Ofacetstx=$Ofacetstx ";
             }
 
 /*******************************
