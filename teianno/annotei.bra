@@ -6,7 +6,7 @@ Retain elements that occur in the TEI P5 input in the output.}
 program-annotei=
   ( doit
   =   Id
-    .   !arg:(?tei.?tok.?pos.?lem.?seg.?stx.?output)
+    .   !arg:(?tei.?tok.?pos.?mrf.?lem.?seg.?stx.?output)
       &   nestML$(get$(!tei,X ML))
         : (     ?teiA
                 (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
@@ -68,6 +68,8 @@ program-annotei=
         : ? (spanGrp.?,?tok) ?
       &   nestML$(get$(!pos,X ML))
         : ? (spanGrp.?,?pos) ?
+      &   nestML$(get$(!mrf,X ML))
+        : ? (spanGrp.?,?mrf) ?
       &   nestML$(get$(!lem,X ML))
         : ? (spanGrp.?,?lem) ?
       & ( !stx:"*"&:?stx
@@ -115,12 +117,24 @@ program-annotei=
                           )
                     | :?PS
                     )
+                  & (     !mrf
+                        :   ?
+                            (span.? (from.!tokid) ?,?MS)
+                            ?mrf
+                      &   whl
+                        ' (   !mrf
+                            :   (span.? (from.!tokid) ?,?M)
+                                ?mrf
+                          & !MS !M:?MS
+                          )
+                    | :?MS
+                    )
                   & "Length of PS and LS must be the same or 1."
-                  & (!teiid.!toid.!PS.!LS.!tokid)
+                  & (!teiid.!toid.!PS.!MS.!LS.!tokid)
               )
             . !tok
             )
-        : ?PL
+        : ?PML
       & "SP is a list of c elements containing white space chars."
       & ( getSP
         =   sp
@@ -147,8 +161,19 @@ program-annotei=
               )
         )
       & 0:?ID
+      & ( msd
+        =   p m
+          .   !arg:(?p.?m)
+            &   str
+              $ ( "UPosTag="
+                  !p
+                  ( !m:(|"_")&
+                  | "|" !m
+                  )
+                )
+        )
       & ( anno
-        =   A e a s lenPS lenLS id
+        =   A e a s lenPS lenLS lenMS id
           .   map
             $ ( ( 
                 =   
@@ -163,14 +188,15 @@ program-annotei=
                               )
                           & (   !a:? ("xml:id".?id) ?
                               & (   !MWUend:
-                                  &   !PL
+                                  &   !PML
                                     :   ( !id
                                         . ?to
                                         . ?PS [?lenPS
+                                        . ?MS [?lenMS
                                         . ?LS [?lenLS
                                         . ?tokid
                                         )
-                                        ?PL
+                                        ?PML
                                   & "Current TEI element is w or pc"
                                   & :?excludes:?ids
                                   & (   !lenPS+!lenLS:>2
@@ -232,7 +258,7 @@ program-annotei=
                                                           & (lemma.!LS)
                                                         | 
                                                         )
-                                                        (!POS.!PS)
+                                                        (!POS.msd$(!PS.!MS))
                                                         !a
                                                     , !s
                                                   )
@@ -242,6 +268,9 @@ program-annotei=
                                                 =   id
                                                   .   !ids:%?id ?ids
                                                     & ( !PS:%?P ?PS
+                                                      | 
+                                                      )
+                                                    & ( !MS:%?M ?MS
                                                       | 
                                                       )
                                                     & ( !LS:%?L ?LS
@@ -265,7 +294,9 @@ program-annotei=
                                                               & (lemma.!L)
                                                             | 
                                                             )
-                                                            (!POS.!P)
+                                                            ( !POS
+                                                            . msd$(!P.!M)
+                                                            )
                                                             !a
                                                             !id
                                                             !arg
@@ -287,7 +318,7 @@ program-annotei=
                                       (   !excludes:
                                         & ( w
                                           .     (lemma.!LS)
-                                                (!POS.!PS)
+                                                (!POS.msd$(!PS.!MS))
                                                 ("xml:id".!tokid)
                                             , !theMWU
                                           )
@@ -298,12 +329,15 @@ program-annotei=
                                                 & ( !PS:%?P ?PS
                                                   | 
                                                   )
+                                                & ( !MS:%?M ?MS
+                                                  | 
+                                                  )
                                                 & ( !LS:%?L ?LS
                                                   | 
                                                   )
                                                 & ( w
                                                   .     (lemma.!L)
-                                                        (!POS.!P)
+                                                        (!POS.msd$(!P.!M))
                                                         !id
                                                         !arg
                                                     , !theMWU
@@ -1164,78 +1198,27 @@ program-annotei=
   =   
     .     ~
         & "Remove the ~ to merely reformat the code, not run it."
-      |   ~
-        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step3.xml"
-          : ?tei
-        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step5.xml"
-          : ?tok
-        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step9.xml"
-          : ?lem
-        &   "C:\\downloads\\middelgrunden\\http___www.middelgrunden.dk_middelgrunden_sites_default_files_mg2019-final-196.pdf-3656-step10.xml"
-          : ?pos
+      |   
         &   (its.doit)
-          $ (!tei.!tok.!pos.!lem."*"."*"."middelgrunden.output.xml")
-      |   ~
-        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step64.xml":?tei
-        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step66.xml":?tok
-        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step71.xml":?pos
-        & "C:\\downloads\\3620\\JEB-106-142.xml-3620-step70.xml":?lem
-        &   (its.doit)
-          $ (!tei.!tok.!pos.!lem."*"."*"."JEB-106-142.output.xml")
-      |   ~
-        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step19.xml":?tei
-        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step21.xml":?tok
-        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step26.xml":?pos
-        & "C:\\downloads\\3629\\JEB-081-161.xml-3629-step25.xml":?lem
-        &   (its.doit)
-          $ (!tei.!tok.!pos.!lem."*"."*"."JEB-081-161.output.xml")
-      |   ~
-        & "C:\\downloads\\dsl_brandes-15.xml-3881-step1.xml":?tei
-        & "C:\\downloads\\dsl_brandes-15.xml-3881-step3.xml":?tok
-        & "C:\\downloads\\dsl_brandes-15.xml-3881-step7.xml":?pos
-        & "C:\\downloads\\dsl_brandes-15.xml-3881-step8.xml":?lem
-        &   (its.doit)
-          $ (!tei.!tok.!pos.!lem."*"."*"."dsl_brandes.output.xml")
-      |   ~
-        &   "C:\\tekster\\output\\original-deposited-file-37-1.xml-21-step1.xml"
-          : ?tei
-        &   "C:\\tekster\\output\\original-deposited-file-37-1.xml-21-step3.xml"
-          : ?tok
-        &   "C:\\tekster\\output\\original-deposited-file-37-1.xml-21-step7.xml"
-          : ?pos
-        &   "C:\\tekster\\output\\original-deposited-file-37-1.xml-21-step8.xml"
-          : ?lem
-        &   (its.doit)
-          $ ( !tei
-            . !tok
-            . !pos
-            . !lem
-            . "*"
-            . "*"
-            . "original-deposited-file-37-1.xml-18-step.output.xml"
-            )
-      |   ~
-        &   (its.doit)
-          $ ( "C:\\projects\\parlamint\\IfacetsetoF"
-            . "C:\\projects\\parlamint\\IfacettokF"
-            . "C:\\projects\\parlamint\\IfacetposF"
-            . "C:\\projects\\parlamint\\IfacetlemF"
-            . "*"
-            . "*"
-            . "C:\\projects\\parlamint\\JEB-040-97.out.xml"
-            )
-      |   ~
-        &   (its.doit)
-          $ ( "C:\\projects\\parlamint\\IfacetsetoF"
-            . "C:\\projects\\parlamint\\IfacettokF"
-            . "C:\\projects\\parlamint\\IfacetposF"
-            . "C:\\projects\\parlamint\\IfacetlemF"
-            . "C:\\projects\\parlamint\\IfacetsegF"
-            . "C:\\projects\\parlamint\\IfacetstxF"
-            . "C:\\projects\\parlamint\\JEB-103ab.out.xml"
+          $ ( "C:\\projects\\parlamint\\small\\IfacetsetoF"
+            . "C:\\projects\\parlamint\\small\\IfacettokF"
+            . "C:\\projects\\parlamint\\small\\IfacetposF"
+            . "C:\\projects\\parlamint\\small\\IfacetmrfF"
+            . "C:\\projects\\parlamint\\small\\IfacetlemF"
+            . "C:\\projects\\parlamint\\small\\IfacetsegF"
+            . "C:\\projects\\parlamint\\small\\IfacetstxF"
+            . "C:\\projects\\parlamint\\small\\ParlaMint-DK_20191_M149_2020-09-22.out.xml"
             )
       |   (its.doit)
-        $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+        $ ( arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          )
   );
 
 r=

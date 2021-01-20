@@ -20,24 +20,27 @@ X=
       & !arg:(?input.?output.?wat.?posstyle)
       & nestML$(get$(!input,X ML TRM)):?xml
       &     (lem.lemma)
-            (pos.pos msd)
-            (stx.syntax dep depencies)
+            (pos.pos)
+            (mrf.msd morphology)
+            (stx.syntax dep dependencies)
         : ? (!wat.?Wat) ?
       & find$(!xml.!Wat):?annot
       & (   !wat:pos
           & !posstyle:Uni
           & !annot:? (spanGrp.?a,?spans) ?
-          &   ( !spanGrp
+          &   ( spanGrp
               .   !a
                 ,   map
                   $ ( ( 
                       =   a c
-                        .   !arg
-                          : ( span
-                            .   ?a
-                              ,   @(?:"UPosTag=" ?c "|" ?)
-                                & !c
-                            )
+                        .     !arg
+                            : ( span
+                              .   ?a
+                                , @( ?
+                                   : "UPosTag=" ?c ("|" ?|)
+                                   )
+                              )
+                          & (span.!a,!c)
                       )
                     . !spans
                     )
@@ -50,7 +53,7 @@ X=
   ( new
   =   
     .   ~
-      |     ( ~&(F."uit.xml".stx.UMSD)
+      |     ( ~&(F."uit.xml".pos.Uni)
             | (arg$.arg$.arg$.arg$)
             )
           : (?input.?output.?wat.?posstyle)
