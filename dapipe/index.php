@@ -215,14 +215,16 @@ try {
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
-        $Ofacetpls = false;	/* Type of content in output is PoS-tags,lemmas,syntax (Pos-tags,lemma,syntaks) if true */
-        $Ofacetstpld = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas,dependency relations (segmenter,tokens,PoS-tags,lemmaer,dependency relations) if true */
+        $Ofacetpmls = false;	/* Type of content in output is PoS-tags,morphology,lemmas,syntax (Pos-tags,morfologi,lemma,syntaks) if true */
+        $Ofacetstpmld = false;	/* Type of content in output is segments,tokens,PoS-tags,morphology,lemmas,dependency relations (segmenter,tokens,PoS-tags,morfologi,lemmaer,dependency relations) if true */
         $Oformatconll = false;	/* Format in output is CoNLL if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $OfacetpmlsUni = false;	/* Style of type of content PoS-tags,morphology,lemmas,syntax (Pos-tags,morfologi,lemma,syntaks) in output is Universal Part-of-Speech Tagset if true */
+        $OfacetstpmldUni = false;	/* Style of type of content segments,tokens,PoS-tags,morphology,lemmas,dependency relations (segmenter,tokens,PoS-tags,morfologi,lemmaer,dependency relations) in output is Universal Part-of-Speech Tagset if true */
         $OformatconllclU = false;	/* Style of format CoNLL in output is CoNLL-U (10 columns)CoNLL-U (10 kolonner) if true */
 
         if( hasArgument("base") )
@@ -327,9 +329,9 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetpls = existsArgumentWithValue("Ofacet", "pls");
-            $Ofacetstpld = existsArgumentWithValue("Ofacet", "stpld");
-            $echos = $echos . "Ofacetpls=$Ofacetpls " . "Ofacetstpld=$Ofacetstpld ";
+            $Ofacetpmls = existsArgumentWithValue("Ofacet", "pmls");
+            $Ofacetstpmld = existsArgumentWithValue("Ofacet", "stpmld");
+            $echos = $echos . "Ofacetpmls=$Ofacetpmls " . "Ofacetstpmld=$Ofacetstpmld ";
             }
         if( hasArgument("Oformat") )
             {
@@ -357,6 +359,16 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ofacetpmls") )
+            {
+            $OfacetpmlsUni = existsArgumentWithValue("Ofacetpmls", "Uni");
+            $echos = $echos . "OfacetpmlsUni=$OfacetpmlsUni ";
+            }
+        if( hasArgument("Ofacetstpmld") )
+            {
+            $OfacetstpmldUni = existsArgumentWithValue("Ofacetstpmld", "Uni");
+            $echos = $echos . "OfacetstpmldUni=$OfacetstpmldUni ";
+            }
         if( hasArgument("Oformatconll") )
             {
             $OformatconllclU = existsArgumentWithValue("Oformatconll", "clU");
@@ -389,7 +401,7 @@ try {
             }
         else if($Ifacettok) // an also $Ifacetseg!
             {
-            logit("segments and tokens input, PoS,Lemmas,syntax output");
+            logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
             $dapipefile = tempFileName("dapipe-results");
             logit("dapipefile $dapipefile");
             $tmp1 = tempFileName("dapipe-tmp1");
