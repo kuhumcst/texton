@@ -963,13 +963,14 @@ ItemGroupsCache=
 ;
 SuperSets=
   facet
-.   (pos.spo stp tlp stlp stopl stpd)
+.   (pos.spo stp tlp tlpm stlp stopl stpd)
     (ner.stn)
-    (lem.sl tl tlp stl stlp stopl)
+    (lem.sl tl tlp tlpm stl stlp stopl)
     (cls.stopl)
-    (stx.stpd pls stpld)
+    (stx.stpd pls pmls stpld stpmld)
     (tok.seto stn)
-    (seg.seto);
+    (seg.seto)
+    (mrf.pmls stpmld tlpm);
 TEImetadata=
   ( id
   . "Text in UI" "Tekst i grænsefladen"
@@ -1317,8 +1318,12 @@ facets=
   (PoS-tags PoS-tags.pos.)
   (lemmas Lemma.lem.)
   ("noun phrases" "navnefraser (NP)".npr.)
+  ("morphological features" "morfologiske træk".mrf.)
   ("syntax (dependency structure)" "Syntaks (dependensstruktur)".stx.)
-  ("PoS-tags,lemmas,syntax" "Pos-tags,lemma,syntaks".pls.)
+  ( "PoS-tags,morphology,lemmas,syntax" "Pos-tags,morfologi,lemma,syntaks"
+  . pmls
+  . 
+  )
   ("tagged terms" termer.trm.)
   (morphemes morfemer.wrdsplt.)
   ("repeated phrases" gentagelser.rep.)
@@ -1355,9 +1360,18 @@ facets=
   . stpld
   . 
   )
+  (   "segments,tokens,PoS-tags,morphology,lemmas,dependency relations"
+      "segmenter,tokens,PoS-tags,morfologi,lemmaer,dependency relations"
+  . stpmld
+  . 
+  )
   ("tokens,PoS-tags" "tokens,PoS-tags".tp.)
   ("tokens,lemmas" "tokens,lemmaer".tl.)
   ("tokens,PoS-tags,lemmas" "tokens,PoS-tags,lemmaer".tlp.)
+  ( "tokens,PoS-tags,morphology,lemmas" "tokens,PoS-tags,morfologi,lemmaer"
+  . tlpm
+  . 
+  )
   ( "tokens,PoS-tags,lemmas,syntax" "tokens,PoS-tags,lemmaer,syntaks"
   . tlps
   . 
@@ -1373,7 +1387,20 @@ features=
     )
     (table.facets)
     ( specificationTable
-    .   (pos spo stp stpd stlp stopl tp tlp.tagSets)
+    .   (   pmls
+            pos
+            spo
+            stp
+            stpd
+            stlp
+            stopl
+            stpld
+            stpmld
+            tp
+            tlp
+            tlpm
+        . tagSets
+        )
         (seto stn tok.tokenisationStyles)
     )
     ( sourcehelp
@@ -3028,7 +3055,10 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(amb.amb)+(una.amb+una))
       (app,(nrm.nrm))
-      (facet,(stp^Par.lem+tl+tlp^Par))
+      ( facet
+      ,   (stp^Par.lem+tl+tlp^Par)
+        + (stp^Uni.lem+tl+tlp^Uni)
+      )
       (format,(flat.flat))
       (lang,(da.da))
       (period,(c21.c21))
@@ -3037,7 +3067,7 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(amb.amb)+(una.amb+una))
       (app,(nrm.nrm))
-      (facet,(stp^Par.sl+stlp^Par))
+      (facet,(stp^Par.sl+stlp^Par)+(stp^Uni.sl+stlp^Uni))
       (format,(flat.flat))
       (lang,(da.da))
       (period,(c21.c21))
@@ -3185,6 +3215,18 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(una.amb+una))
       (app,(nrm.nrm))
+      ( facet
+      ,   (pos^Par*tok.lem+tl+tlp^Par)
+        + (pos^Uni*tok.lem+tl+tlp^Uni)
+      )
+      (format,(txtann.flat))
+      (lang,(da.da))
+      (period,(c21.c21))
+      (pres,(nml.alf+frq))
+  )
++ ( CST-Lem
+  .   (ambig,(una.amb+una))
+      (app,(nrm.nrm))
       (facet,(seto.sl))
       (format,(flat.flat))
       ( lang
@@ -3291,16 +3333,7 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(una.amb+una))
       (app,(nrm.nrm))
-      (facet,(pos^Par*tok.lem+tl+tlp^Par))
-      (format,(txtann.flat))
-      (lang,(da.da))
-      (period,(c21.c21))
-      (pres,(nml.alf+frq))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      (facet,(tok pos^Par.lem))
+      (facet,((tok pos^Par)+(tok pos^Uni).lem))
       (format,(txtann.txtann))
       (lang,(da.da))
       (period,(c21.c21))
@@ -3586,8 +3619,8 @@ toolprop=
   .   (ambig,(pru.pru)+(una.una))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      ,   (lem*pos*seg*seto*stx*tok.stpld)
-        + (lem*pos*seto*tok.tlp)
+      ,   (lem*mrf*pos^Uni*seg*seto*stx*tok.stpmld)
+        + (lem*mrf*pos^Uni*seto*tok.tlpm)
       )
       (format,(txtann.teip5))
       (pres,(nml.nml))
@@ -3662,7 +3695,13 @@ toolprop=
       (pres,(nml.nml))
       (sml,(sml.nsl))
   )
-+ (anasplit.facet,(pls.lem+pos+stx))
++ ( anasplit
+  .   ( facet
+      ,   (pmls.lem+mrf+pos+stx)
+        + (pmls^Uni.lem+mrf+stx+pos^Uni)
+      )
+      (format,(txtann.txtann))
+  )
 + ( async
   .   (app,(nrm+ocr.nrm)+(ocr+unn.unn))
       (facet,(txt.seg+tok^simple)+(tok+txt.seto^simple))
@@ -3744,7 +3783,7 @@ toolprop=
   . format,(2col.2cole)+(3col.2cole+3cole)+(4col.2cole+4cole)
   )
 + ( conll2pt
-  .   (facet,(stpd+stpld.stpd))
+  .   (facet,(stpd+stpld+stpmld.stpd))
       (format,(conll.pt))
       (pres,(nml.nml))
   )
@@ -3770,7 +3809,7 @@ toolprop=
 + ( dapipe
   .   (ambig,(una.una))
       (app,(nrm.nrm))
-      (facet,(seg*tok.pls))
+      (facet,(seg*tok.pmls^Uni))
       (format,(txtann.txtann))
       (lang,(da.da))
       (period,(c21.c21))
@@ -3779,7 +3818,7 @@ toolprop=
 + ( dapipe
   .   (ambig,(una.una))
       (app,(nrm.nrm))
-      (facet,(seg+txt.stpld))
+      (facet,(seg+txt.stpmld^Uni))
       (format,(flat.conll^clU)+(teip5.teip5))
       (lang,(da.da))
       (period,(c21.c21))
@@ -4083,7 +4122,8 @@ toolprop=
       (pres,(nml.nml))
   )
 + ( tei2conll
-  . (facet,(stpld.stpld)) (format,(teip5.conll^clU))
+  .   (facet,(stpld.stpld)+(stpmld.stpmld))
+      (format,(teip5.conll^clU))
   )
 + ( teianno2orgmode
   .   (facet,(lem*tok.tl)+(pos^Menotas*tok.tp^Menotas))
