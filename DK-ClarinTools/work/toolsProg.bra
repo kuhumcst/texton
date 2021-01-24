@@ -2017,27 +2017,29 @@ toolsProg=
                             $ ( ( 
                                 =     featname featvals table
                                     , specificationTables
-                                  .   !arg:(?featname,?featvals)
-                                    &   !features
-                                      :   ?
-                                        + ( ? (short.!featname) ?
-                                          : ? (table.?table) ?
-                                          : (   ?
-                                                ( specificationTable
-                                                . ?specificationTables
-                                                )
-                                                ?
-                                            |   ?
-                                              & :?specificationTables
+                                  .     !arg:(?featname,?featvals)
+                                      &   !features
+                                        :   ?
+                                          + ( ? (short.!featname) ?
+                                            : ? (table.?table) ?
+                                            : (   ?
+                                                  ( specificationTable
+                                                  . ?specificationTables
+                                                  )
+                                                  ?
+                                              |   ?
+                                                &   
+                                                  : ?specificationTables
+                                              )
                                             )
-                                          )
-                                        + ?
-                                    &   ", "
-                                          describefeature
-                                        $ ( !featvals
-                                          . !table
-                                          . !specificationTables
-                                          )
+                                          + ?
+                                      &   ", "
+                                            describefeature
+                                          $ ( !featvals
+                                            . !table
+                                            . !specificationTables
+                                            )
+                                    | 
                                 )
                               . !arg
                               )
@@ -2051,30 +2053,32 @@ toolsProg=
                             $ ( ( 
                                 =     featname featvals table
                                     , specificationTables name
-                                  .   !arg:(?featname,?featvals)
-                                    &   !features
-                                      :   ?
-                                        + ( ? (short.!featname) ?
-                                          : ? (table.?table) ?
-                                          : ? (name.?name) ?
-                                          : (   ?
-                                                ( specificationTable
-                                                . ?specificationTables
-                                                )
-                                                ?
-                                            |   ?
-                                              & :?specificationTables
+                                  .     !arg:(?featname,?featvals)
+                                      &   !features
+                                        :   ?
+                                          + ( ? (short.!featname) ?
+                                            : ? (table.?table) ?
+                                            : ? (name.?name) ?
+                                            : (   ?
+                                                  ( specificationTable
+                                                  . ?specificationTables
+                                                  )
+                                                  ?
+                                              |   ?
+                                                &   
+                                                  : ?specificationTables
+                                              )
                                             )
-                                          )
-                                        + ?
-                                    &   ", "
-                                        localized$!name
-                                        ":"
-                                          describefeature
-                                        $ ( !featvals
-                                          . !table
-                                          . !specificationTables
-                                          )
+                                          + ?
+                                      &   ", "
+                                          localized$!name
+                                          ":"
+                                            describefeature
+                                          $ ( !featvals
+                                            . !table
+                                            . !specificationTables
+                                            )
+                                    | 
                                 )
                               . !arg
                               )
@@ -9607,7 +9611,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                          .   !arg:($jobNr.$jobID.?)
                            | 
                        )
-                     . !CTBs
+                     . $CTBs
                      )
                  : ?CTBs
                &     map
@@ -9616,7 +9620,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                          .   !arg:($jobNr.$jobID.?)
                            | 
                        )
-                     . relations
+                     . $relations
                      )
                  : ?relations
                &     map
@@ -10182,6 +10186,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                             )
                                       )
                                     )
+                              | 
                               )
                         )
                       . !steps
@@ -11375,8 +11380,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &     map
                     $ ( ( 
                         =   
-                          .   !arg:(.?arg)
-                            & (!nt+1:?nt.!arg)
+                          .     !arg:(.?arg)
+                              & (!nt+1:?nt.!arg)
+                            | 
                         )
                       . !items
                       )
@@ -13378,34 +13384,35 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &     map
                     $ ( ( 
                         =   files
-                          .   !arg:(!JobNr.?.?files.?.?.?)
-                            &   map
-                              $ ( ( 
-                                  =   
-                                    .       !Uploads
-                                          : ? (?.?.?.!arg.?) ?
-                                        & (   !seenInputs:? !arg ?
-                                            & 
-                                          |     !arg !seenInputs
-                                              : ?seenInputs
-                                            &   paragraph
-                                              $ ( "input:"
-                                                  ( a
-                                                  .   ( href
-                                                      .   str
-                                                        $ ( !wwwServer
-                                                            "/texton/data/"
-                                                            !arg
-                                                          )
-                                                      )
-                                                    , !arg
+                          .     !arg:(!JobNr.?.?files.?.?.?)
+                              &   map
+                                $ ( ( 
+                                    =   
+                                      .       !Uploads
+                                            : ? (?.?.?.!arg.?) ?
+                                          & (   !seenInputs:? !arg ?
+                                              & 
+                                            |     !arg !seenInputs
+                                                : ?seenInputs
+                                              &   paragraph
+                                                $ ( "input:"
+                                                    ( a
+                                                    .   ( href
+                                                        .   str
+                                                          $ ( !wwwServer
+                                                              "/texton/data/"
+                                                              !arg
+                                                            )
+                                                        )
+                                                      , !arg
+                                                    )
                                                   )
-                                                )
-                                          )
-                                      | 
+                                            )
+                                        | 
+                                    )
+                                  . !files
                                   )
-                                . !files
-                                )
+                            | 
                         )
                       . !jobs
                       )
@@ -13938,14 +13945,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & sum2list$!features:?feats
           & toolsSorted$:?tools
-          &   map
-            $ ( ( 
-                =   ToolID
-                  .   !arg:(?.? (ToolID.?ToolID) ?)
-                    & !ToolID
-                )
-              . !tools
-              )
           & ( usedFeatures
             =   ToolID id tools toolprp cumfeat coll fts
               .   ( coll
