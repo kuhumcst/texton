@@ -381,7 +381,7 @@ try {
 //        TODO your code!
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
-//*
+/*
         copy($IfacetsetoF,"IfacetsetoF"); 
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
@@ -393,57 +393,27 @@ try {
             {
             logit("Ofacetstpmld");
 
-//*
+/*
             copy($IfacetsegF,"IfacetsegF");
-	    copy($IfacetstxF,"IfacetstxF");
+            copy($IfacetstxF,"IfacetstxF");
 /*/
 //*/
             $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
-	    //copy($rawXML,"rawXML");
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $IfacetsegF && rm $IfacetstxF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
             }
         else if($Ofacettlpm)
             {
             logit("Ofacettlpm");
             $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
-            //$command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $TEIannofile";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
             }
         logit($command);
+        exec($command);
 
-        if(($cmd = popen($command, "r")) == NULL)
-            {
-            throw new SystemExit(); // instead of exit()
-            }
-
-        while($read = fgets($cmd))
-            {
-            }
-
-        pclose($cmd);
-
+        logit('RETURN 202');
+        header ('QUICK!', true , 202 );
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $TEIannofile
 //*/
-        $tmpf = fopen($TEIannofile,'r');
-
-        if($tmpf)
-            {
-            //logit('output from TEIanno:');
-            while($line = fgets($tmpf))
-                {
-                //logit($line);
-                print $line;
-                }
-            fclose($tmpf);
-            }
-
-        if($dodelete)
-            {
-            foreach ($tobedeleted as $filename => $dot) 
-                {
-                if($dot)
-                    unlink($filename);
-                }
-            unset($tobedeleted);
-            }
         }
     loginit();
     do_TEIanno();

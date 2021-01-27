@@ -309,7 +309,7 @@ try {
                 case "ca":
                 case "cy":
                 case "gl":
-		    $abbr = "-a $res/$lang/tokeniser/$lang.dat ";
+                    $abbr = "-a $res/$lang/tokeniser/$lang.dat ";
                     break;
                 case "nb":
                     $abbr = "$res/no/tokeniser/abbr";
@@ -354,19 +354,12 @@ try {
         else
             $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile simple $abbr $lang";
 
+        $command .= " && curl -v -F job=$job -F name=$teitokfile -F data=@$teitokfile $post2  && rm $teitokfile && rm $F > ../log/teitok.log 2>&1 &";
         logit($command);
+        exec($command);
 
-        if(($cmd = popen($command, "r")) == NULL)
-            {
-            throw new SystemExit(); // instead of exit()
-            }
-
-        while($read = fgets($cmd))
-            {
-            }
-
-        pclose($cmd);
-
+        logit('RETURN 202');
+        header ('QUICK!', true , 202 );
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $teitokfile
 //*/
         $tmpf = fopen($teitokfile,'r');
