@@ -398,73 +398,57 @@ try {
             {
             logit("Flat");
             $dapipefile = dapipe($F);
+            $tmpf = fopen($dapipefile,'r');
+
+            if($tmpf)
+                {
+                //logit('output from dapipe:');
+                while($line = fgets($tmpf))
+                    {
+                    //logit($line);
+                    print $line;
+                    }
+                fclose($tmpf);
+                }
+
+            if($dodelete)
+                {
+                foreach ($tobedeleted as $filename => $dot)
+                    {
+                    if($dot)
+                        unlink($filename);
+                    }
+                unset($tobedeleted);
+                }
             }
-        else if($Ifacettok) // an also $Ifacetseg!
+        else 
             {
-            logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
-            $dapipefile = tempFileName("dapipe-results");
-            logit("dapipefile $dapipefile");
-            $tmp1 = tempFileName("dapipe-tmp1");
-            $tmp2 = tempFileName("dapipe-tmp2");
-            $command = "../bin/bracmat \"get'\\\"dapipex.bra\\\"\" $IfacettokF $IfacetsegF $dapipefile $tmp1 $tmp2";
+            if($Ifacettok) // an also $Ifacetseg!
+                {
+                logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
+                $dapipefile = tempFileName("dapipe-results");
+                logit("dapipefile $dapipefile");
+                $tmp1 = tempFileName("dapipe-tmp1");
+                $tmp2 = tempFileName("dapipe-tmp2");
+                $command = "../bin/bracmat \"get'\\\"dapipex.bra\\\"\" $IfacettokF $IfacetsegF $dapipefile $tmp1 $tmp2";
+                }
+            else
+                {
+                logit("TEI P5 input");
+                $dapipefile = tempFileName("dapipe-results");
+                logit("dapipefile $dapipefile");
+                $tmp1 = tempFileName("dapipe-tmp1");
+                $tmp2 = tempFileName("dapipe-tmp2");
+                $command = "../bin/bracmat \"get'\\\"dapipe.bra\\\"\" $F $dapipefile $tmp1 $tmp2";
+                }
+            $command .= " && curl -v -F job=$job -F name=$dapipefile -F data=@$dapipefile $post2  && rm $dapipefile && rm $F > ../log/dapipe.log 2>&1 &";
             logit($command);
+            exec($command);
 
-            if(($cmd = popen($command, "r")) == NULL)
-                {
-                throw new SystemExit();
-                }
-
-            while($read = fgets($cmd))
-                {
-                }
-
-            pclose($cmd);
+            logit('RETURN 202');
+            header ('QUICK!', true , 202 );
             }
-        else
-            {
-            logit("TEI P5 input");
-            $dapipefile = tempFileName("dapipe-results");
-            logit("dapipefile $dapipefile");
-            $tmp1 = tempFileName("dapipe-tmp1");
-            $tmp2 = tempFileName("dapipe-tmp2");
-            $command = "../bin/bracmat \"get'\\\"dapipe.bra\\\"\" $F $dapipefile $tmp1 $tmp2";
-            logit($command);
-
-            if(($cmd = popen($command, "r")) == NULL)
-                {
-                throw new SystemExit();
-                }
-
-            while($read = fgets($cmd))
-                {
-                }
-
-            pclose($cmd);
-            }
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dapipefile
 //*/
-        $tmpf = fopen($dapipefile,'r');
-
-        if($tmpf)
-            {
-            //logit('output from dapipe:');
-            while($line = fgets($tmpf))
-                {
-                //logit($line);
-                print $line;
-                }
-            fclose($tmpf);
-            }
-
-        if($dodelete)
-            {
-            foreach ($tobedeleted as $filename => $dot) 
-                {
-                if($dot)
-                    unlink($filename);
-                }
-            unset($tobedeleted);
-            }
         }
     loginit();
     do_dapipe();
