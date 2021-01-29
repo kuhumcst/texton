@@ -262,7 +262,7 @@ This is simply installed by the following command:
 
 ### html2text
 
-    $> cd /opt/textom/html2text
+    $> cd /opt/texton/html2text
     $> sudo git clone https://github.com/soundasleep/html2text
 
 Afterwards there will be a subdirectory `html2text/html2text`.
