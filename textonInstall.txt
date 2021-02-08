@@ -12,6 +12,7 @@ sudo service apache2 restart
 sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
 cd /tmp
 wget https://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.24/bin/apache-tomcat-9.0.24.tar.gz
+(NOTE THAT TOMCAT 10 requires to change 'javax' to 'jakarta'. This has not been tested.)
 sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
 sudo ln -s /opt/tomcat/apache-tomcat-9.0.24 /opt/tomcat/latest
 sudo chown -RH tomcat: /opt/tomcat/latest
@@ -54,7 +55,7 @@ sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
 sudo git clone https://github.com/kuhumcst/texton-bin.git
 
 cd texton/
-sudo ln -s ../texton-linguistic-resources/ res
+sudo ln -s ../texton-linguistic-resources/ texton-linguistic-resources
 sudo ln -s ../texton-bin/ bin
 
 sudo chown -R www-data:www-data /opt/texton/
@@ -94,6 +95,18 @@ sudo vi /opt/tomcat/latest/conf/catalina.policy
           permission java.io.FilePermission
            "/opt/texton/DK-Clarin/work/-", "read, write, delete";
     }
+    
+( If tomcat9 is installed using apt install, do something different:
+run
+
+    sudo EDITOR='vi' systemctl edit  tomcat9.service
+
+and enter
+
+    [Service]
+    ReadWritePaths=/opt/texton/DK-ClarinTools/work/
+    ReadWritePaths=/var/log/clarin/
+)
 
 sudo /opt/tomcat/latest/bin/startup.sh
 
