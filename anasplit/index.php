@@ -243,7 +243,6 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        logit("segments and tokens input, PoS,Lemmas,syntax output");
         $anasplitfile = tempFileName("anasplit-results");
         logit("anasplitfile $anasplitfile");
         if(hasArgument("Ofacet"))
