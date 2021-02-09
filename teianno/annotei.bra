@@ -172,6 +172,41 @@ program-annotei=
                   )
                 )
         )
+      & ( join
+        =   A L M e a w 
+          .   :?L
+            &   whl
+              ' ( !arg:%?A ?arg
+                &     (   !A:(?e.?a,?w)
+                        & ( !e
+                          .     !a
+                                (     !e
+                                    : ( w
+                                      |   c
+                                        & !a:? (type.p) ?
+                                      )
+                                  &   !arg
+                                    :   @
+                                        ( (w.?,?)
+                                        | ( c
+                                          . ? (type.p) ?,?
+                                          )
+                                        )
+                                        ?
+                                  & (join.right)
+                                | 
+                                )
+                            , !w
+                          )
+                      | !A
+                      )
+                      !L
+                  : ?L
+                )
+            & :?M
+            & whl'(!L:%?A ?L&!A !M:?M)
+            & !M
+        )
       & ( anno
         =   A e a s lenPS lenLS lenMS id
           .   map
@@ -355,6 +390,10 @@ program-annotei=
                             | getSP$() (!e.!a,!s)
                             )
                         |   "Not w or c"
+                          & (   !s:? (w.?,?) ?
+                              & join$!s:?s
+                            | 
+                            )
                           & getSP$() (!e.!a,anno$!s)
                         )
                     | getSP$() !arg
@@ -960,15 +999,22 @@ program-annotei=
           .   !arg:(?head.?tei)
             &   map
               $ ( ( 
-                  =   e a c
+                  =   e a c A Z
                     .     !arg:(?e.?a,?c)
-                        & (   !e:tagsDecl
-                            & ( !e
-                              .   !a
-                                ,   replList
+                        & ( !e
+                          .   !a
+                            ,     !e:tagsDecl
+                                &   replList
                                   $ (!c.tagUsage.computeTagUsage$!tei)
-                              )
-                          | (!e.!a,updateHead$(!c.!tei))
+                              |   !e:resp
+                                & "Data retrieval, linguistic annotation, and conversion to TEI"
+                              |   !e:title
+                                & (   !a:? (type.main) ?
+                                    & @(!c:?A "[" ?M "]" ?Z)
+                                    & str$(!A "[" !M ".ana]" !Z)
+                                  | !c
+                                  )
+                              | updateHead$(!c.!tei)
                           )
                       | !arg
                   )
