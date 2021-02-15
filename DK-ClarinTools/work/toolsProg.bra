@@ -11844,17 +11844,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  *
  * Prepare and run a workflow.
  * Functions as a wizard, taking input from various stages.
- * The function handles two scenarios:
- *      create a resource by choice of goal ('hairdresser')
- *      create a resource by choice of tool ('wizard')
+ * The function creates a resource by choice of goal
  * Arguments:
  *      - http parameters
- *      - directedBy=  GoalChoice (default) 
  * http parameters:
  *      mail2=<address>
  *      action=batch | batch=on | batch=off
  *      TOOL=<toolname>
- *      bsubmit=nextStep|prev<N>|next<N>|Submit|View details
+ *      bsubmit=next step|Submit|View details
  *      (item=<itemid>)+
  *      (Item=<itemid>)+
  *      I<feature>=<featurevalue>
@@ -11868,13 +11865,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from create.java
  */"
       ( create
-      =     Tool item parms Items methodName items
+      =     Tool item parms Items items
           , formFields val mail2 password ERR
           , Submit pipes pipe windFW reqs req descr
           , JobStack JobNr presels feats analyzeInput
           , TOOL errors batch checkMail desiredTools
           , jobIDoffset subjobs Sources sourcesAndGoals
-          , directedBy nth unpackIOparms BodyContainer
+          , nth unpackIOparms BodyContainer
           , handle checkIOparms PIPE lookForLanguage
           , precooked-DASISH A wrkflw Z errmsg itms
           , analyseContentType makeJobStack NoNeedForMetadata
@@ -13194,8 +13191,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & !pipe
             )
           & ( ShowAllPipes
-            =   directedBy hiddenData pipes rstr
-              .   !arg:(?directedBy.?hiddenData.?pipes)
+            =   hiddenData pipes rstr
+              .   !arg:(?hiddenData.?pipes)
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
                   )
@@ -13237,7 +13234,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     )
                                 )
                                   form
-                                $ ( methodName$!directedBy
+                                $ ( createByGoalChoice
                                   .   submit$"View details"
                                       submit$Metadata
                                       submit$Submit
@@ -13270,12 +13267,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                     )
             )
-          & ( methodName
-            = .str$(create (!arg:|By) !arg)
-            )
           & ( ShowOnlyTheCurrentPipe
-            =   formFields pipe nth directedBy seeninputs
-              .   !arg:(?pipe.?nth.?directedBy)
+            =   formFields pipe nth seeninputs
+              .   !arg:(?pipe.?nth)
                 & :?formFields:?seeninputs
                 & makeWorkflowRadioButtons$!pipe:?formFields
                 &   str
@@ -13290,7 +13284,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                           & ( !formFields:
                             |   form
-                              $ ( methodName$!directedBy
+                              $ ( createByGoalChoice
                                 .   !formFields
                                     ( !nth:<1&
                                     |   makeHiddenFields
@@ -13303,9 +13297,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
             )
           & ( AddMetadata
-            =     formFields nth val
-                , directedBy parms ERR metadataType
-              .   !arg:(?metadataType.?nth.?directedBy.?parms.?ERR)
+            =   formFields nth val,parms ERR metadataType
+              .   !arg:(?metadataType.?nth.?parms.?ERR)
                 & log$"Creating formFields"
                 &     ( style
                       .   (type.text/css)
@@ -13512,7 +13505,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                               (br.,)
                                 form
-                              $ ( methodName$!directedBy
+                              $ ( createByGoalChoice
                                 .   !formFields
                                     ( !nth:<1&
                                     |     makeHiddenFields
@@ -13677,17 +13670,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & ( ApplyThePipelineToTheInput
             =     PIPE batch jobIDoffset parms
-                , retrieveMetadataFromParms directedBy
+                , retrieveMetadataFromParms
                 , Items item subjobs mail2 JobId metadataType
               .     !arg
-                  : ( ?metadataType
-                    . ?PIPE
-                    . ?batch
-                    . ?Items
-                    . ?mail2
-                    . ?parms
-                    . ?directedBy
-                    )
+                  : (?metadataType.?PIPE.?batch.?Items.?mail2.?parms)
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
                     .   !arg:(?metadataType.?parms)
@@ -13913,9 +13899,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
-                , directedBy hiddenData Items itemGroups
-              .     !arg
-                  : (?formFields.?presels.?directedBy.?hiddenData.?Items)
+                , hiddenData Items itemGroups
+              .   !arg:(?formFields.?presels.?hiddenData.?Items)
                 & log$"We are at the start. Show an input form."
                 & (   !Items:
                     &   str
@@ -13980,20 +13965,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           $ ( !BodyContainer
                             $ ( !formFields:
                               |   form
-                                $ ( methodName$!directedBy
+                                $ ( createByGoalChoice
                                   .   makeHiddenFields$!hiddenData
-                                      (     !directedBy
-                                          : (GoalChoice|)
-                                        &   !formFields
-                                            submit$"next step"
-                                            helplink$
-                                      |   Sources$!presels
-                                            paragraph
-                                          $ ( pickTool$(txt.!Items)
-                                              submit$"next step"
-                                              helplink$
-                                            )
-                                      )
+                                      !formFields
+                                      submit$"next step"
+                                      helplink$
                                   )
                               )
                             )
@@ -14089,22 +14065,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( "We are past the first stage: the user has pressed a button"
-            =     TOOL pipes Submit directedBy hiddenData
+            =     TOOL pipes Submit hiddenData
                 , parms nth pipe batch Items mail2 ERR
                 , NNN cllas allpipes
                 , Workflows restr
                 , restriction sources
                 , updateUploads
               .     !arg
-                  : ( ?parms
-                    . ?TOOL
-                    . ?Submit
-                    . ?directedBy
-                    . ?hiddenData
-                    . ?batch
-                    . ?Items
-                    . ?mail2
-                    )
+                  : (?parms.?TOOL.?Submit.?hiddenData.?batch.?Items.?mail2)
                 & ( updateUploads
                   =     A nr Item Path stagingName
                       , meta feats visibility Z parms
@@ -14261,8 +14229,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & updateUploads$!parms
                 & 0:?cllas:?allpipes
                 & :?restr
-                & (   (   !directedBy:GoalChoice
-                        & !wrkflw:~
+                & (   (   !wrkflw:~
                         &   precooked-DASISH$(!wrkflw.!A !Z)
                           : (?arg:?parms.?errmsg)
                         & !errmsg:
@@ -14311,14 +14278,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         & TooManyOrNone$(!cllas.!NNN)
                       |   !Submit:"next step"
                         & log$"next step"
-                        & ShowAllPipes$(!directedBy.!hiddenData.!pipes)
+                        & ShowAllPipes$(!hiddenData.!pipes)
                       |     !parms
-                          : (   ?
-                                ( bsubmit
-                                . @(?:(prev|next) #?nth)
-                                )
-                                ?
-                            | ? (nth.?nth) ?
+                          : ( ? (nth.?nth) ?
                             | ?&1:?nth
                             )
                         &   log
@@ -14335,8 +14297,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ( "View details"
                                 | @(?:(prev|next) ?)
                                 )
-                            &   ShowOnlyTheCurrentPipe
-                              $ (!pipe.!nth.!directedBy)
+                            & ShowOnlyTheCurrentPipe$(!pipe.!nth)
                           |   !Submit:Metadata
                             & (     !parms
                                   : ~( ?
@@ -14352,8 +14313,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 & canConsumeMetadata$!pipe
                                 &   rememberMetadata$(TEImetadata.!parms)
                                   : ?parms
-                                &   AddMetadata
-                                  $ (TEImetadata.!nth.!directedBy.!parms.)
+                                & AddMetadata$(TEImetadata.!nth.!parms.)
                               | NoNeedForMetadata$
                               )
                           |   !Submit:Submit
@@ -14389,12 +14349,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       : ?parms
                                   )
                                 &   AddMetadata
-                                  $ ( TEImetadata
-                                    . !nth
-                                    . !directedBy
-                                    . !parms
-                                    . !ERR
-                                    )
+                                  $ (TEImetadata.!nth.!parms.!ERR)
                               |   ApplyThePipelineToTheInput
                                 $ ( TEImetadata
                                   . !pipe
@@ -14402,7 +14357,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   . !Items
                                   . !mail2
                                   . !parms
-                                  . !directedBy
                                   )
                               )
                           )
@@ -14440,12 +14394,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & !hiddenData (batch.!batch):?hiddenData
                 & "Does the user want to decide which tool to use or does she want
                    to let the infrastructure work out a way to reach a set goal?"
-                & (   !directedBy:GoalChoice
-                    & :?TOOL
-                  |     str
-                      $ (400~~~ toML$(!BodyContainer$(paragraph$goal?)))
-                    : ?errors
-                  )
+                & :?TOOL
                 & !errors:
                 & !hiddenData !Items:?hiddenData
                 &     !hiddenData
@@ -14466,14 +14415,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       $ ( !parms
                         . !TOOL
                         . !Submit
-                        . !directedBy
                         . !hiddenData
                         . !batch
                         . !Items
                         . !mail2
                         )
                   |   "We are at the start. Show an input form."
-                    $ (!formFields.!presels.!directedBy.!hiddenData.!Items)
+                    $ (!formFields.!presels.!hiddenData.!Items)
                   )
               | !errors
             )
@@ -14482,16 +14430,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & checkIOparms$!parms
                 & readTable$tooladm
                 &   "We are past the first stage: the user has pressed a button"
-                  $ ( !parms
-                    . 
-                    . !Submit
-                    . !directedBy
-                    . !hiddenData
-                    . !parms
-                    . off
-                    . !Items
-                    . !mail2
-                    )
+                  $ (!parms..!Submit.!hiddenData.off.!Items.!mail2)
               | !errors
             )
           &   
@@ -14506,7 +14445,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & log$NEW
           & startclock$
           & log$CREATELOGJE
-          & !arg:(?parms:?arg.?directedBy)
+          & !arg:?parms:?arg
           & ( !parms:? (itms.?itms) ?
             | 1:?itms
             )
@@ -14545,20 +14484,17 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           $ (paragraph$"Select a file to convert to TEI.")
                           )
                       )
-                |   !directedBy:GoalChoice
-                  & (     precooked-DASISH$(!wrkflw.!A !Z)
-                        : (?arg:?parms.?errmsg)
-                      & !errmsg:
-                      & log$computeWorkflow
-                      & !computeWorkflow
-                    |   str
-                      $ (200~~~ toML$(!BodyContainer$(paragraph$!errmsg)))
-                    )
+                |     precooked-DASISH$(!wrkflw.!A !Z)
+                    : (?arg:?parms.?errmsg)
+                  & !errmsg:
+                  & log$computeWorkflow
+                  & !computeWorkflow
+                |   str
+                  $ (200~~~ toML$(!BodyContainer$(paragraph$!errmsg)))
                 )
             | !computeWorkflow
             )
       )
-      (createGoalChoice=.create$(!arg.GoalChoice))
       "
 /**
  * getStatusCode
