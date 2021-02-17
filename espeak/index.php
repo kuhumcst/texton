@@ -174,7 +174,7 @@ try {
                 logit("InputIs $input");
                 if($input == 'F')
                     return $key . 'F';
-                if(input != '')
+                if($input != '')
                     return findInputFile($key . $input, $parms);
                 }
             }
