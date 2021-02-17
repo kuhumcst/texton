@@ -2913,7 +2913,7 @@ toolsProg=
           & HTML5bodyContainer
         | log$noClarin&XHTMLbodyContainer
       )
-      ( Move the mouse pointer over the tool names
+      ( HTML5bodyContainer
       =   
         .   ("!DOCTYPE"." html")
             \r\n
@@ -11866,25 +11866,17 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  */"
       ( create
       =     Tool item parms Items items
-          , formFields val mail2 password ERR
-          , Submit pipes pipe windFW reqs req descr
-          , JobStack JobNr presels feats analyzeInput
+          , formFields val mail2 password
+          , presels feats analyzeInput
           , TOOL errors batch checkMail desiredTools
-          , jobIDoffset subjobs Sources sourcesAndGoals
-          , nth unpackIOparms BodyContainer
+          , sourcesAndGoals
+          , unpackIOparms BodyContainer
           , handle checkIOparms PIPE lookForLanguage
           , precooked-DASISH A wrkflw Z errmsg itms
-          , analyseContentType makeJobStack NoNeedForMetadata
-          , ApplyThePipelineToTheInput NoWay TooManyOrNone
-          , ShowAllPipes ShowOnlyTheCurrentPipe AddMetadata
+          , analyseContentType
           , "We are at the start. Show an input form."
-          , "We are past the first stage: the user has pressed a button"
-          , errorInMetadata rstr
-          , MetadataInParms canConsumeMetadata
-          , Tubst
-          , adaptInputProfile containedBy
-          , rememberMetadata rpl
-          , computeWorkflow computeWorkflowDASISH
+          , rstr
+          , computeWorkflow
         .   ( analyseContentType
             =     R spec nofonts ct DestinationDir LocalFileName
                 , isDiplom input getInput isTabSeparated
@@ -12359,125 +12351,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                 & retrieveFeatures$!Items:?presels
                 & (!arg.!Items.!presels)
-            )
-          & ( Sources
-            =     f fs picklists name short srcs flds
-                , description itms itm Types preselvals
-                , table presel L PR hide
-                , preselvalsrows items item spec
-              .   readTable$features
-                & !features:?fs
-                & :?preselvalsrows
-                & :?items
-                &   whl
-                  ' ( !fs:%?f+?fs
-                    &   !f
-                      : ? (name.?name) ?
-                      : ? (short.?short) ?
-                      : ? (description.?description) ?
-                      : ? (table.?table) ?
-                    & ( !f:? (hide.?hide) ?
-                      | :?hide
-                      )
-                    & readTable$!table
-                    & :?preselvals
-                    & !arg:?L
-                    &   whl
-                      ' ( !L:? (!short.?presel.?item) ?L
-                        & ( !items:? !item ?
-                          | !items !item:?items
-                          )
-                        & !preselvals (!presel.!item):?preselvals
-                        )
-                    &     !preselvalsrows
-                          (!short.localized$!name.!!table.!preselvals.!hide)
-                      : ?preselvalsrows
-                    )
-                & :?picklists
-                & !preselvalsrows:?PR
-                &   whl
-                  ' (   !PR
-                      : ? (?short.?name.?table.?preselvals.) ?PR
-                    &     !picklists
-                            row
-                          $ ( cell$!name
-                              ( :?flds
-                              & !items:?itms
-                              &   whl
-                                ' ( !itms:%?itm ?itms
-                                  &     !flds
-                                          cell
-                                        $ (     !preselvals
-                                              :   ?
-                                                  (%?presel^?spec.!itm)
-                                                  ?
-                                            & (   !spec:1
-                                                & NEWSPEC
-                                                &   makeSelectFormField
-                                                  $ ( 
-                                                    . str$(I !short)
-                                                    . options
-                                                    .   makeOptionList
-                                                      $ (!table.!presel)
-                                                    )
-                                              |   makeSelectFormField
-                                                $ ( 
-                                                  . str$(I !short)
-                                                  . options
-                                                  .   readTable$features
-                                                    &   !features
-                                                      :   ?
-                                                        + (   ?
-                                                              (short.!short)
-                                                              ?
-                                                          :   ?
-                                                              ( specificationTable
-                                                              .   ?
-                                                                  (   ?
-                                                                      ( %@
-                                                                      : !presel
-                                                                      )
-                                                                      ?
-                                                                  . ?Types
-                                                                  )
-                                                                  ?
-                                                              )
-                                                              ?
-                                                          )
-                                                        + ?
-                                                    & readTable$!Types
-                                                    &   makeOptionList
-                                                      $ ( !!Types
-                                                        . !spec
-                                                        . str$(!presel "^")
-                                                        )
-                                                  )
-                                              )
-                                          | 
-                                          )
-                                    : ?flds
-                                  )
-                              & !flds
-                              )
-                            )
-                      : ?picklists
-                    )
-                &   Table
-                  $ ( (style,"display:none;") (id,inputs)
-                    .   row
-                      $ ( cell$()
-                          ( !items:?itms
-                          & :?srcs
-                          &   whl
-                            ' ( 
-                              & !itms:%?itm ?itms
-                              & !srcs cell$!itm:?srcs
-                              )
-                          & !srcs
-                          )
-                        )
-                    . !picklists
-                    )
             )
           & ( desiredTools
             =   L ToolID Title S
@@ -13178,6 +13051,515 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   . !errors
                   )
             )
+          & ( "We are at the start. Show an input form."
+            =     formFields presels nt CLOCK sourceAndGoal
+                , hiddenData Items itemGroups
+              .   !arg:(?formFields.?presels.?hiddenData.?Items)
+                & log$"We are at the start. Show an input form."
+                & (   !Items:
+                    &   str
+                      $ ( 200~~~
+                            toML
+                          $ ( !BodyContainer
+                            $ ( paragraph
+                              $ ( localized
+                                $ ( "No input is specified, or the input is not accessible."
+                                    "Inputtet er ikke specificeret, eller inputtet er ikke tilgængeligt."
+                                  )
+                                )
+                              )
+                            )
+                        )
+                  |       sourcesAndGoals
+                        $ ( !presels
+                          . !arg
+                          .     !Items
+                              : ? (Item.@(?:"dkclarin:" ?)) ?
+                            & 
+                          )
+                      : (?itemGroups.?sourceAndGoal)
+                    & log$(itemGroups !itemGroups)
+                    &   (   !itemGroups:(@.@)
+                          &   map
+                            $ ( ( 
+                                =   
+                                  .     !arg:(Item.?arg)
+                                      &   !itemGroups
+                                        : ? (?nt.? !arg ?) ?
+                                      & (str$(Item ";" !nt).!arg)
+                                    | !arg
+                                )
+                              . !hiddenData
+                              )
+                        |   readTable$ItemGroupsCache
+                          & (   !ItemGroupsCache
+                              : ? (?CLOCK.!itemGroups) ?
+                            |       (clk$:?CLOCK.!itemGroups)
+                                    !ItemGroupsCache
+                                : ?ItemGroupsCache
+                              & saveTable$ItemGroupsCache
+                            )
+                          &   (CLOCK.!CLOCK)
+                                map
+                              $ ( ( 
+                                  =   
+                                    .     !arg:(Item.?)
+                                        & 
+                                      | !arg
+                                  )
+                                . !hiddenData
+                                )
+                        )
+                      : ?hiddenData
+                    &   !formFields !sourceAndGoal desiredTools$
+                      : ?formFields
+                    &   str
+                      $ ( 200~~~
+                            toML
+                          $ ( !BodyContainer
+                            $ ( !formFields:
+                              |   form
+                                $ ( showworkflows
+                                  .   makeHiddenFields$!hiddenData
+                                      !formFields
+                                      submit$"next step"
+                                      helplink$
+                                  )
+                              )
+                            )
+                        )
+                  )
+            )
+          & ( computeWorkflow
+            =     "Shall we treat all resources in one job (non-batch) or shall we
+               send each input through a different (though similar) job?"
+                &   (     !parms
+                        : ( ? (action.batch) ?
+                          | ? (batch.on) ?
+                          |   ~(? (action.?) ?)
+                            & ~(? (batch.?) ?)
+                          )
+                      & on
+                    | off
+                    )
+                  : ?batch
+                & log$(batch !batch)
+                & !errors:
+                & (   !arg:? (handle.?handle) ?
+                    &   (handle.!handle) !hiddenData
+                      : ?hiddenData
+                  | 
+                  )
+                & !hiddenData (batch.!batch):?hiddenData
+                & "Does the user want to decide which tool to use or does she want
+                   to let the infrastructure work out a way to reach a set goal?"
+                & :?TOOL
+                & !errors:
+                & !hiddenData !Items:?hiddenData
+                &     !hiddenData
+                      (   !arg:? (desiredtool.?rstr) ?
+                        & (desiredtool.!rstr)
+                      | 
+                      )
+                      (   !arg:? (superset.?rstr) ?
+                        & (superset.!rstr)
+                      | 
+                      )
+                  : ?hiddenData
+                & unpackIOparms$!parms:?parms
+                & checkIOparms$!parms
+                & readTable$tooladm
+                &   "We are at the start. Show an input form."
+                  $ (!formFields.!presels.!hiddenData.!Items)
+              | !errors
+            )
+          &   
+            : ?errors
+            : ?hiddenData
+            : ?formFields
+            : ?Items
+            : ?PIPE
+            : ?wrkflw
+          & 0:?tabind
+          & ?:?Tool
+          & log$NEW
+          & startclock$
+          & log$CREATELOGJE
+          & !arg:?parms:?arg
+          & ( !parms:? (itms.?itms) ?
+            | 1:?itms
+            )
+          & readTable$ItemGroupsCache
+          &     map
+              $ ( ( 
+                  =   a v nt CLOCK
+                    .     !arg:(@(?:?a ";" ?nt).?v)
+                        & ( !nt:!itms&(!a.!v)
+                          | 
+                          )
+                      | !arg:(itms.?)&
+                      |   !arg:(CLOCK.?CLOCK)
+                        &   !ItemGroupsCache
+                          : ? (!CLOCK.? (!itms.?items) ?) ?
+                        & map$((=.Item.!arg).!items)
+                      | !arg
+                  )
+                . !parms
+                )
+            : ?parms
+          & !HTMLbodyContainer:?BodyContainer
+          & setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
+          & analyzeInput$!parms:(?parms.?Items.?presels)
+          & log$analyzeInputDONE
+          &   checkMail$(!parms.!formFields.!hiddenData.!errors)
+            : (?mail2.?formFields.?hiddenData.?errors)
+          & log$checkMailDONE
+          & (   !arg:?A (wrkflw.?wrkflw) ?Z
+              & (   !Items:
+                  &   str
+                    $ ( 200~~~
+                          toML
+                        $ ( !BodyContainer
+                          $ (paragraph$"Select a file to convert to TEI.")
+                          )
+                      )
+                |     precooked-DASISH$(!wrkflw.!A !Z)
+                    : (?arg:?parms.?errmsg)
+                  & !errmsg:
+                  & log$computeWorkflow
+                  & !computeWorkflow
+                |   str
+                  $ (200~~~ toML$(!BodyContainer$(paragraph$!errmsg)))
+                )
+            | !computeWorkflow
+            )
+      )
+      "
+/**
+ * workflowlist
+ *
+ * Called from workflowlist.java
+ */"
+      ( workflowlist
+      =     Tool item parms Items items
+          , formFields val mail2 password ERR
+          , Submit pipes pipe windFW reqs req descr
+          , JobStack JobNr presels feats analyzeInput
+          , TOOL errors batch checkMail
+          , jobIDoffset subjobs
+          , nth unpackIOparms BodyContainer
+          , handle checkIOparms PIPE lookForLanguage
+          , precooked-DASISH A wrkflw Z errmsg itms
+          , makeJobStack NoNeedForMetadata
+          , ApplyThePipelineToTheInput NoWay TooManyOrNone
+          , ShowAllPipes ShowOnlyTheCurrentPipe AddMetadata
+          , "We are past the first stage: the user has pressed a button"
+          , errorInMetadata rstr
+          , MetadataInParms canConsumeMetadata
+          , Tubst
+          , adaptInputProfile containedBy
+          , rememberMetadata rpl
+          , computeWorkflow computeWorkflowDASISH
+        .   ( lookForLanguage
+            =     knownInputFeats AA ZZ LocalFileName language
+                , YYY
+              .     !arg:(?LocalFileName.?arg)
+                  & (   !arg:?AA (language.?language) ?ZZ
+                      & readTable$linguae
+                      & !linguae:? (?.!language.?YYY) ?
+                      & !language
+                    . !AA !ZZ
+                    )
+                | (       !Uploads
+                        :   ?
+                            (?.?.?.!LocalFileName.?.?knownInputFeats.?)
+                            ?
+                      &   !knownInputFeats
+                        : ? (lang.?language) ?
+                      & !language
+                    | 
+                  . !arg
+                  )
+            )
+          & ( analyzeInput
+            =     item feats Items item
+                , parms presels n val buildItemList
+                , retrieveFeatures
+              .   "Consult the 'Uploads'-table to find out what we know
+                     about the input(s)."
+                & readTable$Uploads
+                & !arg:?parms
+                & "First build a list of items."
+                & ( buildItemList
+                  =   
+                    .   map
+                      $ ( ( 
+                          =   item
+                            .       !arg
+                                  : (item|Item.?item)
+                                & ( @(!item:\" ?item \")
+                                  | 
+                                  )
+                                & (Item.!item)
+                              | 
+                          )
+                        . !arg
+                        )
+                  )
+                & buildItemList$!parms:?Items
+                & readTable$features
+                & ( retrieveFeatures
+                  =   Items item feats n val presels
+                    .   !arg:?Items
+                      & :?presels
+                      &   whl
+                        ' (   !Items
+                            : (Item.%?item ?feats) ?Items
+                          & (   !feats:
+                              & itemFeats$!item:?feats
+                            |   !errors:
+                              &     str
+                                  $ ( 404~~~
+                                        toML
+                                      $ ( !BodyContainer
+                                        $ ( paragraph
+                                          $ (str$("Item " !item " not found"))
+                                          )
+                                        )
+                                    )
+                                : ?errors
+                            | 
+                            )
+                          &   whl
+                            ' ( !feats:(?n.?val) ?feats
+                              & getShort$(!n.!val):?val
+                              & !presels (!n.!val.!item):?presels
+                              )
+                          )
+                      & !presels
+                  )
+                & retrieveFeatures$!Items:?presels
+                & (!arg.!Items.!presels)
+            )
+          & ( checkIOparms
+            =   f fs short table p
+              .   readTable$features
+                & !features:?fs
+                &   whl
+                  ' ( !fs:%?f+?fs
+                    &   !f
+                      : ? (short.?short) ?
+                      : ? (table.?table) ?
+                    & readTable$!table
+                    & str$(I !short):?p
+                    & (checkParms$(!arg.!p.!!table)|)
+                    & str$(O !short):?p
+                    & (checkParms$(!arg.!p.!!table)|)
+                    )
+            )
+          & ( unpackIOparms
+            =   f fs short p
+              .   readTable$features
+                & !features:?fs
+                &   whl
+                  ' ( !fs:%?f+?fs
+                    & !f:? (short.?short) ?
+                    & str$(I !short):?p
+                    & (unpackIOparm$(!arg.!p):?arg|)
+                    & str$(O !short):?p
+                    & (unpackIOparm$(!arg.!p):?arg|)
+                    )
+                & !arg
+            )
+          & ( precooked-DASISH
+            =     A Z AZ Name wrkflw Iformat
+                , LocalFileName language langopt nofonts
+                , ContentType knownInputFeats outputformat
+              .   !arg:(?wrkflw.?AZ)
+                &   !AZ
+                  :   ?A
+                      ( FieldName,input|text
+                      . Name,?Name
+                      . ContentType,%?ContentType ?nofonts
+                      . Size,?
+                      . DestinationDir,?
+                      . LocalFileName,?LocalFileName
+                      )
+                      ?Z
+                &   !Uploads
+                  :   ?
+                      (?.?.?.!LocalFileName.?.?knownInputFeats.?)
+                      ?
+                & !A !Z:?A (DATE.?) ?Z
+                & !A !Z:?A (method.?) ?Z
+                & !A !Z:?A (action.?) ?Z
+                &   lookForLanguage$(!LocalFileName.!A !Z)
+                  : (?language.?A ?Z)
+                &   (Ilang.!language) (Olang.!language)
+                  : ?langopt
+                & (   !wrkflw:NER
+                    & (     !knownInputFeats
+                          : ? (format.flat) ?
+                        & (   !A
+                              !Z
+                              (method.GET)
+                              (Item.!Name)
+                              (nth.1)
+                              (batch.on)
+                              (bsubmit.Submit)
+                              (Ifacet.txt)
+                              (Iformat.flat)
+                              !langopt
+                              (Ofacet.ner)
+                              (Opres.)
+                          . 
+                          )
+                      | ( !arg
+                        .   str
+                          $ ( "NER workflow requires ContentType:text/plain instead of "
+                              !ContentType
+                            )
+                        )
+                      )
+                  |   !wrkflw:CLEANING
+                    & (     !A !Z
+                          : ?A (outputformat.?outputformat) ?Z
+                        & (   !outputformat:TEI
+                            & (     !knownInputFeats
+                                  :   ?
+                                      ( format
+                                      .   ( flat
+                                          | rtf
+                                          | html
+                                          | pdf
+                                          | doc
+                                          | docx
+                                          | odt
+                                          | odp
+                                          | ods
+                                          | ppt
+                                          | pptx
+                                          | xls
+                                          | xlsx
+                                          )
+                                        : ?Iformat
+                                      )
+                                      ?
+                                & (   !A
+                                      !Z
+                                      (method.GET)
+                                      (Item.!Name)
+                                      (nth.1)
+                                      (batch.on)
+                                      (bsubmit.Metadata)
+                                      (Ifacet.txt)
+                                      (Iformat.!Iformat)
+                                      !langopt
+                                      (Oformat.txtbasis)
+                                      (Ofacet.txt)
+                                      (Opres.)
+                                  . 
+                                  )
+                              | ( !arg
+                                .     !ContentType:application/pdf
+                                    &   str
+                                      $ (   localized
+                                          $ ( "PDF-files that only consist of image data cannot be handled by this work flow."
+                                              "PDF-filer som kun består af billeddata kan ikke håndteres af denne workflow."
+                                            )
+                                          "("
+                                          !Name
+                                          ")"
+                                        )
+                                  |   str
+                                    $ (   localized
+                                        $ ( "CLEANING producing TEI output requires input with ContentType:text/plain, application/msword (RTF), text/rtf, text/html, application/pdf (with text!) or application/x-download (PDF) instead of "
+                                            "Input kan være flad tekst, officedokumenter eller PDF. Ikke "
+                                          )
+                                        !ContentType
+                                      )
+                                )
+                              )
+                          |   !outputformat:flat
+                            & (     !knownInputFeats
+                                  :   ?
+                                      ( format
+                                      .   ( flat
+                                          | rtf
+                                          | html
+                                          | pdf
+                                          )
+                                        : ?Iformat
+                                      )
+                                      ?
+                                & (   !A
+                                      !Z
+                                      (method.GET)
+                                      (Item.!Name)
+                                      (nth.1)
+                                      (batch.on)
+                                      (bsubmit.Submit)
+                                      (Ifacet.txt)
+                                      (Iformat.!Iformat)
+                                      !langopt
+                                      (Ofacet.tok)
+                                      (Oformat.flat)
+                                      (Opres.)
+                                  . 
+                                  )
+                              | ( !arg
+                                .   str
+                                  $ ( "CLEANING producing tokenized output, one sentence per line, requires input with ContentType:text/plain, application/msword (RTF), text/rtf, text/html, application/pdf or application/x-download (PDF) instead of "
+                                      !ContentType
+                                    )
+                                )
+                              )
+                          | ( !arg
+                            . "outputformat parameter must be 'TEI' or 'flat'"
+                            )
+                          )
+                      | ( !arg
+                        . "CLEANING workflow requires outputformat parameter"
+                        )
+                      )
+                  )
+            )
+          & ( checkMail
+            =   parms mail2 password formFields hiddenData errors
+              .   "Check that there is an email address to send the results to. If there is a password, that is saved as well."
+                & !arg:(?parms.?formFields.?hiddenData.?errors)
+                & (     !parms:? (mail2.?mail2) ?
+                      & (@(!mail2:\" ?mail2 \")|)
+                      & (   !mail2:
+                          &     !formFields
+                                  makeTextFormField
+                                $ ("Your email address:".mail2.val.)
+                            : ?formFields
+                          & 
+                        |   !hiddenData (mail2.!mail2):?hiddenData
+                          & (     !parms
+                                : ? (password.?password) ?
+                              & ( @(!password:\" ?password \")
+                                | 
+                                )
+                              &   !hiddenData (password.!password)
+                                : ?hiddenData
+                            | 
+                            )
+                          & !mail2
+                        )
+                    |   ( !hiddenData (mail2.):?hiddenData
+                        |     !formFields
+                              makeTextFormField$(.mail2.val.)
+                          : ?formFields
+                        )
+                      & 
+                  . !formFields
+                  . !hiddenData
+                  . !errors
+                  )
+            )
           & ( windFW
             =   nth ZZ pipes pipe
               .   !arg:(?pipes.?nth)
@@ -13234,7 +13616,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     )
                                 )
                                   form
-                                $ ( createByGoalChoice
+                                $ ( showworkflows
                                   .   submit$"View details"
                                       submit$Metadata
                                       submit$Submit
@@ -13284,7 +13666,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                           & ( !formFields:
                             |   form
-                              $ ( createByGoalChoice
+                              $ ( showworkflows
                                 .   !formFields
                                     ( !nth:<1&
                                     |   makeHiddenFields
@@ -13505,7 +13887,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                               (br.,)
                                 form
-                              $ ( createByGoalChoice
+                              $ ( showworkflows
                                 .   !formFields
                                     ( !nth:<1&
                                     |     makeHiddenFields
@@ -13892,85 +14274,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     "Der er uoverskuelig mange mulige workflows der fører til dit mål. Prøv at specificere dit mål nærmere."
                                   )
                                 )
-                              )
-                            )
-                        )
-                  )
-            )
-          & ( "We are at the start. Show an input form."
-            =     formFields presels nt CLOCK sourceAndGoal
-                , hiddenData Items itemGroups
-              .   !arg:(?formFields.?presels.?hiddenData.?Items)
-                & log$"We are at the start. Show an input form."
-                & (   !Items:
-                    &   str
-                      $ ( 200~~~
-                            toML
-                          $ ( !BodyContainer
-                            $ ( paragraph
-                              $ ( localized
-                                $ ( "No input is specified, or the input is not accessible."
-                                    "Inputtet er ikke specificeret, eller inputtet er ikke tilgængeligt."
-                                  )
-                                )
-                              )
-                            )
-                        )
-                  |       sourcesAndGoals
-                        $ ( !presels
-                          . !arg
-                          .     !Items
-                              : ? (Item.@(?:"dkclarin:" ?)) ?
-                            & 
-                          )
-                      : (?itemGroups.?sourceAndGoal)
-                    & log$(itemGroups !itemGroups)
-                    &   (   !itemGroups:(@.@)
-                          &   map
-                            $ ( ( 
-                                =   
-                                  .     !arg:(Item.?arg)
-                                      &   !itemGroups
-                                        : ? (?nt.? !arg ?) ?
-                                      & (str$(Item ";" !nt).!arg)
-                                    | !arg
-                                )
-                              . !hiddenData
-                              )
-                        |   readTable$ItemGroupsCache
-                          & (   !ItemGroupsCache
-                              : ? (?CLOCK.!itemGroups) ?
-                            |       (clk$:?CLOCK.!itemGroups)
-                                    !ItemGroupsCache
-                                : ?ItemGroupsCache
-                              & saveTable$ItemGroupsCache
-                            )
-                          &   (CLOCK.!CLOCK)
-                                map
-                              $ ( ( 
-                                  =   
-                                    .     !arg:(Item.?)
-                                        & 
-                                      | !arg
-                                  )
-                                . !hiddenData
-                                )
-                        )
-                      : ?hiddenData
-                    &   !formFields !sourceAndGoal desiredTools$
-                      : ?formFields
-                    &   str
-                      $ ( 200~~~
-                            toML
-                          $ ( !BodyContainer
-                            $ ( !formFields:
-                              |   form
-                                $ ( createByGoalChoice
-                                  .   makeHiddenFields$!hiddenData
-                                      !formFields
-                                      submit$"next step"
-                                      helplink$
-                                  )
                               )
                             )
                         )
@@ -14410,19 +14713,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & unpackIOparms$!parms:?parms
                 & checkIOparms$!parms
                 & readTable$tooladm
-                & (   !parms:? (bsubmit.?Submit) ?
-                    &   "We are past the first stage: the user has pressed a button"
-                      $ ( !parms
-                        . !TOOL
-                        . !Submit
-                        . !hiddenData
-                        . !batch
-                        . !Items
-                        . !mail2
-                        )
-                  |   "We are at the start. Show an input form."
-                    $ (!formFields.!presels.!hiddenData.!Items)
-                  )
+                & !parms:? (bsubmit.?Submit) ?
+                &   "We are past the first stage: the user has pressed a button"
+                  $ (!parms.!TOOL.!Submit.!hiddenData.!batch.!Items.!mail2)
               | !errors
             )
           & ( computeWorkflowDASISH
