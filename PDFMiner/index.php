@@ -246,20 +246,8 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        logit($base);
-        logit($job);
-        logit($post2);
-        logit($echos);
-        logit($F);
-        logit($Iformatpdf);
-        logit($Oformatflat);
-        logit($Oformathtml);
-        logit($Oformatflatutf8);
         $pdfminerfile = tempFileName("pdfminerfile-results");
-	logit('pdfminerfile:' . $pdfminerfile);
         $basepdfminerfile = basename($pdfminerfile);
-	copy($F,F);
-
         if(($cmd = popen("python3 /usr/local/bin/pdf2txt.py --version", "r")) == NULL)
             {
             throw new SystemExit(); // instead of exit()
@@ -269,9 +257,7 @@ try {
             {
             }
         pclose($cmd);
-
         $six = "pdfminer.six";
-
         if($Oformatflat)
             {
             if(substr($read,0,strlen($six)) == $six)
@@ -288,23 +274,15 @@ try {
             }
         logit($command);
 
-	//system($cmd);
-	
         if(($cmd = popen($command, "r")) == NULL)
             {
             throw new SystemExit(); // instead of exit()
             }
 
-	//$tmpf = fopen($pdfminerfile,'w');
-
         while($read = fgets($cmd))
             {
-            //logit($read);
-          //  fwrite($tmpf, $read);
             }
-        //fclose($tmpf);
         pclose($cmd);
-        
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $pdfminerfile
 //*/
         $tmpf = fopen($pdfminerfile,'r');
