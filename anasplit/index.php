@@ -60,7 +60,7 @@ function logit($str) /* TODO You can use this function to write strings to the l
         fclose($ftemp);
         }
     }
-    
+
 class SystemExit extends Exception {}
 try {
     function hasArgument ($parameterName)
