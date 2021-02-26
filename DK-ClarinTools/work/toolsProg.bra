@@ -2485,7 +2485,7 @@ toolsProg=
       )
       ( style
       =   ( style
-          .   (type.text/css)
+          .   
             ,   \r\n
                 ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
                 \r\n
@@ -2589,8 +2589,6 @@ toolsProg=
                 "/* Tooltip arrow */"
                 \r\n
                 ".tooltip .tooltiptext::after, .tooltip .tooltiptextL::after {"
-                \r\n
-                "    content: ;"
                 \r\n
                 "    position: absolute;"
                 \r\n
@@ -2987,14 +2985,15 @@ toolsProg=
       (row=.(tr.,!arg) \r\n)
       (cell=.td.,!arg)
       ( makeOptionList
-      =   options table aBbR full selected prefix
+      =   options table aBbR full selected prefix startchar name
         .     !arg
             : ( ?table
               .   (?selected.?prefix)
                 | ?selected&:?prefix
               )
           &     ( option
-                . (id.str$(b !tabind)) (value.),
+                .   (id.str$(b !tabind)) (value.)
+                  , chu$8239
                 )
                 \r\n
             : ?options
@@ -3005,16 +3004,22 @@ toolsProg=
                     ( option
                     .     ( id
                           .   str
-                            $ ( ( @( !aBbR
-                                   :   %allowedChar$('$NCNameStartChar)
-                                       !NCName
-                                   )
-                                | X
+                            $ ( ( @(!aBbR:%@?startchar ?name)
+                                & (     !startchar
+                                      : allowedChar$('$NCNameStartChar)
+                                    &   vap$((=.!arg).!name)
+                                      : ~(? ~!NCName ?)
+                                    & !aBbR
+                                  |     vap$((=.!arg).!aBbR)
+                                      : ~(? ~!NCName ?)
+                                    & I !aBbR
+                                  | X
+                                  )
                                 )
                                 !tabind
                               )
                           )
-                          (value.str$(!prefix !aBbR))
+                          (value.str$(!prefix !aBbR):~)
                           (   !selected:!aBbR
                             & (selected.selected)
                           | 
@@ -3307,6 +3312,34 @@ toolsProg=
               )
           & !ret
       )
+      ( percentEncode
+      =   c
+        .     @(!arg:%@?c ?arg)
+            & "%" d2x$(asc$!c) percentEncode$!arg
+          | 
+      )
+      ( queryEncode
+      =   
+        .   str
+          $ ( vap
+            $ ( ( 
+                =   
+                  .   !arg:" "&"+"
+                    |   !arg
+                      : ( ~<a:~>z
+                        | ~<A:~>Z
+                        | ~<0:~>9
+                        | "-"
+                        | "_"
+                        | "."
+                        | "~"
+                        )
+                    | str$(percentEncode$!arg)
+                )
+              . !arg
+              )
+            )
+      )
       ( helplink
       =   usedonly linktext offset title
         .   ( !arg:? (usedonly.?usedonly) ?
@@ -3329,7 +3362,7 @@ toolsProg=
                         "&usedonly="
                         !usedonly
                         "&Typeface="
-                        !TyPeFaCe
+                        queryEncode$!TyPeFaCe
                         (!offset:|"#" !offset)
                       )
                   )
@@ -14657,16 +14690,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
           &   toML
-            $ ( ( "!DOCTYPE"
-                . " html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\""
-                )
+            $ ( ("!DOCTYPE"." html")
                 ( html
-                .     (xmlns."http://www.w3.org/1999/xhtml")
-                      ("xmlns:xsi"."http://www.w3.org/2001/XMLSchema-instance")
-                      ( "xsi:schemaLocation"
-                      . "http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd"
-                      )
-                      ("xml:lang".en)
+                .   (lang.en)
                   ,   ( head
                       .   
                         ,   ( meta
@@ -14682,7 +14708,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   )
                             )
                             ( style
-                            .   (type.text/css)
+                            .   
                               ,   "label, h1, h2, h3, span, p, td, input, legend, textarea { font-family:"
                                   (   !TyPeFaCe:sans-serif
                                     & "sans-serif, Comic Sans MS"
@@ -14725,7 +14751,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                               localized
                                                             $ (da en)
                                                             "&Typeface="
-                                                            !TyPeFaCe
+                                                              queryEncode
+                                                            $ !TyPeFaCe
                                                           )
                                                       )
                                                     ,   localized
@@ -14790,14 +14817,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                         .     (type.file)
                                                               (name.input)
                                                               (id.inp)
-                                                              (value.)
                                                               (size.50)
-                                                              ( alt
-                                                              .   localized
-                                                                $ ( "choose one or more files"
-                                                                    "vælg en eller flere filer"
-                                                                  )
-                                                              )
                                                               ( multiple
                                                               . multiple
                                                               )
@@ -14888,12 +14908,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                                     "Specificer mål"
                                                                   )
                                                               )
-                                                              ( alt
-                                                              .   localized
-                                                                $ ( "create annotation"
-                                                                    "kreer annotation"
-                                                                  )
-                                                              )
                                                           , 
                                                         )
                                                   )
@@ -14979,7 +14993,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                   .     (type.hidden)
                                                         (name.action)
                                                         (value.batch)
-                                                        (checked.checked)
                                                     , 
                                                   )
                                             )
@@ -15028,11 +15041,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                         $ ( "/texton/?UIlanguage="
                                                             !LaNg
                                                             "&Typeface="
-                                                            (     !TyPeFaCe
-                                                                : "Comic Sans MS"
-                                                              & sans-serif
-                                                            | "Comic Sans MS"
-                                                            )
+                                                              queryEncode
+                                                            $ (     !TyPeFaCe
+                                                                  : "Comic Sans MS"
+                                                                & sans-serif
+                                                              | "Comic Sans MS"
+                                                              )
                                                           )
                                                       )
                                                     ,       !TyPeFaCe

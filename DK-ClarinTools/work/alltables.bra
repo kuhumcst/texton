@@ -963,14 +963,14 @@ ItemGroupsCache=
 ;
 SuperSets=
   facet
-.   (pos.spo stp tlp tlpm stlp stopl stpd)
+.   (pos.spo stp tlp tlpm tlpmn stlp stopl stpd)
     (ner.stn)
-    (lem.sl tl tlp tlpm stl stlp stopl)
+    (lem.sl tl tlp tlpm tlpmn stl stlp stopl)
     (cls.stopl)
-    (stx.stpd pls pmls stpld stpmld)
+    (stx.stpd pls pmls stpld stpmld stpmldn)
     (tok.seto stn)
     (seg.seto)
-    (mrf.pmls stpmld tlpm);
+    (mrf.pmls stpmld stpmldn tlpm tlpmn);
 TEImetadata=
   ( id
   . "Text in UI" "Tekst i grænsefladen"
@@ -1365,11 +1365,21 @@ facets=
   . stpmld
   . 
   )
+  (   "segments,tokens,PoS-tags,morphology,lemmas,dependency relations,named entities"
+      "segmenter,tokens,PoS-tags,morfologi,lemmaer,dependency relations,named entities"
+  . stpmldn
+  . 
+  )
   ("tokens,PoS-tags" "tokens,PoS-tags".tp.)
   ("tokens,lemmas" "tokens,lemmaer".tl.)
   ("tokens,PoS-tags,lemmas" "tokens,PoS-tags,lemmaer".tlp.)
   ( "tokens,PoS-tags,morphology,lemmas" "tokens,PoS-tags,morfologi,lemmaer"
   . tlpm
+  . 
+  )
+  (   "tokens,PoS-tags,morphology,lemmas,named entities"
+      "tokens,PoS-tags,morfologi,lemmaer,named entities"
+  . tlpmn
   . 
   )
   ( "tokens,PoS-tags,lemmas,syntax" "tokens,PoS-tags,lemmaer,syntaks"
@@ -1396,9 +1406,11 @@ features=
             stopl
             stpld
             stpmld
+            stpmldn
             tp
             tlp
             tlpm
+            tlpmn
         . tagSets
         )
         (seto stn tok.tokenisationStyles)
@@ -3619,7 +3631,9 @@ toolprop=
   .   (ambig,(pru.pru)+(una.una))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      ,   (lem*mrf*pos^Uni*seg*seto*stx*tok.stpmld)
+      ,   (lem*mrf*ner*pos^Uni*seg*seto*stx*tok.stpmldn)
+        + (lem*mrf*ner*pos^Uni*seto*tok.tlpmn)
+        + (lem*mrf*pos^Uni*seg*seto*stx*tok.stpmld)
         + (lem*mrf*pos^Uni*seto*tok.tlpm)
       )
       (format,(txtann.teip5))
@@ -3783,7 +3797,7 @@ toolprop=
   . format,(2col.2cole)+(3col.2cole+3cole)+(4col.2cole+4cole)
   )
 + ( conll2pt
-  .   (facet,(stpd+stpld+stpmld.stpd))
+  .   (facet,(stpd+stpld+stpmld+stpmldn.stpd))
       (format,(conll.pt))
       (pres,(nml.nml))
   )
@@ -3802,6 +3816,15 @@ toolprop=
       (app,(nrm.nrm))
       (facet,(seto.stn))
       (format,(flat.flat))
+      (lang,(da.da))
+      (period,(c21.c21))
+      (pres,(nml.nml))
+  )
++ ( daner
+  .   (ambig,(una.una))
+      (app,(nrm.nrm))
+      (facet,(seg*tok.ner))
+      (format,(txtann.txtann))
       (lang,(da.da))
       (period,(c21.c21))
       (pres,(nml.nml))
@@ -4122,7 +4145,7 @@ toolprop=
       (pres,(nml.nml))
   )
 + ( tei2conll
-  .   (facet,(stpld.stpld)+(stpmld.stpmld))
+  .   (facet,(stpld.stpld)+(stpmld.stpmld)+(stpmldn.stpmldn))
       (format,(teip5.conll^clU))
   )
 + ( teianno2orgmode
