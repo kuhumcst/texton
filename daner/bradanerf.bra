@@ -1,0 +1,138 @@
+{bradanerf.bra
+Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
+
+X=
+  new
+=   
+  .   ~
+    |   ( 
+        |   put
+          $ (   inputTok
+                !inputTok
+                inputNER
+                !inputNER
+                uploadfileTokens
+                !uploadfileTokens
+                output
+                !output
+                \n
+            , "bradanerf.log"
+            , NEW
+            )
+        )
+      & !inputTok
+      & !inputNER
+      & !uploadfileTokens
+      & !output
+      & ( get$(!inputTok,X,ML,TRM):?XMLtok
+        | 
+        | put$(cannotopen !inputTok \n,"bradanerf.log",APP)
+        )
+      & ( get$(!inputNER,STR):?ner
+        | 
+        | put$(cannotopen !inputNER \n,"bradanerf.log",APP)
+        )
+      & ( get$(!uploadfileTokens,STR):?tokens
+        | 
+        | put$(cannotopen !uploadfileTokens \n,"bradanerf.log",APP)
+        )
+      & ( 
+        |   lst$(XMLtok,XMLtok,NEW)
+          & lst$(ner,ner,NEW)
+          & lst$(tokens,tokens,NEW)
+        )
+      & :?nXML:?oldt:?oldA
+      & 0:?nr
+      & 99999999999:?snold
+      & ( sentNo
+        =   sent
+          .   @(!arg:? #%?sent "." ?)&str$(!sent ".")
+            | 
+        )
+      &   whl
+        ' ( !XMLtok
+          : (   (?e.?a) @?A (.!e.) ?XMLtok
+              &   !a
+                : ? ("xml:id".?t) ?
+                : ? (from.?from) ?
+                : ( ? (to.?to) ?
+                  | ?&!from:?to
+                  )
+              & (@(!from:"#" ?from)|)
+              & (@(!to:"#" ?to)|)
+              & @( !ner
+                 : %?p (" "|\n|\r) ?ner
+                 )
+              & @( !tokens
+                 : %?w (" "|\n|\r) ?tokens
+                 )
+              & @( rev$!w
+                 : ( ?w (" "|\n|\r) ?
+                   | ?w
+                   )
+                 )
+              & low$(rev$!w):?w
+              &     ( !e
+                    .       @(low$!A:? !w ?oldA)
+                          & sentNo$!t:?sno
+                          & (!sno:!snold|0:?nr)
+                          &   ("xml:id".str$(p !sno (1+!nr:?nr)))
+                              (from.str$("#" !t))
+                        |   @(low$!oldA:? !w ?oldA)
+                          & sentNo$!oldt:?sno
+                          & (!sno:!snold|0:?nr)
+                          &   (!e.!a) !A (.!e.) !XMLtok
+                            : ?XMLtok
+                          &   ("xml:id".str$(p !sno (1+!nr:?nr)))
+                              (from.str$("#" !oldt))
+                        |   ( 
+                            |   lst$(A,"bradanerf.log",APP)
+                              & lst$(oldA,"bradanerf.log",APP)
+                              & lst$(w,"bradanerf.log",APP)
+                            )
+                          &   ("xml:id".str$(p !sno (1+!nr:?nr)))
+                              (from.str$("#" !t))
+                      ,   @(rev$!p:?sop "/" ?)
+                        & rev$!sop
+                    )
+                    !nXML
+                : ?nXML
+              & !t:?oldt
+              & !sno:?snold
+            |   %?v ?XMLtok
+              & (   !v:(spanGrp.ana.?)
+                  & (spanGrp.ana.str$("#" daner)):?v
+                | 
+                )
+              & !v !nXML:?nXML
+            )
+          )
+      &     ( 
+            =   g L
+              .   :?L
+                &   whl
+                  ' (!arg:%?g ?arg&!g !L:?L)
+                & !L
+            )
+          $ !nXML
+        : ?nXML
+      & put$(toML$!nXML,!output,NEW);
+
+r=
+  get'"bradanerf.bra"
+& rmv$"bradanerf.bak"
+& ren$("bradanerf.bra"."bradanerf.bak")
+&   put
+  $ ( "{bradanerf.bra
+Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
+
+"
+    , "bradanerf.bra"
+    , NEW
+    )
+& lst'(X,"bradanerf.bra",APP)
+& put'(\n,"bradanerf.bra",APP)
+& lst'(r,"bradanerf.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"bradanerf.bra",APP);
+
+new'X;
