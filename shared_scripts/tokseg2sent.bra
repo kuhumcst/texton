@@ -5,11 +5,12 @@ Parameter   Description
 inputTok    name of input file with tokens
 inputSeg    name of input file with segments
 output      name of output file
+lowercase   (yes/no) If yes, lowercase the output
 
 e.g.
-bracmat inputTok="tokens.xml" inputSeg="segments.xml" output="sentenceLines.txt" get$"tokseg2sent.bra"
+bracmat inputTok="tokens.xml" inputSeg="segments.xml" output="sentenceLines.txt" lowercase="yes" get$"tokseg2sent.bra"
 
-../bin/bracmat 'inputTok="tokens.xml"' 'inputSeg="segments.xml"' 'output="sentenceLines.txt"' 'get$"../bin/tokseg2sent.bra"'
+../bin/bracmat 'inputTok="tokens.xml"' 'inputSeg="segments.xml"' 'output="sentenceLines.txt"' 'lowercase="yes"' 'get$"../bin/tokseg2sent.bra"'
 
 
 Tokens:
@@ -62,6 +63,7 @@ X=
       & !inputTok
       & !inputSeg
       & !output
+      & !lowercase
       & ( get$(!inputTok,X,ML,TRM):?XMLtok
         | 
         | put$(cannotopen !inputTok \n,"tokseg2sent.log",APP)
@@ -116,16 +118,28 @@ X=
                  )
             | !arg
         )
-      &   whl
-        ' ( !XML
-          : (   (br.?) ?XML
-              & put$(low$(str$(!sent \n)),!output,APP)
-              & :?sent
-            |   (?e.?) @?A (.!e.) ?XML
-              & !sent trim$!A " ":?sent
-            | % ?XML
+      & (   !lowercase:yes
+          &   whl
+            ' ( !XML
+              : (   (br.?) ?XML
+                  & put$(low$(str$(!sent \n)),!output,APP)
+                  & :?sent
+                |   (?e.?) @?A (.!e.) ?XML
+                  & !sent trim$!A " ":?sent
+                | % ?XML
+                )
+              )
+        |   whl
+          ' ( !XML
+            : (   (br.?) ?XML
+                & put$(str$(!sent \n),!output,APP)
+                & :?sent
+              |   (?e.?) @?A (.!e.) ?XML
+                & !sent trim$!A " ":?sent
+              | % ?XML
+              )
             )
-          )
+        )
       & put$(str$(!sent \n),!output,APP);
 
 r=
@@ -140,11 +154,12 @@ Parameter   Description
 inputTok    name of input file with tokens
 inputSeg    name of input file with segments
 output      name of output file
+lowercase   (yes/no) If yes, lowercase the output
 
 e.g.
-bracmat inputTok=\"tokens.xml\" inputSeg=\"segments.xml\" output=\"sentenceLines.txt\" get$\"tokseg2sent.bra\"
+bracmat inputTok=\"tokens.xml\" inputSeg=\"segments.xml\" output=\"sentenceLines.txt\" lowercase=\"yes\" get$\"tokseg2sent.bra\"
 
-../bin/bracmat 'inputTok=\"tokens.xml\"' 'inputSeg=\"segments.xml\"' 'output=\"sentenceLines.txt\"' 'get$\"../bin/tokseg2sent.bra\"'
+../bin/bracmat 'inputTok=\"tokens.xml\"' 'inputSeg=\"segments.xml\"' 'output=\"sentenceLines.txt\"' 'lowercase=\"yes\"' 'get$\"../bin/tokseg2sent.bra\"'
 
 
 Tokens:
