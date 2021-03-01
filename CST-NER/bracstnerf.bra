@@ -1,0 +1,169 @@
+{bracstnerf.bra
+Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
+
+X=
+  new
+=   
+  .   ~
+    |   !inputTok
+      & !inputNER
+      & !uploadfileTokens
+      & !output
+      & (get$(!inputTok,X,ML,TRM):?XMLtok|)
+      & (get$(!inputNER,STR):?ner|)
+      & (get$(!uploadfileTokens,STR):?tokens|)
+      & :?nXML:?oldt:?oldA
+      & 99999999999:?snold
+      & ( sentNo
+        =   sent
+          .   @(!arg:? #%?sent "." ?)&str$(!sent ".")
+            | 
+        )
+      & vap$((=.!arg).!ner."["):%?first ?ner
+      & ( notting
+        =   
+          .   vap
+            $ ( ( 
+                =   
+                  .   whl'@(!arg:(\n|\r) ?arg)
+                    & (!arg:|str$(!arg "/O"))
+                )
+              . !arg
+              . " "
+              )
+        )
+      &     notting$!first
+              map
+            $ ( ( 
+                =   
+                  .     @( !arg
+                         :   ?toks
+                             ","
+                             (~(? "," ?):?NE)
+                             ","
+                             ( certain
+                             | likely
+                             | uncertain
+                             )
+                             "]"
+                             ?arg
+                         )
+                      &     vap
+                          $ ((=.str$(!arg "/" !NE)).!toks." ")
+                          notting$!arg
+                    | notting$(str$("[" !arg))
+                )
+              . !ner
+              )
+        : ?ner
+      & lst$(ner,"/opt/texton/CST-NER/ner.bra",NEW)
+      &   whl
+        ' ( !XMLtok
+          : (   (?e.?a) @?A (.!e.) ?XMLtok
+              &   !a
+                : ? ("xml:id".?t) ?
+                : ? (from.?from) ?
+                : ( ? (to.?to) ?
+                  | ?&!from:?to
+                  )
+              & (@(!from:"#" ?from)|)
+              & (@(!to:"#" ?to)|)
+              & !ner:%?p ?ner
+              & @( !tokens
+                 : %?w (" "|\n|\r) ?tokens
+                 )
+              & @( rev$!w
+                 : ( ?w (" "|\n|\r) ?
+                   | ?w
+                   )
+                 )
+              & low$(rev$!w):?w
+              &     ( !e
+                    .       @(low$!A:? !w ?oldA)
+                          & (from.str$("#" !t))
+                        |   @(low$!oldA:? !w ?oldA)
+                          &   (!e.!a) !A (.!e.) !XMLtok
+                            : ?XMLtok
+                          & (from.str$("#" !oldt))
+                        | (from.str$("#" !t))
+                      ,   @(rev$!p:?sop "/" ?)
+                        & rev$!sop
+                    )
+                    !nXML
+                : ?nXML
+              & !t:?oldt
+            |   %?v ?XMLtok
+              & (   !v:(spanGrp.ana.?)
+                  & (spanGrp.ana.str$("#" cstner)):?v
+                | 
+                )
+              & !v !nXML:?nXML
+            )
+          )
+      &     ( 
+            =   g L
+              .   :?L
+                &   whl
+                  ' ( !arg:%?g ?arg
+                    &     ( !g:(?.?,O)&
+                          |   !g:(?e.?Is,?NE)
+                            & !Is:?Ie
+                            &   whl
+                              ' ( !arg
+                                : ((!e.?,!NE):(?.?Ie,?)) ?arg
+                                )
+                            & !Is:? (from.?from) ?
+                            &   !Ie
+                              : ( ? (to.?to) ?
+                                | ? (from.?to) ?
+                                )
+                            & (   !from:!to
+                                & (!e.(from.!from),!NE)
+                              | ( !e
+                                . (from.!to) (to.!from),!NE
+                                )
+                              )
+                          | !g
+                          )
+                          !L
+                      : ?L
+                    )
+                & !L
+            )
+          $ !nXML
+        : ?nXML
+      & 0:?nr
+      &     map
+          $ ( ( 
+              =   
+                .     !arg:(span.?at,?NE)
+                    & ( span
+                      .     ("xml:id".str$(ne (1+!nr:?nr)))
+                            !at
+                        , !NE
+                      )
+                  | !arg
+              )
+            . !nXML
+            )
+        : ?nXML
+      & put$(toML$!nXML,!output,NEW);
+
+r=
+  get'"bracstnerf.bra"
+& rmv$"bracstnerf.bak"
+& ren$("bracstnerf.bra"."bracstnerf.bak")
+&   put
+  $ ( "{bracstnerf.bra
+Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
+
+"
+    , "bracstnerf.bra"
+    , NEW
+    )
+& lst'(X,"bracstnerf.bra",APP)
+& put'(\n,"bracstnerf.bra",APP)
+& lst'(r,"bracstnerf.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"bracstnerf.bra",APP);
+
+new'X;
