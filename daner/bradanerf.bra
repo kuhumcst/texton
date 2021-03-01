@@ -1,46 +1,17 @@
-{bradanerf.bra
+{bracstnerf.bra
 Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
 
 X=
   new
 =   
   .   ~
-    |   ( 
-        |   put
-          $ (   inputTok
-                !inputTok
-                inputNER
-                !inputNER
-                uploadfileTokens
-                !uploadfileTokens
-                output
-                !output
-                \n
-            , "bradanerf.log"
-            , NEW
-            )
-        )
-      & !inputTok
+    |   !inputTok
       & !inputNER
       & !uploadfileTokens
       & !output
-      & ( get$(!inputTok,X,ML,TRM):?XMLtok
-        | 
-        | put$(cannotopen !inputTok \n,"bradanerf.log",APP)
-        )
-      & ( get$(!inputNER,STR):?ner
-        | 
-        | put$(cannotopen !inputNER \n,"bradanerf.log",APP)
-        )
-      & ( get$(!uploadfileTokens,STR):?tokens
-        | 
-        | put$(cannotopen !uploadfileTokens \n,"bradanerf.log",APP)
-        )
-      & ( 
-        |   lst$(XMLtok,XMLtok,NEW)
-          & lst$(ner,ner,NEW)
-          & lst$(tokens,tokens,NEW)
-        )
+      & (get$(!inputTok,X,ML,TRM):?XMLtok|)
+      & (get$(!inputNER,STR):?ner|)
+      & (get$(!uploadfileTokens,STR):?tokens|)
       & :?nXML:?oldt:?oldA
       & 0:?nr
       & 99999999999:?snold
@@ -74,31 +45,18 @@ X=
               & low$(rev$!w):?w
               &     ( !e
                     .       @(low$!A:? !w ?oldA)
-                          & sentNo$!t:?sno
-                          & (!sno:!snold|0:?nr)
-                          &   ("xml:id".str$(p !sno (1+!nr:?nr)))
-                              (from.str$("#" !t))
+                          & (from.str$("#" !t))
                         |   @(low$!oldA:? !w ?oldA)
-                          & sentNo$!oldt:?sno
-                          & (!sno:!snold|0:?nr)
                           &   (!e.!a) !A (.!e.) !XMLtok
                             : ?XMLtok
-                          &   ("xml:id".str$(p !sno (1+!nr:?nr)))
-                              (from.str$("#" !oldt))
-                        |   ( 
-                            |   lst$(A,"bradanerf.log",APP)
-                              & lst$(oldA,"bradanerf.log",APP)
-                              & lst$(w,"bradanerf.log",APP)
-                            )
-                          &   ("xml:id".str$(p !sno (1+!nr:?nr)))
-                              (from.str$("#" !t))
+                          & (from.str$("#" !oldt))
+                        | (from.str$("#" !t))
                       ,   @(rev$!p:?sop "/" ?)
                         & rev$!sop
                     )
                     !nXML
                 : ?nXML
               & !t:?oldt
-              & !sno:?snold
             |   %?v ?XMLtok
               & (   !v:(spanGrp.ana.?)
                   & (spanGrp.ana.str$("#" daner)):?v
@@ -111,10 +69,48 @@ X=
             =   g L
               .   :?L
                 &   whl
-                  ' (!arg:%?g ?arg&!g !L:?L)
+                  ' ( !arg:%?g ?arg
+                    &     ( !g:(?.?,O)&
+                          |   !g:(?e.?Is,?NE)
+                            & !Is:?Ie
+                            &   whl
+                              ' ( !arg
+                                : ((!e.?,!NE):(?.?Ie,?)) ?arg
+                                )
+                            & !Is:? (from.?from) ?
+                            &   !Ie
+                              : ( ? (to.?to) ?
+                                | ? (from.?to) ?
+                                )
+                            & (   !from:!to
+                                & (!e.(from.!from),!NE)
+                              | ( !e
+                                . (from.!to) (to.!from),!NE
+                                )
+                              )
+                          | !g
+                          )
+                          !L
+                      : ?L
+                    )
                 & !L
             )
           $ !nXML
+        : ?nXML
+      & 0:?nr
+      &     map
+          $ ( ( 
+              =   
+                .     !arg:(span.?at,?NE)
+                    & ( span
+                      .     ("xml:id".str$(ne (1+!nr:?nr)))
+                            !at
+                        , !NE
+                      )
+                  | !arg
+              )
+            . !nXML
+            )
         : ?nXML
       & put$(toML$!nXML,!output,NEW);
 
