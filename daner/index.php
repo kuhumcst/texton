@@ -378,18 +378,13 @@ try {
             {
             if($IfacetsegF != '')
                 {
-                copy($IfacetsegF,"IfacetsegF");
                 if($IfacettokF != '')
                     {
-                    copy($IfacettokF,"IfacettokF");
                     logit("daner($IfacetsegF,$IfacettokF)");
                     $plaintext = combine($IfacettokF,$IfacetsegF);
-                    copy($plaintext,"plaintext");
                     $nerfileRAW = daner($plaintext);
-                    copy($nerfileRAW,"nerfileRAW");
-
+                    
                     $danerfile = NERannotation($IfacettokF,$nerfileRAW,$plaintext);
-                    copy($danerfile,"danerfile");
                     logit('filename:'.$danerfile);
                     }
                 }

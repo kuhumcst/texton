@@ -431,7 +431,6 @@ try {
         $CuneiFormfile = tempFileName("cune-results");
         if($Iformatpdf)
             {
-            copy($F,Finput);
             $command = "./ocr.sh $lang $format $F $CuneiFormfile";
             }
         else
