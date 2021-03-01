@@ -464,7 +464,7 @@ try {
         {
         logit( "combine(" . $IfacettokF . "," . $IfacetsegF . ")\n");
         $posfile = tempFileName("combine-tokseg-attribute");
-        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$posfile\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
+        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$posfile\") (lowercase=\"yes\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL)
             exit(1);
