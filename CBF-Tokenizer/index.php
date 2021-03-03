@@ -512,6 +512,10 @@ try {
         else
             $convertaa = 'n';
         $command = "../bin/bracmat \"get'\\\"cbftok.bra\\\"\" $F $cbftokfile $convertaa";
+        if($Ilangda)
+            {
+            $command = $command  . " ../texton-linguistic-resources/da/navnegenkenderCSTNER/DKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/nonDKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/surnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/firstnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/countrynames ../texton-linguistic-resources/da/navnegenkenderCSTNER/islandnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/miscplace ../texton-linguistic-resources/da/navnegenkenderCSTNER/company ../texton-linguistic-resources/da/navnegenkenderCSTNER/street ../texton-linguistic-resources/da/navnegenkenderCSTNER/organization";
+            }
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)

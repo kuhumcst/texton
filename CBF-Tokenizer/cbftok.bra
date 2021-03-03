@@ -33,7 +33,12 @@ X=
                             | (H..insert)$(!arg.!string,!what)
                             )
                     )
-                  .   !arg:(?navn.?what)
+                  .   !arg:?what:?navn
+                    & (   @(rev$!what:?what "/" ?)
+                        & rev$!what:?what
+                      | 
+                      )
+                    & (@(!what:?what "." ?)|)
                     & get$(!navn.STR)
                   . \n
                   )
@@ -44,23 +49,29 @@ X=
   )
   ( normalize
   =   
-    .       (its.readTables)
-          $ ( ("bynavne.txt".by)
-              ("efternavne.txt".efternavn)
-              ("fornavne.txt".fornavn)
-              ("landenavne.txt".land)
-            )
-        : ?H
+    .   (its.readTables)$!namefiles:?H
       & ( checkName
-        =   A Z
+        =   A Z z key val
           .   vap$((=.!arg).!arg):%@?A ?Z
             & upp$!A:!A
-            &   (H..find)$(str$(!A low$(str$!Z)))
-              : (?key.?val) ?
-            & ~( Ned Vi Tom Paa Saa Dag Hold Ting Land Andre
-               : ? !key ?
-               )
-            & !key
+            & (     (H..find)$(str$(!A low$(str$!Z)))
+                  : (?key.?val) ?
+                & ~(   Ned
+                       Vi
+                       Tom
+                       Paa
+                       Saa
+                       Dag
+                       Hold
+                       Ting
+                       Land
+                       Andre
+                   : ? !key ?
+                   )
+              |   !Z:%?z "-" ?
+                &   (H..find)$(str$(!A low$(str$!z)))
+                  : (?key.?val) ?
+              )
         )
       & ( hyph
         =   A a z Z al au zl zu
@@ -103,7 +114,7 @@ X=
           .   !arg:I
             |   hyph$(str$!arg):?arg
               & compound$!arg:?arg
-              & ( checkName$!arg
+              & ( checkName$!arg&!arg
                 |   vap$((=.!arg).low$!arg):?arg
                   &   whl
                     ' ( !arg:?a a a ?z
@@ -220,7 +231,8 @@ X=
         )
       &   (spanGrp.(ana.ClarinTokeniser),combine$(recur$!xml))
         : ?ret
-      & (   @(low$!normalizeYesOrNo:y ?)
+      & (   
+          & @(low$!normalizeYesOrNo:y ?)
           & (its.normalize)$!ret:?ret
         | 
         )
@@ -254,6 +266,11 @@ X=
       |   arg$:?input
         & arg$:?output
         & arg$:?normalizeYesOrNo
+        & :?namefiles
+        &   whl
+          ' ( arg$:?F
+            & !F !namefiles:?namefiles
+            )
         &   put
           $ (toML$((its.doit)$(!input.!normalizeYesOrNo)),!output,NEW)
   );
