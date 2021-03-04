@@ -4,8 +4,24 @@ Get the casing right for Danish TEI P5 texts}
 
 X=
   ( teitok
-  =   input abbreviations style language
+  =   input abbreviations style language,SentenceEndingAbbrSeen
     .   !arg:(?input.?style.?abbreviations.?language)
+      & :?SentenceEndingAbbrSeen
+      & new$hash:?Mabbr
+      & new$hash:?Eabbr
+      & (Mabbr..ISO)$
+      & (Eabbr..ISO)$
+      &   map
+        $ ( ( 
+            =   
+              .   (   @(!arg:" " ?arg)
+                    & (Eabbr..insert)$(!arg.)
+                  | (Mabbr..insert)$(!arg.)
+                  )
+                & !arg
+            )
+          . !abbreviations
+          )
       & nestML$(get$(!input,X ML)):?xml
       &   !xml
         :   ?XXX
@@ -659,7 +675,7 @@ X=
             & (!K.!P)
         )
       & ( considerAbbrev
-        =   A P kar kars nxt
+        =   A P kar kars nxt KRS
           .   !arg:(?arg.?nxt)
             & !arg:?A "."
             & getAll$(!A."."):(?A.?P)
@@ -670,7 +686,6 @@ X=
                            (%@:~(#|"."|","))
                            ?
                          )
-                  | !arg:% "." % ".":~(? "." "." ?)
                   |     !arg
                       :   ?
                           (   ( %@?kar
@@ -679,13 +694,14 @@ X=
                               ?
                           : ?kars
                           )
-                    & (   ( 
-                          = .!('($abbreviations:? ()$arg ?))
-                          )
-                        $ (str$!kars)
+                    & str$!kars:?KRS
+                    & ( (Mabbr..find)$!KRS
+                      |   (Eabbr..find)$!KRS
+                        & !KRS:?SentenceEndingAbbrSeen
                       |   !nxt
                         : (","|";"|":") ?
                       )
+                  | !arg:% "." % ".":~(? "." "." ?)
                   )
                 & SplitAbbr$!arg
               |   Split$!A
@@ -709,6 +725,16 @@ X=
         =     A N P Z tp PZ z F L
             , abb TOK chars kars kar
           .   !arg:(?arg.?abb)
+            & ( !SentenceEndingAbbrSeen:
+              |   :?SentenceEndingAbbrSeen
+                & (   vap$((=.!arg).!arg):%?frst ?
+                    & upp$!frst:!frst
+                    & low$!frst:~!frst
+                    & 0:?tok
+                    & 1:?IS
+                  | 
+                  )
+              )
             & ( !arg:
               |   vap$((=.!arg).!arg):?chars
                 & ( considerAbbrev$(!chars.)
