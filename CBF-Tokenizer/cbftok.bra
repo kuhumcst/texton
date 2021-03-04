@@ -6,6 +6,7 @@ X=
   ( readTables
   =   
     .   new$hash:?H
+      & (H..ISO)$
       &   map
         $ ( ( 
             =   what navn
@@ -16,21 +17,21 @@ X=
                         |     vap$((=." " !arg).!arg."=")
                             : " " ?arg
                           & str$!arg:?string
-                          & (   (H..find)$!arg:?XX
+                          & (   (H..find)$!string:?XX
                               & (     !XX
-                                    : ?c (!arg.!string,?d) ?e
+                                    : ?c (!string.?d) ?e
                                   & ( !d:?+!what+?
                                     |   (H..remove)$!arg
                                       &   (H..insert)
-                                        $ (!arg.!string,!d+!what)
+                                        $ (!string.!d+!what)
                                       &   map
                                         $ ( (=.(H..insert)$!arg)
                                           . !c !e
                                           )
                                     )
-                                | (H..insert)$(!arg.!string,!what)
+                                | (H..insert)$(!string.!what)
                                 )
-                            | (H..insert)$(!arg.!string,!what)
+                            | (H..insert)$(!string.!what)
                             )
                     )
                   .   !arg:?what:?navn
@@ -45,13 +46,16 @@ X=
             )
           . !arg
           )
+      & :?evr
+      & (H..forall)$(=.!arg !evr:?evr)
+      & lst$(evr,"/opt/texton/CBF-Tokenizer/evr",NEW)
       & !H
   )
   ( normalize
   =   
     .   (its.readTables)$!namefiles:?H
       & ( checkName
-        =   A Z z key val
+        =   A Z z key val y
           .   vap$((=.!arg).!arg):%@?A ?Z
             & upp$!A:!A
             & (     (H..find)$(str$(!A low$(str$!Z)))
@@ -68,9 +72,11 @@ X=
                        Andre
                    : ? !key ?
                    )
-              |   !Z:%?z "-" ?
-                &   (H..find)$(str$(!A low$(str$!z)))
+                & !key
+              |   !Z:%?y "-" ?z
+                &   (H..find)$(str$(!A !y))
                   : (?key.?val) ?
+                & str$(!key "-" !z)
               )
         )
       & ( hyph
@@ -114,7 +120,7 @@ X=
           .   !arg:I
             |   hyph$(str$!arg):?arg
               & compound$!arg:?arg
-              & ( checkName$!arg&!arg
+              & ( checkName$!arg
                 |   vap$((=.!arg).low$!arg):?arg
                   &   whl
                     ' ( !arg:?a a a ?z
