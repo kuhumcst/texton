@@ -455,7 +455,7 @@ try {
         {
         logit( "NERannotation(" . $IfacettokF . "," . $nerfileRAW . "," . $plaintext . ")\n");
         $nerfile = tempFileName("NERannotation-nerf-attribute");
-        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputNER=\"$nerfileRAW\") (uploadfileTokens=\"$plaintext\") (output=\"$nerfile\") (get\$\"bracstnerf.bra\")'";
+	$command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputNER=\"$nerfileRAW\") (uploadfileTokens=\"$plaintext\") (output=\"$nerfile\") (get\$\"bracstnerf.bra\")'";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL)
             exit(1);

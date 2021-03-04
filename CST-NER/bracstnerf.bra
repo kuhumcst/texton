@@ -5,13 +5,18 @@ X=
   new
 =   
   .   ~
-    |   !inputTok
-      & !inputNER
-      & !uploadfileTokens
-      & !output
-      & (get$(!inputTok,X,ML,TRM):?XMLtok|)
-      & (get$(!inputNER,STR):?ner|)
-      & (get$(!uploadfileTokens,STR):?tokens|)
+    |   (   !inputTok
+          & !inputNER
+          & !uploadfileTokens
+          & !output
+          & get$(!inputTok,X,ML,TRM):?XMLtok
+          & get$(!inputNER,STR):?ner
+          & get$(!uploadfileTokens,STR):?tokens
+        |   get$(IfacettokF,X ML,TRM):?XMLtok
+          & get$(nerfileRAW,STR):?ner
+          & get$(plaintext,STR):?tokens
+          & "nerout.xml":?output
+        )
       & :?nXML:?oldt:?oldA
       & 99999999999:?snold
       & ( sentNo
@@ -20,6 +25,19 @@ X=
             | 
         )
       & vap$((=.!arg).!ner."["):%?first ?ner
+      & (   @( !first
+             :   ?
+                 ","
+                 ?
+                 ","
+                 (certain|likely|uncertain)
+                 "]"
+                 ?
+             )
+          & !first !ner:?ner
+          & :?first
+        | 
+        )
       & ( notting
         =   
           .   vap
@@ -37,7 +55,7 @@ X=
             $ ( ( 
                 =   
                   .     @( !arg
-                         :   ?toks
+                         :   (~(? "," ?):?toks)
                              ","
                              (~(? "," ?):?NE)
                              ","
