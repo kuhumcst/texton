@@ -170,31 +170,35 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $IfacetlemF = "";	/* Input with type of content lemmas (Lemma) */
-        $IfacetmrfF = "";	/* Input with type of content morphological features (morfologiske træk) */
+        $IfacetmrfF = "";	/* Input with type of content morphological features (morfologiske trÃ¦k) */
+        $IfacetnerF = "";	/* Input with type of content name entities (Navne) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
-        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
-        $IfacetsetoF = "";	/* Input with type of content segments,tokens (Sætningssegmenter,tokens) */
+        $IfacetsegF = "";	/* Input with type of content segments (SÃ¦tningssegmenter) */
+        $IfacetsetoF = "";	/* Input with type of content segments,tokens (SÃ¦tningssegmenter,tokens) */
         $IfacetstxF = "";	/* Input with type of content syntax (dependency structure) (Syntaks (dependensstruktur)) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
-        $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
+        $Iambigpru = false;	/* Ambiguity in input is pruned (beskÃ¥ret) if true */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
-        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
+        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske trÃ¦k) if true */
+        $Ifacetner = false;	/* Type of content in input is name entities (Navne) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) if true */
+        $Ifacetseto = false;	/* Type of content in input is segments,tokens (SÃ¦tningssegmenter,tokens) if true */
         $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
-        $Oambigpru = false;	/* Ambiguity in output is pruned (beskåret) if true */
+        $Oambigpru = false;	/* Ambiguity in output is pruned (beskÃ¥ret) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
         $Ofacetstpmld = false;	/* Type of content in output is segments,tokens,PoS-tags,morphology,lemmas,dependency relations (segmenter,tokens,PoS-tags,morfologi,lemmaer,dependency relations) if true */
+        $Ofacetstpmldn = false;	/* Type of content in output is segments,tokens,PoS-tags,morphology,lemmas,dependency relations,named entities (segmenter,tokens,PoS-tags,morfologi,lemmaer,dependency relations,named entities) if true */
         $Ofacettlpm = false;	/* Type of content in output is tokens,PoS-tags,morphology,lemmas (tokens,PoS-tags,morfologi,lemmaer) if true */
+        $Ofacettlpmn = false;	/* Type of content in output is tokens,PoS-tags,morphology,lemmas,named entities (tokens,PoS-tags,morfologi,lemmaer,named entities) if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
@@ -231,10 +235,20 @@ try {
             $IfacetmrfF = requestFile("IfacetmrfF");
             if($IfacetmrfF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'morphological features (morfologiske træk)' not found (IfacetmrfF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'morphological features (morfologiske trÃ¦k)' not found (IfacetmrfF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetmrfF=$IfacetmrfF ";
+            }
+        if( hasArgument("IfacetnerF") )
+            {        
+            $IfacetnerF = requestFile("IfacetnerF");
+            if($IfacetnerF == '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'name entities (Navne)' not found (IfacetnerF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacetnerF=$IfacetnerF ";
             }
         if( hasArgument("IfacetposF") )
             {        
@@ -251,7 +265,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (SÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -261,7 +275,7 @@ try {
             $IfacetsetoF = requestFile("IfacetsetoF");
             if($IfacetsetoF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments,tokens (Sætningssegmenter,tokens)' not found (IfacetsetoF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments,tokens (SÃ¦tningssegmenter,tokens)' not found (IfacetsetoF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsetoF=$IfacetsetoF ";
@@ -306,12 +320,13 @@ try {
             {
             $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
             $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
+            $Ifacetner = existsArgumentWithValue("Ifacet", "ner");
             $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
             $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetner=$Ifacetner " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -338,8 +353,10 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetstpmld = existsArgumentWithValue("Ofacet", "stpmld");
+            $Ofacetstpmldn = existsArgumentWithValue("Ofacet", "stpmldn");
             $Ofacettlpm = existsArgumentWithValue("Ofacet", "tlpm");
-            $echos = $echos . "Ofacetstpmld=$Ofacetstpmld " . "Ofacettlpm=$Ofacettlpm ";
+            $Ofacettlpmn = existsArgumentWithValue("Ofacet", "tlpmn");
+            $echos = $echos . "Ofacetstpmld=$Ofacetstpmld " . "Ofacetstpmldn=$Ofacetstpmldn " . "Ofacettlpm=$Ofacettlpm " . "Ofacettlpmn=$Ofacettlpmn ";
             }
         if( hasArgument("Oformat") )
             {
@@ -381,30 +398,48 @@ try {
 //        TODO your code!
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
-/*
+//*
         copy($IfacetsetoF,"IfacetsetoF"); 
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
         copy($IfacetmrfF,"IfacetmrfF");
         copy($IfacetlemF,"IfacetlemF"); 
 /*/
-//*/	
-        if($Ofacetstpmld)
+//*/
+        if($Ofacetstpmldn)
             {
             logit("Ofacetstpmld");
-
-/*
+//*
+            copy($IfacetsegF,"IfacetsegF");
+            copy($IfacetstxF,"IfacetstxF");
+            copy($IfacetnerF,"IfacetnerF");
+/*/
+//*/
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $IfacetsegF && rm $IfacetstxF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
+            }
+        else if($Ofacetstpmld)
+            {
+            logit("Ofacetstpmld");
+//*
             copy($IfacetsegF,"IfacetsegF");
             copy($IfacetstxF,"IfacetstxF");
 /*/
 //*/
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $IfacetsegF && rm $IfacetstxF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
+            }
+        else if($Ofacettlpmn)
+            {
+            logit("Ofacettlpm");
+            copy($IfacetnerF,"IfacetnerF");
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
             }
         else if($Ofacettlpm)
             {
-            logit("Ofacettlpm");
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
+            logit("Ofacettlpmn");
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
             }
         logit($command);

@@ -6,7 +6,7 @@ Retain elements that occur in the TEI P5 input in the output.}
 program-annotei=
   ( doit
   =   Id
-    .   !arg:(?tei.?tok.?pos.?mrf.?lem.?seg.?stx.?output)
+    .   !arg:(?tei.?tok.?pos.?mrf.?lem.?seg.?stx.?ner.?output)
       &   nestML$(get$(!tei,X ML))
         : (     ?teiA
                 (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
@@ -79,6 +79,10 @@ program-annotei=
       & ( !seg:"*"&:?seg
         |   nestML$(get$(!seg,X ML))
           : ? (spanGrp.?,?seg) ?
+        )
+      & ( !ner:"*"&:?ner
+        |   nestML$(get$(!ner,X ML))
+          : ? (spanGrp.?,?ner) ?
         )
       &     map
           $ ( ( 
@@ -173,7 +177,7 @@ program-annotei=
                 )
         )
       & ( join
-        =   A L M e a w 
+        =   A L M e a w
           .   :?L
             &   whl
               ' ( !arg:%?A ?arg
@@ -525,6 +529,9 @@ program-annotei=
             & whl'(!arg:%?a ?arg&!a !L:?L)
             & !L
         )
+      & ( reverseString
+        = .str$(reverseList$(vap$((=.!arg).str$!arg)))
+        )
       & ( insertStxEasyWay
         =     A B M E P Q id to
             , linkGrp x parentID tsil
@@ -768,6 +775,108 @@ program-annotei=
               & :?prefi
               & getIDsRight$!tei:?tei
             )
+        )
+      & ( Camel
+        =   
+          .   map
+            $ ( ( 
+                =   e a c A L Z x com C
+                  .     !arg:(?e.?a,?c)
+                      & (   !e:(w|pc)
+                          & (   !a:?A (lemma.?L) ?Z
+                              & reverseString$!L:?L
+                              & reverseString$!c:?C
+                              & @( !C
+                                 :   ?
+                                     (?com&@(!L:?x ~<>!com))
+                                 )
+                              &     !A
+                                    (lemma.reverseString$(!x !com))
+                                    !Z
+                                : ?a
+                            | 
+                            )
+                          & (!e.!a,!c)
+                        | (!e.!a,Camel$!c)
+                        )
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      & ( insertNER
+        =     tei ner to att cat from
+            , A E Z F M stuw to
+          .   !arg:(?tei.?ner.?to)
+            & :?stuw:?cat
+            & (   map
+                $ ( ( 
+                    =   e a c id
+                      .       !arg
+                            : ( ?e
+                              .     ? ("xml:id".@(?id:"#" ?)) ?
+                                  : ?a
+                                , ?c
+                              )
+                          & (   !to:
+                              & (     !ner
+                                    :   ( span
+                                        .     ? (from.!id) ?
+                                            : ?att
+                                          , ?cat
+                                        )
+                                        ?ner
+                                  & (   !att:? (to.?to) ?
+                                      & !stuw !arg:?stuw
+                                      & 
+                                    |   :?to
+                                      &   ( name
+                                          . (type.!cat),Camel$!arg
+                                          )
+                                        : ?arg
+                                      & :?cat
+                                      & !arg
+                                    )
+                                | !arg
+                                )
+                            |   !id:!to
+                              & :?to
+                              &   ( name
+                                  . (type.!cat),Camel$(!stuw !arg)
+                                  )
+                                : ?arg
+                              & :?cat:?stuw
+                              & !arg
+                            | !stuw !arg:?stuw&
+                            )
+                        |     !arg
+                            : (?e.?a,? (?.?,?) ?:?c)
+                          &   insertNER$(!c.!ner.!to)
+                            : (?tei.?ner.?carry)
+                          & (   !carry:(,)
+                              & ( !to:&(!e.!a,!tei)
+                                |     ( name
+                                      .   (type.!cat)
+                                        , Camel$(!stuw !arg)
+                                      )
+                                    : ?arg
+                                  & :?stuw:?cat:?to
+                                  & !arg
+                                )
+                            |   !stuw !arg:?stuw
+                              & !carry:(?to,|?cat)
+                              & 
+                            )
+                        | !arg
+                    )
+                  . !tei
+                  )
+              . !ner
+              . !to,!cat
+              )
+        )
+      & ( !ner:
+        | insertNER$(!tei.!ner.):(?tei.?)
         )
       & ( rm#
         =   
@@ -1244,7 +1353,7 @@ program-annotei=
   =   
     .     ~
         & "Remove the ~ to merely reformat the code, not run it."
-      |   
+      |   ~
         &   (its.doit)
           $ ( "C:\\projects\\parlamint\\small\\IfacetsetoF"
             . "C:\\projects\\parlamint\\small\\IfacettokF"
@@ -1253,10 +1362,12 @@ program-annotei=
             . "C:\\projects\\parlamint\\small\\IfacetlemF"
             . "C:\\projects\\parlamint\\small\\IfacetsegF"
             . "C:\\projects\\parlamint\\small\\IfacetstxF"
+            . "C:\\projects\\parlamint\\small\\IfacetnerF"
             . "C:\\projects\\parlamint\\small\\ParlaMint-DK_20191_M149_2020-09-22.out.xml"
             )
       |   (its.doit)
         $ ( arg$
+          . arg$
           . arg$
           . arg$
           . arg$
