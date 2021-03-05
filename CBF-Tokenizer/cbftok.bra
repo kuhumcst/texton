@@ -6,30 +6,45 @@ X=
   ( readTables
   =   
     .   new$hash:?H
+      & new$hash:?K
       & (H..ISO)$
+      & (K..ISO)$
       &   map
         $ ( ( 
             =   what navn
               .   vap
                 $ ( ( 
-                    =   
+                    =   string remainder
                       .   !arg:
-                        |     vap$((=." " !arg).!arg."=")
-                            : " " ?arg
-                          & str$!arg:?string
-                          & (   (H..find)$!string:?XX
-                              & (   !XX:?c (!string.?d) ?e
-                                  & ( !d:?+!what+?
-                                    |   (H..remove)$!arg
-                                      & (H..insert)$(!string.!d+!what)
-                                      &   map
-                                        $ ( (=.(H..insert)$!arg)
-                                          . !c !e
-                                          )
+                        |   
+                          &     map
+                              $ ( ( 
+                                  = .vap$((=.!arg).!arg." ")
+                                  )
+                                . vap$((=.!arg).!arg."=")
+                                )
+                            : ?arg
+                          & (   !arg:%?string %?remainder
+                              & (K..insert)$(!string.!remainder)
+                            |   !arg:?string
+                              & (   (H..find)$!string:?XX
+                                  & (     !XX
+                                        : ?c (!string.?d) ?e
+                                      & ( !d:?+!what+?
+                                        |   (H..remove)$!arg
+                                          &   (H..insert)
+                                            $ (!string.!d+!what)
+                                          &   map
+                                            $ ( ( 
+                                                = .(H..insert)$!arg
+                                                )
+                                              . !c !e
+                                              )
+                                        )
+                                    | (H..insert)$(!string.!what)
                                     )
                                 | (H..insert)$(!string.!what)
                                 )
-                            | (H..insert)$(!string.!what)
                             )
                     )
                   .   !arg:?what:?navn
@@ -44,11 +59,11 @@ X=
             )
           . !arg
           )
-      & !H
+      & (!H.!K)
   )
   ( normalize
   =   
-    .   (its.readTables)$!namefiles:?H
+    .   (its.readTables)$!namefiles:(?H.?K)
       & ( checkName
         =   A Z z key val y
           .   vap$((=.!arg).!arg):%@?A ?Z
@@ -125,22 +140,65 @@ X=
                 )
         )
       & ( trav
-        =   A e a s
-          .   map
-            $ ( ( 
-                =   
-                  .     !arg:(?e.?a,?s)
-                      & ( !e
-                        .   !a
-                          ,   ( !e:span&norm
-                              | trav
+        =   A e a s L M c R
+          .   (   !arg:(span.?,?) ?
+                & :?L
+                & !arg:?M
+                &   whl
+                  ' ( !M:(span.?a,?c) ?M
+                    & (   (K..find)$!c:?R
+                        &   map
+                          $ ( ( 
+                              =   m key b remainders nyremainders
+                                .   !arg:(?key.?remainders)
+                                  & !M:?m
+                                  &   ( span
+                                      . (done.done) !a,!key
+                                      )
+                                    : ?MWU
+                                  &   whl
+                                    ' ( !remainders:%?v ?nyremainders
+                                      & !m:%?f ?m
+                                      & !f:(span.?b,~<>!v)
+                                      &     ( span
+                                            .   (done.done) !b
+                                              , !v
+                                            )
+                                            !MWU
+                                        : ?MWU
+                                      & !nyremainders:?remainders
+                                      )
+                                  & !remainders:
+                                  & !MWU !L:?L
+                                  & !m:?M
                               )
-                            $ !s
-                        )
-                    | !arg
-                )
-              . !arg
+                            . !R
+                            )
+                      | (span.!a,!c) !L:?L
+                      )
+                    )
+                & whl'(!L:%?A ?L&!A !M:?M)
+                & !M:?arg
+              | 
               )
+            &   map
+              $ ( ( 
+                  =   
+                    .     !arg:(?e.?a,?s)
+                        & (   !a:(done.done) ?a
+                            & (!e.!a,!s)
+                          | ( !e
+                            .   !a
+                              ,   ( !e:span&norm
+                                  | trav
+                                  )
+                                $ !s
+                            )
+                          )
+                      | !arg
+                  )
+                . !arg
+                )
         )
       & trav$!arg
   )
@@ -232,8 +290,7 @@ X=
         )
       &   (spanGrp.(ana.ClarinTokeniser),combine$(recur$!xml))
         : ?ret
-      & (   
-          & @(low$!normalizeYesOrNo:y ?)
+      & (   @(low$!normalizeYesOrNo:y ?)
           & (its.normalize)$!ret:?ret
         | 
         )
