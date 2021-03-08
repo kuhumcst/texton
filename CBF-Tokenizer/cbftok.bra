@@ -65,10 +65,15 @@ X=
   =   
     .   (its.readTables)$!namefiles:(?H.?K)
       & ( checkName
-        =   A Z z key val y
+        =   A Z z key val y c C S
           .   vap$((=.!arg).!arg):%@?A ?Z
             & upp$!A:!A
-            & (     (H..find)$(str$(!A low$(str$!Z)))
+            & str$(!A low$(str$!Z)):?c
+            & (     ( :?S&(H..find)$!c
+                    |   @(!c:?C s)
+                      & s:?S
+                      & (H..find)$!C
+                    )
                   : (?key.?val) ?
                 & ~(   Ned
                        Vi
@@ -82,7 +87,7 @@ X=
                        Andre
                    : ? !key ?
                    )
-                & !key
+                & str$(!key !S)
               |   !Z:%?y "-" ?z
                 &   (H..find)$(str$(!A !y))
                   : (?key.?val) ?
@@ -140,29 +145,44 @@ X=
                 )
         )
       & ( trav
-        =   A e a s L M c R
+        =   A e a s L M c R S C
           .   (   !arg:(span.?,?) ?
                 & :?L
                 & !arg:?M
                 &   whl
                   ' ( !M:(span.?a,?c) ?M
-                    & (   (K..find)$!c:?R
+                    & (     ( (K..find)$!c:?R&
+                            |   @(!c:?C ~<>s)
+                              & (K..find)$!C:?R
+                              & s
+                            )
+                          : ?S
                         &   map
                           $ ( ( 
                               =   m key b remainders nyremainders
                                 .   !arg:(?key.?remainders)
                                   & !M:?m
                                   &   ( span
-                                      . (done.done) !a,!key
+                                      .   (done.done) !a
+                                        , str$(!key !S)
                                       )
                                     : ?MWU
                                   &   whl
                                     ' ( !remainders:%?v ?nyremainders
                                       & !m:%?f ?m
-                                      & !f:(span.?b,~<>!v)
+                                      &   !f
+                                        : ( span
+                                          .   ?b
+                                            , @( ?
+                                               :   ~<>!v
+                                                   ( (|~<>s)
+                                                   : ?S
+                                                   )
+                                               )
+                                          )
                                       &     ( span
                                             .   (done.done) !b
-                                              , !v
+                                              , str$(!v low$!S)
                                             )
                                             !MWU
                                         : ?MWU
