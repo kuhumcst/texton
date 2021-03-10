@@ -398,7 +398,7 @@ try {
 //        TODO your code!
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
-//*
+/*
         copy($IfacetsetoF,"IfacetsetoF"); 
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
@@ -409,7 +409,7 @@ try {
         if($Ofacetstpmldn)
             {
             logit("Ofacetstpmld");
-//*
+/*
             copy($IfacetsegF,"IfacetsegF");
             copy($IfacetstxF,"IfacetstxF");
             copy($IfacetnerF,"IfacetnerF");
@@ -421,7 +421,7 @@ try {
         else if($Ofacetstpmld)
             {
             logit("Ofacetstpmld");
-//*
+/*
             copy($IfacetsegF,"IfacetsegF");
             copy($IfacetstxF,"IfacetstxF");
 /*/

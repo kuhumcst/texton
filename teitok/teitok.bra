@@ -698,6 +698,7 @@ X=
                     & ( (Mabbr..find)$!KRS
                       |   (Eabbr..find)$!KRS
                         & !KRS:?SentenceEndingAbbrSeen
+                      | upp$!KRS:!KRS
                       |   !nxt
                         : (","|";"|":") ?
                       )
@@ -1075,8 +1076,17 @@ X=
     .   ~
       |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
+            | 
+            )
+          : ?nabbr
         &     (its.teitok)
-            $ ("test\\ParlaMint...shorter.xml".simple.!abbr.lang)
+            $ ( "test\\ParlaMint...shorter.xml"
+              . simple
+              . !nabbr !abbr
+              . lang
+              )
           : ?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"test\\ParlaMint...shorter-out.xml",NEW)
@@ -1090,9 +1100,15 @@ X=
             | 
             )
           : ?abbr
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
+            | 
+            )
+          : ?nabbr
         & (!language:~"-"|):?lang
         &   put
-          $ ( toML$((its.teitok)$(!input.!style.!abbr.!lang))
+          $ (   toML
+              $ ((its.teitok)$(!input.!style.!nabbr !abbr.!lang))
             , !output
             , NEW
             )

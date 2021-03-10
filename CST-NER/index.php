@@ -404,7 +404,6 @@ try {
                     logit("CSTNER($IfacetsegF,$IfacettokF)");
                     $plaintext = combine($IfacettokF,$IfacetsegF);
                     $nerfileRAW = navnegenkenderCSTNER($plaintext);
-                    
                     $CSTNERfile = NERannotation($IfacettokF,$nerfileRAW,$plaintext);
                     logit('filename:'.$CSTNERfile);
                     }
