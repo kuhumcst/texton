@@ -401,9 +401,12 @@ try {
                 {
                 if($IfacettokF != '')
                     {
+                    //copy($IfacettokF,"IfacettokF");
                     logit("CSTNER($IfacetsegF,$IfacettokF)");
                     $plaintext = combine($IfacettokF,$IfacetsegF);
+		    //copy($plaintext,"plaintext");
                     $nerfileRAW = navnegenkenderCSTNER($plaintext);
+		    //copy($nerfileRAW,"nerfileRAW");
                     $CSTNERfile = NERannotation($IfacettokF,$nerfileRAW,$plaintext);
                     logit('filename:'.$CSTNERfile);
                     }
