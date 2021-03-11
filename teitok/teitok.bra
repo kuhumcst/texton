@@ -635,8 +635,15 @@ X=
                                 & (   !arg:
                                     & "If nothing follows after punct, increase token id."
                                     & 1+!tok:?tok
+                                  |     !K
+                                      : ( "'"
+                                        | "-"
+                                        | …
+                                        | "."
+                                        | "." "." "."
+                                        )
+                                    & !tok
                                   |   2+!tok:?tok
-                                    & Why?
                                     & -1+!tok
                                   )
                               |   !it+!tok:?tok
@@ -675,7 +682,7 @@ X=
             & (!K.!P)
         )
       & ( considerAbbrev
-        =   A P kar kars nxt KRS
+        =   A P kar kars nxt KRS Z
           .   !arg:(?arg.?nxt)
             & !arg:?A "."
             & getAll$(!A."."):(?A.?P)
@@ -695,10 +702,18 @@ X=
                           : ?kars
                           )
                     & str$!kars:?KRS
+                    & lst$(KRS,KRS,APP)
                     & ( (Mabbr..find)$!KRS
                       |   (Eabbr..find)$!KRS
                         & !KRS:?SentenceEndingAbbrSeen
-                      | upp$!KRS:!KRS
+                      |   upp$!KRS:!KRS
+                        &   !kars
+                          :   ?
+                              ( %@?kar
+                              & upp$!kar:low$!kar
+                              )
+                              ?Z
+                        & !Z:
                       |   !nxt
                         : (","|";"|":") ?
                       )
@@ -1082,14 +1097,10 @@ X=
             )
           : ?nabbr
         &     (its.teitok)
-            $ ( "test\\ParlaMint...shorter.xml"
-              . simple
-              . !nabbr !abbr
-              . lang
-              )
+            $ ("test\\ParlaMint...shorter.xml".simple.!nabbr !abbr.da)
           : ?XMLL
         & toML$!XMLL:?XMLLL
-        & put$(!XMLLL,"test\\ParlaMint...shorter-out.xml",NEW)
+        & put$(!XMLLL,"test\\ParlaMint...shorter.out.xml",NEW)
       |   arg$:?input
         & arg$:?output
         & arg$:(PT|simple):?style
