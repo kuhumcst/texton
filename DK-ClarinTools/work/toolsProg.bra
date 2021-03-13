@@ -108,6 +108,8 @@ toolsProg=
       (logno=0)
       (tabind=0)
       (globval=)
+      (runningThreads=0)
+      (maxRunningThreads=0)
       ( headerTitle
       = "Text Tonsorium - Natural Language Processing workflows automatically composed, scheduled and enacted"
       )
@@ -9188,6 +9190,19 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                       : ?arg
                   |   requestString
+                    &   1+!runningThreads
+                      : ?runningThreads
+                      : ( >!maxRunningThreads:?maxRunningThreads
+                        | ?
+                        )
+                    &   log
+                      $ ( str
+                        $ ( "getJobArg:runningThreads:"
+                            !runningThreads
+                            " maxRunningThreads:"
+                            !maxRunningThreads
+                          )
+                        )
                     & !jobby:(?.?servurl.?req.?)
                     & readTable$tooladm
                     &   !tooladm
@@ -9929,6 +9944,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               : ?LANGUAGE
             &   !arg
               : (@(?:? #?JobNr).%@?jobID ?.?SPANGRPfil.?DATE)
+            & -1+!runningThreads:?runningThreads
+            &   log
+              $ ( str
+                $ ( "doneJob:runningThreads:"
+                    !runningThreads
+                    " maxRunningThreads:"
+                    !maxRunningThreads
+                  )
+                )
             & log$(JobNr !JobNr jobID !jobID DATE !DATE)
             & str$(!DATE "-" !JobNr "-" !jobID):?CTBID
             & (readTable$CTBs|:?CTBs)
