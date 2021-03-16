@@ -404,6 +404,7 @@ try {
                 if($IfacettokF != '')
                     {
                     //copy($IfacettokF,"IfacettokF");
+                    //copy($IfacetsegF,"IfacetsegF");
                     logit("CSTNER($IfacetsegF,$IfacettokF)");
                     $plaintext = combine($IfacettokF,$IfacetsegF);
 		    //copy($plaintext,"plaintext");
