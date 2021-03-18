@@ -9135,29 +9135,37 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from create.java and workflow.java
  */"
       ( getNextJobID
-      =   A Z jobID dep g test
-        .     log$(getNextJobID !arg)
+      =   A Z jobID dep g test err
+        .     -11:?err
             & !arg:(?arg.?test)
+            & -12:?err
             & @(!arg:? #?arg)
+            & -13:?err
             & readTable$jobs
+            & -14:?err
             &   !jobs
               :   ?A
                   (!arg.@?jobID.~(? (?,pending) ?):?dep.?g)
                   ?Z
+            & -15:?err
             & ( !test:justtesting
               |     !A (!arg.!jobID starting.!dep.!g) !Z
                   : ?jobs
+                & -16:?err
                 & log$(starting !arg !jobID)
+                & -17:?err
                 & saveTable$jobs
+                & -18:?err
               )
             & log$(getNextJobID !arg !jobID)
+            & -19:?err
             & !jobID
-          | 
+          | !err
       )
       ( goodRunningThreads
       =   
         .   (|log$(goodRunningThreads !runningThreads))
-          & (!runningThreads:<4&y|n)
+          & (!runningThreads:<40&y|n)
       )
       "
 /**
