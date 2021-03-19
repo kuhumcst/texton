@@ -99,7 +99,38 @@ try {
             $tobedeleted[$tmpno] = true;
         return $tmpno;
         }
-        
+    
+    //https://stackoverflow.com/questions/1707801/making-a-temporary-dir-for-unpacking-a-zipfile-into
+    function destroydir(string $dir): bool 
+        { 
+        if (!is_dir($dir)) { return false; }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file)
+            {
+            if (is_dir("$dir/$file")) { destroydir("$dir/$file"); }
+            else { unlink("$dir/$file"); }
+            }
+        return rmdir($dir); 
+        }
+
+    function tempdir(int $mode = 0700, bool $auto_delete = true): string 
+        {
+        $tmp = "";
+        do 
+            {
+            if($tmp != "")
+                unlink($tmp);
+            $tmp = sys_get_temp_dir() . '/' . mt_rand();
+            }
+        while (!@mkdir($tmp, $mode));
+	if ($auto_delete)
+            {
+            register_shutdown_function(function() use ($tmp) { destroydir($tmp); });
+            }
+        return $tmp;
+        }
+   
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
         logit("requestFile({$requestParm})");
@@ -249,22 +280,22 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+	copy($F,"F");
         $dep2treefile = tempFileName("dep2tree-results");
         $nocomment = tempFileName("dep2tree-nocomment");
-
-        $data = file($nocomment);
-
+	$odir = tempdir();
+	logit("odir:$odir");
         $out = array();
-
-        foreach($dep2treefile as $line) 
+        $data = file($F);
+        foreach($data as $line) 
             {
-            if(startsWith(trim($line),"#"))
+            if(!str_starts_with(trim($line),"#"))
                 {
                 $out[] = $line;
-                }
+	        }
             }
 
-        $fp = fopen($data, "w+");
+        $fp = fopen($nocomment, "w+");
         flock($fp, LOCK_EX);
         foreach($out as $line)
             {
@@ -272,20 +303,23 @@ try {
             }
         flock($fp, LOCK_UN);
         fclose($fp);  
-        /*
-        $command = "python3 dependency2tree.py -o docs/Parla.svg -c $data --ignore-double-indices";
+        //*
+        $command = "python3 dependency2tree.py -o $odir/D.svg -c $nocomment --ignore-double-indices";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
-        pclose($cmd);
+	pclose($cmd);
 
-        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' 'docs/Parla.svg' '$dep2treefile'";
+        /*
+	
+        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir/D.svg' '$dep2treefile'";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
         pclose($cmd);
         /*/
-        copy($data,$dep2treefile);
+        copy("$odir/D-001.svg",$dep2treefile);
+	deltree("$odir");
         //*/
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dep2treefile
 //*/
