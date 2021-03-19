@@ -400,6 +400,8 @@ try {
 //        TODO your code!
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
+	$rms = " && rm $TEIannofile && rm $rawXML && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF ";
+	$xmllint = "&& xmllint --format --output $TEIannofile $rawXML ";
 /*
         copy($IfacetsetoF,"IfacetsetoF"); 
         copy($IfacettokF,"IfacettokF"); 
@@ -411,38 +413,41 @@ try {
         if($Ofacetstpmldn)
             {
             logit("Ofacetstpmld");
+            $rmsa = " && rm $IfacetsegF && rm $IfacetstxF && rm $IfacetnerF ";
 /*
             copy($IfacetsegF,"IfacetsegF");
             copy($IfacetstxF,"IfacetstxF");
             copy($IfacetnerF,"IfacetnerF");
 /*/
 //*/
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF $rawXML && xmllint --format --output $TEIannofile $rawXML";
-            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $IfacetsegF && rm $IfacetstxF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF $rawXML $xmllint";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
         else if($Ofacetstpmld)
             {
             logit("Ofacetstpmld");
+            $rmsa = " && rm $IfacetsegF && rm $IfacetstxF ";
 /*
             copy($IfacetsegF,"IfacetsegF");
             copy($IfacetstxF,"IfacetstxF");
 /*/
 //*/
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
-            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $IfacetsegF && rm $IfacetstxF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\" $rawXML $xmllint";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
         else if($Ofacettlpmn)
             {
             logit("Ofacettlpm");
-            copy($IfacetnerF,"IfacetnerF");
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML && xmllint --format --output $TEIannofile $rawXML";
-            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
+            $rmsa = " && rm $IfacetnerF ";
+            //copy($IfacetnerF,"IfacetnerF");
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML $xmllint";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
         else if($Ofacettlpm)
             {
             logit("Ofacettlpmn");
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML && xmllint --format --output $TEIannofile $rawXML";
-            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2  && rm $TEIannofile && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF && rm $rawXML > ../log/TEIanno.log 2>&1 &";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
+            $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
             }
         logit($command);
         exec($command);

@@ -425,14 +425,15 @@ try {
             }
         else 
             {
-            if($Ifacettok) // an also $Ifacetseg!
+            if($Ifacettok) // and also $Ifacetseg!
                 {
                 logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
                 $dapipefile = tempFileName("dapipe-results");
                 logit("dapipefile $dapipefile");
                 $tmp1 = tempFileName("dapipe-tmp1");
                 $tmp2 = tempFileName("dapipe-tmp2");
-                $command = "../bin/bracmat \"get'\\\"dapipex.bra\\\"\" $IfacettokF $IfacetsegF $dapipefile $tmp1 $tmp2";
+		$command = "../bin/bracmat \"get'\\\"dapipex.bra\\\"\" $IfacettokF $IfacetsegF $dapipefile $tmp1 $tmp2";
+		$rms = "&& rm $IfacettokF && rm $IfacetsegF ";
                 }
             else
                 {
@@ -441,9 +442,10 @@ try {
                 logit("dapipefile $dapipefile");
                 $tmp1 = tempFileName("dapipe-tmp1");
                 $tmp2 = tempFileName("dapipe-tmp2");
-                $command = "../bin/bracmat \"get'\\\"dapipe.bra\\\"\" $F $dapipefile $tmp1 $tmp2";
+		$command = "../bin/bracmat \"get'\\\"dapipe.bra\\\"\" $F $dapipefile $tmp1 $tmp2";
+		$rms = " && rm $F";
                 }
-            $command .= " && curl -v -F job=$job -F name=$dapipefile -F data=@$dapipefile $post2  && rm $dapipefile && rm $F > ../log/dapipe.log 2>&1 &";
+            $command .= " && curl -v -F job=$job -F name=$dapipefile -F data=@$dapipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $dapipefile && rm $F > ../log/dapipe.log 2>&1 &";
             logit($command);
             exec($command);
 
