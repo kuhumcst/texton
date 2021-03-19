@@ -231,7 +231,7 @@ try {
 * input/output features styles *
 *******************************/
 
-//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+/* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $dep2treefile = tempFileName("dep2tree-results");
         $command = "echo $echos >> $dep2treefile";
         logit($command);
@@ -249,6 +249,44 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+        $dep2treefile = tempFileName("dep2tree-results");
+        $nocomment = tempFileName("dep2tree-nocomment");
+
+        $data = file($nocomment);
+
+        $out = array();
+
+        foreach($dep2treefile as $line) 
+            {
+            if(startsWith(trim($line),"#"))
+                {
+                $out[] = $line;
+                }
+            }
+
+        $fp = fopen($data, "w+");
+        flock($fp, LOCK_EX);
+        foreach($out as $line)
+            {
+            fwrite($fp, $line);
+            }
+        flock($fp, LOCK_UN);
+        fclose($fp);  
+        /*
+        $command = "python3 dependency2tree.py -o docs/Parla.svg -c $data --ignore-double-indices";
+        logit($command);
+        if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+        while($read = fgets($cmd)){}
+        pclose($cmd);
+
+        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' 'docs/Parla.svg' '$dep2treefile'";
+        logit($command);
+        if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+        while($read = fgets($cmd)){}
+        pclose($cmd);
+        /*/
+        copy($data,$dep2treefile);
+        //*/
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dep2treefile
 //*/
         $tmpf = fopen($dep2treefile,'r');
