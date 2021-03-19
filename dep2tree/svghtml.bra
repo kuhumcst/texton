@@ -1,0 +1,91 @@
+{svghtml.bra
+
+Convert conll output from dependency2tree to HTML, combining all .svg files, adding title, and renumbering ids.}
+
+X=
+  ( doit
+  =   odir lsodir F dep2treefile svgf
+    .   !arg:(?odir.?lsodir.?F.?dep2treefile)
+      & get$(!lsodir,STR):?svgs
+      & 0:?graph:?node:?edge
+      &     map
+          $ ( ( 
+              =   svg
+                .   !arg
+                  ,       map
+                        $ ( (=.!arg:~" "|)
+                          . get$(str$(!odir "/" !arg),X ML TRM)
+                          )
+                      : ? ((svg.?) ?:?svg)
+                    &   map
+                      $ ( ( 
+                          =   a z e id
+                            .       !arg
+                                  : ( ?e
+                                    . ?a (id.@(?:?id #)) ?z
+                                    )
+                                & ( !e
+                                  .   !a
+                                      (id.str$(!id (!!id+1:?!id)))
+                                      !z
+                                  )
+                              | !arg
+                          )
+                        . !svg
+                        )
+              )
+            .   vap
+              $ ( (=.@(!arg:D ?)|)
+                . !svgs
+                . \n
+                )
+            )
+        : ?SVGS
+      &     ("!DOCTYPE"." html")
+            (html.(lang.en) (xmlns."http://www.w3.org/1999/xhtml"))
+            (head.)
+            (meta.(charset.utf-8),)
+            (title.)
+            BLA
+            (.title.)
+            (.head.)
+            (body.)
+              map
+            $ ((=.!arg:(?,?arg)&!arg).!SVGS)
+            (.body.)
+            (.html.)
+        : ?html
+      & nestML$!html:?html
+      & put$(toML$!html,!dep2treefile,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   arg$:?odir
+        & arg$:?lsodir
+        & arg$:?F
+        & arg$:?dep2treefile
+        & (its.doit)$(!odir.!lsodir.!F.!dep2treefile)
+  );
+
+r=
+  get'("svghtml.bra",TXT)
+& rmv$(str$(svghtml ".bak"))
+& ren$("svghtml.bra".str$(svghtml ".bak"))
+&   put
+  $ ( "{svghtml.bra
+
+Convert conll output from dependency2tree to HTML, combining all .svg files, adding title, and renumbering ids.}
+
+"
+    , "svghtml.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"svghtml.bra",APP)
+& put'(\n,"svghtml.bra",APP,BIN)
+& lst'(r,"svghtml.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"svghtml.bra",APP,BIN)
+& ;
+
+new'X;

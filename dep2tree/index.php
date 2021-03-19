@@ -280,9 +280,9 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-	copy($F,"F");
         $dep2treefile = tempFileName("dep2tree-results");
         $nocomment = tempFileName("dep2tree-nocomment");
+        $lsodir = tempFileName("dep2tree-lsodir");
 	$odir = tempdir();
 	logit("odir:$odir");
         $out = array();
@@ -303,24 +303,28 @@ try {
             }
         flock($fp, LOCK_UN);
         fclose($fp);  
-        //*
+
         $command = "python3 dependency2tree.py -o $odir/D.svg -c $nocomment --ignore-double-indices";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
 	pclose($cmd);
-
-        /*
+        $odirlst = scandir($odir);
 	
-        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir/D.svg' '$dep2treefile'";
+	$fp = fopen($lsodir, "w+");
+        flock($fp, LOCK_EX);
+        foreach($odirlst as $line)
+            {
+            fwrite($fp, $line . "\n");
+            }
+        flock($fp, LOCK_UN);
+	fclose($fp);
+	
+        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir' '$lsodir' '$F' '$dep2treefile'";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
         pclose($cmd);
-        /*/
-        copy("$odir/D-001.svg",$dep2treefile);
-	deltree("$odir");
-        //*/
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dep2treefile
 //*/
         $tmpf = fopen($dep2treefile,'r');
