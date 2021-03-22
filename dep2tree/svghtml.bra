@@ -8,6 +8,31 @@ X=
     .   !arg:(?odir.?lsodir.?F.?conll.?dep2treefile)
       & get$(!lsodir,STR):?svgs
       & 0:?graph:?node:?edge
+      & get$(!conll,STR):?CONLL
+      &     str
+          $ ( vap
+            $ ( ( 
+                =   
+                  .   @(!arg:?arg \t ?)&" " !arg
+                    | \n
+                )
+              . !CONLL
+              . \n
+              )
+            )
+        : ?sents
+      & 0:?sentNR
+      &     vap
+          $ ( ( 
+              =   
+                .     @(!arg:" " ?arg)
+                    & (1+!sentNR:?sentNR.!arg)
+                  | 
+              )
+            . !sents
+            . \n
+            )
+        : ?sents
       &     map
           $ ( ( 
               =   svg
@@ -51,7 +76,14 @@ X=
             (.head.)
             (body.)
               map
-            $ ((=.!arg:(?,?arg)&!arg).!SVGS)
+            $ ( ( 
+                =   
+                  .   !arg:(?,?arg)
+                    & !sents:(?sentNR.?sent) ?sents
+                    & (p.,!sentNR) (p.,!sent) !arg
+                )
+              . !SVGS
+              )
             (.body.)
             (.html.)
         : ?html
