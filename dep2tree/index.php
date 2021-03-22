@@ -283,8 +283,8 @@ try {
         $dep2treefile = tempFileName("dep2tree-results");
         $nocomment = tempFileName("dep2tree-nocomment");
         $lsodir = tempFileName("dep2tree-lsodir");
-	$odir = tempdir();
-	logit("odir:$odir");
+        $odir = tempdir();
+        logit("odir:$odir");
         $out = array();
         $data = file($F);
         foreach($data as $line) 
@@ -292,7 +292,7 @@ try {
             if(!str_starts_with(trim($line),"#"))
                 {
                 $out[] = $line;
-	        }
+                }
             }
 
         $fp = fopen($nocomment, "w+");
@@ -308,19 +308,19 @@ try {
         logit($command);
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
-	pclose($cmd);
+        pclose($cmd);
         $odirlst = scandir($odir);
 	
-	$fp = fopen($lsodir, "w+");
+        $fp = fopen($lsodir, "w+");
         flock($fp, LOCK_EX);
         foreach($odirlst as $line)
             {
             fwrite($fp, $line . "\n");
             }
         flock($fp, LOCK_UN);
-	fclose($fp);
+        fclose($fp);
 	
-        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir' '$lsodir' '$F' '$dep2treefile'";
+        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir' '$lsodir' '$F' '$nocomment' '$dep2treefile'";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
