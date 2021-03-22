@@ -43,8 +43,8 @@ X=
             & !n
         )
       & ( doLine
-        =   a c C msd pos id lemma ana to
-          .     !arg:(?.?a,?c)
+        =   a c e C msd pos id lemma ana to nBI
+          .     !arg:(?e.?a,?c)
               & (     !a
                     : (   ? (msd.?msd) ?
                         & (   @(!msd:? "UPosTag=" ?pos)
@@ -82,10 +82,25 @@ X=
                       ( (@(!ana:"ud-syn:" ?ana)|)
                       & !ana
                       )
-                      "\t_\tNER=O\n"
-                | map$(doLine.!c)
+                      "\t_\tNER="
+                      ( !Type:&O
+                      |   !BI:?nBI
+                        & I:?BI
+                        & !nBI "-" !Type
+                      )
+                      \n
+                |   !e:name
+                  & !a:? (type.?type) ?
+                  & DoLine$(!c.!type)
+                | DoLine$(!c.!Type)
                 )
             | 
+        )
+      & ( DoLine
+        =   Type c BI
+          .   !arg:(?c.?Type)
+            & (!Type:|B:?BI)
+            & map$(doLine.!c)
         )
       & ( write
         =   att s U V
@@ -156,7 +171,7 @@ X=
                   "# text ="
                   map$((=." " !arg).content$!s)
                   \n
-                  map$(doLine.!s)
+                  DoLine$(!s.)
                   \n
                 )
         )
