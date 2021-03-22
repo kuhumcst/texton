@@ -10,20 +10,37 @@ X=
       & !xml:? (TEI.?,? (text.?,?text) ?) ?
       & 0:?sentno
       & new$hash:?tokids
-      & ( content
+      & ( cont
         =   
           .   map
             $ ( ( 
                 =   a e c
                   .     !arg:(~del:?e.?a,?c)
-                      & (     !a
-                            : ? ("xml:id"|id.?) ?
-                          & str$(content$!c)
-                        | content$!c
-                        )
+                      & Cont$!c
                     | !arg:(?.?)&
                     | !arg:~" "
                     | 
+                )
+              . !arg
+              )
+        )
+      & ( content
+        =   
+          .   map
+            $ ( ( 
+                =   a e c j
+                  .     !arg:(~del:?e.?a,?c)
+                      & (     !a
+                            : ? ("xml:id"|id.?) ?
+                            : ( ? (join.?j) ?
+                              | ?&:?j
+                              )
+                          & (cont$!c.!j)
+                        | content$!c
+                        )
+                    | !arg:(?.?)&(.)
+                    | !arg:~" "&(!arg.)
+                    | (.)
                 )
               . !arg
               )
@@ -63,7 +80,7 @@ X=
                     : ( ? (join.?join) ?
                       | ?&:?join
                       )
-                  & str$(content$!c):?C
+                  & str$(cont$!c):?C
                   &   !a
                     : ( ? (lemma.?lemma) ?
                       | ?&!C:?lemma
@@ -113,7 +130,7 @@ X=
             & map$(doLine.!c)
         )
       & ( write
-        =   att s U V
+        =   att s U V oj
           .   !arg:(?att.?s)
             & ( !att:? ("xml:id".?id) ?
               | 1+!sentno:?sentno:?id
@@ -174,12 +191,27 @@ X=
                   . !linkGrp
                   )
               : ?linkGrp
+            & :?oj
             &   str
               $ ( "# sent_id = "
                   !id
                   \n
                   "# text ="
-                  map$((=." " !arg).content$!s)
+                    map
+                  $ ( ( 
+                      =   j
+                        .   !arg:(?arg.?j)
+                          &   (   ( !oj:right
+                                  | !j:left
+                                  )
+                                & !j:?oj
+                                & 
+                              | !j:?oj&" "
+                              )
+                              !arg
+                      )
+                    . content$!s
+                    )
                   \n
                   DoLine$(!s.)
                   \n
