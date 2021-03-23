@@ -134,7 +134,7 @@ try {
    
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile({$requestParm})");
+        //logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -142,15 +142,15 @@ try {
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . $item;
-            logit("requestParm:$requestParm");
-            logit("urlbase:$urlbase");
-            logit("item:$item");
-            logit("url[$url]");
+            //logit("requestParm:$requestParm");
+            //logit("urlbase:$urlbase");
+            //logit("item:$item");
+            //logit("url[$url]");
 
             $handle = fopen($url, "r");
             if($handle == false)
                 {
-                logit("Cannot open url[$url]");
+                //logit("Cannot open url[$url]");
                 return "";
                 }
             else
@@ -160,7 +160,7 @@ try {
                 if($temp_fh == false)
                     {
                     fclose($handle);
-                    logit("handle closed. Cannot open $tempfilename");
+                    //logit("handle closed. Cannot open $tempfilename");
                     return "";
                     }
                 else
@@ -176,7 +176,7 @@ try {
                     }
                 }
             }
-        logit("empty");
+        //logit("empty");
         return "";
         }    
 
@@ -345,13 +345,13 @@ try {
             unset($tobedeleted);
             }
         }
-    loginit();
+    //loginit();
     do_dep2tree();
     }
 catch (SystemExit $e) 
     { 
     header ('An error occurred.' . $ERROR, true , 404 );
-    logit('An error occurred' . $ERROR);
+    //logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
 
