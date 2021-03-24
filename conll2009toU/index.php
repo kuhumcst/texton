@@ -231,7 +231,7 @@ try {
             $echos = $echos . "OformatconllclU=$OformatconllclU ";
             }
 
-//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+/* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $conll2009toUfile = tempFileName("conll2009toU-results");
         $command = "echo $echos >> $conll2009toUfile";
         logit($command);
@@ -249,6 +249,16 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+        $conll2009toUfile = tempFileName("conll2009toUfile");
+        $command = "../bin/bracmat 'get\$\"conll2009toU.bra\"' '$F' '$conll2009toUfile'";
+        logit($command);
+        if(($cmd = popen($command, "r")) == NULL)
+            exit(1);
+
+        while($read = fgets($cmd))
+            {
+            }
+        return $conll2009toUfile;
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $conll2009toUfile
 //*/
         $tmpf = fopen($conll2009toUfile,'r');

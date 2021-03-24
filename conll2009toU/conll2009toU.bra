@@ -1,0 +1,94 @@
+{conll2009toU.bra
+
+Convert from 14 column CoNLL 2009 to 10 column CoNLL-U}
+
+X=
+  ( doit
+  =   
+    .   !arg:(?in.?ou)
+      & get$(!in.STR):?in
+      & ( pat14
+        =   ?ID
+            \t
+            ?FORM
+            \t
+            ?
+            \t
+            ?
+            \t
+            ?
+            \t
+            ?CPOSTAG
+            \t
+            ?
+            \t
+            ?
+            \t
+            ?
+            \t
+            ?HEAD
+            \t
+            ?
+            \t
+            ?DEPREL
+            \t
+            ?
+            \t
+            ?
+        )
+      & ( rep10
+        =   !ID
+            \t
+            !FORM
+            \t
+            "_"
+            \t
+            !CPOSTAG
+            \t
+            "_"
+            \t
+            "_"
+            \t
+            !HEAD
+            \t
+            !DEPREL
+            \t
+            "_"
+            \t
+            "_"
+        )
+      &   put
+        $ (   str
+            $ ( vap
+              $ ( (=.@(!arg:!pat14)&!rep10 \n)
+                . !in
+                . \n
+                )
+              )
+          . !ou
+          . NEW
+          )
+  )
+  (new=.|(its.doit)$(arg$.arg$));
+
+r=
+  get'("conll2009toU.bra",TXT)
+& rmv$(str$(conll2009toU ".bak"))
+& ren$("conll2009toU.bra".str$(conll2009toU ".bak"))
+&   put
+  $ ( "{conll2009toU.bra
+
+Convert from 14 column CoNLL 2009 to 10 column CoNLL-U}
+
+"
+    , "conll2009toU.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"conll2009toU.bra",APP)
+& put'(\n,"conll2009toU.bra",APP,BIN)
+& lst'(r,"conll2009toU.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"conll2009toU.bra",APP,BIN)
+& ;
+
+new'X;
