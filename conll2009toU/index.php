@@ -258,7 +258,6 @@ try {
         while($read = fgets($cmd))
             {
             }
-        return $conll2009toUfile;
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $conll2009toUfile
 //*/
         $tmpf = fopen($conll2009toUfile,'r');
