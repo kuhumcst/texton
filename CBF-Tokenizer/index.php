@@ -175,7 +175,7 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacetseto = false;	/* Type of content in input is segments,tokens (SÃ¦tningssegmenter,tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
         $Ilangbg = false;	/* Language in input is Bulgarian (bulgarsk) if true */
@@ -185,7 +185,7 @@ try {
         $Ilangcy = false;	/* Language in input is Welsh (walisisk) if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
-        $Ilangel = false;	/* Language in input is Greek (græsk) if true */
+        $Ilangel = false;	/* Language in input is Greek (grÃ¦sk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ilangeo = false;	/* Language in input is Esperanto (esperanto) if true */
         $Ilanges = false;	/* Language in input is Spanish (spansk) if true */
@@ -211,7 +211,7 @@ try {
         $Ilangno = false;	/* Language in input is Norwegian (norsk) if true */
         $Ilangpl = false;	/* Language in input is Polish (polsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
-        $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
+        $Ilangro = false;	/* Language in input is Romanian (rumÃ¦nsk) if true */
         $Ilangru = false;	/* Language in input is Russian (russisk) if true */
         $Ilangsk = false;	/* Language in input is Slovak (slovakisk) if true */
         $Ilangsl = false;	/* Language in input is Slovene (slovensk) if true */
@@ -241,7 +241,7 @@ try {
         $Olangcy = false;	/* Language in output is Welsh (walisisk) if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
-        $Olangel = false;	/* Language in output is Greek (græsk) if true */
+        $Olangel = false;	/* Language in output is Greek (grÃ¦sk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Olangeo = false;	/* Language in output is Esperanto (esperanto) if true */
         $Olanges = false;	/* Language in output is Spanish (spansk) if true */
@@ -267,7 +267,7 @@ try {
         $Olangno = false;	/* Language in output is Norwegian (norsk) if true */
         $Olangpl = false;	/* Language in output is Polish (polsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
-        $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
+        $Olangro = false;	/* Language in output is Romanian (rumÃ¦nsk) if true */
         $Olangru = false;	/* Language in output is Russian (russisk) if true */
         $Olangsk = false;	/* Language in output is Slovak (slovakisk) if true */
         $Olangsl = false;	/* Language in output is Slovene (slovensk) if true */
@@ -560,7 +560,7 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header ('An error occurred.' . $ERROR, true , 404 );
+    header("HTTP/1.0 404 An error occurred:" . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }

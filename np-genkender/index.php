@@ -440,7 +440,7 @@ else
     }
 catch (SystemExit $e) 
     { 
-    header ('An error occurred.' . $ERROR, true , 404 );
+    header("HTTP/1.0 404 An error occurred:" . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }

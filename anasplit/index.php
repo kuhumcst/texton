@@ -174,7 +174,7 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Ifacetpmls = false;	/* Type of content in input is PoS-tags,morphology,lemmas,syntax (Pos-tags,morfologi,lemma,syntaks) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
-        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
+        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske trÃ¦k) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
 
@@ -295,10 +295,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header ('An error occurred.' . $ERROR, true , 404 );
+    header("HTTP/1.0 404 An error occurred:" . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 
