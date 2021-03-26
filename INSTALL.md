@@ -329,9 +329,9 @@ In addition
 
 ### dependency2tree
 
-   $> git clone https://github.com/boberle/dependency2tree.git
-   $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
-   $> sudo apt install graphviz
+    $> git clone https://github.com/boberle/dependency2tree.git
+    $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
+    $> sudo apt install graphviz
 
 ## Install linguistic resources
 
