@@ -327,6 +327,12 @@ In addition
     $> cd /opt/texton/tesseract
     $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 
+### dependency2tree
+
+    $> git clone https://github.com/boberle/dependency2tree.git
+    $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
+    $> sudo apt install graphviz
+
 ## Install linguistic resources
 
     $> cd /opt
