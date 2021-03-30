@@ -1189,14 +1189,15 @@ toolsProg=
                   | !arg
               )
             & ( demultiply
-              =   wfs wf n
-                .   :?wfs
-                  &   whl
-                    ' ( !arg:(?n,?wf) ?arg
-                      & demul$!wf:?wf
-                      & !wfs (!n,!wf):?wfs
+              =   wf n
+                .   map
+                  $ ( ( 
+                      =   
+                        .   !arg:(?n,?wf)
+                          & (!n,demul$!wf)
                       )
-                  & !wfs
+                    . !arg
+                    )
               )
             & ( c2m
               =   x
@@ -1211,14 +1212,15 @@ toolsProg=
                   | !arg
               )
             & ( inmultiply
-              =   wfs wf n
-                .   :?wfs
-                  &   whl
-                    ' ( !arg:(?n,?wf) ?arg
-                      & inmul$!wf:?wf
-                      & !wfs (!n,!wf):?wfs
+              =   wf n
+                .   map
+                  $ ( ( 
+                      =   
+                        .   !arg:(?n,?wf)
+                          & (!n,inmul$!wf)
                       )
-                  & !wfs
+                    . !arg
+                    )
               )
             & !arg:((=?toolPlumbing).?wfs)
             & demul$!toolPlumbing:?toolPlumbing
@@ -1226,6 +1228,7 @@ toolsProg=
             & !wfs:%?wflw ?
             & :?nextvars
             & 0:?nextn
+            & "ding changes wfs !!"
             &   ding
               $ ( !wflw
                 . (='(?N,$synaps))
@@ -1281,15 +1284,15 @@ toolsProg=
           & !featdesc
       )
       ( reorder
-      =   reorderedworkflowlist nr pipe workflow weighted
-        .   ( weighted
-            =     deleteReference findUnvisitedWF n
-                , insertNameInFirst isReferenced mul2com
-                , removeWorkflowsPrecedingRefs renameReference replace
-                , name newseqno newseqnos Ntools Nsteps
-                , accumulateAbbreviations nr countTools
-                , ref refs nrefs seq seqno struct wf abbrevs
-                , toolInventory
+      =     reorderedworkflowlist nr
+          , pipe workflow weighted presentable
+        .   ( presentable
+            =     mul2com accumulateAbbreviations findUnvisitedWF
+                , replace insertNameInFirst
+                , removeWorkflowsPrecedingRefs isReferenced
+                , deleteReference renameReference
+                , abbrevs name newseqno newseqnos nrefs ref
+                , refs seq seqno struct wf
               .   ( mul2com
                   =   a b n I O i o
                     .     !arg:%?a*%?b
@@ -1302,26 +1305,16 @@ toolsProg=
                       | !arg
                   )
                 & ( accumulateAbbreviations
-                  =   A I O i o sum exp N list
+                  =   A I O i o exp N list
                     .   1:?N
                       &   whl
                         ' ( !arg:%?A^%?exp*?arg
-                          & :?I:?O
+                          & 0:?I:?O
                           &   whl
                             ' ( !exp:?*(?i.?o)+?exp
-                              & !I !i:?I
-                              & !O !o:?O
+                              & !I+!i:?I
+                              & !O+!o:?O
                               )
-                          & ( sum
-                            =   S t
-                              .   0:?S
-                                &   whl
-                                  ' ( !arg:%?t ?arg
-                                    & NEWSPEC
-                                    & !S+!t:?S
-                                    )
-                                & !S
-                            )
                           & ( list
                             =   S t
                               .   :?S
@@ -1331,8 +1324,7 @@ toolsProg=
                                     )
                                 & !S
                             )
-                          &   !A^(list$(sum$!I).list$(sum$!O))*!N
-                            : ?N
+                          & !A^(list$!I.list$!O)*!N:?N
                           )
                       & !N
                   )
@@ -1436,10 +1428,9 @@ toolsProg=
                         | !struct
                         )
                   )
-                & "Second arg is flattened structure, which we don't use anymore"
-                & !arg:(?nr,(?.?struct))
                 & 1:?abbrevs
-                & mul2com$!struct:?struct
+                & "Replace * by , and collect abbrevs (side effect)"
+                & mul2com$!arg:?struct
                 & accumulateAbbreviations$!abbrevs:?abbrevs
                 & 0:?seqno
                 & :?refs
@@ -1472,6 +1463,14 @@ toolsProg=
                   ' ( !newseqnos:%?seq ?newseqnos
                     & renameReference$(!seq.!struct):?struct
                     )
+                & (!struct.!abbrevs)
+            )
+          & ( weighted
+            =     name Ntools Nsteps
+                , n nr countTools
+                , struct abbrevs
+                , toolInventory
+              .   !arg:(?nr,(?struct.?abbrevs))
                 & 0:?Ntools:?Nsteps:?toolInventory
                 & ( countTools
                   =   A B
@@ -1491,14 +1490,13 @@ toolsProg=
                     & !n+!Nsteps:?Nsteps
                     & 1+!Ntools:?Ntools
                     )
-                & ( (!Nsteps*!Ntools^-1.!Ntools.!nr)
-                  , (!abbrevs.!struct)
-                  )
+                & ((!Nsteps.!Ntools.!nr),(!abbrevs.!struct))
             )
           & 0:?reorderedworkflowlist
           &   whl
-            ' ( !arg:(?nr,(?pipe.?workflow))+?arg
-              &   weighted$(!nr,(!pipe.!workflow))+!reorderedworkflowlist
+            ' ( !arg:(?nr,?workflow) ?arg
+              &     weighted$(!nr,presentable$!workflow)
+                  + !reorderedworkflowlist
                 : ?reorderedworkflowlist
               )
           & !reorderedworkflowlist
@@ -1517,7 +1515,7 @@ toolsProg=
       ( makeWorkflowRadioButtons
       =     i buttons nr goodness Ntools currGoodness
           , disambiguatedworkflowlist groupedworkflowlist n nth
-          , o pat pipe pipes prev flatten sameToolDifferentRoles
+          , o pat pipe pipes prev sameToolDifferentRoles
           , toolPlumbing "*" simplify translateToHumanLanguage
           , wf wfs workflow workflowlist saveio toolPattern
           , enumerateToolsDetail
@@ -2181,7 +2179,7 @@ toolsProg=
             )
           & ( sameToolDifferentRoles
             =     delta Delta replac I O
-                , beast result simple tool tree
+                , result simple tool tree
                 , details flatlist updat
                 , fx fy reps sx sy
               .   ( delta
@@ -2216,7 +2214,6 @@ toolsProg=
                         | !t
                         )
                   )
-                & 0:?result
                 & ( flatlist
                   =   p q
                     .     !arg
@@ -2252,45 +2249,48 @@ toolsProg=
                             !reps
                         )
                   )
-                &   whl
-                  ' ( !arg:(?n,(?beast.?tree))+?arg
-                    & :?reps
-                    & (   flatlist$!beast
-                        :   ?
-                          + ?*(?tool.?sx.?fx)
-                          + ?
-                          + ?*(!tool.?sy.?fy)
-                          + ( ?
-                            &     updat
-                                $ ( !reps
-                                  . !tool
-                                  . !sx,Delta$(!fx,!fy)
-                                  . !fx
+                &   map
+                  $ ( ( 
+                      =   
+                        .   !arg:(?n,?tree)
+                          & :?reps
+                          & (   flatlist$!tree
+                              :   ?
+                                + ?*(?tool.?sx.?fx)
+                                + ?
+                                + ?*(!tool.?sy.?fy)
+                                + ( ?
+                                  &     updat
+                                      $ ( !reps
+                                        . !tool
+                                        . !sx,Delta$(!fx,!fy)
+                                        . !fx
+                                        )
+                                    : ?reps
+                                  &     updat
+                                      $ ( !reps
+                                        . !tool
+                                        . !sy,Delta$(!fy,!fx)
+                                        . !fy
+                                        )
+                                    : ?reps
+                                  & ~
                                   )
-                              : ?reps
-                            &     updat
-                                $ ( !reps
-                                  . !tool
-                                  . !sy,Delta$(!fy,!fx)
-                                  . !fy
+                            |     whl
+                                ' (   !reps
+                                    : (?tool.?simple.?details) ?reps
+                                  &     replac
+                                      $ ( !tree
+                                        .   (!tool.?.!details)
+                                          , (!tool.!simple.!details)
+                                        )
+                                    : ?tree
                                   )
-                              : ?reps
-                            & ~
+                              & (!n,!tree)
                             )
-                      |     whl
-                          ' (   !reps
-                              : (?tool.?simple.?details) ?reps
-                            &     replac
-                                $ ( !tree
-                                  .   (!tool.?.!details)
-                                    , (!tool.!simple.!details)
-                                  )
-                              : ?tree
-                            )
-                        & !result+(!n,(!beast.!tree)):?result
                       )
+                    . !arg
                     )
-                & !result
             )
           & "pipes is a unnumbered list sorted on directly on full workflow tree."
           & :?workflowlist
@@ -2320,49 +2320,62 @@ toolsProg=
           & :?groupedworkflowlist
           & :?toolPlumbing
           & 0:?disambiguatedworkflowlist
-          & ( flatten
-            =   a b N O flat
-              .     !arg:(#?N,?a) ?b
-                  &   (!N,(flatten$!a.!a))
-                    + (flatten$!b:~|0)
-                |   !arg:%?a*%?b
-                  & flatten$!a flatten$!b
-                |   !arg:%?a^#%?N
-                  & flatten$!a:?flat:?O
-                  &   whl
-                    ' ( -1+!N:>0:?N
-                      & !flat !O:?O
-                      )
-                  & !O
-                |   !arg:%?a %?b
-                  & flatten$!a flatten$!b
-                | !arg
-            )
           &   whl
             ' ( 1+!n:?n:<1000000
               & !workflowlist:(#?nr.?workflow) ?workflowlist
               & "*"$(simplify$!workflow):(=?toolPlumbing)
               & (!nr,!workflow):?wfs
-              &   whl
-                ' ( 1+!n:?:<1000000
-                  &   !workflowlist
-                    :   ?prev
-                        (#?nr.!toolPlumbing:?wf)
-                        ?workflowlist
-                  & (!nr,!wf) !wfs:?wfs
-                  & !prev !workflowlist:?workflowlist
-                  )
+              &     map
+                  $ ( ( 
+                      =   
+                        .     !arg:(#?nr.!toolPlumbing:?wf)
+                            & 1+!n:?n:<1000000
+                            & (!nr,!wf) !wfs:?wfs
+                            & 
+                          | !arg
+                      )
+                    . !workflowlist
+                    )
+                : ?workflowlist
               & '$toolPlumbing:?toolPlumbing
-              &     flatten$(disam$(!toolPlumbing.!wfs))
-                  + !disambiguatedworkflowlist
+              & "The function disam spots the differences between workflows 
+                 that have the same tools in the same structure: the 'smaller'
+                 differences. For example, in the example below, (.app,nrm)
+                 indicates that the workflow differs from another workflow as
+                 to the appearance of the output, which is 'normalized', while
+                 another workflow has e.g. 'unnormalized' output. The field
+                 left of the dot is empty, which tells us that there is no
+                 difference in the input.
+                      ( JSON to ORG-mode converter
+                      . (.app,nrm)
+                      .   (ambig,pru)
+                          (app,drty)
+                          (facet,stlp^Menotas)
+                          (format,json^xid)
+                          (lang,da)
+                          (period,c21)
+                          (pres,nml)
+                      .   (ambig,pru)
+                          (app,nrm)
+                          (facet,tlp^Menotas)
+                          (format,dipl)
+                          (lang,da)
+                          (period,c21)
+                          (pres,nml)
+                      )"
+              & "'sameToolDifferentRoles' does something similar to 'disam'.
+                 Whereas 'disam' looks at different uses of the same tool in
+                 different workflows, 'sameToolDifferentRoles' looks at
+                 different uses of the same tool in the same workflow."
+              &     sameToolDifferentRoles$(disam$(!toolPlumbing.!wfs))
+                    !disambiguatedworkflowlist
                 : ?disambiguatedworkflowlist
               )
           & ( !n:<1000000
             |   log
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
-          &   reorder$(sameToolDifferentRoles$!disambiguatedworkflowlist)
-            : ?reorderedworkflowlist
+          & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
           & (   !reorderedworkflowlist:%+%
               & :?buttons
               & 1:?nth
@@ -3549,24 +3562,26 @@ header(\"Content-type:text/plain; charset=UTF-8\");
  */
 "
                 : ?boilerPlate
-              &   "    }
+              & "    }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header(HTTP/1"
+            .     0 404 An error occurred
+                : " . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
 ?>
 "
                 : ?lastWord
-            |   !arg:java
-              & "public String ":?stringfunc
-              & "public bool ":?boolfunc
-              & "public void ":?voidfunc
-              & "String ":?stringvar
-              & "bool ":?boolvar
-              & :?var
-              & :?boilerPlate:?lastWord
+              |   !arg:java
+                & "public String ":?stringfunc
+                & "public bool ":?boolfunc
+                & "public void ":?voidfunc
+                & "String ":?stringvar
+                & "bool ":?boolvar
+                & :?var
+                & :?boilerPlate:?lastWord
             )
           & ( listAlts
             =   alt featF opts rsr rsrc stl style alts
