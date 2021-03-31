@@ -474,7 +474,7 @@ try {
 
         $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t $CSTRTFreadfile $DEL";
 
-        $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/async2.log 2>&1 &";
+        $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
 
         logit($command);
 
