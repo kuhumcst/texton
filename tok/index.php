@@ -16,8 +16,8 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : tok
 PassWord       : 
 Version        : 1.0
-Title          : Tokenizer
-ServiceURL     : http://130.225.251.141/tok	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+Title          : CBF-Tokenizer
+Path in URL    : CBF-Tokenizer	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
@@ -513,10 +513,11 @@ try {
             $convertaa = 'y';
         else
             $convertaa = 'n';
-        //if($Oappnrm && $Iappunn)
-            $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile $convertaa";
-        //else
-        //    $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile n";
+        $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile $convertaa";
+        if($Ilangda)
+            {
+            $command = $command  . " ../texton-linguistic-resources/da/navnegenkenderCSTNER/DKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/nonDKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/surnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/firstnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/countrynames ../texton-linguistic-resources/da/navnegenkenderCSTNER/islandnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/miscplace ../texton-linguistic-resources/da/navnegenkenderCSTNER/company ../texton-linguistic-resources/da/navnegenkenderCSTNER/street ../texton-linguistic-resources/da/navnegenkenderCSTNER/organization";
+            }
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
@@ -535,10 +536,10 @@ try {
 
         if($tmpf)
             {
-            logit('output from tok:');
+            //logit('output from tok:');
             while($line = fgets($tmpf))
                 {
-                logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
@@ -565,3 +566,4 @@ catch (SystemExit $e)
     }
 
 ?>
+
