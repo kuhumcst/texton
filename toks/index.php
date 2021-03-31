@@ -13,7 +13,7 @@ header("Content-type:text/plain; charset=UTF-8");
  * Places in this script that require your attention are marked 'TODO'.
  */
 /*
-ToolID         : tok
+ToolID         : toks
 PassWord       : 
 Version        : 1.0
 Title          : CBF-Tokenizer
@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/tok.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/toks.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -490,7 +490,7 @@ try {
 *******************************/
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
-        $tokfile = tempFileName("tok-results");
+        $tokfile = tempFileName("toks-results");
         $command = "echo $echos >> $tokfile";
         logit($command);
 
@@ -508,12 +508,12 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         logit($echos);
-        $tokfile = tempFileName("tok-results");
+        $tokfile = tempFileName("toks-results");
         if($Ilangda && $Iperiodc21)
             $convertaa = 'y';
         else
             $convertaa = 'n';
-        $command = "../bin/bracmat \"get'\\\"tok.bra\\\"\" $F $tokfile $convertaa";
+        $command = "../bin/bracmat \"get'\\\"toks.bra\\\"\" $F $tokfile $convertaa";
         if($Ilangda)
             {
             $command = $command  . " ../texton-linguistic-resources/da/navnegenkenderCSTNER/DKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/nonDKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/surnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/firstnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/countrynames ../texton-linguistic-resources/da/navnegenkenderCSTNER/islandnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/miscplace ../texton-linguistic-resources/da/navnegenkenderCSTNER/company ../texton-linguistic-resources/da/navnegenkenderCSTNER/street ../texton-linguistic-resources/da/navnegenkenderCSTNER/organization";
@@ -530,13 +530,13 @@ try {
             }
 
         pclose($cmd);
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $tokfile
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $toksfile
 //*/
-        $tmpf = fopen($tokfile,'r');
+        $tmpf = fopen($toksfile,'r');
 
         if($tmpf)
             {
-            //logit('output from tok:');
+            //logit('output from toks:');
             while($line = fgets($tmpf))
                 {
                 //logit($line);
