@@ -16,13 +16,13 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : toks
 PassWord       : 
 Version        : 1.0
-Title          : CBF-Tokenizer
-Path in URL    : CBF-Tokenizer	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
+Title          : Token extractor
+Path in URL    : toks	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
 InfoAbout      : -
-Description    : From Clarin Base Format enriched with token and segment attributes, extract tokens and their offset in the input.
+Description    : From a TEI text enriched with T (token) and S (segment) attributes, extract tokens and their offset in the input.
 ExternalURI    : 
 XMLparms       : 
 PostData       : 
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -125,7 +125,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("tok_{$requestParm}_");
+                $tempfilename = tempFileName("toks_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
@@ -150,7 +150,7 @@ try {
         return "";
         }    
 
-    function do_tok()
+    function do_toks()
         {
         global $dodelete;
         global $tobedeleted;
@@ -227,7 +227,7 @@ try {
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
@@ -283,7 +283,7 @@ try {
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -490,8 +490,8 @@ try {
 *******************************/
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
-        $tokfile = tempFileName("toks-results");
-        $command = "echo $echos >> $tokfile";
+        $toksfile = tempFileName("toks-results");
+        $command = "echo $echos >> $toksfile";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
@@ -508,12 +508,12 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         logit($echos);
-        $tokfile = tempFileName("toks-results");
+        $toksfile = tempFileName("toks-results");
         if($Ilangda && $Iperiodc21)
             $convertaa = 'y';
         else
             $convertaa = 'n';
-        $command = "../bin/bracmat \"get'\\\"toks.bra\\\"\" $F $tokfile $convertaa";
+        $command = "../bin/bracmat \"get'\\\"toks.bra\\\"\" $F $toksfile $convertaa";
         if($Ilangda)
             {
             $command = $command  . " ../texton-linguistic-resources/da/navnegenkenderCSTNER/DKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/nonDKcity ../texton-linguistic-resources/da/navnegenkenderCSTNER/surnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/firstnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/countrynames ../texton-linguistic-resources/da/navnegenkenderCSTNER/islandnames ../texton-linguistic-resources/da/navnegenkenderCSTNER/miscplace ../texton-linguistic-resources/da/navnegenkenderCSTNER/company ../texton-linguistic-resources/da/navnegenkenderCSTNER/street ../texton-linguistic-resources/da/navnegenkenderCSTNER/organization";
@@ -556,7 +556,7 @@ try {
             }
         }
     loginit();
-    do_tok();
+    do_toks();
     }
 catch (SystemExit $e) 
     { 
