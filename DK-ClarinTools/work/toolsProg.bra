@@ -1307,14 +1307,16 @@ toolsProg=
                 & ( accumulateAbbreviations
                   =   A I O i o exp N list
                     .   1:?N
-                      &   whl
-                        ' ( !arg:%?A^%?exp*?arg
-                          & 0:?I:?O
-                          &   whl
-                            ' ( !exp:?*(?i.?o)+?exp
-                              & !I+!i:?I
-                              & !O+!o:?O
-                              )
+                                              & ( sum
+                            =   S t
+                              .   0:?S
+                                &   whl
+                                  ' ( !arg:%?t ?arg
+                                    & NEWSPEC
+                                    & !S+!t:?S
+                                    )
+                                & !S
+                            )
                           & ( list
                             =   S t
                               .   :?S
@@ -1324,6 +1326,15 @@ toolsProg=
                                     )
                                 & !S
                             )
+
+                      &   whl
+                        ' ( !arg:%?A^%?exp*?arg
+                          & 0:?I:?O
+                          &   whl
+                            ' ( !exp:?*(?i.?o)+?exp
+                              & !I+sum$!i:?I
+                              & !O+sum$!o:?O
+                              )
                           & !A^(list$!I.list$!O)*!N:?N
                           )
                       & !N
