@@ -609,7 +609,7 @@ toolsProg=
       ( setTypeFace
       =   A Z
         .   !arg:?TyPeFaCe
-          & log$(setTypeFace !Typeface)
+          & log$(setTypeFace !TyPeFaCe)
           & (   !hiddenData:?A (TyPeFaCe.?) ?Z
               & !A !Z:?hiddenData
             | 
@@ -1307,26 +1307,25 @@ toolsProg=
                 & ( accumulateAbbreviations
                   =   A I O i o exp N list
                     .   1:?N
-                                              & ( sum
-                            =   S t
-                              .   0:?S
-                                &   whl
-                                  ' ( !arg:%?t ?arg
-                                    & NEWSPEC
-                                    & !S+!t:?S
-                                    )
-                                & !S
-                            )
-                          & ( list
-                            =   S t
-                              .   :?S
-                                &   whl
-                                  ' ( !arg:#*((?,?):%?t)+?arg
-                                    & !S !t:?S
-                                    )
-                                & !S
-                            )
-
+                      & ( sum
+                        =   S t
+                          .   0:?S
+                            &   whl
+                              ' ( !arg:%?t ?arg
+                                & NEWSPEC
+                                & !S+!t:?S
+                                )
+                            & !S
+                        )
+                      & ( list
+                        =   S t
+                          .   :?S
+                            &   whl
+                              ' ( !arg:#*((?,?):%?t)+?arg
+                                & !S !t:?S
+                                )
+                            & !S
+                        )
                       &   whl
                         ' ( !arg:%?A^%?exp*?arg
                           & 0:?I:?O
@@ -1477,38 +1476,54 @@ toolsProg=
                 & (!struct.!abbrevs)
             )
           & ( weighted
-            =     name Ntools Nsteps
-                , n nr countTools
-                , struct abbrevs
-                , toolInventory
-              .   !arg:(?nr,(?struct.?abbrevs))
+            =     name Ntools Nsteps n nr countTools
+                , A B T C usedTools struct abbrevs
+                , toolInventory toolPlumbing toolsUsed
+              .   !arg:(?toolPlumbing.?nr,(?struct.?abbrevs))
                 & 0:?Ntools:?Nsteps:?toolInventory
                 & ( countTools
                   =   A B
-                    .   !arg
-                      : (   ((?A,?B)|%?A %?B)
-                          & countTools$!A
-                          & countTools$!B
-                        |   (?A.?.?.?)
-                          & ( !A:
-                            | !A+!toolInventory:?toolInventory
-                            )
-                        )
+                    .     !arg:((?A,?B)|%?A %?B)
+                        & countTools$!A+countTools$!B
+                      | !arg:(~:?A.?.?.?)&!A
+                      | 0
                   )
-                & countTools$!struct
+                & countTools$!struct:?toolInventory
+                & ( usedTools
+                  =   A B
+                    .     !arg:((?A,?B)|%?A %?B)
+                        & usedTools$!A usedTools$!B
+                      | !arg:(?A.?.?.?)&!A
+                      | 
+                  )
+                & usedTools$!struct:?toolsUsed
+                &   whl
+                  ' ( !toolsUsed:?A %@?T ?B %@!T ?C
+                    & !A !T !B !C:?toolsUsed
+                    )
                 &   whl
                   ' ( !toolInventory:?n*%@?name+?toolInventory
                     & !n+!Nsteps:?Nsteps
                     & 1+!Ntools:?Ntools
                     )
-                & ((!Nsteps.!Ntools.!nr),(!abbrevs.!struct))
+                & ( (!Ntools.!toolsUsed.!Nsteps.!toolPlumbing.!nr)
+                  , (!abbrevs.!struct)
+                  )
             )
           & 0:?reorderedworkflowlist
-          &   whl
-            ' ( !arg:(?nr,?workflow) ?arg
-              &     weighted$(!nr,presentable$!workflow)
-                  + !reorderedworkflowlist
-                : ?reorderedworkflowlist
+          &   map
+            $ ( ( 
+                =   
+                  .   !arg:(?toolPlumbing.?arg)
+                    &   whl
+                      ' ( !arg:(?nr,?workflow) ?arg
+                        &       weighted
+                              $ (!toolPlumbing.!nr,presentable$!workflow)
+                            + !reorderedworkflowlist
+                          : ?reorderedworkflowlist
+                        )
+                )
+              . !arg
               )
           & !reorderedworkflowlist
       )
@@ -1524,7 +1539,7 @@ toolsProg=
           & !L
       )
       ( makeWorkflowRadioButtons
-      =     i buttons nr goodness Ntools currGoodness
+      =     i buttons nr Nsteps Ntools currNsteps
           , disambiguatedworkflowlist groupedworkflowlist n nth
           , o pat pipe pipes prev sameToolDifferentRoles
           , toolPlumbing "*" simplify translateToHumanLanguage
@@ -1728,12 +1743,26 @@ toolsProg=
                     )
                 & '$"#"
             )
+          & ( infoAboutTool
+            =   Description
+              .     !tooladm
+                  :   ?
+                    + ( ? (Title.!arg) ?
+                      : ? (Description.?Description) ?
+                      )
+                    + ?
+                & ( div
+                  .   (class.tooltip)
+                    ,   !arg
+                        (span.(class.tooltiptext),!Description)
+                  )
+            )
           & ( translateToHumanLanguage
             =     circle Circle Describe nice inoutdesc
                 , description seqno struct abbrevs o diff
                 , arrow describeLong describeShort fullinoutdesc
                 , fullinoutdescTable
-                , infoabout simplearrow spotInput subt
+                , simplearrow spotInput subt
               .   ( circle
                   =   
                     .   !arg:~#&!arg
@@ -1895,22 +1924,6 @@ toolsProg=
                             ")"
                         )
                   )
-                & ( infoabout
-                  =   Description
-                    .     !tooladm
-                        :   ?
-                          + ( ? (Title.!arg) ?
-                            : ? (Description.?Description) ?
-                            )
-                          + ?
-                      & ( div
-                        .   (class.tooltip)
-                          ,   !arg
-                              ( span
-                              . (class.tooltiptext),!Description
-                              )
-                        )
-                  )
                 & ( arrow
                   =   b i
                     .   !arg:(?arg.?b)
@@ -1984,7 +1997,7 @@ toolsProg=
                                             & 
                                           | Circle$!seqno
                                           )
-                                      | infoabout$!m circle$!seqno
+                                      | !m circle$!seqno
                                       )
                                       (   !m:
                                         & (   !seqno:∵
@@ -2378,7 +2391,9 @@ toolsProg=
                  Whereas 'disam' looks at different uses of the same tool in
                  different workflows, 'sameToolDifferentRoles' looks at
                  different uses of the same tool in the same workflow."
-              &     sameToolDifferentRoles$(disam$(!toolPlumbing.!wfs))
+              &     ( !toolPlumbing
+                    . sameToolDifferentRoles$(disam$(!toolPlumbing.!wfs))
+                    )
                     !disambiguatedworkflowlist
                 : ?disambiguatedworkflowlist
               )
@@ -2387,24 +2402,134 @@ toolsProg=
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
           & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
+          & ( ntools
+            =   
+              .   !arg:(?arg.?below)
+                & ( p
+                  .   !below:|(id.below)
+                    , ( strong
+                      .   
+                        ,   (🗱|💈)
+                            " "
+                            !arg
+                            " "
+                              localized
+                            $ (   !arg:1
+                                & tool værktøj
+                              | tools værktøjer
+                              )
+                      )
+                  )
+            )
+          & ( theUsedTools
+            =   ID
+              .       !toolUsageList
+                      (   str$(T (1+!toolSetID:?toolSetID))
+                        : ?ID
+                      . !arg
+                      )
+                  : ?toolUsageList
+                & ( map$((=.", " !arg).!arg):", " ?arg
+                  | 
+                  )
+                & (p.(id.!ID),(strong.,!arg))
+            )
+          & ( nsteps
+            =   
+              . p
+              .   
+                ,   "("
+                    !arg
+                    " "
+                      localized
+                    $ ( ( !arg:1&step
+                        | steps
+                        )
+                        trin
+                      )
+                    ")"
+            )
+          & ( transpose
+            =   L ID a
+              .   !arg:(?.) ?&
+                |       map
+                      $ ( ( 
+                          =   
+                            .   !arg:(?ID.%?a ?arg)
+                              & (!a.!ID.!arg)
+                          )
+                        . !arg
+                        )
+                    : ?L
+                  &   ( 
+                      .   map
+                        $ ( ( 
+                            = .!arg:(?arg.?)&!arg
+                            )
+                          . !L
+                          )
+                      )
+                        transpose
+                      $ ( map
+                        $ ( ( 
+                            = .!arg:(?.?arg)&!arg
+                            )
+                          . !L
+                          )
+                        )
+            )
           & (   !reorderedworkflowlist:%+%
               & :?buttons
               & 1:?nth
               & (   !reorderedworkflowlist
-                  : ((?currGoodness.?),?)+?
-                | 1:?currGoodness
+                  : ((?currNsteps.?),?)+?
+                | 1:?currNsteps
                 )
+              & :?currToolPlumbing:?currToolsUsed
+              & 0:?currNtools
+              & :?toolUsageList
+              & 0:?toolSetID
               &   whl
                 ' (   !reorderedworkflowlist
-                    :   ( ?weight:(?goodness.?Ntools.?nr)
+                    :   (   ?weight
+                          : (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
                         , (?abbR.?struct)
                         )
                       + ?reorderedworkflowlist
                   &     !buttons
-                        (     !goodness
-                            : >!currGoodness
-                            : ?currGoodness
-                          & (hr.,)
+                        (   !nth:1
+                          & !Ntools:?currNtools
+                          & !toolsUsed:?currToolsUsed
+                          & !Nsteps:?currNsteps
+                          & !toolPlumbing:?currToolPlumbing
+                          &   (hr.,)
+                              (hr.,)
+                              ntools$(!Ntools.below)
+                              theUsedTools$!toolsUsed
+                              nsteps$!Nsteps
+                        |   !Ntools:~!currNtools:?currNtools
+                          & !toolsUsed:?currToolsUsed
+                          & !Nsteps:?currNsteps
+                          & !toolPlumbing:?currToolPlumbing
+                          &   (hr.,)
+                              (hr.,)
+                              ntools$(!Ntools.)
+                              theUsedTools$!toolsUsed
+                              nsteps$!Nsteps
+                        |     !toolsUsed
+                            : ~!currToolsUsed
+                            : ?currToolsUsed
+                          & !Nsteps:?currNsteps
+                          & !toolPlumbing:?currToolPlumbing
+                          &   (hr.,)
+                              theUsedTools$!toolsUsed
+                              nsteps$!Nsteps
+                        |   !Nsteps:~!currNsteps:?currNsteps
+                          & !toolPlumbing:?currToolPlumbing
+                          & nsteps$!Nsteps
+                        |   !toolPlumbing
+                          : ~!currToolPlumbing
+                          : ?currToolPlumbing
                         | 
                         )
                         !nth
@@ -2420,9 +2545,152 @@ toolsProg=
                     : ?buttons
                   & 1+!nth:?nth
                   )
-              & !buttons
+              &   (   (|!toolUsageList:? [>1)
+                    & :?allUsedTools
+                    &   map
+                      $ ( ( 
+                          =   seen unseen ID
+                            .   !arg:(?ID.?arg)
+                              & :?seen:?sofar
+                              &   map
+                                $ ( ( 
+                                    =   A cur Z
+                                      .   !arg:?cur
+                                        & (     !allUsedTools
+                                              : ?A !cur ?Z
+                                            &   map
+                                              $ ( ( 
+                                                  =   
+                                                    .   !A:? !arg ?
+                                                      |     !Z
+                                                          : ?m !arg ?Z
+                                                        &   !A !m !arg
+                                                          : ?A
+                                                  )
+                                                . !sofar
+                                                )
+                                            &   !A !cur !Z
+                                              : ?allUsedTools
+                                            & !A !cur:?seen
+                                          |     !allUsedTools
+                                              : !seen ?unseen
+                                            & !seen !cur:?seen
+                                            &   !seen !unseen
+                                              : ?allUsedTools
+                                          )
+                                        & !cur !sofar:?sofar
+                                    )
+                                  . !arg
+                                  )
+                          )
+                        . !toolUsageList
+                        )
+                    & log$(toolUsageList !toolUsageList)
+                    & log$(allUsedTools !allUsedTools)
+                    &     map
+                        $ ( ( 
+                            =   ID cur
+                              .   !arg:(?ID.?cur)
+                                & ( !ID
+                                  .   map
+                                    $ ( ( 
+                                        =   
+                                          .     !cur:? !arg ?
+                                              & (◼|■)
+                                            | " "
+                                        )
+                                      . !allUsedTools
+                                      )
+                                  )
+                            )
+                          . !toolUsageList
+                          )
+                      : ?toolTable
+                    & log$(toolTable !toolTable)
+                    & (   !toolUsageList:? [>1
+                        &   ( thead
+                            .   
+                              , ( tr
+                                .   
+                                  ,   ( th
+                                      .   
+                                        ,   localized$(tools værktøjer)
+                                            🠓
+                                            " ⧹ "
+                                            localized$hyperlinks
+                                            🠒
+                                      )
+                                      (   map
+                                        $ ( ( 
+                                            =   
+                                              .   !arg:(?ID.?)
+                                                & ( th
+                                                  .   
+                                                    , ( a
+                                                      .   ( href
+                                                          . str$("#" !ID)
+                                                          )
+                                                        , ⬇
+                                                      )
+                                                  )
+                                            )
+                                          . !toolTable
+                                          )
+                                      : ?hyperlinks
+                                      )
+                                )
+                            )
+                          : ?thead
+                      | 
+                      )
+                    & transpose$!toolTable:?toolTable
+                    & ( toolRows
+                      =   tool tools row rows
+                        .       !arg
+                              : (%?tool ?tools.(?.?row) ?rows)
+                            &   ( tr
+                                .   
+                                  ,   (td.,infoAboutTool$!tool)
+                                      map$((=.td.,!arg).!row)
+                                )
+                                toolRows$(!tools.!rows)
+                          | 
+                      )
+                    & ( table
+                      .   (id.t01)
+                        ,   (   !toolUsageList:? [>1
+                              & !thead
+                            | 
+                            )
+                            (tbody.,toolRows$(!allUsedTools.!toolTable))
+                            (   !toolUsageList:? [>1
+                              & ( thead
+                                .   
+                                  , ( tr
+                                    .   
+                                      ,   ( th
+                                          .   
+                                            ,     localized
+                                                $ (tools værktøjer)
+                                                🠑
+                                                " ⧸ "
+                                                localized$hyperlinks
+                                                🠒
+                                          )
+                                          !hyperlinks
+                                    )
+                                )
+                            | 
+                            )
+                      )
+                  | 
+                  )
+                  !buttons
             |     !reorderedworkflowlist
-                :   (?weight:(?goodness.?Ntools.?nr),(?abbR.?struct))
+                :   (   ?weight
+                      : (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
+                    , (?abbR.?struct)
+                    )
                   + ?
               & translateToHumanLanguage$(!abbR.!struct.one) (br.,)
             )
@@ -2544,7 +2812,7 @@ toolsProg=
                 \r\n
                 "    visibility: hidden;"
                 \r\n
-                "    width: 220px;"
+                "    width: 330px;"
                 \r\n
                 "    background-color: #555;"
                 \r\n
@@ -2639,6 +2907,12 @@ toolsProg=
                 "    visibility: visible;"
                 \r\n
                 "    opacity: 1;"
+                \r\n
+                "}"
+                \r\n
+                "#t01 tr:nth-child(2n+0) {"
+                \r\n
+                "    background-color: #eee;"
                 \r\n
                 "}"
           )
@@ -3388,7 +3662,7 @@ toolsProg=
                         !LaNg
                         "&usedonly="
                         !usedonly
-                        "&Typeface="
+                        "&TyPeFaCe="
                         queryEncode$!TyPeFaCe
                         (!offset:|"#" !offset)
                       )
@@ -3573,7 +3847,7 @@ header(\"Content-type:text/plain; charset=UTF-8\");
  */
 "
                 : ?boilerPlate
-              & "    }
+              &   "    }
 catch (SystemExit $e) 
     { 
     header('HTTP/1.0 404 An error occurred: ' . $ERROR);
@@ -3583,14 +3857,14 @@ catch (SystemExit $e)
 ?>
 "
                 : ?lastWord
-              |   !arg:java
-                & "public String ":?stringfunc
-                & "public bool ":?boolfunc
-                & "public void ":?voidfunc
-                & "String ":?stringvar
-                & "bool ":?boolvar
-                & :?var
-                & :?boilerPlate:?lastWord
+            |   !arg:java
+              & "public String ":?stringfunc
+              & "public bool ":?boolfunc
+              & "public void ":?voidfunc
+              & "String ":?stringvar
+              & "bool ":?boolvar
+              & :?var
+              & :?boilerPlate:?lastWord
             )
           & ( listAlts
             =   alt featF opts rsr rsrc stl style alts
@@ -11286,7 +11560,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( setTypefaceNotPermanently
       =   
-        .   ( !arg:? (Typeface.?arg) ?
+        .   (   !arg:? (TyPeFaCe.?arg) ?
+              & log$(TyPeFaCe !arg)
             |   "reset to default"
               & readTable$Typeface:%?arg ?
             )
@@ -12528,19 +12803,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from enact.java
  */"
       ( showworkflows
-      =     Tool parms Items items
-          , formFields val
-          , Submit pipes
-          , presels
-          , errors
-          , BodyContainer
-          , PIPE
-          , A wrkflw Z itms
-          , TooManyOrNone
-          , ShowAllPipes
-          , rstr
-          , canConsumeMetadata
-          , rpl NNN
+      =     Tool parms Items items formFields val
+          , Submit pipes presels errors BodyContainer
+          , PIPE A wrkflw Z itms TooManyOrNone
+          , ShowAllPipes rstr canConsumeMetadata rpl NNN
           , allpipes batch cllas restr restriction sources
         .   ( ShowAllPipes
             =   hiddenData pipes rstr
@@ -12561,19 +12827,33 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       )
                                       ( p
                                       .   
-                                        ,     localized
-                                            $ ( "These are the workflows that fulfil the goal set by you."
-                                                "Dette er arbejdsgangene som løser din opgave."
+                                        ,   ( a
+                                            .   (href."#below")
+                                              , localized$(Below Forneden)
+                                            )
+                                              localized
+                                            $ ( " are the workflows that fulfil the goal set by you."
+                                                " er arbejdsgangene som løser din opgave."
                                               )
                                             (br.,)
                                               localized
-                                            $ ( "Select one before pressing the submit button."
-                                                "Vælg en og tryk på submit-knappen."
+                                            $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
+                                                "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
+                                              )
+                                            (br.,)
+                                              localized
+                                            $ ( "You can use the table if you first want to learn which tools can be combined."
+                                                "Du kan bruge tabellen hvis du først vil undersøge hvilke værktøjer lader sig kombinere."
                                               )
                                             (br.,)
                                               localized
                                             $ ( "Move the mouse pointer over the tool names for a short explanation of what the tool does."
                                                 "Du får en kort forklaring for hvert værktøj ved at flytte musepilen over værktøjets navn."
+                                              )
+                                            (br.,)
+                                              localized
+                                            $ ( "Find the column that has the tools that you prefer to use and click on the hyperlink for that column."
+                                                "Find den kolonne som har de værktøjer som du foretrækker og klik på hyperlinket for den kolonne."
                                               )
                                       )
                                 |   (h3.,Workflow)
@@ -12587,7 +12867,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                                   form
                                 $ ( chosenworkflow
-                                  .   submit$"View details"
+                                  .     submit
+                                      $ ( localized
+                                        $ ("View details" "Se detaljer")
+                                        )
                                       submit$Metadata
                                       submit$Submit
                                       helplink$()
@@ -12645,6 +12928,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                     )
             )
+          & setLanguageNotPermanently$!arg
+          & log$showworkflows
+          & setTypefaceNotPermanently$!arg
           &   
             : ?errors
             : ?hiddenData
@@ -13620,8 +13906,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             | ?&1:?nth
                             )
                         & windFW$(!pipes.!nth):?pipe
+                        &   localized$("View details" "Se detaljer")
+                          : ?ViewDetails
                         & (     !Submit
-                              : ( "View details"
+                              : ( !ViewDetails
                                 | @(?:(prev|next) ?)
                                 )
                             & ShowOnlyTheCurrentPipe$(!pipe.!nth)
@@ -14828,7 +15116,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                         $ ( "/texton/?UIlanguage="
                                                               localized
                                                             $ (da en)
-                                                            "&Typeface="
+                                                            "&TyPeFaCe="
                                                               queryEncode
                                                             $ !TyPeFaCe
                                                           )
@@ -14864,7 +15152,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         .   
                                           ,   localized
                                             $ ( " Upload your input using the form on this page. On the next page you specify the desired final result - there are several annotation types, file formats, languages and other traits to choose from. The hard part - picking and orchestrating the Natural Language Processing tools that are needed to achieve your goal - is handled by this service. "
-                                                "Upload din input ved hjælp af formularen på denne side. På næste side specificerer du dit mål - der er adskillige inholdstyper, filformater, sprog og andre træk at vælge imellem. Det svære - at finde og orkestrere de sprogteknologiske værktøjer som er nødvendige for at opnå dit mål - bliver håndteret af denne service."
+                                                "Upload din input ved hjælp af formularen på denne side. På næste side specificerer du dit mål - der er adskillige indholdstyper, filformater, sprog og andre træk at vælge imellem. Det svære - at finde og orkestrere de sprogteknologiske værktøjer som er nødvendige for at opnå dit mål - bliver håndteret af denne service."
                                               )
                                         )
                                         ( form
@@ -15063,7 +15351,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                   )
                                                   ( input
                                                   .     (type.hidden)
-                                                        (name.Typeface)
+                                                        (name.TyPeFaCe)
                                                         (value.!TyPeFaCe)
                                                     , 
                                                   )
@@ -15118,7 +15406,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                       .   str
                                                         $ ( "/texton/?UIlanguage="
                                                             !LaNg
-                                                            "&Typeface="
+                                                            "&TyPeFaCe="
                                                               queryEncode
                                                             $ (     !TyPeFaCe
                                                                   : "Comic Sans MS"
