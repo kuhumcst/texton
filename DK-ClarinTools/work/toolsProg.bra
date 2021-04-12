@@ -1285,7 +1285,7 @@ toolsProg=
       )
       ( reorder
       =     reorderedworkflowlist nr
-          , pipe workflow weighted presentable
+          , workflow weighted presentable
         .   ( presentable
             =     mul2com accumulateAbbreviations findUnvisitedWF
                 , replace insertNameInFirst
@@ -1305,7 +1305,7 @@ toolsProg=
                       | !arg
                   )
                 & ( accumulateAbbreviations
-                  =   A I O i o exp N list
+                  =   A I O i o exp N list sum
                     .   1:?N
                       & ( sum
                         =   S t
@@ -1527,6 +1527,92 @@ toolsProg=
               )
           & !reorderedworkflowlist
       )
+      ( topologicalOrder
+      =     edges toolPlumbing workflow A Z
+          , 2p Kahn edg pr
+          , pairs
+        .   ( edg
+            =   a b
+              .   !arg:%?a %?b&edg$!b edg$!a
+                | !arg:(?a,?b)&edg$!a+edg$!b
+                | !arg:(?a.?b)&!a
+            )
+          & ( pr
+            =   nxt a b c
+              .     !arg:(?nxt.%?a+%?b)
+                  & pr$(!nxt.!a)+pr$(!nxt.!b)
+                | !arg:(?nxt.#%*%?a)&pr$(!nxt.!a)
+                |   !arg:(?nxt.%?a %?b)
+                  &   ( !nxt:&0
+                      | (!a.!nxt)
+                      )
+                    + (   !b:%@?b ?c
+                        & (!b.!a)+pr$(!b.!c)
+                      | pr$(!a.!b)
+                      )
+                |   !arg:(?nxt.%@?a ?)
+                  & (!nxt:&0|(!a.!nxt))
+                | 0
+            )
+          & 0:?edges
+          & log$(topologicalOrder !arg)
+          &   map
+            $ ( ( 
+                =   
+                  .   !arg:(?toolPlumbing.?arg)
+                    & log$(ARG !arg)
+                    &   whl
+                      ' ( !arg:(?,?workflow) ?arg
+                        & edg$!workflow+!edges:?edges
+                        )
+                )
+              . !arg
+              )
+          & log$topologicalOrderDONE
+          & pr$(.!edges):?pairs
+          & log$(pairs !pairs)
+          & ( 2p
+            =   a b
+              .     !arg:%@?a %@?b ?arg
+                  & (!a.!b)+2p$(!b !arg)
+                | 0
+            )
+          & ( Kahn
+            =   pairs A Z i S L m n
+              .   "create topological ordering"
+                & !arg:?pairs
+                & :?S:?L
+                & (   !pairs
+                    :   ?
+                      +   #
+                        * (   ?i
+                            & ~(!pairs:?+#*(?.!i)+?)
+                            & ~(!S:? !i ?)
+                            & !i !S:?S
+                            & ~
+                          . ?
+                          )
+                      + ?
+                  | 
+                  )
+                &   whl
+                  ' ( !S:%?n ?S
+                    & !L !n:?L
+                    &   whl
+                      ' ( !pairs:?A+#*(!n.?m)+?Z
+                        & !A+!Z:?pairs
+                        & ( !pairs:?+#*(?.!m)+?
+                          | !m !S:?S
+                          )
+                        )
+                    )
+                & ( !pairs:0
+                  | log$"graph has at least one cycle"
+                  )
+                & !L
+            )
+          & Kahn$!pairs
+      )
       ( set
       =   S L e
         .   0:?S
@@ -1541,11 +1627,16 @@ toolsProg=
       ( makeWorkflowRadioButtons
       =     i buttons nr Nsteps Ntools currNsteps
           , disambiguatedworkflowlist groupedworkflowlist n nth
-          , o pat pipe pipes prev sameToolDifferentRoles
+          , o pat pipe pipes sameToolDifferentRoles
           , toolPlumbing "*" simplify translateToHumanLanguage
           , wf wfs workflow workflowlist saveio toolPattern
           , enumerateToolsDetail
           , abbR reorderedworkflowlist struct weight
+          , infoAboutTool nsteps ntools
+          , theUsedTools toolRows transpose
+          , currNtools currToolPlumbing currToolsUsed hyperlinks thead
+          , toolSetID toolTable toolUsageList toolsUsed
+          , topologicalOrderedTools
         .   !arg:?pipes
           & ( enumerateToolsDetail
             =   tool o i predecessors myfold,a b
@@ -2203,7 +2294,7 @@ toolsProg=
             )
           & ( sameToolDifferentRoles
             =     delta Delta replac I O
-                , result simple tool tree
+                , simple tool tree
                 , details flatlist updat
                 , fx fy reps sx sy
               .   ( delta
@@ -2401,9 +2492,11 @@ toolsProg=
             |   log
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
+          &   topologicalOrder$!disambiguatedworkflowlist
+            : ?topologicalOrderedTools
           & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
           & ( ntools
-            =   
+            =   below
               .   !arg:(?arg.?below)
                 & ( p
                   .   !below:|(id.below)
@@ -2454,7 +2547,7 @@ toolsProg=
               .   !arg:(?.) ?&
                 |       map
                       $ ( ( 
-                          =   
+                          =   ID a
                             .   !arg:(?ID.%?a ?arg)
                               & (!a.!ID.!arg)
                           )
@@ -2546,47 +2639,6 @@ toolsProg=
                   & 1+!nth:?nth
                   )
               &   (   (|!toolUsageList:? [>1)
-                    & :?allUsedTools
-                    &   map
-                      $ ( ( 
-                          =   seen unseen ID
-                            .   !arg:(?ID.?arg)
-                              & :?seen:?sofar
-                              &   map
-                                $ ( ( 
-                                    =   A cur Z
-                                      .   !arg:?cur
-                                        & (     !allUsedTools
-                                              : ?A !cur ?Z
-                                            &   map
-                                              $ ( ( 
-                                                  =   
-                                                    .   !A:? !arg ?
-                                                      |     !Z
-                                                          : ?m !arg ?Z
-                                                        &   !A !m !arg
-                                                          : ?A
-                                                  )
-                                                . !sofar
-                                                )
-                                            &   !A !cur !Z
-                                              : ?allUsedTools
-                                            & !A !cur:?seen
-                                          |     !allUsedTools
-                                              : !seen ?unseen
-                                            & !seen !cur:?seen
-                                            &   !seen !unseen
-                                              : ?allUsedTools
-                                          )
-                                        & !cur !sofar:?sofar
-                                    )
-                                  . !arg
-                                  )
-                          )
-                        . !toolUsageList
-                        )
-                    & log$(toolUsageList !toolUsageList)
-                    & log$(allUsedTools !allUsedTools)
                     &     map
                         $ ( ( 
                             =   ID cur
@@ -2599,14 +2651,13 @@ toolsProg=
                                               & (◼|■)
                                             | " "
                                         )
-                                      . !allUsedTools
+                                      . !topologicalOrderedTools
                                       )
                                   )
                             )
                           . !toolUsageList
                           )
                       : ?toolTable
-                    & log$(toolTable !toolTable)
                     & (   !toolUsageList:? [>1
                         &   ( thead
                             .   
@@ -2622,7 +2673,7 @@ toolsProg=
                                       )
                                       (   map
                                         $ ( ( 
-                                            =   
+                                            =   ID
                                               .   !arg:(?ID.?)
                                                 & ( th
                                                   .   
@@ -2662,7 +2713,11 @@ toolsProg=
                               & !thead
                             | 
                             )
-                            (tbody.,toolRows$(!allUsedTools.!toolTable))
+                            ( tbody
+                            .   
+                              ,   toolRows
+                                $ (!topologicalOrderedTools.!toolTable)
+                            )
                             (   !toolUsageList:? [>1
                               & ( thead
                                 .   
@@ -10231,6 +10286,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               ".withmetadata.xml"
             )
       )
+      (RelationsFile=.str$(!arg ".relations.csv"))
       "
 /**
  * doneJob
@@ -11049,7 +11105,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?steps.?shortletter)
                 &     map
                     $ ( ( 
-                        =   
+                        =   relationsfil
                           .     !arg
                               : ( step
                                 .   
@@ -11120,6 +11176,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   : ?Href2nometa
                                 &   FilenameRelations$!filename
                                   : ?Href2relations
+                                &   RelationsFile$!filename
+                                  : ?relationsfil
                                 &   ( dt
                                     .   
                                       , ( strong
@@ -12644,7 +12702,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           $ (paragraph$"Select a file to convert to TEI.")
                           )
                       )
-                | singleworkflow$(!arg !Items)
+                | chosenworkflow$(!arg !Items)
                 |   str
                   $ (200~~~ toML$(!BodyContainer$(paragraph$!errmsg)))
                 )
@@ -12805,7 +12863,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( showworkflows
       =     Tool parms Items items formFields val
           , Submit pipes presels errors BodyContainer
-          , PIPE A wrkflw Z itms TooManyOrNone
+          , PIPE A wrkflw Z itms TooManyOrNone updateUploads
           , ShowAllPipes rstr canConsumeMetadata rpl NNN
           , allpipes batch cllas restr restriction sources
         .   ( ShowAllPipes
@@ -13863,7 +13921,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( "We are past the first stage: the user has pressed a button"
             =     pipes Submit hiddenData
                 , parms nth pipe batch Items mail2 ERR
-                , cllas allpipes
+                , cllas allpipes ViewDetails
                 , Workflows restr
                 , restriction sources
               .     !arg
