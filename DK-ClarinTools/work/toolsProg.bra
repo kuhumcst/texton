@@ -1555,12 +1555,10 @@ toolsProg=
                 | 0
             )
           & 0:?edges
-          & log$(topologicalOrder !arg)
           &   map
             $ ( ( 
                 =   
                   .   !arg:(?toolPlumbing.?arg)
-                    & log$(ARG !arg)
                     &   whl
                       ' ( !arg:(?,?workflow) ?arg
                         & edg$!workflow+!edges:?edges
@@ -1568,9 +1566,7 @@ toolsProg=
                 )
               . !arg
               )
-          & log$topologicalOrderDONE
           & pr$(.!edges):?pairs
-          & log$(pairs !pairs)
           & ( 2p
             =   a b
               .     !arg:%@?a %@?b ?arg
@@ -3346,45 +3342,59 @@ toolsProg=
               .   (?selected.?prefix)
                 | ?selected&:?prefix
               )
-          &     ( option
-                .   (id.str$(b !tabind)) (value.)
-                  , chu$8239
+          &     map
+              $ ( ( 
+                  =   f a
+                    .   !arg:(?f.(?a.?)|?a)
+                      & (low$(localized$!f:?f).!f.!a)
+                  )
+                . !table
                 )
-                \r\n
-            : ?options
-          &   whl
-            ' (   !table
-                : (?full.(?aBbR.?)|?aBbR) ?table
-              &     !options
-                    ( option
-                    .     ( id
-                          .   str
-                            $ ( ( @(!aBbR:%@?startchar ?name)
-                                & (     !startchar
-                                      : allowedChar$('$NCNameStartChar)
-                                    &   vap$((=.!arg).!name)
-                                      : ~(? ~!NCName ?)
-                                    & !aBbR
-                                  |     vap$((=.!arg).!aBbR)
-                                      : ~(? ~!NCName ?)
-                                    & I !aBbR
-                                  | X
-                                  )
-                                )
-                                !tabind
-                              )
-                          )
-                          (value.str$(!prefix !aBbR):~)
-                          (   !selected:!aBbR
-                            & (selected.selected)
-                          | 
-                          )
-                      , localized$!full
-                    )
-                    \r\n
-                : ?options
+            : ?stable
+          & ( !stable:? [<5
+            | sort$!stable:?stable
+            )
+          &   ( option
+              .   (id.str$(b !tabind)) (value.)
+                , chu$8239
               )
-          & !options
+              \r\n
+                map
+              $ ( ( 
+                  =   
+                    .   !arg:(?.?full.?aBbR)
+                      &   ( option
+                          .     ( id
+                                .   str
+                                  $ ( ( @(!aBbR:%@?startchar ?name)
+                                      & (     !startchar
+                                            :   allowedChar
+                                              $ ('$NCNameStartChar)
+                                          &     vap
+                                              $ ((=.!arg).!name)
+                                            : ~(? ~!NCName ?)
+                                          & !aBbR
+                                        |       vap
+                                              $ ((=.!arg).!aBbR)
+                                            : ~(? ~!NCName ?)
+                                          & I !aBbR
+                                        | X
+                                        )
+                                      )
+                                      !tabind
+                                    )
+                                )
+                                (value.str$(!prefix !aBbR):~)
+                                (   !selected:!aBbR
+                                  & (selected.selected)
+                                | 
+                                )
+                            , !full
+                          )
+                          \r\n
+                  )
+                . !stable
+                )
       )
       "
 /**
@@ -3836,12 +3846,23 @@ toolsProg=
           & !arg
       )
       ( sort
-      =   S L e
-        .   0:?S
-          & whl'(!arg:%?e ?arg&!e+!S:?S)
+      =   S L e f
+        .   :?L
+          &   whl
+            ' ( !arg:%?e ?arg
+              & (!e.) !L:?L
+              )
+          &   whl
+            ' ( :?S
+              &   whl
+                ' (!L:%?e %?f ?L&!e+!f !S:?S)
+              & !L !S:% %:?L
+              )
           & :?L
-          & whl'(!S:%?e+?S&!L !e:?L)
-          & !L
+          & whl'(!S:(?e.)+?S&!e !L:?L)
+          & :?S
+          & whl'(!L:%?e ?L&!e !S:?S)
+          & !S
       )
       "
 /*
@@ -12660,7 +12681,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & startclock$
           & log$CREATELOGJE
           & !arg:?parms:?arg
-          & log$(parms !parms)
           & ( !parms:? (itms.?itms) ?
             | 1:?itms
             )
@@ -12691,7 +12711,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & buildItemListFromForeignData$!parms:?Items
           &   analyzeInput$(!parms.!Items.!errors)
             : (?Items.?presels.?errors)
-          & log$(parms !parms Items !Items presels !presels)
           & ( !errors:~
             |   !arg:?A (wrkflw.%?wrkflw ?) ?Z
               & (   !Items:
