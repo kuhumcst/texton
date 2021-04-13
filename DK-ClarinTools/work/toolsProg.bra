@@ -2600,7 +2600,8 @@ toolsProg=
                           & !toolsUsed:?currToolsUsed
                           & !Nsteps:?currNsteps
                           & !toolPlumbing:?currToolPlumbing
-                          &   (hr.,)
+                          &   butts$()
+                              (hr.,)
                               (hr.,)
                               ntools$(!Ntools.)
                               theUsedTools$!toolsUsed
@@ -2610,7 +2611,8 @@ toolsProg=
                             : ?currToolsUsed
                           & !Nsteps:?currNsteps
                           & !toolPlumbing:?currToolPlumbing
-                          &   (hr.,)
+                          &   butts$()
+                              (hr.,)
                               theUsedTools$!toolsUsed
                               nsteps$!Nsteps
                         |   !Nsteps:~!currNsteps:?currNsteps
@@ -2635,6 +2637,7 @@ toolsProg=
                     : ?buttons
                   & 1+!nth:?nth
                   )
+              & !buttons butts$:?buttons
               &   (   (|!toolUsageList:? [>1)
                     &     map
                         $ ( ( 
@@ -2664,27 +2667,30 @@ toolsProg=
                                       .   
                                         ,   localized$(tools værktøjer)
                                             🠓
-                                            " ⧹ "
-                                            localized$hyperlinks
-                                            🠒
-                                      )
-                                      (   map
-                                        $ ( ( 
-                                            =   ID
-                                              .   !arg:(?ID.?)
-                                                & ( th
-                                                  .   
-                                                    , ( a
-                                                      .   ( href
-                                                          . str$("#" !ID)
-                                                          )
-                                                        , ⬇
-                                                      )
-                                                  )
+                                            ( 
+                                            |   " ⧹ "
+                                                localized$hyperlinks
+                                                🠒
                                             )
-                                          . !toolTable
-                                          )
-                                      : ?hyperlinks
+                                      )
+                                      (     map
+                                          $ ( ( 
+                                              =   ID
+                                                .   !arg:(?ID.?)
+                                                  & ( th
+                                                    .   
+                                                      , ( a
+                                                        .   ( href
+                                                            . str$("#" !ID)
+                                                            )
+                                                          , ⬇
+                                                        )
+                                                    )
+                                              )
+                                            . !toolTable
+                                            )
+                                        : ?hyperlinks
+                                      & 
                                       )
                                 )
                             )
@@ -2704,37 +2710,57 @@ toolsProg=
                                 toolRows$(!tools.!rows)
                           | 
                       )
-                    & ( table
-                      .   (id.t01)
-                        ,   (   !toolUsageList:? [>1
-                              & !thead
-                            | 
-                            )
-                            ( tbody
-                            .   
-                              ,   toolRows
-                                $ (!topologicalOrderedTools.!toolTable)
-                            )
-                            (   !toolUsageList:? [>1
-                              & ( thead
-                                .   
-                                  , ( tr
-                                    .   
-                                      ,   ( th
-                                          .   
-                                            ,     localized
-                                                $ (tools værktøjer)
-                                                🠑
-                                                " ⧸ "
-                                                localized$hyperlinks
-                                                🠒
-                                          )
-                                          !hyperlinks
-                                    )
+                    &   ( table
+                        .   (id.t01)
+                          ,   (   !toolUsageList:? [>1
+                                & !thead
+                              | 
+                              )
+                              ( tbody
+                              .   
+                                ,   toolRows
+                                  $ (!topologicalOrderedTools.!toolTable)
+                              )
+                              (   !toolUsageList:? [>1
+                                & ( thead
+                                  .   
+                                    , ( tr
+                                      .   
+                                        ,   ( th
+                                            .   
+                                              ,   ( 
+                                                  |     localized
+                                                      $ (tools værktøjer)
+                                                      🠑
+                                                      " ⧸ "
+                                                  )
+                                                  localized$hyperlinks
+                                                  🠒
+                                            )
+                                            !hyperlinks
+                                      )
+                                  )
+                              | 
+                              )
+                        )
+                        ( p
+                        .   
+                          ,   (br.,)
+                                localized
+                              $ ( "Move the mouse pointer over the tool names for a short explanation of what the tool does."
+                                  "Du får en kort forklaring for hvert værktøj ved at flytte musepilen over værktøjets navn."
                                 )
-                            | 
-                            )
-                      )
+                              (br.,)
+                                localized
+                              $ ( "Click on the hyperlink for the preferred tools, and find all workflows that can be generated by the tools."
+                                  "Klik på hyperlinket for de værktøjer som du foretrækker, og se alle arbejdgange med disse værktøjer."
+                                )
+                              (br.,)
+                                localized
+                              $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
+                                  "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
+                                )
+                        )
                   | 
                   )
                   !buttons
@@ -12895,8 +12921,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                 & ( butts
                   =   
-                    .   submit$(localized$("View details" "Se detaljer"))
-                        submit$Metadata
+                    .   ( p
+                        .   
+                          ,   localized
+                            $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
+                                "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
+                              )
+                        )
+                        submit$(localized$("View details" "Se detaljer"))
+                        (|submit$Metadata)
                         submit$Submit
                         helplink$()
                         (br.,)
@@ -12924,11 +12957,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                               )
                                             (br.,)
                                               localized
-                                            $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
-                                                "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
-                                              )
-                                            (br.,)
-                                              localized
                                             $ ( "You can use the table if you first want to learn which tools can be combined."
                                                 "Du kan bruge tabellen hvis du først vil undersøge hvilke værktøjer lader sig kombinere."
                                               )
@@ -12939,8 +12967,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                               )
                                             (br.,)
                                               localized
-                                            $ ( "Find the column that has the tools that you prefer to use and click on the hyperlink for that column."
-                                                "Find den kolonne som har de værktøjer som du foretrækker og klik på hyperlinket for den kolonne."
+                                            $ ( "Click on the hyperlink for the preferred tools, and find all workflows that can be generated by the tools."
+                                                "Klik på hyperlinket for de værktøjer som du foretrækker, og se alle arbejdgange med disse værktøjer."
+                                              )
+                                            (br.,)
+                                              localized
+                                            $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
+                                                "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
                                               )
                                       )
                                 |   (h3.,Workflow)
@@ -12954,13 +12987,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                                   form
                                 $ ( chosenworkflow
-                                  .     submit
-                                      $ ( localized
-                                        $ ("View details" "Se detaljer")
-                                        )
-                                      submit$Metadata
-                                      submit$Submit
-                                      helplink$()
+                                  .   helplink$()
                                       (br.,)
                                       makeHiddenFields$!hiddenData
                                       makeWorkflowRadioButtons$!pipes
