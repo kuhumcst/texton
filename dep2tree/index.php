@@ -141,7 +141,7 @@ try {
             $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
-            $url = $urlbase . $item;
+            $url = $urlbase . urlencode($item);
             //logit("requestParm:$requestParm");
             //logit("urlbase:$urlbase");
             //logit("item:$item");
