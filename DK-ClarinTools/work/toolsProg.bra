@@ -870,6 +870,7 @@ toolsProg=
                   (accept-charset.UTF-8)
                   (method.low$!method)
                   (action.!action)
+                  (class.formRounded)
               , (div.,!arg)
             )
       )
@@ -2067,7 +2068,10 @@ toolsProg=
                               |   !arg:%?a %?b
                                 & describe$(.!a):(?a.?an)
                                 & (       !a
-                                          arrow$(!an.!b)
+                                          (   !a:(div.?,∵ ?)
+                                            & 
+                                          | arrow$(!an.!b)
+                                          )
                                           (   describe$(.!b)
                                             : (?b.?bn)
                                           & !b
@@ -2569,7 +2573,7 @@ toolsProg=
             )
           & (   !reorderedworkflowlist:%+%
               & :?buttons
-              & 1:?nth
+              & 0:?nth
               & (   !reorderedworkflowlist
                   : ((?currNsteps.?),?)+?
                 | 1:?currNsteps
@@ -2578,65 +2582,89 @@ toolsProg=
               & 0:?currNtools
               & :?toolUsageList
               & 0:?toolSetID
-              &   whl
-                ' (   !reorderedworkflowlist
-                    :   (   ?weight
-                          : (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
-                        , (?abbR.?struct)
-                        )
-                      + ?reorderedworkflowlist
-                  &     !buttons
-                        (   !nth:1
-                          & !Ntools:?currNtools
-                          & !toolsUsed:?currToolsUsed
-                          & !Nsteps:?currNsteps
-                          & !toolPlumbing:?currToolPlumbing
-                          &   (hr.,)
-                              (hr.,)
-                              ntools$(!Ntools.below)
-                              theUsedTools$!toolsUsed
-                              nsteps$!Nsteps
-                        |   !Ntools:~!currNtools:?currNtools
-                          & !toolsUsed:?currToolsUsed
-                          & !Nsteps:?currNsteps
-                          & !toolPlumbing:?currToolPlumbing
-                          &   butts$()
-                              (hr.,)
-                              (hr.,)
-                              ntools$(!Ntools.)
-                              theUsedTools$!toolsUsed
-                              nsteps$!Nsteps
-                        |     !toolsUsed
-                            : ~!currToolsUsed
-                            : ?currToolsUsed
-                          & !Nsteps:?currNsteps
-                          & !toolPlumbing:?currToolPlumbing
-                          &   butts$()
-                              (hr.,)
-                              theUsedTools$!toolsUsed
-                              nsteps$!Nsteps
-                        |   !Nsteps:~!currNsteps:?currNsteps
-                          & !toolPlumbing:?currToolPlumbing
-                          & nsteps$!Nsteps
-                        |     !toolPlumbing
-                            : ~!currToolPlumbing
-                            : ?currToolPlumbing
-                          & 
-                        | 
-                        )
-                        !nth
-                        ( input
-                        .     (type.radio)
-                              (name.nth)
-                              (value.!nr)
-                          , 
-                        )
-                        translateToHumanLanguage$(!abbR.!struct.many)
-                        (br.,)
-                        (br.,)
-                    : ?buttons
-                  & 1+!nth:?nth
-                  )
+              &   sum2list$!reorderedworkflowlist
+                : ?reorderedworkflowlist
+              &     map
+                  $ ( ( 
+                      =   
+                        .     !arg
+                            : ( 
+                              .     ?weight
+                                  : ( ?Ntools
+                                    . ?toolsUsed
+                                    . ?Nsteps
+                                    . ?toolPlumbing
+                                    . ?nr
+                                    )
+                                , (?abbR.?struct)
+                              )
+                          & 1+!nth:?nth
+                          &   (   !nth:1
+                                & !Ntools:?currNtools
+                                & !toolsUsed:?currToolsUsed
+                                & !Nsteps:?currNsteps
+                                & !toolPlumbing:?currToolPlumbing
+                                &   (hr.,)
+                                    (hr.,)
+                                    ntools$(!Ntools.below)
+                                    theUsedTools$!toolsUsed
+                                    nsteps$!Nsteps
+                              |     !Ntools
+                                  : ~!currNtools
+                                  : ?currNtools
+                                & !toolsUsed:?currToolsUsed
+                                & !Nsteps:?currNsteps
+                                & !toolPlumbing:?currToolPlumbing
+                                &   butts$()
+                                    (hr.,)
+                                    (hr.,)
+                                    ntools$(!Ntools.)
+                                    theUsedTools$!toolsUsed
+                                    nsteps$!Nsteps
+                              |     !toolsUsed
+                                  : ~!currToolsUsed
+                                  : ?currToolsUsed
+                                & !Nsteps:?currNsteps
+                                & !toolPlumbing:?currToolPlumbing
+                                &   butts$()
+                                    (hr.,)
+                                    theUsedTools$!toolsUsed
+                                    nsteps$!Nsteps
+                              |     !Nsteps
+                                  : ~!currNsteps
+                                  : ?currNsteps
+                                & !toolPlumbing:?currToolPlumbing
+                                & nsteps$!Nsteps
+                              |     !toolPlumbing
+                                  : ~!currToolPlumbing
+                                  : ?currToolPlumbing
+                                & 
+                              | 
+                              )
+                              !nth
+                              \r\n
+                              ( input
+                              .     (type.submit)
+                                    (name.str$(bview- !nr))
+                                    (value.🔍)
+                                , 
+                              )
+                              \r\n
+                              ( input
+                              .     (type.submit)
+                                    (name.str$(bsubmit- !nr))
+                                    (value.►)
+                                , 
+                              )
+                              \r\n
+                                translateToHumanLanguage
+                              $ (!abbR.!struct.many)
+                              (br.,)
+                              (br.,)
+                      )
+                    . !reorderedworkflowlist
+                    )
+                : ?buttons
               & !buttons butts$:?buttons
               &   (   (|!toolUsageList:? [>1)
                     &     map
@@ -2757,8 +2785,8 @@ toolsProg=
                                 )
                               (br.,)
                                 localized
-                              $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
-                                  "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
+                              $ ( "Select a workflow by pressing a 🔍 (View details) or ► (Submit) button."
+                                  "Vælg en arbejdsgang ved at trykke på 🔍 (Se detaljer) eller ► (Submit)."
                                 )
                         )
                   | 
@@ -2993,7 +3021,32 @@ toolsProg=
                 "    background-color: #eee;"
                 \r\n
                 "}"
+                \r\n
                 "*:target {background: yellow;}"
+                \r\n
+                ".formRounded input[type=\"submit\"] {"
+                \r\n
+                "color:#FFFFFF;"
+                \r\n
+                "background-color:#5d9cec;"
+                \r\n
+                "border-color:#68A9fb;"
+                \r\n
+                "text-align:center;"
+                \r\n
+                "vertical-align:middle;"
+                \r\n
+                "cursor:pointer;"
+                \r\n
+                "border:1px solid black;"
+                \r\n
+                "padding:6px 6px;"
+                \r\n
+                "font-size:14px;"
+                \r\n
+                "border-radius:4px;"
+                \r\n
+                "}"
           )
           \r\n
       )
@@ -12791,7 +12844,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
       )
       ( supplementParmsAndHiddenData
-      =   Submit batch,handle parms rstr
+      =   Submit batch,handle parms rstr nth
         .   "Shall we treat all resources in one job (non-batch) or shall
              we send each input through a different (though similar) job?"
           & !arg:(?parms.?hiddenData)
@@ -12823,8 +12876,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & unpackIOparms$!parms:?parms
           & checkIOparms$!parms
           & readTable$tooladm
-          & !parms:? (bsubmit.?Submit) ?
-          & (!parms.!Submit.!hiddenData.!batch)
+          & (   !parms:? (bsubmit.?Submit) ?
+              & (!parms.!Submit.!hiddenData.!batch)
+            |   !parms:? (@(?:bview- ?nth).?) ?
+              &   localized$(localized$("View details" "Se detaljer"))
+                : ?Submit
+              & ( (nth.!nth) !parms
+                . !Submit
+                . !hiddenData
+                . !batch
+                )
+            |   !parms:? (@(?:bsubmit- ?nth).?) ?
+              & Submit:?Submit
+              & ( (nth.!nth) !parms
+                . !Submit
+                . !hiddenData
+                . !batch
+                )
+            )
       )
       ( NoWay
       =   restriction restr clls
@@ -12921,17 +12990,20 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                 & ( butts
                   =   
-                    .   ( p
-                        .   
-                          ,   localized
-                            $ ( "Select a workflow before pressing the \"View details\" or \"Submit\" button."
-                                "Vælg en arbejdsgang og tryk på \"Se detaljer\"- eller \"Submit\"-knappen"
-                              )
+                    .   ( 
+                        |   ( p
+                            .   
+                              ,   localized
+                                $ ( "Select a workflow by pressing the 🔍 (View details) or ► (Submit) button."
+                                    "Vælg en arbejdsgang og tryk på 🔍 (Se detaljer) eller ► (Submit)."
+                                  )
+                            )
+                              submit
+                            $ (localized$("View details" "Se detaljer"))
+                            (|submit$Metadata)
+                            submit$Submit
+                            helplink$
                         )
-                        submit$(localized$("View details" "Se detaljer"))
-                        (|submit$Metadata)
-                        submit$Submit
-                        helplink$()
                         (br.,)
                   )
                 &   str
@@ -14018,7 +14090,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         &   localized$("View details" "Se detaljer")
                           : ?ViewDetails
                         & (     !Submit
-                              : ( !ViewDetails
+                              : ( !ViewDetails (" - " ?nth|)
                                 | @(?:(prev|next) ?)
                                 )
                             & ShowOnlyTheCurrentPipe$(!pipe.!nth)
