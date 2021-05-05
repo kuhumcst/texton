@@ -1622,19 +1622,358 @@ toolsProg=
           & !L
       )
       ( makeWorkflowRadioButtons
-      =     i buttons nr Nsteps Ntools currNsteps
-          , disambiguatedworkflowlist groupedworkflowlist n nth
+      =     i nr Nsteps Ntools enumerateToolsDetail
+          , disambiguatedworkflowlist groupedworkflowlist n
           , o pat pipe pipes sameToolDifferentRoles
           , toolPlumbing "*" simplify translateToHumanLanguage
           , wf wfs workflow workflowlist saveio toolPattern
-          , enumerateToolsDetail
           , abbR reorderedworkflowlist struct weight
-          , infoAboutTool nsteps ntools
-          , theUsedTools toolRows transpose
-          , currNtools currToolPlumbing currToolsUsed hyperlinks thead
-          , toolSetID toolTable toolUsageList toolsUsed
-          , topologicalOrderedTools
-        .   !arg:?pipes
+          , toolsUsed topologicalOrderedTools candidateList
+        .   ( candidateList
+            =     reorderedworkflowlist butts nsteps ntools
+                , theUsedTools infoAboutTool toolRows transpose
+                , currNsteps currNtools currToolPlumbing currToolsUsed
+                , hyperlinks nth thead toolSetID buttons
+                , toolTable toolUsageList topologicalOrderedTools
+              .   ( butts
+                  =   
+                    .   ( 
+                        |   ( p
+                            .   
+                              ,   localized
+                                $ ( "Select a workflow by pressing the 🔍 (View details) or ► (Submit) button."
+                                    "Vælg en arbejdsgang og tryk på 🔍 (Se detaljer) eller ► (Submit)."
+                                  )
+                            )
+                              submit
+                            $ (localized$("View details" "Se detaljer"))
+                            (|submit$Metadata)
+                            submit$Submit
+                            helplink$
+                        )
+                        (br.,)
+                  )
+                & ( nsteps
+                  =   
+                    . p
+                    .   
+                      ,   "("
+                          !arg
+                          " "
+                            localized
+                          $ ( ( !arg:1&step
+                              | steps
+                              )
+                              trin
+                            )
+                          ")"
+                  )
+                & ( ntools
+                  =   below
+                    .   !arg:(?arg.?below)
+                      & ( p
+                        .   !below:|(id.below)
+                          , ( strong
+                            .   
+                              ,   (🗱|💈)
+                                  " "
+                                  !arg
+                                  " "
+                                    localized
+                                  $ (   !arg:1
+                                      & tool værktøj
+                                    | tools værktøjer
+                                    )
+                            )
+                        )
+                  )
+                & ( theUsedTools
+                  =   ID
+                    .       !toolUsageList
+                            (   str$(T (1+!toolSetID:?toolSetID))
+                              : ?ID
+                            . !arg
+                            )
+                        : ?toolUsageList
+                      & (   map$((=.", " !arg).!arg)
+                          : ", " ?arg
+                        | 
+                        )
+                      & (p.(id.!ID),(strong.,!arg))
+                  )
+                & ( infoAboutTool
+                  =   Description
+                    .     !tooladm
+                        :   ?
+                          + ( ? (Title.!arg) ?
+                            : ? (Description.?Description) ?
+                            )
+                          + ?
+                      & ( div
+                        .   (class.tooltip)
+                          ,   !arg
+                              ( span
+                              . (class.tooltiptext),!Description
+                              )
+                        )
+                  )
+                & ( toolRows
+                  =   tool tools row rows
+                    .       !arg
+                          : (%?tool ?tools.(?.?row) ?rows)
+                        &   ( tr
+                            .   
+                              ,   (td.,infoAboutTool$!tool)
+                                  map$((=.td.,!arg).!row)
+                            )
+                            toolRows$(!tools.!rows)
+                      | 
+                  )
+                & ( transpose
+                  =   L ID a
+                    .   !arg:(?.) ?&
+                      |       map
+                            $ ( ( 
+                                =   ID a
+                                  .   !arg:(?ID.%?a ?arg)
+                                    & (!a.!ID.!arg)
+                                )
+                              . !arg
+                              )
+                          : ?L
+                        &   ( 
+                            .   map
+                              $ ( ( 
+                                  =   
+                                    .   !arg:(?arg.?)
+                                      & !arg
+                                  )
+                                . !L
+                                )
+                            )
+                              transpose
+                            $ ( map
+                              $ ( ( 
+                                  =   
+                                    .   !arg:(?.?arg)
+                                      & !arg
+                                  )
+                                . !L
+                                )
+                              )
+                  )
+                &   !arg
+                  : (?reorderedworkflowlist.?topologicalOrderedTools)
+                & 0:?nth
+                & (   !reorderedworkflowlist
+                    : ((?currNsteps.?),?)+?
+                  | 1:?currNsteps
+                  )
+                & :?currToolPlumbing:?currToolsUsed
+                & 0:?currNtools
+                & :?toolUsageList
+                & 0:?toolSetID
+                &   sum2list$!reorderedworkflowlist
+                  : ?reorderedworkflowlist
+                &       map
+                      $ ( ( 
+                          =     Nsteps Ntools abbR nr
+                              , struct toolPlumbing toolsUsed weight
+                            .     !arg
+                                : ( 
+                                  .     ?weight
+                                      : ( ?Ntools
+                                        . ?toolsUsed
+                                        . ?Nsteps
+                                        . ?toolPlumbing
+                                        . ?nr
+                                        )
+                                    , (?abbR.?struct)
+                                  )
+                              & 1+!nth:?nth
+                              &   (   !nth:1
+                                    & !Ntools:?currNtools
+                                    & !toolsUsed:?currToolsUsed
+                                    & !Nsteps:?currNsteps
+                                    & !toolPlumbing:?currToolPlumbing
+                                    &   (hr.,)
+                                        (hr.,)
+                                        ntools$(!Ntools.below)
+                                        theUsedTools$!toolsUsed
+                                        nsteps$!Nsteps
+                                  |     !Ntools
+                                      : ~!currNtools
+                                      : ?currNtools
+                                    & !toolsUsed:?currToolsUsed
+                                    & !Nsteps:?currNsteps
+                                    & !toolPlumbing:?currToolPlumbing
+                                    &   butts$()
+                                        (hr.,)
+                                        (hr.,)
+                                        ntools$(!Ntools.)
+                                        theUsedTools$!toolsUsed
+                                        nsteps$!Nsteps
+                                  |     !toolsUsed
+                                      : ~!currToolsUsed
+                                      : ?currToolsUsed
+                                    & !Nsteps:?currNsteps
+                                    & !toolPlumbing:?currToolPlumbing
+                                    &   butts$()
+                                        (hr.,)
+                                        theUsedTools$!toolsUsed
+                                        nsteps$!Nsteps
+                                  |     !Nsteps
+                                      : ~!currNsteps
+                                      : ?currNsteps
+                                    & !toolPlumbing:?currToolPlumbing
+                                    & nsteps$!Nsteps
+                                  |     !toolPlumbing
+                                      : ~!currToolPlumbing
+                                      : ?currToolPlumbing
+                                    & 
+                                  | 
+                                  )
+                                  !nth
+                                  \r\n
+                                  ( input
+                                  .     (type.submit)
+                                        (name.str$(bview- !nr))
+                                        (value.🔍)
+                                    , 
+                                  )
+                                  \r\n
+                                  ( input
+                                  .     (type.submit)
+                                        (name.str$(bsubmit- !nr))
+                                        (value.►)
+                                    , 
+                                  )
+                                  \r\n
+                                    translateToHumanLanguage
+                                  $ (!abbR.!struct.many)
+                                  (br.,)
+                                  (br.,)
+                          )
+                        . !reorderedworkflowlist
+                        )
+                      butts$
+                  : ?buttons
+                &   (   (|!toolUsageList:? [>1)
+                      &     map
+                          $ ( ( 
+                              =   ID cur
+                                .   !arg:(?ID.?cur)
+                                  & ( !ID
+                                    .   map
+                                      $ ( ( 
+                                          =   
+                                            .     !cur:? !arg ?
+                                                & (◼|■)
+                                              | " "
+                                          )
+                                        . !topologicalOrderedTools
+                                        )
+                                    )
+                              )
+                            . !toolUsageList
+                            )
+                        : ?toolTable
+                      & (   !toolUsageList:? [>1
+                          &   ( thead
+                              .   
+                                , ( tr
+                                  .   
+                                    ,   ( th
+                                        .   
+                                          ,     localized
+                                              $ (tools værktøjer)
+                                              🠓
+                                              ( 
+                                              |   " ⧹ "
+                                                  localized$hyperlinks
+                                                  🠒
+                                              )
+                                        )
+                                        (     map
+                                            $ ( ( 
+                                                =   ID
+                                                  .   !arg:(?ID.?)
+                                                    & ( th
+                                                      .   
+                                                        , ( a
+                                                          .   ( href
+                                                              . str$("#" !ID)
+                                                              )
+                                                            , ⬇
+                                                          )
+                                                      )
+                                                )
+                                              . !toolTable
+                                              )
+                                          : ?hyperlinks
+                                        & 
+                                        )
+                                  )
+                              )
+                            : ?thead
+                        | 
+                        )
+                      & transpose$!toolTable:?toolTable
+                      &   ( table
+                          .   (id.t01)
+                            ,   (   !toolUsageList:? [>1
+                                  & !thead
+                                | 
+                                )
+                                ( tbody
+                                .   
+                                  ,   toolRows
+                                    $ (!topologicalOrderedTools.!toolTable)
+                                )
+                                (   !toolUsageList:? [>1
+                                  & ( thead
+                                    .   
+                                      , ( tr
+                                        .   
+                                          ,   ( th
+                                              .   
+                                                ,   ( 
+                                                    |     localized
+                                                        $ (tools værktøjer)
+                                                        🠑
+                                                        " ⧸ "
+                                                    )
+                                                    localized$hyperlinks
+                                                    🠒
+                                              )
+                                              !hyperlinks
+                                        )
+                                    )
+                                | 
+                                )
+                          )
+                          ( p
+                          .   
+                            ,   (br.,)
+                                  localized
+                                $ ( "Move the mouse pointer over the tool names for a short explanation of what the tool does."
+                                    "Du får en kort forklaring for hvert værktøj ved at flytte musepilen over værktøjets navn."
+                                  )
+                                (br.,)
+                                  localized
+                                $ ( "Click on the hyperlink for the preferred tools, and find all workflows that can be generated by the tools."
+                                    "Klik på hyperlinket for de værktøjer som du foretrækker, og se alle arbejdgange med disse værktøjer."
+                                  )
+                                (br.,)
+                                  localized
+                                $ ( "Select a workflow by pressing a 🔍 (View details) or ► (Submit) button."
+                                    "Vælg en arbejdsgang ved at trykke på 🔍 (Se detaljer) eller ► (Submit)."
+                                  )
+                          )
+                    | 
+                    )
+                    !buttons
+            )
           & ( enumerateToolsDetail
             =   tool o i predecessors myfold,a b
               .       !arg
@@ -1830,20 +2169,6 @@ toolsProg=
                     : (=?"#")
                     )
                 & '$"#"
-            )
-          & ( infoAboutTool
-            =   Description
-              .     !tooladm
-                  :   ?
-                    + ( ? (Title.!arg) ?
-                      : ? (Description.?Description) ?
-                      )
-                    + ?
-                & ( div
-                  .   (class.tooltip)
-                    ,   !arg
-                        (span.(class.tooltiptext),!Description)
-                  )
             )
           & ( translateToHumanLanguage
             =     circle Circle Describe nice inoutdesc
@@ -2407,10 +2732,6 @@ toolsProg=
                     . !arg
                     )
             )
-          & "pipes is a unnumbered list sorted on directly on full workflow tree."
-          & :?workflowlist
-          & 0:?n
-          & log$enumerateToolsDetail
           & ( saveio
             =   n i o x y
               .     !arg:(?n.?i.~(?.?):?o)
@@ -2419,6 +2740,11 @@ toolsProg=
                   & (saveio$!x)_(saveio$!y)
                 | !arg
             )
+          & !arg:?pipes
+          & "pipes is a unnumbered list sorted on directly on full workflow tree."
+          & :?workflowlist
+          & 0:?n
+          & log$enumerateToolsDetail
           &   whl
             ' ( 1+!n:?n:<1000000
               & !pipes:%?pipe+?pipes
@@ -2492,313 +2818,17 @@ toolsProg=
             |   log
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
-          &   topologicalOrder$!disambiguatedworkflowlist
-            : ?topologicalOrderedTools
           & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
-          & ( ntools
-            =   below
-              .   !arg:(?arg.?below)
-                & ( p
-                  .   !below:|(id.below)
-                    , ( strong
-                      .   
-                        ,   (🗱|💈)
-                            " "
-                            !arg
-                            " "
-                              localized
-                            $ (   !arg:1
-                                & tool værktøj
-                              | tools værktøjer
-                              )
-                      )
+          & (     !reorderedworkflowlist
+                : (   ?weight
+                    : (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
+                  , (?abbR.?struct)
                   )
-            )
-          & ( theUsedTools
-            =   ID
-              .       !toolUsageList
-                      (   str$(T (1+!toolSetID:?toolSetID))
-                        : ?ID
-                      . !arg
-                      )
-                  : ?toolUsageList
-                & ( map$((=.", " !arg).!arg):", " ?arg
-                  | 
-                  )
-                & (p.(id.!ID),(strong.,!arg))
-            )
-          & ( nsteps
-            =   
-              . p
-              .   
-                ,   "("
-                    !arg
-                    " "
-                      localized
-                    $ ( ( !arg:1&step
-                        | steps
-                        )
-                        trin
-                      )
-                    ")"
-            )
-          & ( transpose
-            =   L ID a
-              .   !arg:(?.) ?&
-                |       map
-                      $ ( ( 
-                          =   ID a
-                            .   !arg:(?ID.%?a ?arg)
-                              & (!a.!ID.!arg)
-                          )
-                        . !arg
-                        )
-                    : ?L
-                  &   ( 
-                      .   map
-                        $ ( ( 
-                            = .!arg:(?arg.?)&!arg
-                            )
-                          . !L
-                          )
-                      )
-                        transpose
-                      $ ( map
-                        $ ( ( 
-                            = .!arg:(?.?arg)&!arg
-                            )
-                          . !L
-                          )
-                        )
-            )
-          & (   !reorderedworkflowlist:%+%
-              & :?buttons
-              & 0:?nth
-              & (   !reorderedworkflowlist
-                  : ((?currNsteps.?),?)+?
-                | 1:?currNsteps
-                )
-              & :?currToolPlumbing:?currToolsUsed
-              & 0:?currNtools
-              & :?toolUsageList
-              & 0:?toolSetID
-              &   sum2list$!reorderedworkflowlist
-                : ?reorderedworkflowlist
-              &     map
-                  $ ( ( 
-                      =   
-                        .     !arg
-                            : ( 
-                              .     ?weight
-                                  : ( ?Ntools
-                                    . ?toolsUsed
-                                    . ?Nsteps
-                                    . ?toolPlumbing
-                                    . ?nr
-                                    )
-                                , (?abbR.?struct)
-                              )
-                          & 1+!nth:?nth
-                          &   (   !nth:1
-                                & !Ntools:?currNtools
-                                & !toolsUsed:?currToolsUsed
-                                & !Nsteps:?currNsteps
-                                & !toolPlumbing:?currToolPlumbing
-                                &   (hr.,)
-                                    (hr.,)
-                                    ntools$(!Ntools.below)
-                                    theUsedTools$!toolsUsed
-                                    nsteps$!Nsteps
-                              |     !Ntools
-                                  : ~!currNtools
-                                  : ?currNtools
-                                & !toolsUsed:?currToolsUsed
-                                & !Nsteps:?currNsteps
-                                & !toolPlumbing:?currToolPlumbing
-                                &   butts$()
-                                    (hr.,)
-                                    (hr.,)
-                                    ntools$(!Ntools.)
-                                    theUsedTools$!toolsUsed
-                                    nsteps$!Nsteps
-                              |     !toolsUsed
-                                  : ~!currToolsUsed
-                                  : ?currToolsUsed
-                                & !Nsteps:?currNsteps
-                                & !toolPlumbing:?currToolPlumbing
-                                &   butts$()
-                                    (hr.,)
-                                    theUsedTools$!toolsUsed
-                                    nsteps$!Nsteps
-                              |     !Nsteps
-                                  : ~!currNsteps
-                                  : ?currNsteps
-                                & !toolPlumbing:?currToolPlumbing
-                                & nsteps$!Nsteps
-                              |     !toolPlumbing
-                                  : ~!currToolPlumbing
-                                  : ?currToolPlumbing
-                                & 
-                              | 
-                              )
-                              !nth
-                              \r\n
-                              ( input
-                              .     (type.submit)
-                                    (name.str$(bview- !nr))
-                                    (value.🔍)
-                                , 
-                              )
-                              \r\n
-                              ( input
-                              .     (type.submit)
-                                    (name.str$(bsubmit- !nr))
-                                    (value.►)
-                                , 
-                              )
-                              \r\n
-                                translateToHumanLanguage
-                              $ (!abbR.!struct.many)
-                              (br.,)
-                              (br.,)
-                      )
-                    . !reorderedworkflowlist
-                    )
-                : ?buttons
-              & !buttons butts$:?buttons
-              &   (   (|!toolUsageList:? [>1)
-                    &     map
-                        $ ( ( 
-                            =   ID cur
-                              .   !arg:(?ID.?cur)
-                                & ( !ID
-                                  .   map
-                                    $ ( ( 
-                                        =   
-                                          .     !cur:? !arg ?
-                                              & (◼|■)
-                                            | " "
-                                        )
-                                      . !topologicalOrderedTools
-                                      )
-                                  )
-                            )
-                          . !toolUsageList
-                          )
-                      : ?toolTable
-                    & (   !toolUsageList:? [>1
-                        &   ( thead
-                            .   
-                              , ( tr
-                                .   
-                                  ,   ( th
-                                      .   
-                                        ,   localized$(tools værktøjer)
-                                            🠓
-                                            ( 
-                                            |   " ⧹ "
-                                                localized$hyperlinks
-                                                🠒
-                                            )
-                                      )
-                                      (     map
-                                          $ ( ( 
-                                              =   ID
-                                                .   !arg:(?ID.?)
-                                                  & ( th
-                                                    .   
-                                                      , ( a
-                                                        .   ( href
-                                                            . str$("#" !ID)
-                                                            )
-                                                          , ⬇
-                                                        )
-                                                    )
-                                              )
-                                            . !toolTable
-                                            )
-                                        : ?hyperlinks
-                                      & 
-                                      )
-                                )
-                            )
-                          : ?thead
-                      | 
-                      )
-                    & transpose$!toolTable:?toolTable
-                    & ( toolRows
-                      =   tool tools row rows
-                        .       !arg
-                              : (%?tool ?tools.(?.?row) ?rows)
-                            &   ( tr
-                                .   
-                                  ,   (td.,infoAboutTool$!tool)
-                                      map$((=.td.,!arg).!row)
-                                )
-                                toolRows$(!tools.!rows)
-                          | 
-                      )
-                    &   ( table
-                        .   (id.t01)
-                          ,   (   !toolUsageList:? [>1
-                                & !thead
-                              | 
-                              )
-                              ( tbody
-                              .   
-                                ,   toolRows
-                                  $ (!topologicalOrderedTools.!toolTable)
-                              )
-                              (   !toolUsageList:? [>1
-                                & ( thead
-                                  .   
-                                    , ( tr
-                                      .   
-                                        ,   ( th
-                                            .   
-                                              ,   ( 
-                                                  |     localized
-                                                      $ (tools værktøjer)
-                                                      🠑
-                                                      " ⧸ "
-                                                  )
-                                                  localized$hyperlinks
-                                                  🠒
-                                            )
-                                            !hyperlinks
-                                      )
-                                  )
-                              | 
-                              )
-                        )
-                        ( p
-                        .   
-                          ,   (br.,)
-                                localized
-                              $ ( "Move the mouse pointer over the tool names for a short explanation of what the tool does."
-                                  "Du får en kort forklaring for hvert værktøj ved at flytte musepilen over værktøjets navn."
-                                )
-                              (br.,)
-                                localized
-                              $ ( "Click on the hyperlink for the preferred tools, and find all workflows that can be generated by the tools."
-                                  "Klik på hyperlinket for de værktøjer som du foretrækker, og se alle arbejdgange med disse værktøjer."
-                                )
-                              (br.,)
-                                localized
-                              $ ( "Select a workflow by pressing a 🔍 (View details) or ► (Submit) button."
-                                  "Vælg en arbejdsgang ved at trykke på 🔍 (Se detaljer) eller ► (Submit)."
-                                )
-                        )
-                  | 
-                  )
-                  !buttons
-            |     !reorderedworkflowlist
-                :   (   ?weight
-                      : (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
-                    , (?abbR.?struct)
-                    )
-                  + ?
               & translateToHumanLanguage$(!abbR.!struct.one) (br.,)
+            |     topologicalOrder$!disambiguatedworkflowlist
+                : ?topologicalOrderedTools
+              &   candidateList
+                $ (!reorderedworkflowlist.!topologicalOrderedTools)
             )
       )
       ( makePasswordFormField
@@ -9271,8 +9301,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & (!extension.!requestString)
             )
           & ( getDepsAndAddInputsToRequestString
-            =   in nfiles requestString
-              .   !arg:(?in.?nfiles.?requestString)
+            =   in nfiles requestString newJobs
+              .   !arg:(?in.?nfiles.?requestString.?newJobs)
                 &     map
                     $ ( ( 
                         =     feat vals Val spec file
@@ -9391,7 +9421,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 : (?extension.?requestString)
               & !in:?In
               &     getDepsAndAddInputsToRequestString
-                  $ (!in.!nfiles.!requestString)
+                  $ (!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
               &     !newJobs
                     ( !jobNr
@@ -13043,7 +13073,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from enact.java
  */"
       ( showworkflows
-      =     Tool parms Items items formFields val butts
+      =     Tool parms Items items formFields val
           , Submit pipes presels errors BodyContainer
           , PIPE A wrkflw Z itms TooManyOrNone updateUploads
           , ShowAllPipes rstr rpl NNN
@@ -13053,24 +13083,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?hiddenData.?pipes)
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
-                  )
-                & ( butts
-                  =   
-                    .   ( 
-                        |   ( p
-                            .   
-                              ,   localized
-                                $ ( "Select a workflow by pressing the 🔍 (View details) or ► (Submit) button."
-                                    "Vælg en arbejdsgang og tryk på 🔍 (Se detaljer) eller ► (Submit)."
-                                  )
-                            )
-                              submit
-                            $ (localized$("View details" "Se detaljer"))
-                            (|submit$Metadata)
-                            submit$Submit
-                            helplink$
-                        )
-                        (br.,)
                   )
                 &   str
                   $ ( 200~~~
