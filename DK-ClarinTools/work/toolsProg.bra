@@ -13104,14 +13104,77 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from enact.java
  */"
       ( showworkflows
-      =     Tool parms Items items formFields val
+      =     Tool parms Items items formFields val NothingToDo
           , Submit pipes presels errors BodyContainer
           , PIPE A wrkflw Z itms TooManyOrNone updateUploads
           , ShowAllPipes rstr rpl NNN reorderedworkflowlist
           , allpipes batch cllas restr restriction sources
         .   ( ShowAllPipes
+            =     hiddenData
+                  reorderedworkflowlist
+                  rstr
+                  "visualizedWorkFlow(s)"
+              .   !arg:(?hiddenData.?reorderedworkflowlist)
+                &   str
+                  $ ( 200~~~
+                        toML
+                      $ ( !BodyContainer
+                        $ (   makeWorkflowRadioButtons$!reorderedworkflowlist
+                            : ?"visualizedWorkFlow(s)"
+                          & (   !reorderedworkflowlist:%+%
+                              &   ( h3
+                                  . ,localized$(Workflows Arbejdsgange)
+                                  )
+                                  ( p
+                                  .   
+                                    ,   ( a
+                                        .   (href."#below")
+                                          , localized$(Below Forneden)
+                                        )
+                                          localized
+                                        $ ( " are the workflows that fulfil the goal set by you."
+                                            " er arbejdsgangene som løser din opgave."
+                                          )
+                                        (br.,)
+                                          localized
+                                        $ ( "You can use the table if you first want to learn which tools can be combined."
+                                            "Du kan bruge tabellen hvis du først vil undersøge hvilke værktøjer lader sig kombinere."
+                                          )
+                                  )
+                                    form
+                                  $ ( chosenworkflow
+                                    .   (br.,)
+                                        makeHiddenFields$!hiddenData
+                                        !"visualizedWorkFlow(s)"
+                                    )
+                            |   (h3.,Workflow)
+                                ( p
+                                .   
+                                  ,   localized
+                                    $ ( "This is the workflow that fulfils the goal set by you."
+                                        "Dette er arbejdsgangen som løser din opgave."
+                                      )
+                                )
+                                  form
+                                $ ( chosenworkflow
+                                  .   ( 
+                                      |   submit$"View details"
+                                          submit$Metadata
+                                      )
+                                      submit$Submit
+                                      helplink$()
+                                      (br.,)
+                                      makeHiddenFields$!hiddenData
+                                      !"visualizedWorkFlow(s)"
+                                  )
+                            )
+                          )
+                        )
+                    )
+            )
+          & ( NothingToDo
             =   hiddenData pipes rstr "visualizedWorkFlow(s)"
-              .   !arg:(?hiddenData.?pipes)
+              .   !arg:?hiddenData
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
                   )
@@ -13119,80 +13182,26 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   $ ( 200~~~
                         toML
                       $ ( !BodyContainer
-                        $ (   !pipes:(?.?)+?
-                            &   makeWorkflowsSequential$!pipes
-                              : ?reorderedworkflowlist
-                            &     makeWorkflowRadioButtons
-                                $ !reorderedworkflowlist
-                              : ?"visualizedWorkFlow(s)"
-                            & (   !pipes:%+%
-                                &   ( h3
-                                    .   
-                                      , localized$(Workflows Arbejdsgange)
-                                    )
-                                    ( p
-                                    .   
-                                      ,   ( a
-                                          .   (href."#below")
-                                            , localized$(Below Forneden)
-                                          )
-                                            localized
-                                          $ ( " are the workflows that fulfil the goal set by you."
-                                              " er arbejdsgangene som løser din opgave."
-                                            )
-                                          (br.,)
-                                            localized
-                                          $ ( "You can use the table if you first want to learn which tools can be combined."
-                                              "Du kan bruge tabellen hvis du først vil undersøge hvilke værktøjer lader sig kombinere."
-                                            )
-                                    )
-                                      form
-                                    $ ( chosenworkflow
-                                      .   (br.,)
-                                          makeHiddenFields$!hiddenData
-                                          !"visualizedWorkFlow(s)"
+                        $ ( ( h3
+                            .   
+                              ,   localized
+                                $ ("Nothing to do" "Der er intet at lave")
+                            )
+                            ( p
+                            .   
+                              ,     !rstr:
+                                  &   localized
+                                    $ ( "The goal is trivially fulfilled by the input. Go to the previous screen and specify your goal (or even the input) in more detail."
+                                        "Inputtet opfylder allerede målet. Gå tilbage til forrige skærm og specificer dit mål (og eventuelt også inputtet) nærmere."
                                       )
-                              |   (h3.,Workflow)
-                                  ( p
-                                  .   
-                                    ,   localized
-                                      $ ( "This is the workflow that fulfils the goal set by you."
-                                          "Dette er arbejdsgangen som løser din opgave."
-                                        )
-                                  )
-                                    form
-                                  $ ( chosenworkflow
-                                    .   ( 
-                                        |   submit$"View details"
-                                            submit$Metadata
-                                        )
-                                        submit$Submit
-                                        helplink$()
-                                        (br.,)
-                                        makeHiddenFields$!hiddenData
-                                        !"visualizedWorkFlow(s)"
-                                    )
-                              )
-                          |   ( h3
-                              .   
-                                ,   localized
-                                  $ ("Nothing to do" "Der er intet at lave")
-                              )
-                              ( p
-                              .   
-                                ,     !rstr:
-                                    &   localized
-                                      $ ( "The goal is trivially fulfilled by the input. Go to the previous screen and specify your goal (or even the input) in more detail."
-                                          "Inputtet opfylder allerede målet. Gå tilbage til forrige skærm og specificer dit mål (og eventuelt også inputtet) nærmere."
-                                        )
-                                  |     localized
-                                      $ ( "The goal is trivially fulfilled by the input. Go to the previous screen and either specify your goal in more detail, or do not specify a goal at all. If you choose the second option, an implicit goal will be derived from the tool that you specified."
-                                          "Inputtet opfylder allerede målet. Gå tilbage til forrige skærm og specificer dit mål nærmere, eller lad være med at specificere et mål. Hvis du vælger det sidste, bliver målet implicit bestemt af det værktøj du har valgt."
-                                        )
-                                      " ("
-                                      ToolTitle$!rstr
-                                      ")"
-                              )
+                                |     localized
+                                    $ ( "The goal is trivially fulfilled by the input. Go to the previous screen and either specify your goal in more detail, or do not specify a goal at all. If you choose the second option, an implicit goal will be derived from the tool that you specified."
+                                        "Inputtet opfylder allerede målet. Gå tilbage til forrige skærm og specificer dit mål nærmere, eller lad være med at specificere et mål. Hvis du vælger det sidste, bliver målet implicit bestemt af det værktøj du har valgt."
+                                      )
+                                    " ("
+                                    ToolTitle$!rstr
+                                    ")"
+                            )
                           )
                         )
                     )
@@ -13350,7 +13359,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                           & TooManyOrNone$(!cllas.!NNN)
                         |   !Submit:"next step"
-                          & ShowAllPipes$(!hiddenData.!pipes)
+                          & (   !pipes:(?.?)+?
+                              &   makeWorkflowsSequential$!pipes
+                                : ?reorderedworkflowlist
+                              &   ShowAllPipes
+                                $ (!hiddenData.!reorderedworkflowlist)
+                            | NothingToDo$!hiddenData
+                            )
                         )
                     |     !restr
                         : ( onlyWithoutRestriction
