@@ -1023,6 +1023,25 @@ toolsProg=
               )
           | str$("ToolTitle:" !arg " tooladm cannot be read.")
       )
+      ( toolID2title
+      =   
+        .   readTable$tooladm
+          &   map
+            $ ( ( 
+                =   tit
+                  .   (   !tooladm
+                        :   ?
+                          + ( ? (ToolID.!arg) ?
+                            : ? (Title.?tit) ?
+                            )
+                          + ?
+                      | 
+                      )
+                    & (!arg.!tit)
+                )
+              . !arg
+              )
+      )
       ( enumerateTools
       =   tool o i inp I,a b
         .     !arg:(?tool,(?o.?i.?inp))
@@ -1627,12 +1646,12 @@ toolsProg=
           , o pat pipe pipes sameToolDifferentRoles
           , toolPlumbing "*" simplify translateToHumanLanguage
           , wf wfs workflow workflowlist saveio toolPattern
-          , abbR reorderedworkflowlist struct weight
+          , abbR reorderedworkflowlist struct
           , toolsUsed topologicalOrderedTools candidateList
         .   ( candidateList
             =     reorderedworkflowlist butts nsteps ntools
                 , theUsedTools infoAboutTool toolRows transpose
-                , currNsteps currNtools currToolPlumbing currToolsUsed
+                , currNsteps currNtools currToolPlumbing currToolsUsed2
                 , hyperlinks nth thead toolSetID buttons
                 , toolTable toolUsageList topologicalOrderedTools
               .   ( butts
@@ -1695,23 +1714,31 @@ toolsProg=
                             . !arg
                             )
                         : ?toolUsageList
-                      & (   map$((=.", " !arg).!arg)
+                      & (     map
+                            $ ( ( 
+                                =   
+                                  .   !arg:(?.?arg)
+                                    & ", " !arg
+                                )
+                              . !arg
+                              )
                           : ", " ?arg
                         | 
                         )
                       & (p.(id.!ID),(strong.,!arg))
                   )
                 & ( infoAboutTool
-                  =   Description
-                    .     !tooladm
+                  =   Description Title
+                    .   !arg:(?arg.?Title)
+                      &   !tooladm
                         :   ?
-                          + ( ? (Title.!arg) ?
+                          + ( ? (ToolID.!arg) ?
                             : ? (Description.?Description) ?
                             )
                           + ?
                       & ( div
                         .   (class.tooltip)
-                          ,   !arg
+                          ,   !Title
                               ( span
                               . (class.tooltiptext),!Description
                               )
@@ -1769,7 +1796,7 @@ toolsProg=
                     : ((?currNsteps.?),?)+?
                   | 1:?currNsteps
                   )
-                & :?currToolPlumbing:?currToolsUsed
+                & :?currToolPlumbing:?currToolsUsed2
                 & 0:?currNtools
                 & :?toolUsageList
                 & 0:?toolSetID
@@ -1778,49 +1805,49 @@ toolsProg=
                 &       map
                       $ ( ( 
                           =     Nsteps Ntools abbR nr
-                              , struct toolPlumbing toolsUsed weight
+                              , struct toolPlumbing toolsUsed toolsUsed2
                             .     !arg
                                 : ( 
-                                  .     ?weight
-                                      : ( ?Ntools
-                                        . ?toolsUsed
-                                        . ?Nsteps
-                                        . ?toolPlumbing
-                                        . ?nr
-                                        )
+                                  .   ( ?Ntools
+                                      . ?toolsUsed
+                                      . ?Nsteps
+                                      . ?toolPlumbing
+                                      . ?nr
+                                      )
                                     , (?abbR.?struct)
                                   )
+                              & toolID2title$!toolsUsed:?toolsUsed2
                               & 1+!nth:?nth
                               &   (   !nth:1
                                     & !Ntools:?currNtools
-                                    & !toolsUsed:?currToolsUsed
+                                    & !toolsUsed2:?currToolsUsed2
                                     & !Nsteps:?currNsteps
                                     & !toolPlumbing:?currToolPlumbing
                                     &   (hr.,)
                                         (hr.,)
                                         ntools$(!Ntools.below)
-                                        theUsedTools$!toolsUsed
+                                        theUsedTools$!toolsUsed2
                                         nsteps$!Nsteps
                                   |     !Ntools
                                       : ~!currNtools
                                       : ?currNtools
-                                    & !toolsUsed:?currToolsUsed
+                                    & !toolsUsed2:?currToolsUsed2
                                     & !Nsteps:?currNsteps
                                     & !toolPlumbing:?currToolPlumbing
                                     &   butts$()
                                         (hr.,)
                                         (hr.,)
                                         ntools$(!Ntools.)
-                                        theUsedTools$!toolsUsed
+                                        theUsedTools$!toolsUsed2
                                         nsteps$!Nsteps
-                                  |     !toolsUsed
-                                      : ~!currToolsUsed
-                                      : ?currToolsUsed
+                                  |     !toolsUsed2
+                                      : ~!currToolsUsed2
+                                      : ?currToolsUsed2
                                     & !Nsteps:?currNsteps
                                     & !toolPlumbing:?currToolPlumbing
                                     &   butts$()
                                         (hr.,)
-                                        theUsedTools$!toolsUsed
+                                        theUsedTools$!toolsUsed2
                                         nsteps$!Nsteps
                                   |     !Nsteps
                                       : ~!currNsteps
@@ -1984,7 +2011,7 @@ toolsProg=
                           | ?i&:?predecessors
                         )
                       )
-                  & ToolTitle$!tool:?tool
+                  & (|ToolTitle$!tool:?tool)
                   & ( myfold
                     =   a b A B F R v1 v2
                       .     !arg:%?a*%?b
@@ -2367,7 +2394,7 @@ toolsProg=
                 & ( describeShort
                   =   describe
                     .   ( describe
-                        =   a b c m n an bn cn h L
+                        =   a b c m n an bn cn h L tit
                           .   !arg:(?h.?arg)
                             & (   !arg:(?a,?b)
                                 & describe$(.!a):(?L.?an)
@@ -2408,14 +2435,22 @@ toolsProg=
                                   . !bn
                                   )
                               |   !arg:(?m.?seqno.?n)
-                                & (   (   !m:
+                                & ( !m::?tit
+                                  |   !tooladm
+                                    :   ?
+                                      + ( ? (ToolID.!m) ?
+                                        : ? (Title.?tit) ?
+                                        )
+                                      + ?
+                                  )
+                                & (   (   !tit:
                                         & (   !seqno:∵
                                             & 
                                           | Circle$!seqno
                                           )
-                                      | !m circle$!seqno
+                                      | !tit circle$!seqno
                                       )
-                                      (   !m:
+                                      (   !tit:
                                         & (   !seqno:∵
                                             & !n:(?.?c)
                                             & ( !c:
@@ -2437,13 +2472,14 @@ toolsProg=
                                   )
                               )
                         )
+                      & log$(describe !arg)
                       & describe$(.!arg):(?arg.?)
                       & !arg
                   )
                 & ( describeLong
                   =   describe
                     .   ( describe
-                        =   a b c m n an bn cn h L
+                        =   a b c m n an bn cn h L tit
                           .   !arg:(?h.?arg)
                             & (   !arg:(?a,?b)
                                 & describe$(.!a):(?L.?an)
@@ -2481,18 +2517,28 @@ toolsProg=
                                   . !bn
                                   )
                               |   !arg:(?m.?seqno.?n)
+                                & ( !m::?tit
+                                  |   !tooladm
+                                    :   ?
+                                      + ( ? (ToolID.!m) ?
+                                        : ? (Title.?tit) ?
+                                        )
+                                      + ?
+                                  )
                                 & (   ( dt
                                       .   
                                         ,   (   Circle$!seqno
                                               : ?c
                                               : 
                                             |   !c
-                                                (!m:|"-")
+                                                ( !tit:
+                                                | "-"
+                                                )
                                             )
-                                            !m
+                                            !tit
                                       )
                                       (   !seqno:~∵
-                                        & !m:
+                                        & !tit:
                                       |   !n:(?.?c)
                                         & ( !c:
                                           | (dd.,fullinoutdescTable$!c)
@@ -2820,12 +2866,12 @@ toolsProg=
             )
           & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
           & (     !reorderedworkflowlist
-                : (   ?weight
-                    : (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
+                : ( (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
                   , (?abbR.?struct)
                   )
               & translateToHumanLanguage$(!abbR.!struct.one) (br.,)
-            |     topologicalOrder$!disambiguatedworkflowlist
+            |       toolID2title
+                  $ (topologicalOrder$!disambiguatedworkflowlist)
                 : ?topologicalOrderedTools
               &   candidateList
                 $ (!reorderedworkflowlist.!topologicalOrderedTools)
@@ -7303,11 +7349,8 @@ try {
           &   whl
             ' ( !in:#*(?OUT.?WAY)+?in
               & spotSum$!WAY:?sums
-              & (|lst$(sums,path$sums,APP))
               & prun$!sums:?pruns
-              & (|lst$(pruns,path$pruns,APP))
               & depend$!pruns:?depends
-              & (|lst$(depends,path$depends,APP))
               & !depends:((?.?.?bignumber),?.)
               & (~|!bignumber:<250000)
               )
@@ -8084,7 +8127,7 @@ try {
                 & !arg
             )
           & ( fulfil
-            =     tools source goal sourcePlus forkk
+            =     tools source goal sourcePlus forkk found
                 , goals goalterm nnnpathh indent accPipelines
                 , Pipeline WRONGPIPES OKPIPES restriction
               .   !arg:(?tools.?source.?goal.?indent.?restriction)
@@ -8093,6 +8136,7 @@ try {
                 & 1+!Calls:?Calls
                 & 0:?accPipelines
                 & unfoldGoal$!goal:?goals
+                & 0:?found
                 &   whl
                   ' ( !goals:%?goalterm+?goals
                     & (     (     unify$(!source.fold$!goalterm)
@@ -8117,11 +8161,14 @@ try {
                               & refold$!nnnpathh
                             )
                           : ?Pipeline
+                        & 1+!found:?found
                         & !Pipeline+!accPipelines:?accPipelines
                       | 
                       )
                     )
-                & !accPipelines:~0
+                & ( !accPipelines:~0
+                  | !found:~0&0
+                  )
             )
           & ( getActiveTools
             =   T F L
@@ -8252,6 +8299,7 @@ try {
           & new$hash:?unfulfillable
           & new$hash:?notThisTool
           & 0:?Calls
+          & log$"Calling fulfil"
           &   fulfil$(!activeTools.!source.!goal.0.!restriction)
             : ?reslt
           &   log
@@ -9090,7 +9138,9 @@ try {
           & (   !recentTasks:? (!userInput.?FP) ?
               & (!i.!FP.withRestriction.!calls)
             |   "The next call fails if no workflows found."
+              & log$"Calling fp"
               & fp$!userInput:?FP
+              & log$"Calling fp success"
               & ( !i
                 .     !FP:(?,?) ?
                     & (!FP.triviallyFulfilled.!calls)
@@ -11492,7 +11542,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$Uploads
           &   (letterData$!arg|doneAllJobSub$!arg)
             : (workflow.,?workflow) (steps.,?steps)
-          & lst$(steps,path$steps,NEW)
           & :?resources:?files
           &     toML
               $ ( html
@@ -12273,7 +12322,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , sourcesAndGoals
           , BodyContainer
           , handle
-          , A wrkflw Z errmsg itms
+          , A Z errmsg itms
           , "We are at the start. Show an input form."
           , rstr
         .   ( desiredTools
@@ -12840,7 +12889,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?hiddenData
             : ?formFields
             : ?Items
-            : ?wrkflw
           & 0:?tabind
           & ?:?Tool
           & log$NEW
@@ -12878,7 +12926,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &   analyzeInput$(!parms.!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
-            |   !arg:?A (wrkflw.%?wrkflw ?) ?Z
+            |   !arg:?A (wrkflw.~) ?Z
               & (   !Items:
                   &   str
                     $ ( 200~~~
@@ -12985,32 +13033,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   !arg:(?restriction.?restr.?clls)
           & log$(restriction !restriction restr !restr clls !clls)
           & (   !clls:<567890
-              & (   !restr:triviallyFulfilled
-                  &   str
-                    $ ( 404~~~
-                          toML
-                        $ ( !BodyContainer
-                          $ (   paragraph
-                              $ ( localized
-                                $ ( "Your goal is trivially fulfilled. Go back to the previous screen and specify your goal in more detail."
-                                    "Dit mål er allerede opfyldt i inputtet.  Gå tilbage til forrige skærm og specificer dit mål i flere detaljer."
-                                  )
-                                )
-                              ( !restriction:
-                              |   paragraph
-                                $ (   localized
-                                    $ ( "You can also choose to not specify your goal at all. In that case the goal will be implicitly defined by the tool that you chose "
-                                        "Alternativt specificerer du dit mål slet ikke. Så bliver målet implicit bestemt af det værktøj du har valgt "
-                                      )
-                                    "("
-                                    ToolTitle$!restriction
-                                    ")."
-                                  )
-                              )
-                            )
-                          )
-                      )
-                |   !restriction:
+              & (   !restriction:
                   &   str
                     $ ( 404~~~
                           toML
@@ -13079,7 +13102,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , ShowAllPipes rstr rpl NNN
           , allpipes batch cllas restr restriction sources
         .   ( ShowAllPipes
-            =   hiddenData pipes rstr
+            =   hiddenData pipes rstr "visualizedWorkFlow(s)"
               .   !arg:(?hiddenData.?pipes)
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
@@ -13089,6 +13112,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         toML
                       $ ( !BodyContainer
                         $ (   !pipes:(?.?)+?
+                            &   makeWorkflowRadioButtons$!pipes
+                              : ?"visualizedWorkFlow(s)"
                             & (   !pipes:%+%
                                 &   ( h3
                                     .   
@@ -13114,7 +13139,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     $ ( chosenworkflow
                                       .   (br.,)
                                           makeHiddenFields$!hiddenData
-                                          makeWorkflowRadioButtons$!pipes
+                                          !"visualizedWorkFlow(s)"
                                       )
                               |   (h3.,Workflow)
                                   ( p
@@ -13134,7 +13159,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         helplink$()
                                         (br.,)
                                         makeHiddenFields$!hiddenData
-                                        makeWorkflowRadioButtons$!pipes
+                                        !"visualizedWorkFlow(s)"
                                     )
                               )
                           |   ( h3
@@ -13305,15 +13330,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & 0:?cllas:?allpipes
               & :?restr
               & (     Pipelines$!parms
-                    : ( ?sources
-                      . ?pipes
-                      .   ( withRestriction
-                          | onlyWithoutRestriction
-                          | triviallyFulfilled
-                          )
-                        : ?restr
-                      . ?cllas
-                      )
+                    : (?sources.?pipes.~tooComplex:?restr.?cllas)
                   & (     !restr
                         : (withRestriction|triviallyFulfilled)
                       & (   ( !pipes:#:?NNN
@@ -13355,7 +13372,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , makeJobStack NoNeedForMetadata
           , ApplyThePipelineToTheInput
           , ShowOnlyTheCurrentPipe AddMetadata
-          , "We are past the first stage: the user has pressed a button"
+          , "The user has selected a workflow."
           , errorInMetadata
           , MetadataInParms
           , rememberMetadata
@@ -14103,7 +14120,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & !userProvidedMetadata !parms
                   )
             )
-          & ( "We are past the first stage: the user has pressed a button"
+          & ( "The user has selected a workflow."
             =     pipes Submit hiddenData
                 , parms nth pipe batch Items mail2 ERR
                 , cllas allpipes ViewDetails
@@ -14132,11 +14149,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         &   Pipelines$!parms
                           : ( ?sources
                             . ?pipes
-                            .   ( withRestriction
-                                | onlyWithoutRestriction
-                                | triviallyFulfilled
-                                )
-                              : ?restr
+                            . ~tooComplex:?restr
                             . ?cllas
                             )
                       )
@@ -14304,7 +14317,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   &   supplementParmsAndHiddenData$(!parms.!hiddenData)
                     : (?parms.?Submit.?hiddenData.?batch)
                   & "mail2 was used to retrieve previously entered TEI metadata. The current system does not ask for mail address."
-                  &   "We are past the first stage: the user has pressed a button"
+                  &   "The user has selected a workflow."
                     $ ( !parms
                       . !Submit
                       . !hiddenData !Items
@@ -14317,7 +14330,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 )
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
                 : (?parms.?Submit.?hiddenData.?batch)
-              &   "We are past the first stage: the user has pressed a button"
+              &   "The user has selected a workflow."
                 $ ( !parms
                   . !Submit
                   . !hiddenData !Items
