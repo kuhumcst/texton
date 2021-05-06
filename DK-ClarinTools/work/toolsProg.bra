@@ -1498,8 +1498,16 @@ toolsProg=
           & ( weighted
             =     name Ntools Nsteps n nr countTools
                 , A B T C usedTools struct abbrevs
-                , toolInventory toolPlumbing toolsUsed
-              .   !arg:(?toolPlumbing.?nr,(?struct.?abbrevs))
+                , toolInventory toolsUsed
+              .   ( plumbing
+                  =   a b
+                    .     !arg:%?a %?b
+                        & plumbing$!a plumbing$!b
+                      |   !arg:(%?a,%?b)
+                        & (plumbing$!a,plumbing$!b)
+                      | !arg:(?a.?b.?)&(!a.!b)
+                  )
+                & !arg:(?nr,(?struct.?abbrevs))
                 & 0:?Ntools:?Nsteps:?toolInventory
                 & ( countTools
                   =   A B
@@ -1526,29 +1534,27 @@ toolsProg=
                     & !n+!Nsteps:?Nsteps
                     & 1+!Ntools:?Ntools
                     )
-                & ( (!Ntools.!toolsUsed.!Nsteps.!toolPlumbing.!nr)
+                & ( (!Ntools.!toolsUsed.!Nsteps.plumbing$!struct.!nr)
                   , (!abbrevs.!struct)
                   )
             )
           & 0:?reorderedworkflowlist
           &   map
             $ ( ( 
-                =   
-                  .   !arg:(?toolPlumbing.?arg)
-                    &   whl
-                      ' ( !arg:(?nr,?workflow) ?arg
-                        &       weighted
-                              $ (!toolPlumbing.!nr,presentable$!workflow)
-                            + !reorderedworkflowlist
-                          : ?reorderedworkflowlist
-                        )
+                =   nr workflow
+                  .   whl
+                    ' ( !arg:(?nr,?workflow) ?arg
+                      &     weighted$(!nr,presentable$!workflow)
+                          + !reorderedworkflowlist
+                        : ?reorderedworkflowlist
+                      )
                 )
               . !arg
               )
           & !reorderedworkflowlist
       )
       ( topologicalOrder
-      =     edges toolPlumbing workflow A Z
+      =     edges workflow A Z
           , 2p Kahn edg pr
           , pairs
         .   ( edg
@@ -1578,11 +1584,10 @@ toolsProg=
           &   map
             $ ( ( 
                 =   
-                  .   !arg:(?toolPlumbing.?arg)
-                    &   whl
-                      ' ( !arg:(?,?workflow) ?arg
-                        & edg$!workflow+!edges:?edges
-                        )
+                  .   whl
+                    ' ( !arg:(?,?workflow) ?arg
+                      & edg$!workflow+!edges:?edges
+                      )
                 )
               . !arg
               )
@@ -1640,12 +1645,414 @@ toolsProg=
           & whl'(!S:%?e+?S&!L !e:?L)
           & !L
       )
-      ( makeWorkflowRadioButtons
-      =     i nr Nsteps Ntools enumerateToolsDetail
+      ( makeWorkflowsSequential
+      =     i nr enumerateToolsDetail
           , disambiguatedworkflowlist groupedworkflowlist n
           , o pat pipe pipes sameToolDifferentRoles
-          , toolPlumbing "*" simplify translateToHumanLanguage
+          , toolPlumbing "*" simplify
           , wf wfs workflow workflowlist saveio toolPattern
+        .   ( enumerateToolsDetail
+            =   tool o i predecessors myfold,a b
+              .       !arg
+                    : ( ?tool
+                      , ( ?o
+                        . ?
+                        .   (?i.?predecessors)
+                          | ?i&:?predecessors
+                        )
+                      )
+                  & (|ToolTitle$!tool:?tool)
+                  & ( myfold
+                    =   a b A B F R v1 v2
+                      .     !arg:%?a*%?b
+                          & myfold$!b:?b
+                          & (     !a
+                                :   ?
+                                    ( ?F
+                                    ,   ?v1
+                                      &   !b
+                                        : ?A (!F,~!v1:?v2) ?B
+                                      &   !A (!F,!v1*!v2) !B
+                                        : ?R
+                                    )
+                                    ?
+                              & !R
+                            | 
+                            )
+                        | !arg
+                    )
+                  &   ( !predecessors:
+                      | enumerateToolsDetail$!predecessors
+                      )
+                      (!tool.myfold$!i.!o)
+                |   !arg:%?a*%?b
+                  & enumerateToolsDetail$!a*enumerateToolsDetail$!b
+                |   !arg:%?a+%?b
+                  & NEWSPEC
+                  & enumerateToolsDetail$!a+enumerateToolsDetail$!b
+                |   !arg:(?o.?i)
+                  & enumerateToolsDetail$!i
+                | 1
+            )
+          & ( simplify
+            =     WF S dun sortout n f i I
+                , o feat val A Z O IO replace
+              .   ( sortout
+                  =   L R
+                    .   !arg:(?.?)&!arg !S:?S
+                      |   !arg:%?L_%?R
+                        & sortout$!L
+                        & sortout$!R
+                  )
+                & :?S
+                & sortout$!arg
+                & :?dun
+                & ( replace
+                  =   n r p L R WF
+                    .   !arg:(?WF.?n.(=?p).(=?r))
+                      & (   !WF:(=?.?)
+                          & (   !WF:(=!n.!p)
+                              & !r:?r
+                              & '($n.$r)
+                            | !WF
+                            )
+                        |   !WF:(=%?L_%?R)
+                          &   
+                            '   
+                              $   ( 
+                                  $ ( replace
+                                    $ ('$L.!n.'$p.'$r)
+                                    )
+                                  )
+                                _ ( 
+                                  $ ( replace
+                                    $ ('$R.!n.'$p.'$r)
+                                    )
+                                  )
+                        )
+                  )
+                & '$arg:?WF
+                &   whl
+                  ' ( !S:(?n.?f) ?S
+                    & ( !dun:? !n ?
+                      |   !n !dun:?dun
+                        & (   !S:? (!n.~!f) ?
+                            & !f:((?i.?o).?IO)
+                            &   whl
+                              ' ( !i:(?feat,?val) ?i
+                                & (   !S
+                                    :   ?
+                                        ( !n
+                                        . (? (!feat,~!val) ?.?)
+                                        . ?
+                                        )
+                                        ?
+                                  |     replace
+                                      $ ( !WF
+                                        . !n
+                                        .   
+                                          ' ( (   ?A
+                                                  ($feat,$val)
+                                                  ?Z
+                                              . ?O
+                                              )
+                                            . ?IO
+                                            )
+                                        . ( 
+                                          = (!A ? !Z.!O).!IO
+                                          )
+                                        )
+                                    : ?WF
+                                  )
+                                )
+                            &   whl
+                              ' ( !o:(?feat,?val) ?o
+                                & (   !S
+                                    :   ?
+                                        ( !n
+                                        . (?.? (!feat,~!val) ?)
+                                        . ?
+                                        )
+                                  |     replace
+                                      $ ( !WF
+                                        . !n
+                                        .   
+                                          ' ( ( ?I
+                                              .   ?A
+                                                  ($feat,$val)
+                                                  ?Z
+                                              )
+                                            . ?IO
+                                            )
+                                        . (=(!I.!A ? !Z).!IO)
+                                        )
+                                    : ?WF
+                                  )
+                                )
+                          |   replace$(!WF.!n.(=?).(=?))
+                            : ?WF
+                          )
+                      )
+                    )
+                & !WF
+            )
+          & ( toolPattern
+            =   pat tool lhs rhs lpat rpat Wf feats
+              .   :?pat
+                & !arg:(=?Wf)
+                &   whl
+                  ' ( (   '$Wf:(=?Wf (?tool.?feats))
+                        & (   '$feats:(=?feats.?)
+                            & '($feats.?):(=?feats)
+                          | 
+                          )
+                        & (   :!pat
+                            & '($tool.$feats)
+                          | '(($tool.$feats) ()$pat)
+                          )
+                      |   '$Wf:(=?Wf %?lhs*%?rhs)
+                        & toolPattern$('$lhs):(=?lpat)
+                        & toolPattern$('$rhs):(=?rpat)
+                        & (   :!pat
+                            & '($lpat*$rpat)
+                          | '($lpat*$rpat ()$pat)
+                          )
+                      )
+                    : (=?pat)
+                    )
+                & '$pat
+            )
+          & "Same code, but a bit faster because of short names. (intensively used code!)"
+          & ( "*"
+            =   "#" "%" "[" "]" "(" ")" "-" "="
+              .   :?"#"
+                & !arg:(=?"-")
+                &   whl
+                  ' ( (   '$"-":(=?"-" (?"%".?"="))
+                        & (   '$"=":(=?"=".?)
+                            & '($"=".?):(=?"=")
+                          | 
+                          )
+                        & ( :!"#"&'($"%".$"=")
+                          | '(($"%".?) ()$"#")
+                          )
+                      |   '$"-":(=?"-" %?"["*%?"]")
+                        & "*"$('$"["):(=?"(")
+                        & "*"$('$"]"):(=?")")
+                        & ( :!"#"&'($"("*$")")
+                          | '($"("*$")" ()$"#")
+                          )
+                      )
+                    : (=?"#")
+                    )
+                & '$"#"
+            )
+          & ( sameToolDifferentRoles
+            =     delta Delta replac I O
+                , simple tool tree
+                , details flatlist updat
+                , fx fy reps sx sy
+              .   ( delta
+                  =   this other L f v
+                    .   !arg:(?this.?other)
+                      & :?L
+                      & (   !this
+                          :   ?
+                              ( (?f,?v)
+                              & ( !other:? (!f,!v) ?
+                                | (!f,!v) !L:?L
+                                )
+                              & ~
+                              )
+                              ?
+                        | !L
+                        )
+                  )
+                & ( Delta
+                  =   AI AO BI BO
+                    .   !arg:((?AI.?AO),(?BI.?BO))
+                      & (delta$(!AI.!BI).delta$(!AO.!BO))
+                  )
+                & ( replac
+                  =   t s r a b
+                    .   !arg:(?t.?s,?r)
+                      & ( !t:!s&!r
+                        |   !t:%?a %?b
+                          & replac$(!a.!s,!r) replac$(!b.!s,!r)
+                        |   !t:(%?a,%?b)
+                          & (replac$(!a.!s,!r),replac$(!b.!s,!r))
+                        | !t
+                        )
+                  )
+                & ( flatlist
+                  =   p q
+                    .     !arg
+                        : ( @
+                          . (?.?)
+                          . (?,?) ?
+                          . (?,?) ?
+                          )
+                      |   !arg:((?p,?q)|%?p %?q)
+                        & flatlist$!p+flatlist$!q
+                  )
+                & ( updat
+                  =     reps tool i o id
+                      , od I O details A Z
+                    .     !arg
+                        : ( ?reps
+                          . ?tool
+                          . (?i.?o),(?id.?od)
+                          . ?details
+                          )
+                      & (     !reps
+                            : ?A (!tool.(?I.?O).!details) ?Z
+                          &   !A
+                              ( !tool
+                              . (set$(!I !i !id).set$(!O !o !od))
+                              . !details
+                              )
+                              !Z
+                        |   ( !tool
+                            . (set$(!i !id).set$(!o !od))
+                            . !details
+                            )
+                            !reps
+                        )
+                  )
+                &   map
+                  $ ( ( 
+                      =   
+                        .   !arg:(?n,?tree)
+                          & :?reps
+                          & (   flatlist$!tree
+                              :   ?
+                                + ?*(?tool.?sx.?fx)
+                                + ?
+                                + ?*(!tool.?sy.?fy)
+                                + ( ?
+                                  &     updat
+                                      $ ( !reps
+                                        . !tool
+                                        . !sx,Delta$(!fx,!fy)
+                                        . !fx
+                                        )
+                                    : ?reps
+                                  &     updat
+                                      $ ( !reps
+                                        . !tool
+                                        . !sy,Delta$(!fy,!fx)
+                                        . !fy
+                                        )
+                                    : ?reps
+                                  & ~
+                                  )
+                            |     whl
+                                ' (   !reps
+                                    : (?tool.?simple.?details) ?reps
+                                  &     replac
+                                      $ ( !tree
+                                        .   (!tool.?.!details)
+                                          , (!tool.!simple.!details)
+                                        )
+                                    : ?tree
+                                  )
+                              & (!n,!tree)
+                            )
+                      )
+                    . !arg
+                    )
+            )
+          & ( saveio
+            =   n i o x y
+              .     !arg:(?n.?i.~(?.?):?o)
+                  & (!n.(!i.!o).!i.!o)
+                |   !arg:?x_?y
+                  & (saveio$!x)_(saveio$!y)
+                | !arg
+            )
+          & !arg:?pipes
+          & "pipes is a unnumbered list sorted on directly on full workflow tree."
+          & :?workflowlist
+          & 0:?n
+          & log$enumerateToolsDetail
+          &   whl
+            ' ( 1+!n:?n:<1000000
+              & !pipes:%?pipe+?pipes
+              &   saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist
+                : ?workflowlist
+              )
+          & log$enumerateToolsDetailDONE
+          & (   !n:<1000000
+              & log$("while enumerateToolsDetail:" !n)
+            |   log
+              $ "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
+            )
+          & "workflowlist is numbered list of workflows, with equal branches not merged yet, and with I/O duplicated."
+          & :?groupedworkflowlist
+          & :?toolPlumbing
+          & 0:?disambiguatedworkflowlist
+          &   whl
+            ' ( 1+!n:?n:<1000000
+              & !workflowlist:(#?nr.?workflow) ?workflowlist
+              & "*"$(simplify$!workflow):(=?toolPlumbing)
+              & (!nr,!workflow):?wfs
+              &     map
+                  $ ( ( 
+                      =   
+                        .     !arg:(#?nr.!toolPlumbing:?wf)
+                            & 1+!n:?n:<1000000
+                            & (!nr,!wf) !wfs:?wfs
+                            & 
+                          | !arg
+                      )
+                    . !workflowlist
+                    )
+                : ?workflowlist
+              & '$toolPlumbing:?toolPlumbing
+              & "The function disam spots the differences between workflows 
+                 that have the same tools in the same structure: the 'smaller'
+                 differences. For example, in the example below, (.app,nrm)
+                 indicates that the workflow differs from another workflow as
+                 to the appearance of the output, which is 'normalized', while
+                 another workflow has e.g. 'unnormalized' output. The field
+                 left of the dot is empty, which tells us that there is no
+                 difference in the input.
+                      ( JSON to ORG-mode converter
+                      . (.app,nrm)
+                      .   (ambig,pru)
+                          (app,drty)
+                          (facet,stlp^Menotas)
+                          (format,json^xid)
+                          (lang,da)
+                          (period,c21)
+                          (pres,nml)
+                      .   (ambig,pru)
+                          (app,nrm)
+                          (facet,tlp^Menotas)
+                          (format,dipl)
+                          (lang,da)
+                          (period,c21)
+                          (pres,nml)
+                      )"
+              & "'sameToolDifferentRoles' does something similar to 'disam'.
+                 Whereas 'disam' looks at different uses of the same tool in
+                 different workflows, 'sameToolDifferentRoles' looks at
+                 different uses of the same tool in the same workflow."
+              &     sameToolDifferentRoles$(disam$(!toolPlumbing.!wfs))
+                    !disambiguatedworkflowlist
+                : ?disambiguatedworkflowlist
+              )
+          & ( !n:<1000000
+            |   log
+              $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
+            )
+          & ( reorder$!disambiguatedworkflowlist
+            . topologicalOrder$!disambiguatedworkflowlist
+            )
+      )
+      ( makeWorkflowRadioButtons
+      =     i nr Nsteps Ntools n o
+          , toolPlumbing translateToHumanLanguage
           , abbR reorderedworkflowlist struct
           , toolsUsed topologicalOrderedTools candidateList
         .   ( candidateList
@@ -2001,202 +2408,6 @@ toolsProg=
                     )
                     !buttons
             )
-          & ( enumerateToolsDetail
-            =   tool o i predecessors myfold,a b
-              .       !arg
-                    : ( ?tool
-                      , ( ?o
-                        . ?
-                        .   (?i.?predecessors)
-                          | ?i&:?predecessors
-                        )
-                      )
-                  & (|ToolTitle$!tool:?tool)
-                  & ( myfold
-                    =   a b A B F R v1 v2
-                      .     !arg:%?a*%?b
-                          & myfold$!b:?b
-                          & (     !a
-                                :   ?
-                                    ( ?F
-                                    ,   ?v1
-                                      &   !b
-                                        : ?A (!F,~!v1:?v2) ?B
-                                      &   !A (!F,!v1*!v2) !B
-                                        : ?R
-                                    )
-                                    ?
-                              & !R
-                            | 
-                            )
-                        | !arg
-                    )
-                  &   ( !predecessors:
-                      | enumerateToolsDetail$!predecessors
-                      )
-                      (!tool.myfold$!i.!o)
-                |   !arg:%?a*%?b
-                  & enumerateToolsDetail$!a*enumerateToolsDetail$!b
-                |   !arg:%?a+%?b
-                  & NEWSPEC
-                  & enumerateToolsDetail$!a+enumerateToolsDetail$!b
-                |   !arg:(?o.?i)
-                  & enumerateToolsDetail$!i
-                | 1
-            )
-          & ( simplify
-            =     WF S dun sortout n f i I
-                , o feat val A Z O IO replace
-              .   ( sortout
-                  =   L R
-                    .   !arg:(?.?)&!arg !S:?S
-                      |   !arg:%?L_%?R
-                        & sortout$!L
-                        & sortout$!R
-                  )
-                & :?S
-                & sortout$!arg
-                & :?dun
-                & ( replace
-                  =   n r p L R WF
-                    .   !arg:(?WF.?n.(=?p).(=?r))
-                      & (   !WF:(=?.?)
-                          & (   !WF:(=!n.!p)
-                              & !r:?r
-                              & '($n.$r)
-                            | !WF
-                            )
-                        |   !WF:(=%?L_%?R)
-                          &   
-                            '   
-                              $   ( 
-                                  $ ( replace
-                                    $ ('$L.!n.'$p.'$r)
-                                    )
-                                  )
-                                _ ( 
-                                  $ ( replace
-                                    $ ('$R.!n.'$p.'$r)
-                                    )
-                                  )
-                        )
-                  )
-                & '$arg:?WF
-                &   whl
-                  ' ( !S:(?n.?f) ?S
-                    & ( !dun:? !n ?
-                      |   !n !dun:?dun
-                        & (   !S:? (!n.~!f) ?
-                            & !f:((?i.?o).?IO)
-                            &   whl
-                              ' ( !i:(?feat,?val) ?i
-                                & (   !S
-                                    :   ?
-                                        ( !n
-                                        . (? (!feat,~!val) ?.?)
-                                        . ?
-                                        )
-                                        ?
-                                  |     replace
-                                      $ ( !WF
-                                        . !n
-                                        .   
-                                          ' ( (   ?A
-                                                  ($feat,$val)
-                                                  ?Z
-                                              . ?O
-                                              )
-                                            . ?IO
-                                            )
-                                        . ( 
-                                          = (!A ? !Z.!O).!IO
-                                          )
-                                        )
-                                    : ?WF
-                                  )
-                                )
-                            &   whl
-                              ' ( !o:(?feat,?val) ?o
-                                & (   !S
-                                    :   ?
-                                        ( !n
-                                        . (?.? (!feat,~!val) ?)
-                                        . ?
-                                        )
-                                  |     replace
-                                      $ ( !WF
-                                        . !n
-                                        .   
-                                          ' ( ( ?I
-                                              .   ?A
-                                                  ($feat,$val)
-                                                  ?Z
-                                              )
-                                            . ?IO
-                                            )
-                                        . (=(!I.!A ? !Z).!IO)
-                                        )
-                                    : ?WF
-                                  )
-                                )
-                          |   replace$(!WF.!n.(=?).(=?))
-                            : ?WF
-                          )
-                      )
-                    )
-                & !WF
-            )
-          & ( toolPattern
-            =   pat tool lhs rhs lpat rpat Wf feats
-              .   :?pat
-                & !arg:(=?Wf)
-                &   whl
-                  ' ( (   '$Wf:(=?Wf (?tool.?feats))
-                        & (   '$feats:(=?feats.?)
-                            & '($feats.?):(=?feats)
-                          | 
-                          )
-                        & (   :!pat
-                            & '($tool.$feats)
-                          | '(($tool.$feats) ()$pat)
-                          )
-                      |   '$Wf:(=?Wf %?lhs*%?rhs)
-                        & toolPattern$('$lhs):(=?lpat)
-                        & toolPattern$('$rhs):(=?rpat)
-                        & (   :!pat
-                            & '($lpat*$rpat)
-                          | '($lpat*$rpat ()$pat)
-                          )
-                      )
-                    : (=?pat)
-                    )
-                & '$pat
-            )
-          & "Same code, but a bit faster because of short names. (intensively used code!)"
-          & ( "*"
-            =   "#" "%" "[" "]" "(" ")" "-" "="
-              .   :?"#"
-                & !arg:(=?"-")
-                &   whl
-                  ' ( (   '$"-":(=?"-" (?"%".?"="))
-                        & (   '$"=":(=?"=".?)
-                            & '($"=".?):(=?"=")
-                          | 
-                          )
-                        & ( :!"#"&'($"%".$"=")
-                          | '(($"%".?) ()$"#")
-                          )
-                      |   '$"-":(=?"-" %?"["*%?"]")
-                        & "*"$('$"["):(=?"(")
-                        & "*"$('$"]"):(=?")")
-                        & ( :!"#"&'($"("*$")")
-                          | '($"("*$")" ()$"#")
-                          )
-                      )
-                    : (=?"#")
-                    )
-                & '$"#"
-            )
           & ( translateToHumanLanguage
             =     circle Circle Describe nice inoutdesc
                 , description seqno struct abbrevs o diff
@@ -2472,7 +2683,6 @@ toolsProg=
                                   )
                               )
                         )
-                      & log$(describe !arg)
                       & describe$(.!arg):(?arg.?)
                       & !arg
                   )
@@ -2663,215 +2873,13 @@ toolsProg=
                       )
                   )
             )
-          & ( sameToolDifferentRoles
-            =     delta Delta replac I O
-                , simple tool tree
-                , details flatlist updat
-                , fx fy reps sx sy
-              .   ( delta
-                  =   this other L f v
-                    .   !arg:(?this.?other)
-                      & :?L
-                      & (   !this
-                          :   ?
-                              ( (?f,?v)
-                              & ( !other:? (!f,!v) ?
-                                | (!f,!v) !L:?L
-                                )
-                              & ~
-                              )
-                              ?
-                        | !L
-                        )
-                  )
-                & ( Delta
-                  =   AI AO BI BO
-                    .   !arg:((?AI.?AO),(?BI.?BO))
-                      & (delta$(!AI.!BI).delta$(!AO.!BO))
-                  )
-                & ( replac
-                  =   t s r a b
-                    .   !arg:(?t.?s,?r)
-                      & ( !t:!s&!r
-                        |   !t:%?a %?b
-                          & replac$(!a.!s,!r) replac$(!b.!s,!r)
-                        |   !t:(%?a,%?b)
-                          & (replac$(!a.!s,!r),replac$(!b.!s,!r))
-                        | !t
-                        )
-                  )
-                & ( flatlist
-                  =   p q
-                    .     !arg
-                        : ( @
-                          . (?.?)
-                          . (?,?) ?
-                          . (?,?) ?
-                          )
-                      |   !arg:((?p,?q)|%?p %?q)
-                        & flatlist$!p+flatlist$!q
-                  )
-                & ( updat
-                  =     reps tool i o id
-                      , od I O details A Z
-                    .     !arg
-                        : ( ?reps
-                          . ?tool
-                          . (?i.?o),(?id.?od)
-                          . ?details
-                          )
-                      & (     !reps
-                            : ?A (!tool.(?I.?O).!details) ?Z
-                          &   !A
-                              ( !tool
-                              . (set$(!I !i !id).set$(!O !o !od))
-                              . !details
-                              )
-                              !Z
-                        |   ( !tool
-                            . (set$(!i !id).set$(!o !od))
-                            . !details
-                            )
-                            !reps
-                        )
-                  )
-                &   map
-                  $ ( ( 
-                      =   
-                        .   !arg:(?n,?tree)
-                          & :?reps
-                          & (   flatlist$!tree
-                              :   ?
-                                + ?*(?tool.?sx.?fx)
-                                + ?
-                                + ?*(!tool.?sy.?fy)
-                                + ( ?
-                                  &     updat
-                                      $ ( !reps
-                                        . !tool
-                                        . !sx,Delta$(!fx,!fy)
-                                        . !fx
-                                        )
-                                    : ?reps
-                                  &     updat
-                                      $ ( !reps
-                                        . !tool
-                                        . !sy,Delta$(!fy,!fx)
-                                        . !fy
-                                        )
-                                    : ?reps
-                                  & ~
-                                  )
-                            |     whl
-                                ' (   !reps
-                                    : (?tool.?simple.?details) ?reps
-                                  &     replac
-                                      $ ( !tree
-                                        .   (!tool.?.!details)
-                                          , (!tool.!simple.!details)
-                                        )
-                                    : ?tree
-                                  )
-                              & (!n,!tree)
-                            )
-                      )
-                    . !arg
-                    )
-            )
-          & ( saveio
-            =   n i o x y
-              .     !arg:(?n.?i.~(?.?):?o)
-                  & (!n.(!i.!o).!i.!o)
-                |   !arg:?x_?y
-                  & (saveio$!x)_(saveio$!y)
-                | !arg
-            )
-          & !arg:?pipes
-          & "pipes is a unnumbered list sorted on directly on full workflow tree."
-          & :?workflowlist
-          & 0:?n
-          & log$enumerateToolsDetail
-          &   whl
-            ' ( 1+!n:?n:<1000000
-              & !pipes:%?pipe+?pipes
-              &   saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist
-                : ?workflowlist
-              )
-          & log$enumerateToolsDetailDONE
-          & (   !n:<1000000
-              & log$("while enumerateToolsDetail:" !n)
-            |   log
-              $ "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
-            )
-          & "workflowlist is numbered list of workflows, with equal branches not merged yet, and with I/O duplicated."
-          & :?groupedworkflowlist
-          & :?toolPlumbing
-          & 0:?disambiguatedworkflowlist
-          &   whl
-            ' ( 1+!n:?n:<1000000
-              & !workflowlist:(#?nr.?workflow) ?workflowlist
-              & "*"$(simplify$!workflow):(=?toolPlumbing)
-              & (!nr,!workflow):?wfs
-              &     map
-                  $ ( ( 
-                      =   
-                        .     !arg:(#?nr.!toolPlumbing:?wf)
-                            & 1+!n:?n:<1000000
-                            & (!nr,!wf) !wfs:?wfs
-                            & 
-                          | !arg
-                      )
-                    . !workflowlist
-                    )
-                : ?workflowlist
-              & '$toolPlumbing:?toolPlumbing
-              & "The function disam spots the differences between workflows 
-                 that have the same tools in the same structure: the 'smaller'
-                 differences. For example, in the example below, (.app,nrm)
-                 indicates that the workflow differs from another workflow as
-                 to the appearance of the output, which is 'normalized', while
-                 another workflow has e.g. 'unnormalized' output. The field
-                 left of the dot is empty, which tells us that there is no
-                 difference in the input.
-                      ( JSON to ORG-mode converter
-                      . (.app,nrm)
-                      .   (ambig,pru)
-                          (app,drty)
-                          (facet,stlp^Menotas)
-                          (format,json^xid)
-                          (lang,da)
-                          (period,c21)
-                          (pres,nml)
-                      .   (ambig,pru)
-                          (app,nrm)
-                          (facet,tlp^Menotas)
-                          (format,dipl)
-                          (lang,da)
-                          (period,c21)
-                          (pres,nml)
-                      )"
-              & "'sameToolDifferentRoles' does something similar to 'disam'.
-                 Whereas 'disam' looks at different uses of the same tool in
-                 different workflows, 'sameToolDifferentRoles' looks at
-                 different uses of the same tool in the same workflow."
-              &     ( !toolPlumbing
-                    . sameToolDifferentRoles$(disam$(!toolPlumbing.!wfs))
-                    )
-                    !disambiguatedworkflowlist
-                : ?disambiguatedworkflowlist
-              )
-          & ( !n:<1000000
-            |   log
-              $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
-            )
-          & reorder$!disambiguatedworkflowlist:?reorderedworkflowlist
+          & !arg:(?reorderedworkflowlist.?topologicalOrderedTools)
           & (     !reorderedworkflowlist
                 : ( (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
                   , (?abbR.?struct)
                   )
               & translateToHumanLanguage$(!abbR.!struct.one) (br.,)
-            |       toolID2title
-                  $ (topologicalOrder$!disambiguatedworkflowlist)
+            |     toolID2title$!topologicalOrderedTools
                 : ?topologicalOrderedTools
               &   candidateList
                 $ (!reorderedworkflowlist.!topologicalOrderedTools)
@@ -13099,7 +13107,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       =     Tool parms Items items formFields val
           , Submit pipes presels errors BodyContainer
           , PIPE A wrkflw Z itms TooManyOrNone updateUploads
-          , ShowAllPipes rstr rpl NNN
+          , ShowAllPipes rstr rpl NNN reorderedworkflowlist
           , allpipes batch cllas restr restriction sources
         .   ( ShowAllPipes
             =   hiddenData pipes rstr "visualizedWorkFlow(s)"
@@ -13112,7 +13120,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         toML
                       $ ( !BodyContainer
                         $ (   !pipes:(?.?)+?
-                            &   makeWorkflowRadioButtons$!pipes
+                            &   makeWorkflowsSequential$!pipes
+                              : ?reorderedworkflowlist
+                            &     makeWorkflowRadioButtons
+                                $ !reorderedworkflowlist
                               : ?"visualizedWorkFlow(s)"
                             & (   !pipes:%+%
                                 &   ( h3
@@ -13526,7 +13537,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             =   formFields pipe nth seeninputs
               .   !arg:(?pipe.?nth)
                 & :?formFields:?seeninputs
-                & makeWorkflowRadioButtons$!pipe:?formFields
+                &   makeWorkflowsSequential$!pipe
+                  : ?reorderedworkflowlist
+                &   makeWorkflowRadioButtons$!reorderedworkflowlist
+                  : ?formFields
                 &   str
                   $ ( 200~~~
                         toML
@@ -13983,9 +13997,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                   )
                 & (readTable$jobAbout|:?jobAbout)
+                &   makeWorkflowsSequential$!PIPE
+                  : ?reorderedworkflowlist
                 &     ( !JobNr
                       .   (mail2.!mail2)
-                          (human.makeWorkflowRadioButtons$!PIPE)
+                          ( human
+                          . makeWorkflowRadioButtons$!reorderedworkflowlist
+                          )
                           ( userProvidedMetadata
                           . retrieveMetadataFromParms$(!metadataType.!parms)
                           )
