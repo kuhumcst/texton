@@ -322,6 +322,7 @@ toolsProg=
           ItemGroupsCache
           footer
           recentTasks
+          wrkflws
       )
       ( saveAllTables
       =   tab saved folder
@@ -2077,30 +2078,12 @@ toolsProg=
           , abbR reorderedworkflowlist struct
           , toolsUsed topologicalOrderedTools candidateList
         .   ( candidateList
-            =     reorderedworkflowlist butts nsteps ntools
+            =     reorderedworkflowlist nsteps ntools
                 , theUsedTools infoAboutTool toolRows transpose
                 , currNsteps currNtools currToolPlumbing currToolsUsed2
                 , hyperlinks nth thead toolSetID buttons
                 , toolTable toolUsageList topologicalOrderedTools
-              .   ( butts
-                  =   
-                    .   ( 
-                        |   ( p
-                            .   
-                              ,   localized
-                                $ ( "Select a workflow by pressing the 🔍 (View details) or ► (Submit) button."
-                                    "Vælg en arbejdsgang og tryk på 🔍 (Se detaljer) eller ► (Submit)."
-                                  )
-                            )
-                              submit
-                            $ (localized$("View details" "Se detaljer"))
-                            (|submit$Metadata)
-                            submit$Submit
-                            helplink$
-                        )
-                        (br.,)
-                  )
-                & ( nsteps
+              .   ( nsteps
                   =   
                     . p
                     .   
@@ -2262,8 +2245,7 @@ toolsProg=
                                     & !toolsUsed2:?currToolsUsed2
                                     & !Nsteps:?currNsteps
                                     & !toolPlumbing:?currToolPlumbing
-                                    &   butts$()
-                                        (hr.,)
+                                    &   (hr.,)
                                         (hr.,)
                                         ntools$(!Ntools.)
                                         theUsedTools$!toolsUsed2
@@ -2273,8 +2255,7 @@ toolsProg=
                                       : ?currToolsUsed2
                                     & !Nsteps:?currNsteps
                                     & !toolPlumbing:?currToolPlumbing
-                                    &   butts$()
-                                        (hr.,)
+                                    &   (hr.,)
                                         theUsedTools$!toolsUsed2
                                         nsteps$!Nsteps
                                   |     !Nsteps
@@ -2311,7 +2292,7 @@ toolsProg=
                           )
                         . !reorderedworkflowlist
                         )
-                      butts$
+                      (br.,)
                   : ?buttons
                 &   (   (|!toolUsageList:? [>1)
                       &     map
@@ -13186,16 +13167,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from enact.java
  */"
       ( showworkflows
-      =     Tool parms Items items formFields val NothingToDo
-          ,   Submit
-              pipes
-              presels
-              errors
-              BodyContainer
-              topologicalOrderedTools
+      =     Tool parms Items items formFields NothingToDo Submit
+          , pipes presels errors BodyContainer topologicalOrderedTools
           , PIPE A wrkflw Z itms TooManyWorkflows updateUploads
           , ShowAllPipes rstr rpl NNN reorderedworkflowlist
-          , allpipes batch returnCode restriction sources
+          , val allpipes batch returnCode restriction sources
         .   ( ShowAllPipes
             =     hiddenData reorderedworkflowlist
                 , rstr "visualizedWorkFlow(s)"
@@ -13634,8 +13610,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
             )
           & ( ShowOnlyTheCurrentPipe
-            =   formFields reorderedworkflowlist nth seeninputs
-              .   !arg:(?reorderedworkflowlist.?nth)
+            =   formFields reorderedworkflowlist nth seeninputs bm
+              .   !arg:(?reorderedworkflowlist.?nth.?bm)
                 & :?formFields:?seeninputs
                 &   makeWorkflowRadioButtons$!reorderedworkflowlist
                   : ?formFields
@@ -13646,6 +13622,34 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         $ ( ( !nth:<1
                             |     (br.,)
                                   submit$Submit
+                                  (br.,)
+                                  (br.,)
+                                  submit$Bookmark
+                                    makeTextFormField
+                                  $ (   localized
+                                      $ ( "Name for this workflow"
+                                          "Navn for denne arbejdsgang"
+                                        )
+                                    . bm
+                                    .   (val.!bm)
+                                        ( desc
+                                        .   localized
+                                          $ ( "A unique name that tells you and other users what the workflow is about."
+                                              "Et unikt navn som giver mening for dig og for andre brugere."
+                                            )
+                                        )
+                                        (size.40)
+                                        ( required
+                                        . span
+                                        .   ( style
+                                            . "color:blue; width: auto; line-height: normal;"
+                                            )
+                                          , "*"
+                                        )
+                                    )
+                                  ( !bm:
+                                  | "(" localized$(saved gemt) ")"
+                                  )
                                   !formFields
                               : ?formFields
                             )
@@ -14344,10 +14348,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                    |onlyWithoutRestriction
                                    )"
                     & (   !returnCode:allRight
-                        & ( 
-                          |   makeWorkflowsSequential$!pipe
-                            : (?reorderedworkflowlist.?topologicalOrderedTools)
-                          )
                         &   localized$("View details" "Se detaljer")
                           : ?ViewDetails
                         & (     !Submit
@@ -14359,6 +14359,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   . !topologicalOrderedTools
                                   )
                                 . !nth
+                                . 
                                 )
                           |   !Submit:Metadata
                             & (     !parms
@@ -14387,6 +14388,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     )
                               | NoNeedForMetadata$
                               )
+                          |   !Submit:Bookmark
+                            & log$(Bookmark !parms)
+                            &   log
+                              $ (reorderedworkflowlist !reorderedworkflowlist)
+                            & !reorderedworkflowlist:(?,(?.?wf))
+                            & ( !wrkflws:
+                              | readTable$wrkflws
+                              )
+                            & (!bm.!wf) !wrkflws:?wrkflws
+                            & saveTable$wrkflws
+                            &   ShowOnlyTheCurrentPipe
+                              $ ( ( !reorderedworkflowlist
+                                  . !topologicalOrderedTools
+                                  )
+                                . !nth
+                                .   !parms:? (bm.?bm) ?
+                                  & !bm
+                                )
                           |   !Submit:Submit
                             & log$(Submit !parms)
                             & (     !parms
