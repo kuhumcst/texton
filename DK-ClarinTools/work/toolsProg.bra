@@ -9177,7 +9177,7 @@ try {
                 : ?recentTasks
               &   windFW$(!reorderedworkflowlist.!nth)
                 : ?reorderedworkflowlist
-              & ( !i
+              & ( !userInput
                 . (!reorderedworkflowlist.!topologicalOrderedTools)
                 . allRight
                 )
@@ -9185,7 +9185,7 @@ try {
               & log$"Calling fp"
               & fp$!userInput:?FP
               & log$"Calling fp success"
-              & ( !i
+              & ( !userInput
                 .     !FP:(?,?) ?
                     & (!FP.triviallyFulfilled)
                   | !pipes:?+[>1000&(!FP.tooMany)
@@ -12371,16 +12371,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  * Called from enact.java
  */"
       ( specifyGoal
-      =     Tool item parms Items items
-          , formFields
-          , presels
-          , errors batch desiredTools
-          , sourcesAndGoals
-          , BodyContainer
-          , handle
-          , A Z errmsg itms
+      =     Tool item parms Items items formFields presels
+          , errors batch desiredTools sourcesAndGoals BodyContainer
+          , handle A Z errmsg itms rstr
           , "We are at the start. Show an input form."
-          , rstr
         .   ( desiredTools
             =   L ToolID Title S
               .   readTable$tooladm
@@ -12439,7 +12433,87 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , goalpicklists preselvals presels
                 , createArgs featurehelpcell
                 , B C D E R hide n nt p prod x exr
-              .   !arg:(?presels.?createArgs.?)
+              .   ( selectServicedValues
+                  =   short table pat
+                    .     !arg:(?short.?table.(=?pat))
+                        & readTable$toolprop
+                        & readTable$tooladm
+                        & readTable$features
+                        & "Important! Next map fuction has local variable 'abbr', spelled just like that. '!abbr' occurs in pattern 'pat'."
+                        &   map
+                          $ ( ( 
+                              =   tool Full abbr YYy
+                                .   !arg:(?Full.?abbr.?YYy)
+                                  & (   !( 
+                                         ' ( $toolprop
+                                           :   ?
+                                             + (   ?tool
+                                                 &   $tooladm
+                                                   :   ?
+                                                     + (   ?
+                                                           (ToolID.!tool)
+                                                           ?
+                                                       :   ?
+                                                           (Inactive.)
+                                                           ?
+                                                       )
+                                                     + ?
+                                               .   ?
+                                                   ($short,?+$pat+?)
+                                                   ?
+                                               )
+                                             + ?
+                                           )
+                                         )
+                                      & (!Full.!abbr.!YYy)
+                                    | 
+                                    )
+                              )
+                            . !table
+                            )
+                      | !table
+                  )
+                & ( namecell
+                  =   featurs short name table
+                    .   !arg:(?featurs.?short.?name)
+                      &   cell
+                        $ (     !featurs
+                              :   ?
+                                + ( ? (short.!short) ?
+                                  : ? (description.?description) ?
+                                  : ? (table.?table) ?
+                                  )
+                                + ?
+                            &   helplink
+                              $ ( (title.localized$!description)
+                                  (offset.!table)
+                                  (linktext.!name)
+                                )
+                          | !name
+                          )
+                  )
+                & ( featurehelpcell
+                  =   featurs short inorout help
+                    .   !arg:(?featurs.?short.?inorout)
+                      &   cell
+                        $ (     !featurs
+                              :   ?
+                                + ( ? (short.!short) ?
+                                  : ? (!inorout.?help) ?
+                                  )
+                                + ?
+                            & ( div
+                              .   (class.tooltip)
+                                ,   (small.,(small.,chu$10068))
+                                    ( span
+                                    .   (class.tooltiptext)
+                                      , localized$!help
+                                    )
+                              )
+                          | 
+                          )
+                  )
+                & !arg:(?presels.?createArgs.?)
                 & readTable$features
                 & !features:?fs
                 & :?preselvalsrows
@@ -12537,87 +12611,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !preselvalsrows
                       )
                   : ?preselvalsrows
-                & ( selectServicedValues
-                  =   short table pat
-                    .     !arg:(?short.?table.(=?pat))
-                        & readTable$toolprop
-                        & readTable$tooladm
-                        & readTable$features
-                        & "Important! Next map fuction has local variable 'abbr', spelled just like that. '!abbr' occurs in pattern 'pat'."
-                        &   map
-                          $ ( ( 
-                              =   tool Full abbr YYy
-                                .   !arg:(?Full.?abbr.?YYy)
-                                  & (   !( 
-                                         ' ( $toolprop
-                                           :   ?
-                                             + (   ?tool
-                                                 &   $tooladm
-                                                   :   ?
-                                                     + (   ?
-                                                           (ToolID.!tool)
-                                                           ?
-                                                       :   ?
-                                                           (Inactive.)
-                                                           ?
-                                                       )
-                                                     + ?
-                                               .   ?
-                                                   ($short,?+$pat+?)
-                                                   ?
-                                               )
-                                             + ?
-                                           )
-                                         )
-                                      & (!Full.!abbr.!YYy)
-                                    | 
-                                    )
-                              )
-                            . !table
-                            )
-                      | !table
-                  )
-                & ( namecell
-                  =   featurs short name table
-                    .   !arg:(?featurs.?short.?name)
-                      &   cell
-                        $ (     !featurs
-                              :   ?
-                                + ( ? (short.!short) ?
-                                  : ? (description.?description) ?
-                                  : ? (table.?table) ?
-                                  )
-                                + ?
-                            &   helplink
-                              $ ( (title.localized$!description)
-                                  (offset.!table)
-                                  (linktext.!name)
-                                )
-                          | !name
-                          )
-                  )
-                & ( featurehelpcell
-                  =   featurs short inorout help
-                    .   !arg:(?featurs.?short.?inorout)
-                      &   cell
-                        $ (     !featurs
-                              :   ?
-                                + ( ? (short.!short) ?
-                                  : ? (!inorout.?help) ?
-                                  )
-                                + ?
-                            & ( div
-                              .   (class.tooltip)
-                                ,   (small.,(small.,chu$10068))
-                                    ( span
-                                    .   (class.tooltiptext)
-                                      , localized$!help
-                                    )
-                              )
-                          | 
-                          )
-                  )
-                & readTable$features
                 & "Notice: this function does not have local variable 'abbr' !"
                 &     map
                     $ ( ( 
@@ -12865,7 +12858,66 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
                 , hiddenData Items itemGroups
-              .   !arg:(?formFields.?presels.?hiddenData.?Items)
+              .   ( cmptblWrkflws
+                  =   
+                    .   !arg:(?itemGroups.?presels)
+                      & (!wrkflws|readTable$wrkflws)
+                      &   map
+                        $ ( ( 
+                            =   n itm knownInputFeatures
+                              .   !arg:(?n.?itm)
+                                & ( !n
+                                  . !itm
+                                  .       map
+                                        $ ( ( 
+                                            =   
+                                              .     !arg:(?f.?v.!itm)
+                                                  & (!f.!v)
+                                                | 
+                                            )
+                                          . !presels
+                                          )
+                                      : ?knownInputFeatures
+                                    &   log
+                                      $ ( knownInputFeatures
+                                          !knownInputFeatures
+                                        )
+                                    & ( !knownInputFeatures
+                                      .   map
+                                        $ ( ( 
+                                            =   
+                                              .     !arg
+                                                  : (?name.(?i.?o).?wf)
+                                                & log$(name !name i !i)
+                                                & (       map
+                                                        $ ( ( 
+                                                            =   a b
+                                                              .       !arg
+                                                                    : (?a.?b)
+                                                                  &   !i
+                                                                    :   ?
+                                                                        (!a,!b)
+                                                                        ?
+                                                                  & !arg
+                                                                | 
+                                                            )
+                                                          . !knownInputFeatures
+                                                          )
+                                                      : !knownInputFeatures
+                                                    & !name
+                                                  | 
+                                                  )
+                                            )
+                                          . !wrkflws
+                                          )
+                                      )
+                                  )
+                            )
+                          . !itemGroups
+                          )
+                  )
+                & !arg:(?formFields.?presels.?hiddenData.?Items)
+                & log$(presels !presels)
                 & (   !Items:
                     &   str
                       $ ( 200~~~
@@ -12889,6 +12941,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           )
                       : (?itemGroups.?sourceAndGoal)
                     & log$(itemGroups !itemGroups)
+                    &   cmptblWrkflws$(!itemGroups.!presels)
+                      : ?itemGroupsExt
+                    & log$(itemGroupsExt !itemGroupsExt)
                     &   (   !itemGroups:(@.@)
                           &   map
                             $ ( ( 
@@ -12982,19 +13037,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &   analyzeInput$(!parms.!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
-            |   !arg:?A (wrkflw.~) ?Z
-              & (   !Items:
-                  &   str
-                    $ ( 200~~~
-                          toML
-                        $ ( !BodyContainer
-                          $ (paragraph$"Select a file to convert to TEI.")
-                          )
-                      )
-                | chosenworkflow$(!arg !Items)
-                |   str
-                  $ (200~~~ toML$(!BodyContainer$(paragraph$!errmsg)))
-                )
             |   "Shall we treat all resources in one job (non-batch) or shall we
                send each input through a different (though similar) job?"
               &   (     !parms
@@ -13169,7 +13211,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( showworkflows
       =     Tool parms Items items formFields NothingToDo Submit
           , pipes presels errors BodyContainer topologicalOrderedTools
-          , PIPE A wrkflw Z itms TooManyWorkflows updateUploads
+          , PIPE A Z itms TooManyWorkflows updateUploads
           , ShowAllPipes rstr rpl NNN reorderedworkflowlist
           , val allpipes batch returnCode restriction sources
         .   ( ShowAllPipes
@@ -13299,7 +13341,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?formFields
             : ?Items
             : ?PIPE
-            : ?wrkflw
           & 0:?tabind
           & ?:?Tool
           & startclock$
@@ -13416,7 +13457,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & 0:?allpipes
               & :?returnCode:?restriction
               & (     Pipelines$(!parms.)
-                    : ( ?sources
+                    : ( (?sources.?)
                       . (?reorderedworkflowlist.?topologicalOrderedTools)
                       . ?returnCode
                       )
@@ -13467,7 +13508,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , jobIDoffset subjobs
           , nth BodyContainer
           , PIPE lookForLanguage
-          , precooked-DASISH A wrkflw Z errmsg itms
+          , A Z errmsg itms
           , makeJobStack NoNeedForMetadata
           , ApplyThePipelineToTheInput
           , ShowOnlyTheCurrentPipe AddMetadata
@@ -13491,127 +13532,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   | (.!arg)
                   )
             )
-          & ( precooked-DASISH
-            =     A Z AZ Name wrkflw Iformat
-                , LocalFileName language langopt nofonts
-                , ContentType knownInputFeats
-              .     log$(SINGLE-precooked-DASISH !arg)
-                  & !arg:? (nth.?) ?
-                  & (!arg.)
-                |   !arg:? (wrkflw.?wrkflw) ?:?AZ
-                  & log$(wrkflw.!wrkflw)
-                  &   !AZ
-                    :   ?A
-                        ( FieldName,input|text
-                        . Name,?Name
-                        . ContentType,%?ContentType ?nofonts
-                        . Size,?
-                        . DestinationDir,?
-                        . LocalFileName,?LocalFileName
-                        )
-                        ?Z
-                  &   !Uploads
-                    : ? (?.?.!LocalFileName.?.?knownInputFeats) ?
-                  & !A !Z:?A (DATE.?) ?Z
-                  & !A !Z:?A (method.?) ?Z
-                  & !A !Z:?A (action.?) ?Z
-                  &   lookForLanguage$(!LocalFileName.!A !Z)
-                    : (?language.?A)
-                  &   (Ilang.!language) (Olang.!language)
-                    : ?langopt
-                  & (   !wrkflw:CLEANINGTEI
-                      & (     !knownInputFeats
-                            :   ?
-                                ( format
-                                .   ( flat
-                                    | rtf
-                                    | html
-                                    | pdf
-                                    | doc
-                                    | docx
-                                    | odt
-                                    | odp
-                                    | ods
-                                    | ppt
-                                    | pptx
-                                    | xls
-                                    | xlsx
-                                    )
-                                  : ?Iformat
-                                )
-                                ?
-                          & (   !A
-                                (method.GET)
-                                (Item.!Name)
-                                (nth.1)
-                                (batch.on)
-                                (bsubmit.Metadata)
-                                (Ifacet.txt)
-                                (Iformat.!Iformat)
-                                !langopt
-                                (Oformat.txtbasis)
-                                (Ofacet.txt)
-                                (Opres.)
-                            . 
-                            )
-                        | ( !arg
-                          .     !ContentType:application/pdf
-                              &   str
-                                $ (   localized
-                                    $ ( "PDF-files that only consist of image data cannot be handled by this work flow."
-                                        "PDF-filer som kun består af billeddata kan ikke håndteres af denne workflow."
-                                      )
-                                    "("
-                                    !Name
-                                    ")"
-                                  )
-                            |   str
-                              $ (   localized
-                                  $ ( "CLEANING producing TEI output requires input with ContentType:text/plain, application/msword (RTF), text/rtf, text/html, application/pdf (with text!) or application/x-download (PDF) instead of "
-                                      "Input kan være flad tekst, officedokumenter eller PDF. Ikke "
-                                    )
-                                  !ContentType
-                                )
-                          )
-                        )
-                    |   !wrkflw:CLEANINGFLAT
-                      & (     !knownInputFeats
-                            :   ?
-                                ( format
-                                .   ( flat
-                                    | rtf
-                                    | html
-                                    | pdf
-                                    )
-                                  : ?Iformat
-                                )
-                                ?
-                          & (   !A
-                                (method.GET)
-                                (Item.!Name)
-                                (nth.1)
-                                (batch.on)
-                                (bsubmit.Submit)
-                                (Ifacet.txt)
-                                (Iformat.!Iformat)
-                                !langopt
-                                (Ofacet.tok)
-                                (Oformat.flat)
-                                (Opres.)
-                            . 
-                            )
-                        | ( !arg
-                          .   str
-                            $ ( "CLEANING producing tokenized output, one sentence per line, requires input with ContentType:text/plain, application/msword (RTF), text/rtf, text/html, application/pdf or application/x-download (PDF) instead of "
-                                !ContentType
-                              )
-                          )
-                        )
-                    )
-            )
           & ( ShowOnlyTheCurrentPipe
             =   formFields reorderedworkflowlist nth seeninputs bm
-              .   !arg:(?reorderedworkflowlist.?nth.?bm)
+              .   !arg:(?reorderedworkflowlist.?nth.?bm.?err)
                 & :?formFields:?seeninputs
                 &   makeWorkflowRadioButtons$!reorderedworkflowlist
                   : ?formFields
@@ -13648,7 +13571,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         )
                                     )
                                   ( !bm:
-                                  | "(" localized$(saved gemt) ")"
+                                  |   !err:
+                                    & "(" localized$(saved gemt) ")"
+                                  |   localized
+                                    $ ("Already in use!" "Allerede brugt!")
                                   )
                                   !formFields
                               : ?formFields
@@ -14303,44 +14229,18 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , Workflows returnCode
                 , restriction sources
               .     !arg
-                  : ( ?parms
-                    . ?Submit
-                    . ?hiddenData
-                    . ?batch
-                    . ?Items
-                    . ?mail2
-                    . ?wrkflw
-                    )
+                  : (?parms.?Submit.?hiddenData.?batch.?Items.?mail2)
                 & 0:?allpipes
                 & :?returnCode:?restriction
                 &   !parms
                   : ( ? (nth.?nth) ?
                     | ?&1:?nth
                     )
-                & (   (   !wrkflw:~
-                        & readTable$Workflows
-                        &   !Workflows
-                          :   ?
-                              (   ?reqs
-                                &   whl
-                                  ' ( !reqs:%?req ?reqs
-                                    & !parms:? !req ?
-                                    )
-                                & !reqs:
-                              . ?pipe
-                              . ?descr
-                              )
-                              ?
-                        & allRight:?returnCode
-                        &   makeWorkflowsSequential$!pipe
-                          : (?reorderedworkflowlist.?topologicalOrderedTools)
-                      |   !wrkflw:
-                        &   Pipelines$(!parms.!nth)
-                          : ( ?sources
-                            . (?reorderedworkflowlist.?topologicalOrderedTools)
-                            . ?returnCode
-                            )
-                      )
+                & (     Pipelines$(!parms.!nth)
+                      : ( (?sources.?goals.?)
+                        . (?reorderedworkflowlist.?topologicalOrderedTools)
+                        . ?returnCode
+                        )
                     & "!returnCode:(allRight
                                    |triviallyFulfilled
                                    |tooComplex
@@ -14360,6 +14260,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   )
                                 . !nth
                                 . 
+                                . 
                                 )
                           |   !Submit:Metadata
                             & (     !parms
@@ -14377,34 +14278,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 &   rememberMetadata$(TEImetadata.!parms)
                                   : ?parms
                                 &   AddMetadata
-                                  $ ( TEImetadata
-                                    . !nth
-                                    . !parms
-                                    . 
-                                    .   !hiddenData
-                                        ( !wrkflw:
-                                        | (wrkflw.!wrkflw)
-                                        )
-                                    )
+                                  $ (TEImetadata.!nth.!parms..!hiddenData)
                               | NoNeedForMetadata$
                               )
                           |   !Submit:Bookmark
                             & log$(Bookmark !parms)
+                            & log$(sources !sources)
                             &   log
                               $ (reorderedworkflowlist !reorderedworkflowlist)
                             & !reorderedworkflowlist:(?,(?.?wf))
+                            & ((!sources.!goals).!wf):?wf
                             & ( !wrkflws:
                               | readTable$wrkflws
                               )
-                            & (!bm.!wf) !wrkflws:?wrkflws
-                            & saveTable$wrkflws
                             &   ShowOnlyTheCurrentPipe
                               $ ( ( !reorderedworkflowlist
                                   . !topologicalOrderedTools
                                   )
                                 . !nth
-                                .   !parms:? (bm.?bm) ?
-                                  & !bm
+                                .     !parms:? (bm.?bm) ?
+                                    & (     !wrkflws
+                                          : ? (!bm.?) ?
+                                        & inuse:?err
+                                      |     (!bm.!wf) !wrkflws
+                                          : ?wrkflws
+                                        & :?err
+                                        & saveTable$wrkflws
+                                      )
+                                    & !bm
+                                  | 
+                                . !err
                                 )
                           |   !Submit:Submit
                             & log$(Submit !parms)
@@ -14467,7 +14370,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?formFields
             : ?Items
             : ?PIPE
-            : ?wrkflw
           & 0:?tabind
           & ?:?Tool
           & (|log$NEW)
@@ -14505,35 +14407,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &   analyzeInput$(!parms.!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
-            |   !arg:?A (wrkflw.?wrkflw) ?Z
-              & :?mail2
-              & (   !Items:
-                  &   str
-                    $ ( 200~~~
-                          toML
-                        $ ( !BodyContainer
-                          $ (paragraph$"Select a file to convert to TEI.")
-                          )
-                      )
-                |     precooked-DASISH$!arg
-                    : (?arg:?parms.?errmsg)
-                  & !errmsg:
-                  & (wrkflw.!wrkflw) !hiddenData:?hiddenData
-                  &   supplementParmsAndHiddenData$(!parms.!hiddenData)
-                    : (?parms.?Submit.?hiddenData.?batch)
-                  & "mail2 was used to retrieve previously entered TEI metadata. The current system does not ask for mail address."
-                  &   "The user has selected a workflow."
-                    $ ( !parms
-                      . !Submit
-                      . !hiddenData !Items
-                      . !batch
-                      . !Items
-                      . !mail2
-                      . !wrkflw
-                      )
-                |   str
-                  $ (200~~~ toML$(!BodyContainer$(paragraph$!errmsg)))
-                )
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
                 : (?parms.?Submit.?hiddenData.?batch)
               &   "The user has selected a workflow."
@@ -14543,7 +14416,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   . !batch
                   . !Items
                   . !mail2
-                  . 
                   )
             )
       )
@@ -15739,69 +15611,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                               )
                                                           , 
                                                         )
-                                                  )
-                                                  ( 
-                                                  |   ( div
-                                                      .   ( style
-                                                          . "margin-top:10px;"
-                                                          )
-                                                        ,   ( label
-                                                            .   ( style
-                                                                . "padding-left: 19px;"
-                                                                )
-                                                              , PDF2TEI
-                                                            )
-                                                            ( input
-                                                            .     (type.radio)
-                                                                  ( name
-                                                                  . wrkflw
-                                                                  )
-                                                                  ( value
-                                                                  . CLEANINGTEI
-                                                                  )
-                                                              , 
-                                                            )
-                                                      )
-                                                      ( div
-                                                      .   ( style
-                                                          . "margin-top:10px;"
-                                                          )
-                                                        ,   ( label
-                                                            .   ( style
-                                                                . "padding-left: 19px;"
-                                                                )
-                                                              , PDF2text
-                                                            )
-                                                            ( input
-                                                            .     (type.radio)
-                                                                  ( name
-                                                                  . wrkflw
-                                                                  )
-                                                                  ( value
-                                                                  . CLEANINGFLAT
-                                                                  )
-                                                              , 
-                                                            )
-                                                      )
-                                                      ( div
-                                                      .   ( style
-                                                          . "margin-top:10px;"
-                                                          )
-                                                        ,   ( label
-                                                            .   ( style
-                                                                . "padding-left: 19px;"
-                                                                )
-                                                              , other
-                                                            )
-                                                            ( input
-                                                            .     (type.radio)
-                                                                  ( name
-                                                                  . wrkflw
-                                                                  )
-                                                                  (value.)
-                                                              , 
-                                                            )
-                                                      )
                                                   )
                                                   ( input
                                                   .     (type.hidden)
