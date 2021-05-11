@@ -200,7 +200,7 @@ toolsProg=
               | Saved !saved
               )
           |   !arg:(?folder.?tab)
-            & lst$(!tab,path$(!folder !tab),NEW,RAW)
+            & lst$(!tab,path$(!folder !tab),NEW,RAW,LIN)
           |     whl
               ' ( !arg:%?tab ?arg
                 & (   !where:? (? !tab ?.?folder) ?
@@ -321,6 +321,7 @@ toolsProg=
           toolprop
           ItemGroupsCache
           footer
+          recentTasks
       )
       ( saveAllTables
       =   tab saved folder
@@ -585,9 +586,11 @@ toolsProg=
               )
           | str$"Cannot read table 'where'"&~
       )
-      (recentTasks=)
       ( saveToolTable
-      = .saveTable$!arg&:?recentTasks
+      =   
+        .   saveTable$!arg
+          & :?recentTasks
+          & saveTable$recentTasks
       )
       ( setLang
       =   full A Z
@@ -9215,6 +9218,7 @@ try {
                               )
                               !recentTasks
                           : ?recentTasks
+                        & saveTable$recentTasks
                         &   windFW$(!reorderedworkflowlist.!nth)
                           : ?reorderedworkflowlist
                         & ( (!reorderedworkflowlist.!topologicalOrderedTools)
