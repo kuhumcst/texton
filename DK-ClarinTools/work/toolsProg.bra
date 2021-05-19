@@ -2774,11 +2774,8 @@ toolsProg=
                       & !arg
                   )
                 & !arg:(?abbrevs.?struct)
-                & log$(abbrevs !abbrevs struct !struct)
                 & SpotInput$!struct:?struct
-                & log$(struct2 !struct)
                 & describeShort$!struct:?description
-                & log$(description !description)
                 & (   !description:~
                     & !struct:? (?.?.?.?o)
                     &   !description
@@ -12538,7 +12535,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         & ( !nt:!itms&(!a.!v)
                           | 
                           )
-                      |   !arg:(itms.?)
+                      |   !arg:(Item|itms.?)
                         & !arg !hiddenData:?hiddenData
                         & !arg
                       |   !arg:(CLOCK.?CLOCK)
@@ -12792,13 +12789,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & ( linksAndLinked
                   =   stable exr L itmgrp
                     .   !arg:(?stable.?exr)
-                      & ( !exr&log$EXR
-                        | log$GEENEXR
-                        )
                       & !exr:?itmgrp
-                      & log$(itmgrp !itmgrp)
                       & (!itmgrp:";" ?itmgrp|)
-                      & log$(itmgrp !itmgrp)
                       & (   !stable:%? [?L
                           & (   "item_group_" !itmgrp:?id
                               & ( a
@@ -12937,7 +12929,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         . !allLinked
                         )
                   )
-                & !arg:(?presels.?createArgs.?)
+                & !arg:(?presels.?createArgs)
                 & :?linkedWorkflows
                 & readTable$features
                 & !features:?fs
@@ -13180,7 +13172,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                   : ?goalpicklists
                 & cmptblWrkflws$(!items.!presels):?items
-                & log$(cmptblWrkflws-items !items)
                 & ( !items
                   .     fieldset
                       $ (     !items:? (?.?.% ?) ?
@@ -13310,7 +13301,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , itemGroupsExt linkedWorkflows
                 , hiddenData Items itemGroups
               .   !arg:(?presels.?hiddenData.?Items)
-                & log$(presels !presels)
+                & log$"We are at the start. Show an input form."
                 & (   !Items:
                     &   str
                       $ ( 200~~~
@@ -13325,30 +13316,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             )
                         )
-                  |       sourcesAndGoals
-                        $ ( !presels
-                          . !arg
-                          .     !Items
-                              : ? (Item.@(?:"dkclarin:" ?)) ?
-                            & 
-                          )
+                  |     sourcesAndGoals$(!presels.!arg)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
-                    & log$(itemGroupsExt !itemGroupsExt)
                     &   (   !itemGroupsExt:(@.@.?)
-                          & log$AAAAA1
-                          &   map
-                            $ ( ( 
-                                =   
-                                  .     !arg:(Item.?arg)
-                                      &   !itemGroupsExt
-                                        : ? (?nt.? !arg ?) ?
-                                      & (str$(Item ";" !nt).!arg)
-                                    | !arg
-                                )
-                              . !hiddenData
-                              )
+                          & !Items !hiddenData
                         |   readTable$ItemGroupsCache
-                          & log$BBBBBBB2
                           & (   !ItemGroupsCache
                               : ? (?CLOCK.!itemGroupsExt) ?
                             |       (clk$:?CLOCK.!itemGroupsExt)
@@ -13356,20 +13328,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 : ?ItemGroupsCache
                               & saveTable$ItemGroupsCache
                             )
-                          & log$CCCCCCCCC2
-                          &   (CLOCK.!CLOCK)
-                                map
-                              $ ( ( 
-                                  =   
-                                    .     !arg:(Item.?)
-                                        & 
-                                      | !arg
-                                  )
-                                . !hiddenData
-                                )
+                          & (CLOCK.!CLOCK) !hiddenData
                         )
                       : ?hiddenData
-                    & log$(hiddenDataWithITEMS !hiddenData)
                     & !sourceAndGoal desiredTools$:?formFields
                     &   str
                       $ ( 200~~~
@@ -13426,8 +13387,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               . ?BodyContainer
               )
           & "First build a list of items."
-          & log$(Items !Items)
-          & log$(hiddenData !hiddenData)
           & (   !Items:
               & buildItemListFromForeignData$!parms:?Items
             | 
@@ -13726,8 +13685,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & log$WORKFLOWLISTLOGJE
-          & !arg:?ARG
-          & lst$(ARG,path$"log.txt",APP)
           & setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
           & :?PIPE
@@ -13741,7 +13698,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               . ?BodyContainer
               )
           & "First build a list of items."
-          & log$(Items !Items)
           & buildItemList$!parms:?Items
           &   analyzeInput$(!parms.!Items.!errors)
             : (?Items.?presels.?errors)
@@ -13903,9 +13859,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( ShowOnlyTheCurrentPipe
             =   formFields struct nth bm
               .   !arg:(?struct.?nth.?bm.?err)
-                & log$ShowOnlyTheCurrentPipe
                 & makeWorkflowVisualisation$!struct:?formFields
-                & log$(formFields !formFields)
                 &   str
                   $ ( 200~~~
                         toML
@@ -14466,9 +14420,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             | NoNeedForMetadata$
                             )
                         |   !Submit:Bookmark
-                          & log$(Bookmark !parms)
-                          & log$(sources !sources)
-                          & log$(struct !struct)
                           & ((!sources.!goals).!struct):?wf
                           & ( !wrkflws:
                             | readTable$wrkflws
@@ -14489,7 +14440,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               . !err
                               )
                         |   !Submit:Submit
-                          & log$(Submit !parms)
                           & (     !parms
                                 : ~( ?
                                      ( Iformat
@@ -14561,15 +14511,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | UnexpectedReturnCode$!returnCode
                       )
                   |   !wrkflws:? (!nth.?.?struct) ?
-                    & log$(nth !nth wf !struct)
                     & whichButton$!nth
                   | NotFulfillable$NoPipelinesFound
                   )
             )
           & (|log$NEW)
           & log$SINGLEWORKFLOWLOGJE
-          & !arg:?ARG
-          & lst$(ARG,path$"log.txt",APP)
           & :?PIPE
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : ( ?errors
@@ -14581,7 +14528,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               . ?BodyContainer
               )
           & "First build a list of items."
-          & log$(Items !Items)
           & (   !Items:
               & buildItemList$!parms:?Items
             | 
