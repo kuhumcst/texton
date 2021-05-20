@@ -101,7 +101,13 @@ X=
                                   & ( @(!lem:? " " ?)
                                     | ( !wrd
                                       . !lem
-                                      .     !TorC:C
+                                      .     upp$!TorC:low$!TorC
+                                          & @( !cls
+                                             : ( ?cls !TorC ?
+                                               | ?cls
+                                               )
+                                             )
+                                        |   !TorC:C
                                           & short$!cls
                                         | !cls
                                       . !freq:#|1
@@ -464,8 +470,8 @@ X=
   )
   ( new
   =   
-    .   ~
-      |   
+    .   
+      |   ~
         & arg$:?traindata
         & arg$:?IfacetsegF
         & ( !IfacetsegF:onefile&arg$:?F
@@ -475,6 +481,28 @@ X=
         & arg$:?lemposfile
         & "T if full tag, C if tag to be shortened to first capital letters"
         & arg$:?TorC
+        &   (its.doit)
+          $ ( !traindata
+            . !F:~|(!IfacetsegF.!IfacettokF)
+            . !flexrules
+            . !lemposfile
+            . !TorC
+            )
+      |   ~
+        & "polimorfologik.wordclasses.txt":?traindata
+        & onefile:?IfacetsegF
+        & ( !IfacetsegF:onefile&F:?F
+          | F:?IfacettokF&:?F
+          )
+        & "flexrules.bra":?flexrules
+        & O:?lemposfile
+        & "T if full tag, C if tag to be shortened to first capital letters
+           if TorC is non-alphabetic, it is used to copy the tag until that
+           character. E.g.
+           \":\":?TorC
+           subst:sg:acc:m3+subst:sg:nom:m3 --> subst
+          "
+        & T:?TorC
         &   (its.doit)
           $ ( !traindata
             . !F:~|(!IfacetsegF.!IfacettokF)
