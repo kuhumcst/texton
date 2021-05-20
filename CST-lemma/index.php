@@ -354,7 +354,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
     else if($language == 'pl')
         {
         $flexrulessubdir = "/0";
-        $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
+        $flexrules = "flexrules.polimorfologik.txt.WordLemma.ph_XC";
         }
     else if($language == 'pt')
         {

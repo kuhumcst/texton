@@ -611,7 +611,7 @@ try {
                 {
                 $lang = "pl";
                 $flexrules = "$res/pl/lemmatiser/notags/0/flexrules.bra";
-                $traindata = "$res/pl/lemmatiser/training/polimorfologik.wordclasses.txt";
+                $traindata = "$res/pl/lemmatiser/training/polimorfologik.txt.WordLemmaClass.ph.N";
                 $TorC = "T";
                 }
             else if($Ilangpt)
