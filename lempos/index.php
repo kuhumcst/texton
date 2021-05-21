@@ -610,9 +610,10 @@ try {
             else if($Ilangpl)
                 {
                 $lang = "pl";
-                $flexrules = "$res/pl/lemmatiser/notags/0/flexrules.bra";
-                $traindata = "$res/pl/lemmatiser/training/polimorfologik.txt.WordLemmaClass.ph.N";
-                $TorC = "T";
+              //$flexrules = "$res/pl/lemmatiser/notags/0/flexrules.bra";
+                $flexrules = "$res/pl/lemmatiser/notags/1/flexrules.bra";
+                $traindata = "$res/pl/lemmatiser/training/polimorfologik.txt.WordLemmaClass";
+                $TorC = ":";
                 }
             else if($Ilangpt)
                 {
