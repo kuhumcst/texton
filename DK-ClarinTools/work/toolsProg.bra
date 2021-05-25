@@ -14139,7 +14139,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( makejobstack
             =   NOS stepNo stepping
               .   ( stepping
-                  =     a b ID NO o i
+                  =     a b ID NO I O input
                       , step ad bd deps stp c
                     .   !arg:(?arg.?deps)
                       & (   !arg:%?a %?b
@@ -14150,35 +14150,52 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           & stepping$(!a.!deps):(?a.?ad)
                           & stepping$(!b.!deps):(?b.?bd)
                           & (!a !b.!ad !bd)
-                        |   !arg:(.?NO.?o.?i)
+                        |   !arg:(.?NO.?I.?O)
                           & !NOS:? (!NO.?step) ?
-                          & (.!step.!i)
-                        |   !arg:(?ID.?NO.?o.?i)
+                          & (.!step.!O)
+                        |   !arg:(?ID.?NO.?I.?O)
                           &   str$(step (1+!stepNo:?stepNo))
                             : ?step
                           & ( !NO:
                             | (!NO.!step) !NOS:?NOS
                             )
                           & (     !deps
-                                : (?stp.!o:(?a,?b) ?c)
-                              & (!a,(!b.!stp)):?o
+                                : (?stp.!I:(?a,?b) ?c)
+                              & (!a,(!b.!stp)):?I
                               &   whl
                                 ' ( !c:%?a ?c
-                                  & !a !o:?o
+                                  & !a !I:?I
                                   )
-                              & ((!step.!ID.!i.!o).!step.!i)
-                            |   (   !o:?a (?b,%*%) ?c
+                              & ((!step.!ID.!O.!I).!step.!O)
+                            |   (     !I
+                                    : ?a (?b,%*%:?input) ?c
+                                  & :?nc
                                   &   whl
-                                    ' (   !deps
-                                        :   (?stp.? (!b,?ad) ?)
-                                            ?deps
-                                      & (!b,(!ad.!stp)) !c:?c
+                                    ' ( !input:%?ad*?input
+                                      &     !nc
+                                            (     !deps
+                                                :   ?x
+                                                    ( ?stp
+                                                    . ? (!b,!ad) ?
+                                                    )
+                                                    ?y
+                                              & !x !y:?deps
+                                              & (!b,(!ad.!stp))
+                                            | ( !b
+                                              , ( !ad
+                                                . FiL
+                                                . !a (!b.!ad) !c
+                                                )
+                                              )
+                                            )
+                                        : ?nc
                                       )
-                                  & !a !c:?o
-                                |   !o:(?a,?b) ?c
-                                  & (!a,(!b.FiL.!o)) !c:?o
+                                  & !a !nc !c:?I
+                                |   !I:(?b,?input) ?c
+                                  &   (!b,(!input.FiL.!I)) !c
+                                    : ?I
                                 )
-                              & ((!step.!ID.!i.!o).!step.!i)
+                              & ((!step.!ID.!O.!I).!step.!O)
                             )
                         )
                   )
