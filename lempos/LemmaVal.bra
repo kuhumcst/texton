@@ -94,16 +94,25 @@ X=
                                       |   %?wrd %?lem %?cls
                                         & 0:?freq
                                       )
+                                  & (  !TorC:C
+                                         & short$!cls:?cls
+                                    | !TorC:T
+                                    | @( !cls
+                                       : ( ?cls !TorC ?
+                                         | ?cls
+                                         )
+                                       )
+                                    )
                                   &   whl
                                     ' @( !freq
                                        : ?freq (" "|\r)
                                        )
-                                  & ( !wrd
-                                    . !lem
-                                    .     !TorC:C
-                                        & short$!cls
-                                      | !cls
-                                    . !freq:#|1
+                                  & ( @(!lem:? " " ?)
+                                    | ( !wrd
+                                      . !lem
+                                      . !cls
+                                      . !freq:#|1
+                                      )
                                     )
                                 | 
                                 )
@@ -473,6 +482,28 @@ X=
         & arg$:?lemposfile
         & "T if full tag, C if tag to be shortened to first capital letters"
         & arg$:?TorC
+        &   (its.doit)
+          $ ( !traindata
+            . !F:~|(!IfacetsegF.!IfacettokF)
+            . !flexrules
+            . !lemposfile
+            . !TorC
+            )
+      |   ~
+        & "../texton-linguistic-resources/pl/lemmatiser/training/polimorfologik.txt.WordLemmaClass":?traindata
+        & onefile:?IfacetsegF
+        & ( !IfacetsegF:onefile&F:?F
+          | F:?IfacettokF&:?F
+          )
+        & "../texton-linguistic-resources/pl/lemmatiser/notags/1/flexrules.bra":?flexrules
+        & O:?lemposfile
+        & "T if full tag, C if tag to be shortened to first capital letters
+           if TorC is non-alphabetic, it is used to copy the tag until that
+           character. E.g.
+           \":\":?TorC
+           subst:sg:acc:m3+subst:sg:nom:m3 --> subst
+          "
+        & ":":?TorC
         &   (its.doit)
           $ ( !traindata
             . !F:~|(!IfacetsegF.!IfacettokF)
