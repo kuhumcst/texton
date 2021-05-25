@@ -353,7 +353,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
         }
     else if($language == 'pl')
         {
-        $flexrulessubdir = "0";
+        $flexrulessubdir = "/0";
         $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
         }
     else if($language == 'pt')
@@ -417,8 +417,6 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetsl,$Ofacetstl,$Ofacetstlp,$Of
         $H = "0";
         logit("Uminus $Uminus");
         } 
-
-    logit("c:".$c);
 
     if($Ipresnml && !$Opresnml || $ShowTag) 
         {
