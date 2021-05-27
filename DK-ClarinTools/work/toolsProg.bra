@@ -2302,7 +2302,7 @@ toolsProg=
           & spotInput$!arg
       )
       ( makeWorkflowRadioButtons
-      =     i nr Nsteps Ntools n o
+      =     i Nsteps Ntools n o
           , toolPlumbing translateManyToHumanLanguage
           , abbR reorderedworkflowlist struct
           , toolsUsed topologicalOrderedTools candidateList
@@ -2798,142 +2798,11 @@ toolsProg=
           & candidateList$(!reorderedworkflowlist.!topologicalOrderedTools)
       )
       ( makeWorkflowVisualisation
-      =   i n o abbR struct translateOneToHumanLanguage
+      =   n o struct translateOneToHumanLanguage
         .   ( translateOneToHumanLanguage
             =     description seqno struct abbrevs o
-                , describeLong describeShort
-              .   ( describeShort
-                  =   describe circle nice
-                    .   ( circle
-                        =   
-                          .   !arg:~#&!arg
-                            | ( strong
-                              .   
-                                ,     !arg:<128
-                                    &   ":"
-                                        (   !arg:~<48
-                                          & !arg+-48
-                                        | chr$!arg
-                                        )
-                                  | chu$!arg
-                              )
-                        )
-                      & ( nice
-                        =   i o
-                          .   !arg:(?i.?o)
-                            & inoutdesc$!i:?i
-                            & inoutdesc$!o:?o
-                            & ( :!i:!o
-                              |   "("
-                                  !i
-                                  ( !i:
-                                  | !o:
-                                  | " ; "
-                                  )
-                                  !o
-                                  ")"
-                              )
-                        )
-                      & ( arrow
-                        =   b i
-                          .   !arg:(?arg.?b)
-                            & !b:(?.?.?i.?) ?
-                            & ( div
-                              .   (class.tooltip)
-                                ,   ( !arg:1&" → "
-                                    | !arg:2&" ⇒ "
-                                    | !arg:3&" ⇛ "
-                                    | " ⭆ "
-                                    )
-                                    ( span
-                                    .   (class.tooltiptext)
-                                      , fullinoutdesc$!i
-                                    )
-                              )
-                        )
-                      & ( describe
-                        =   a b c m n an bn cn h L tit
-                          .   !arg:(?h.?arg)
-                            & (   !arg:(?a,?b)
-                                & describe$(.!a):(?L.?an)
-                                &   whl
-                                  ' ( !b:(?c,?b)
-                                    &     !L
-                                          "+"
-                                          (   describe$(h.!c)
-                                            : (?c.?cn)
-                                          & !c
-                                          )
-                                      : ?L
-                                    & !an+!cn:?an
-                                    )
-                                &     !L
-                                      "+"
-                                      ( describe$(h.!b):(?b.?bn)
-                                      & !b
-                                      )
-                                  : ?L
-                                & !an+!bn:?an
-                                & (!L.!an)
-                              |   !arg:%?a %?b
-                                & describe$(.!a):(?a.?an)
-                                & (       !a
-                                          (   !a:(div.?,∵ ?)
-                                            & 
-                                          | arrow$(!an.!b)
-                                          )
-                                          (   describe$(.!b)
-                                            : (?b.?bn)
-                                          & !b
-                                          )
-                                      : ?c
-                                    & ( !h:&!c
-                                      | "[" !c "]"
-                                      )
-                                  . !bn
-                                  )
-                              |   !arg:(?m.?seqno.?n)
-                                & ( !m::?tit
-                                  |   !tooladm
-                                    :   ?
-                                      + ( ? (ToolID.!m) ?
-                                        : ? (Title.?tit) ?
-                                        )
-                                      + ?
-                                  )
-                                & (   (   !tit:
-                                        & (   !seqno:∵
-                                            & 
-                                          | Circle$!seqno
-                                          )
-                                      | !tit circle$!seqno
-                                      )
-                                      (   !tit:
-                                        & (   !seqno:∵
-                                            & !n:(?.?c)
-                                            & ( !c:
-                                              | ( div
-                                                .   (class.tooltip)
-                                                  ,   ∵
-                                                      ( span
-                                                      .   (class.tooltiptext)
-                                                        , fullinoutdesc$!c
-                                                      )
-                                                )
-                                              )
-                                          | 
-                                          )
-                                      |   !abbrevs:?*(!m.!n)^?n*?
-                                        & nice$!n
-                                      )
-                                  . 1
-                                  )
-                              )
-                        )
-                      & describe$(.!arg):(?arg.?)
-                      & !arg
-                  )
-                & ( describeLong
+                , describeLong
+              .   ( describeLong
                   =   describe simplearrow
                     .   ( simplearrow
                         =   b i
@@ -3022,7 +2891,10 @@ toolsProg=
                 & SpotInput$!struct:?struct
                 & describeLong$!struct:?description
                 & (   !description:~
-                    & !struct:? (?.?.?.?o)
+                    &   !struct
+                      : ( ? (?.?.?.?o)
+                        | (? (?.?.?.?o),?)
+                        )
                     & !description
                   |   localized
                     $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
@@ -7120,6 +6992,7 @@ try {
                                       : ~1
                                       : ?sspc
                                     )
+                                  & "asvalue, sopt and zsvalue are empty"
                                   & ( uni
                                     =     ss gs g gp go
                                         , a sp so z tail
@@ -7640,93 +7513,143 @@ try {
         .   !arg:%?a %?arg&!a*product$!arg
           | !arg
       )
+      ( log1
+      = .!lg:1&log$!arg|
+      )
       ( matchGoalWithFeatures
       =     goal toolFeatures
           , newGoal pathfields gfield gvaluesAlts ngoal
-          , Ar Zr gvaluePoss gspc ispc
-          , input A Z oinput gval gvalspc done
-        .   !arg:(?goal.?toolFeatures)
+          , Ar Zr gvaluePoss gspc ispc gvaluesAlt
+          , input A Z oinput gval done
+          , matchAlternative matchOutputAlternative
+          , lg nnewGoal toolfeat
+        .   ( matchOutputAlternative
+            =     outAlt gvaluesAlt len gvaluePoss gspc ispc
+                , PathPart
+              .   !arg:(?outAlt.?gvaluesAlt)
+                & !outAlt:? [?len
+                & !gvaluesAlt:? [!len
+                & log1$(outAlt !outAlt gvaluesAlt !gvaluesAlt)
+                & 1:?PathPart
+                &   whl
+                  ' ( !gvaluesAlt:%@?gvaluePoss^?gspc*?gvaluesAlt
+                    &   !outAlt
+                      :     !gvaluePoss
+                          ^ ( (   ~1:?ispc
+                                &   shared$(!gspc.!ispc)
+                                  : ( ~1:?ispc
+                                    | ?&!gspc:1
+                                    )
+                              |   ?ispc
+                                : ( 1
+                                  | ?&!gspc:1
+                                  )
+                              )
+                            & !PathPart*!gvaluePoss^!ispc:?PathPart
+                            )
+                        * ?outAlt
+                    )
+                & 1:!gvaluesAlt:!outAlt
+                & !PathPart
+            )
+          & ( matchAlternative
+            =     toolfeat gvaluesAlt toolAlt input gfield
+                , oinput A Z done newGoal
+                , PathPart outAlt
+              .   !arg:(?toolfeat.?gvaluesAlt.?gfield.?newGoal)
+                & 0:?done
+                &   whl
+                  ' ( !toolfeat:%?toolAlt+?toolfeat
+                    & (   !toolAlt
+                        : ( ?input
+                          .   !NA&log$(NAtoolAlt !toolAlt)
+                            |     ?
+                                + ( `%?outAlt
+                                  &     matchOutputAlternative
+                                      $ (!outAlt.!gvaluesAlt)
+                                    : ?PathPart
+                                  )
+                                + ?
+                              & log1$(PathPart !PathPart)
+                              &   (     !pathfields
+                                      : ?A (!gfield,?gval) ?Z
+                                    &   !A
+                                        ( !gfield
+                                        ,   !gval:?+!PathPart+?
+                                          | !gval+!PathPart
+                                        )
+                                        !Z
+                                  | !pathfields (!gfield,!PathPart)
+                                  )
+                                : ?pathfields
+                              & log1$(pathfields !pathfields)
+                              &   (     !newGoal
+                                      : ?A (!gfield,?oinput) ?Z
+                                    & !A (!gfield,!oinput+!input) !Z
+                                  | !newGoal (!gfield,!input)
+                                  )
+                                : ?newGoal
+                              & 1+!done:?done
+                          )
+                      | 
+                      )
+                    )
+                & !done:~0
+                & !newGoal
+            )
+          & !arg:(?goal.?toolFeatures)
+          & (   !goal:? (?,%*%) ?
+              & log$(goal--------------- !goal)
+            | 
+            )
           & :?newGoal
           & :?pathfields
+          & 0:?lg
+          & 0:?done
           &   whl
-            ' ( !goal:(?gfield,%?gvaluesAlts) ?ngoal
+            ' ( !goal:(?gfield,?gvaluesAlts) ?ngoal
+              & "Each goal field must be satisfied."
               & (   ( ~(!toolFeatures:? (!gfield,?) ?)
                     | !goal:(sml,nsl)
                     )
                   & "Assume that tool leaves field unchanged: percolate output requirement to input."
                   & !pathfields (!gfield,!gvaluesAlts):?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
-                |   !gvaluesAlts
-                  :   ?
-                    + ( %@?gvaluePoss^?gspc
-                      & NEWSPEC
-                      &   !toolFeatures
-                        :   ?Ar
-                            ( !gfield&0:?done
-                            ,     ?
-                                + ( ( ?input
-                                    .   !NA&1:?ispc
-                                      |   ?
-                                        +   ?
-                                          *   !gvaluePoss
-                                            ^ (   ~1:?ispc
-                                                & NEWSPEC
-                                                &   shared$(!gspc.!ispc)
-                                                  : ( ~1:?ispc
-                                                    |   ?
-                                                      & !gspc:1
-                                                    )
-                                              |   ?ispc
-                                                : ( 1
-                                                  |   ?
-                                                    & !gspc:1
-                                                  )
-                                              )
-                                          * ?
-                                        + ?
-                                    )
-                                  &   (     !pathfields
-                                          : ?A (!gfield,?gval) ?Z
-                                        &   !A
-                                            ( !gfield
-                                            ,       !gval
-                                                  : !gvaluePoss^?gvalspc
-                                                & NEWSPEC
-                                                &   !gvaluePoss
-                                                  ^ ( !gvalspc:!ispc
-                                                    | !gvalspc+!ispc
-                                                    )
-                                              | !gval+!gvaluePoss^!ispc
-                                            )
-                                            !Z
-                                      |   !pathfields
-                                          (!gfield,!gvaluePoss^!ispc)
-                                      )
-                                    : ?pathfields
-                                  &   ( !input:!NA
-                                      |     !newGoal
-                                          : ?A (!gfield,?oinput) ?Z
-                                        &   !A
-                                            (!gfield,!oinput+!input)
-                                            !Z
-                                      | !newGoal (!gfield,!input)
-                                      )
-                                    : ?newGoal
-                                  & 1+!done:?done
-                                  & `~
-                                  )
-                                + ?
-                              | ?&!done:>0
-                            )
-                            ?Zr
-                      & !Ar !Zr:?toolFeatures
+                |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
+                  & "toolfeat is a sum of alternative (input.output) specs."
+                  & !Ar !Zr:?toolFeatures
+                  & 0:?done
+                  & "gvaluesAlts is a sum of alternative goal specifications for a single feature. 
+                     A term can be the product of multiple feature values, e.g. @(lem*pos*syn) for the feature 'facet'."
+                  &   whl
+                    ' ( !gvaluesAlts:%?gvaluesAlt+?gvaluesAlts
+                      & (     ( !gvaluesAlt:%*%&1
+                              | 0
+                              )
+                            : ?lg
+                          & log1$(gvaluesAlt !gvaluesAlt)
+                          & "matchAlternative can fail"
+                          &     matchAlternative
+                              $ (!toolfeat.!gvaluesAlt.!gfield.!newGoal)
+                            : ?newGoal
+                          & 1:?done
+                        | 
+                        )
                       )
-                    + ?
+                  & "If this test fails, none of the goal feature values is satisfied by the current tool.
+                       Consequence: whl loop is exited and 'goal' does not get nil, causing matchGoalWithFeatures to fail."
+                  & !done:1
                 )
               & !ngoal:?goal
+              & log1$(ngoal !ngoal)
               )
+          & "Each field must match"
           & !goal:
-          & createNewGoal$(!newGoal.!toolFeatures):?newGoal
+          & createNewGoal$(!newGoal.!toolFeatures):?nnewGoal
+          & ( !newGoal:!nnewGoal
+            |   log$(createNewGoal !newGoal "-->" !nnewGoal)
+              & !nnewGoal:?newGoal
+            )
           & (!pathfields.sort$!newGoal)
       )
       "
@@ -8035,7 +7958,7 @@ try {
       =     tool source goal restriction superset makeSmell
           , fulfil memoizedSteps activeTools Calls smell
           , memos reslt duplic impassages notttcnt getSuperGoals
-          , sourcegoalmatch unfulfillable notThisTool
+          , sourcegoalmatch unfulfillable notThisTool fulfilGoal
           , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
           , getActiveTools getGoals getImplicatedGoals
         .   0:?smell
@@ -8087,172 +8010,175 @@ try {
                   )
                 & !arg
             )
-          & ( fulfilGoalProduct
-            =     goalterm tools forkk goaly
+          & ( fulfilGoal
+            =     tools forkk goaly
                 , toolspath pathsonetool tool ltools path1
                 , toolFeatures pathh pathfields newGoal infeat
                 , memopaths restriction
                 , goal source I IO O Os sourcePlus
               .   "Check whether source and goal already have been connected by tool and stored as a step."
-                & !arg:(?source.?goalterm.?tools.?restriction)
-                & 1:?forkk
-                &   whl
-                  ' ( !forkk:~0
-                    & !goalterm:%?goaly*?goalterm
-                    &     (     (unfulfillable..find)$(str$!goaly)
-                              : ? (?.!source) ?
-                            & 1+!impassages:?impassages
-                            & 0
-                          |     unify$(!source.fold$!goaly)
-                              : ?sourcePlus
-                            & 1+!sourcegoalmatch:?sourcegoalmatch
-                            & sort$!sourcePlus
-                          |     (!restriction:~0|!tools)
-                              : ?ltools
-                            & 0:?toolspath
-                            &   whl
-                              ' ( !forkk:~0
-                                & !ltools:(?tool.?)+?
-                                & 0:?pathsonetool
-                                & (       (notThisTool..find)
-                                        $ (str$!goaly)
-                                      : ? (?.!tool.!source) ?
-                                    &   whl
-                                      ' (!ltools:(!tool.?)+?ltools)
-                                    & 1+!notttcnt:?notttcnt
-                                  |     isfulfilled$(!source.!goaly.!tool)
-                                      : (?source.?goal.?memopaths)
-                                    & 1+!memos:?memos
-                                    &   whl
-                                      ' (!ltools:(!tool.?)+?ltools)
-                                    &     denumerizeSum
-                                        $ (!toolspath+!memopaths)
-                                      : ?toolspath
-                                    & 1+!pathsonetool:?pathsonetool
-                                  |   whl
-                                    ' (   !ltools
-                                        :   ?
-                                          + (!tool.~:?toolFeatures)
-                                          + ?ltools
-                                      &   makeSmell$!toolFeatures
-                                        : ?toolFeatures
-                                      & (   !tool
-                                          : ( Tesseract-OCR
-                                            | CuneiForm
-                                            )
-                                        | 
+                & log$fulfilGoal
+                & !arg:(?source.?goaly.?tools.?restriction.?forkk)
+                & !forkk:~0
+                &     (     (unfulfillable..find)$(str$!goaly)
+                          : ? (?.!source) ?
+                        & 1+!impassages:?impassages
+                        & 0
+                      |   unify$(!source.fold$!goaly):?sourcePlus
+                        & 1+!sourcegoalmatch:?sourcegoalmatch
+                        & sort$!sourcePlus
+                      |     (!restriction:~0|!tools)
+                          : ?ltools
+                        & 0:?toolspath
+                        &   whl
+                          ' ( !forkk:~0
+                            & !ltools:(?tool.?)+?
+                            & 0:?pathsonetool
+                            & (     (notThisTool..find)$(str$!goaly)
+                                  : ? (?.!tool.!source) ?
+                                & whl'(!ltools:(!tool.?)+?ltools)
+                                & 1+!notttcnt:?notttcnt
+                              |     isfulfilled$(!source.!goaly.!tool)
+                                  : (?source.?goal.?memopaths)
+                                & 1+!memos:?memos
+                                & whl'(!ltools:(!tool.?)+?ltools)
+                                &   denumerizeSum$(!toolspath+!memopaths)
+                                  : ?toolspath
+                                & 1+!pathsonetool:?pathsonetool
+                              |   whl
+                                ' (   !ltools
+                                    :   ?
+                                      + (!tool.~:?toolFeatures)
+                                      + ?ltools
+                                  &   makeSmell$!toolFeatures
+                                    : ?toolFeatures
+                                  & (   !tool
+                                      : ( Tesseract-OCR
+                                        | CuneiForm
                                         )
-                                      & (       matchGoalWithFeatures
-                                              $ (!goaly.!toolFeatures)
-                                            : (?pathfields.?newGoal)
-                                          & (       fulfil
-                                                  $ ( !tools
-                                                    . !source
-                                                    . !newGoal
-                                                    . !indent+1
-                                                    . 0
-                                                    )
-                                                : ?pathh
-                                              &   removeNumFactors$!pathh
-                                                : ?infeat
-                                              &     distribute
-                                                  $ (!newGoal.!infeat)
-                                                : ?IO
-                                              & 0:?memopaths
+                                    | 
+                                    )
+                                  & (       matchGoalWithFeatures
+                                          $ (!goaly.!toolFeatures)
+                                        : (?pathfields.?newGoal)
+                                      & (       fulfil
+                                              $ ( !tools
+                                                . !source
+                                                . !newGoal
+                                                . !indent+1
+                                                . 0
+                                                )
+                                            : ?pathh
+                                          &   removeNumFactors$!pathh
+                                            : ?infeat
+                                          &   distribute$(!newGoal.!infeat)
+                                            : ?IO
+                                          & 0:?memopaths
+                                          &   whl
+                                            ' ( !IO:(?I.?Os)+?IO
                                               &   whl
-                                                ' ( !IO:(?I.?Os)+?IO
-                                                  &   whl
-                                                    ' ( !Os:%?O+?Os
-                                                      &   ( !tool
-                                                          , (   sort
+                                                ' ( !Os:%?O+?Os
+                                                  &   ( !tool
+                                                      , (   sort
+                                                          $ ( !pathfields
+                                                                supplyMissingFields
                                                               $ ( !pathfields
-                                                                    supplyMissingFields
-                                                                  $ ( !pathfields
-                                                                    . !O
-                                                                    . !toolFeatures
-                                                                    )
+                                                                . !O
+                                                                . !toolFeatures
                                                                 )
-                                                            . !I
-                                                            . !O
                                                             )
-                                                          )
-                                                        : ?pathh
-                                                      & (   assert
-                                                          ' ( !pathh
-                                                            : ~( ?
-                                                               + ( ?
-                                                                 , (   ?
-                                                                       ( ?
-                                                                       ,   %+%
-                                                                         |   %
-                                                                           ^ ( %
-                                                                             + %
-                                                                             )
-                                                                       )
-                                                                       ?
-                                                                   . ?
-                                                                   . ?
-                                                                   )
-                                                                 )
-                                                               + ?
-                                                               )
-                                                            )
-                                                        |     restrictOutputParms
-                                                            $ ( !pathh
-                                                              . !toolFeatures
-                                                              )
-                                                          : ?pathh
+                                                        . !I
+                                                        . !O
                                                         )
-                                                      &   whl
-                                                        ' (   !pathh
-                                                            : %?path1 ?pathh
-                                                          & (   !toolspath
-                                                              : ?+!path1+?
-                                                            |       !toolspath
-                                                                  + !path1
-                                                                : ?toolspath
-                                                              &     !memopaths
-                                                                  + !path1
-                                                                : ?memopaths
-                                                            )
-                                                          )
+                                                      )
+                                                    : ?pathh
+                                                  & (   assert
+                                                      ' ( !pathh
+                                                        : ~( ?
+                                                           + ( ?
+                                                             , (   ?
+                                                                   ( ?
+                                                                   ,   %+%
+                                                                     | %^(%+%)
+                                                                   )
+                                                                   ?
+                                                               . ?
+                                                               . ?
+                                                               )
+                                                             )
+                                                           + ?
+                                                           )
+                                                        )
+                                                    |     restrictOutputParms
+                                                        $ (!pathh.!toolFeatures)
+                                                      : ?pathh
+                                                    )
+                                                  &   whl
+                                                    ' (   !pathh
+                                                        : %?path1 ?pathh
+                                                      & (   !toolspath
+                                                          : ?+!path1+?
+                                                        |       !toolspath
+                                                              + !path1
+                                                            : ?toolspath
+                                                          &     !memopaths
+                                                              + !path1
+                                                            : ?memopaths
+                                                        )
                                                       )
                                                   )
-                                              &   1+!pathsonetool
-                                                : ?pathsonetool
-                                              &   hasfulfilled
-                                                $ ( !source
-                                                  . !pathfields
-                                                  . !memopaths
-                                                  )
-                                              & ( !goaly:!pathfields
-                                                |   hasfulfilled
-                                                  $ (!source.!goaly.!memopaths)
-                                                )
-                                            | 0:?pathh
+                                              )
+                                          &   1+!pathsonetool
+                                            : ?pathsonetool
+                                          &   hasfulfilled
+                                            $ (!source.!pathfields.!memopaths)
+                                          & ( !goaly:!pathfields
+                                            |   hasfulfilled
+                                              $ (!source.!goaly.!memopaths)
                                             )
-                                        | "Tool's output does not match goal"
+                                        | 0:?pathh
                                         )
-                                      )
+                                    | "Tool's output does not match goal"
+                                    )
                                   )
-                                & (   !pathsonetool:0
-                                    &   (notThisTool..insert)
-                                      $ (str$!goaly.!tool.!source)
-                                  | 
-                                  )
-                                )
-                            & "forkk will become zero if no tools can fulfil goaly!"
-                            & (   !toolspath:0
-                                &   (unfulfillable..insert)
-                                  $ (str$!goaly.!source)
+                              )
+                            & (   !pathsonetool:0
+                                &   (notThisTool..insert)
+                                  $ (str$!goaly.!tool.!source)
                               | 
                               )
-                            & !toolspath
-                          | 1:?goalterm&0
+                            )
+                        & "forkk will become zero if no tools can fulfil goaly!"
+                        & (   !toolspath:0
+                            &   (unfulfillable..insert)
+                              $ (str$!goaly.!source)
+                          | 
                           )
-                        * !forkk
-                      : ?forkk
-                    )
+                        & !toolspath
+                      | 0
+                      )
+                    * !forkk
+                  : ?forkk
+                & 1+!forkk+-1
+            )
+          & ( fulfilGoalProduct
+            =   goalterm tools forkk goaly restriction source
+              .   "Check whether source and goal already have been connected by tool and stored as a step."
+                & !arg:(?source.?goalterm.?tools.?restriction)
+                & 1:?forkk
+                & (   "Test if @ prepended. If yes, do nothing to split product."
+                    & one two:!(glf$('($goalterm.?)))
+                    &   whl
+                      ' ( !forkk:~0
+                        & !goalterm:%?goaly*?goalterm
+                        &     fulfilGoal
+                            $ (!source.!goaly.!tools.!restriction.!forkk)
+                          : ?forkk
+                        )
+                  |     fulfilGoal
+                      $ (!source.!goalterm.!tools.!restriction.!forkk)
+                    : ?forkk
+                  )
                 & 1+!forkk+-1
             )
           & " unfoldGoal:
@@ -8260,7 +8186,7 @@ try {
               and unfold all alternatives.
               Output: a list of disambiguated goals."
           & ( unfoldGoal
-            =     A Z AA ZZ AAA ZZZ M1 M2
+            =     A Z AA ZZ AAA ZZZ M1 M2 prod
                 , gfield gopts convertOptionsToAlternatives
               .   ( convertOptionsToAlternatives
                   =   gopt gopts gvaluesAlts
@@ -8293,7 +8219,16 @@ try {
                 &   whl
                   ' (   !arg
                       :   ?A
-                        + ?AA*(?AAA (?gfield,%?M1*%?M2) ?ZZZ)*?ZZ
+                        +   ?AA
+                          * ( ?AAA
+                              ( ?gfield
+                              ,   %?M1*%?M2:?prod
+                                & "Test if @ prepended. If yes, do nothing to split product."
+                                & one two:!(glf$('($prod.?)))
+                              )
+                              ?ZZZ
+                            )
+                          * ?ZZ
                         + ?Z
                     &     !A
                         +   !AA
@@ -8370,8 +8305,30 @@ try {
             )
           & ( getGoals
             =     AllFs Inca FS Ios allOs Os O
-                , X A FN a b Y Z
-              .   0:?AllFs
+                , X A FN a b Y Z addAtom
+              .   ( addAtom
+                  =   dun incar
+                    .   0:?dun
+                      &   whl
+                        ' ( !arg:%?incar+?arg
+                          &     !dun
+                              +   map
+                                $ ( ( 
+                                    =   v f
+                                      .   !arg:(?f,?v)
+                                        & ( !f
+                                          ,     !v:%*%
+                                              & !(glf$('(@.$v)))
+                                            | !v
+                                          )
+                                    )
+                                  . !incar
+                                  )
+                            : ?dun
+                          )
+                      & !dun
+                  )
+                & 0:?AllFs
                 &   whl
                   ' ( !arg:%?Inca+?arg
                     & :?FS
@@ -8398,7 +8355,7 @@ try {
                         )
                     & !FS+!AllFs:?AllFs
                     )
-                & removeNumFactors$!AllFs
+                & addAtom$(removeNumFactors$!AllFs)
             )
           & ( getImplicatedGoals
             =   allios tools,restriction ios restrictedTools
@@ -9351,7 +9308,7 @@ try {
                 . (!reorderedworkflowlist.!topologicalOrderedTools)
                 . allRight
                 )
-            |   "The next call fails if no workflows found."
+            |   "The next call fails if no workflows found." l
               & log$"Calling fp"
               & fp$!userInput:?FP
               & log$"Calling fp success"
@@ -12653,7 +12610,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , goalpicklists preselvals presels
                 , createArgs featurehelpcell
                 , B C D E R hide n nt p prod x
-                , mentionBookmarkedWorkflows
+                , mentionBookmarkedWorkflows linksAndLinked
+                , allLinked features links
               .   ( cmptblWrkflws
                   =   itemGroups presels
                     .   !arg:(?itemGroups.?presels)
@@ -12818,7 +12776,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                                   map
                                 $ ( ( 
-                                    =   low full idval
+                                    =   low full idval o
                                       .   !arg:(?low.?full.?idval)
                                         &   \r\n
                                             ( input
@@ -12890,7 +12848,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   )
                                   map
                                 $ ( ( 
-                                    =   nt wrkfls exr stable
+                                    =     nt wrkfls exr stable
+                                        , links linked
                                       .   !arg:(?nt.?arg.?wrkfls)
                                         & (   !items:% %
                                             & (exr=";" !nt)
@@ -13212,6 +13171,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             .   (   !items:? (?.?.% ?) ?
                                   &   mentionBookmarkedWorkflows$!items
                                     : (?links.?allLinked)
+                                  & ( !allLinked:
+                                    | log$(allLinked !allLinked)
+                                    )
                                   & !links
                                 | :?allLinked
                                 )
@@ -13299,7 +13261,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
                 , itemGroupsExt linkedWorkflows
-                , hiddenData Items itemGroups
+                , hiddenData Items
               .   !arg:(?presels.?hiddenData.?Items)
                 & log$"We are at the start. Show an input form."
                 & (   !Items:
@@ -13567,7 +13529,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  */"
       ( showworkflows
       =     Tool parms Items NothingToDo Submit
-          , pipes presels errors BodyContainer topologicalOrderedTools
+          , presels errors BodyContainer topologicalOrderedTools
           , PIPE A Z TooManyWorkflows updateUploads
           , ShowAllPipes rstr rpl reorderedworkflowlist
           , val allpipes batch returnCode restriction sources
@@ -13612,7 +13574,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       makeHiddenFields$!hiddenData
                                       !"visualizedWorkFlow(s)"
                                   )
-                          |     f$!reorderedworkflowlist
+                          |   !reorderedworkflowlist:(?,(?.?struct))
+                            &   makeWorkflowVisualisation$!struct
                               : ?"visualizedWorkFlow(s)"
                             &   (h3.,Workflow)
                                 ( p
@@ -13778,7 +13741,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 )
               & updateUploads$!parms
               & 0:?allpipes
-              & CallToPipelinesFailed:?returnCode
+              &     localized
+                  $ ("No workflows found." "Ingen arbejdsgange fundet.")
+                : ?returnCode
               & :?restriction
               & (     Pipelines$(!parms.)
                     : ( (?sources.?)
@@ -13792,10 +13757,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                      tooMany"
                   & (   !returnCode:allRight
                       & !Submit:"next step"
-                      & ( 
-                        |   makeWorkflowsSequential$!pipes
-                          : (?reorderedworkflowlist.?topologicalOrderedTools)
-                        )
                       &   ShowAllPipes
                         $ ( !hiddenData
                           . !reorderedworkflowlist
@@ -14141,6 +14102,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   ( stepping
                   =     a b ID NO I O input
                       , step ad bd deps stp c
+                      , nc x y
                     .   !arg:(?arg.?deps)
                       & (   !arg:%?a %?b
                           & stepping$(!a.!deps):(?a.?ad)
@@ -14406,7 +14368,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             =     Submit hiddenData
                 , parms nth batch Items mail2 ERR
                 , allpipes ViewDetails
-                , returnCode struct
+                , returnCode struct whichButton
                 , restriction sources bm err
                 , goals topologicalOrderedTools wf
               .   ( whichButton
