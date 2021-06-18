@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : teitok
 PassWord       : 
 Version        : 1.0
-Title          : pretokenize TEI P5
+Title          : TEI tokenizer
 Path in URL    : teitok/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: Nors
@@ -184,8 +184,8 @@ try {
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $OfacetsetoPT = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is 0 if true */
-        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is 0 if true */
+        $OfacetsetoPT = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is Penn Treebank if true */
+        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menotas.Menotas.) if true */
 
         if( hasArgument("base") )
             {
@@ -399,10 +399,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

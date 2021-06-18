@@ -205,7 +205,6 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -215,7 +214,8 @@ try {
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Ofacetner = false;	/* Type of content in output is name entities (Navne) if true */
-        $Ofacetstn = false;	/* Type of content in output is segments,tokens,named entities (Sætningssegmenter,tokens,navne) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
@@ -286,9 +286,8 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -324,8 +323,9 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
-            $Ofacetstn = existsArgumentWithValue("Ofacet", "stn");
-            $echos = $echos . "Ofacetner=$Ofacetner " . "Ofacetstn=$Ofacetstn ";
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetner=$Ofacetner " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -452,10 +452,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

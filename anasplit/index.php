@@ -172,15 +172,15 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetlem = false;	/* Annotationstyper in input is lemmas (Lemma) if true */
-        $Ifacetmrf = false;	/* Annotationstyper in input is morphological features (morfologiske træk) if true */
-        $Ifacetpos = false;	/* Annotationstyper in input is PoS-tags (PoS-tags) if true */
-        $Ifacetstx = false;	/* Annotationstyper in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
-        $Ofacetlem = false;	/* Annotationstyper in output is lemmas (Lemma) if true */
-        $Ofacetmrf = false;	/* Annotationstyper in output is morphological features (morfologiske træk) if true */
-        $Ofacetpos = false;	/* Annotationstyper in output is PoS-tags (PoS-tags) if true */
-        $Ofacetstx = false;	/* Annotationstyper in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
 
         if( hasArgument("base") )

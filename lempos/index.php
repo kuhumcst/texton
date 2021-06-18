@@ -178,7 +178,6 @@ try {
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -209,11 +208,13 @@ try {
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambigamb = false;	/* Ambiguity in output is ambiguous (tvetydig) if true */
         $Oappdrty = false;	/* Appearance in output is optimized for software (bedst for programmer) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
-        $Ofacetstlp = false;	/* Type of content in output is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
         $Olangbg = false;	/* Language in output is Bulgarian (bulgarsk) if true */
         $Olangcs = false;	/* Language in output is Czech (tjekkisk) if true */
@@ -242,9 +243,9 @@ try {
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
-        $OfacetstlpDSL = false;	/* Style of type of content segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) in output is DSL-tagset if true */
-        $OfacetstlpUni = false;	/* Style of type of content segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) in output is Universal Part-of-Speech Tagset if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $OfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in output is DSL-tagset if true */
+        $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
         $Oformatjsonnid = false;	/* Style of format JSON in output is No unique IDIngen unik ID if true */
         $Oformatjsonxid = false;	/* Style of format JSON in output is With xml idMed xml id if true */
 
@@ -313,9 +314,8 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -376,8 +376,10 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
-            $Ofacetstlp = existsArgumentWithValue("Ofacet", "stlp");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetstlp=$Ofacetstlp ";
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -428,11 +430,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ofacetstlp") )
+        if( hasArgument("Ofacetpos") )
             {
-            $OfacetstlpDSL = existsArgumentWithValue("Ofacetstlp", "DSL");
-            $OfacetstlpUni = existsArgumentWithValue("Ofacetstlp", "Uni");
-            $echos = $echos . "OfacetstlpDSL=$OfacetstlpDSL " . "OfacetstlpUni=$OfacetstlpUni ";
+            $OfacetposDSL = existsArgumentWithValue("Ofacetpos", "DSL");
+            $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
+            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposUni=$OfacetposUni ";
             }
         if( hasArgument("Oformatjson") )
             {
@@ -682,7 +684,7 @@ try {
             $lemposfile = tempFileName("json");
             logit('lemposfile='.$lemposfile);
             /* 20181001 $lang is not used by LemmaVal.bra, so it was removed as argument. */
-            if($Ifacetseto)
+            if($Iformatflat)
                 $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
             else
                 $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
@@ -729,10 +731,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

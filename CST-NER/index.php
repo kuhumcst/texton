@@ -17,7 +17,7 @@ putenv("LANG=da_DK.utf8");
 ToolID         : CST-NER
 PassWord       : 
 Version        : 0
-Title          : CST's Name recogniser
+Title          : CSTner
 Path in URL    : CST-NER/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: cst.ku.dk
@@ -203,28 +203,28 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with annotationstyper segments (Sætningssegmenter) */
-        $IfacettokF = "";	/* Input with annotationstyper tokens (Tokens) */
-        $Iambiguna = false;	/* Flertydighed in input is unambiguous (utvetydig) if true */
-        $Iappnrm = false;	/* Udseende in input is normalised (normaliseret) if true */
-        $Ifacetseg = false;	/* Annotationstyper in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Annotationstyper in input is segments,tokens (Sætningssegmenter,tokens) if true */
-        $Ifacettok = false;	/* Annotationstyper in input is tokens (Tokens) if true */
+        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
+        $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
+        $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
+        $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
-        $Ilangda = false;	/* Sprog in input is Danish (dansk) if true */
-        $Iperiodc21 = false;	/* Historisk periode in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Sammensætning in input is normal if true */
-        $Oambiguna = false;	/* Flertydighed in output is unambiguous (utvetydig) if true */
-        $Oappnrm = false;	/* Udseende in output is normalised (normaliseret) if true */
-        $Ofacetner = false;	/* Annotationstyper in output is name entities (Navne) if true */
-        $Ofacetstn = false;	/* Annotationstyper in output is segments,tokens,named entities (Sætningssegmenter,tokens,navne) if true */
+        $Ilangda = false;	/* Language in input is Danish (dansk) if true */
+        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
+        $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
+        $Ofacetner = false;	/* Type of content in output is name entities (Navne) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
-        $Olangda = false;	/* Sprog in output is Danish (dansk) if true */
-        $Operiodc21 = false;	/* Historisk periode in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Sammensætning in output is normal if true */
-        $Ifacetsetosimple = false;	/* Style of annotationstyper segments,tokens (Sætningssegmenter,tokens) in input is 0 if true */
+        $Olangda = false;	/* Language in output is Danish (dansk) if true */
+        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
         $Iformatflatutf8 = false;	/* Style of format plain (flad) in input is 0 if true */
         $Oformatflatutf8 = false;	/* Style of format plain (flad) in output is 0 if true */
 
@@ -260,7 +260,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -270,7 +270,7 @@ try {
             $IfacettokF = requestFile("IfacettokF");
             if($IfacettokF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'tokens (Tokens)' not found (IfacettokF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacettokF=$IfacettokF ";
@@ -292,9 +292,8 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -330,8 +329,9 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
-            $Ofacetstn = existsArgumentWithValue("Ofacet", "stn");
-            $echos = $echos . "Ofacetner=$Ofacetner " . "Ofacetstn=$Ofacetstn ";
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetner=$Ofacetner " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -358,10 +358,10 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacetseto") )
+        if( hasArgument("Ifacettok") )
             {
-            $Ifacetsetosimple = existsArgumentWithValue("Ifacetseto", "simple");
-            $echos = $echos . "Ifacetsetosimple=$Ifacetsetosimple ";
+            $Ifacettoksimple = existsArgumentWithValue("Ifacettok", "simple");
+            $echos = $echos . "Ifacettoksimple=$Ifacettoksimple ";
             }
         if( hasArgument("Iformatflat") )
             {
@@ -460,7 +460,7 @@ try {
         {
         logit( "NERannotation(" . $IfacettokF . "," . $nerfileRAW . "," . $plaintext . ")\n");
         $nerfile = tempFileName("NERannotation-nerf-attribute");
-	$command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputNER=\"$nerfileRAW\") (uploadfileTokens=\"$plaintext\") (output=\"$nerfile\") (get\$\"bracstnerf.bra\")'";
+        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputNER=\"$nerfileRAW\") (uploadfileTokens=\"$plaintext\") (output=\"$nerfile\") (get\$\"bracstnerf.bra\")'";
         logit($command);
         if(($cmd = popen($command, "r")) == NULL)
             exit(1);
@@ -476,10 +476,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

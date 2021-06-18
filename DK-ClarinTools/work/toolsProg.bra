@@ -104,6 +104,30 @@ is the location of this file, toolsprog.bra.
 }
 
 toolsProg=
+      " Replaced:
+
+        pmls-------  lem*mrf*pos*stx
+        spo--------  cls*pos*seg
+        stp--------  pos*seg*tok
+        stpd-------  pos*seg*stx*tok
+        stlp-------  lem*pos*seg*tok
+        stopl------  cls*lem*pos*seg*tok
+        stpld------  lem*pos*seg*stx*tok
+        stpmld-----  lem*mrf*pos*seg*stx*tok
+        stpmldn----  lem*mrf*ner*pos*seg*stx*tok
+        tlp--------  lem*pos*tok
+        tlpm-------  lem*mrf*pos*tok
+        tlpmn------  lem*mrf*ner*pos*tok
+        stl--------  lem*seg*tok
+        sl---------  lem*seg
+        tl---------  lem*tok
+        stn--------  ner*seg*tok
+        seto-------  seg*tok
+            
+        Still used with some formats:
+        tp
+        tlp
+        seto"
       (indent=0)
       (logno=0)
       (tabind=0)
@@ -4167,11 +4191,11 @@ catch (SystemExit $e)
                 &   whl
                   ' ( !alts:(%(%?alt ?opts):?term)+?alts
                     &   (   :!(glf$('($term.?))) ?
-                          & no
-                        | yes
+                          & 
+                        | on
                         )
                       : ?Single
-                    & (   !Single:no
+                    & (   !Single:
                         & (   !alt:%*%
                             & ( featF
                               = (!IO.!featname.!rsr.F)+!DATA:?DATA
@@ -4196,7 +4220,7 @@ catch (SystemExit $e)
                         & (!IO.!featname)\L!rsr+!FEATURES:?FEATURES
                         & !featF
                         )
-                    & ( !Single:yes
+                    & ( !Single:on
                       |   whl
                         ' ( !opts:%?rsrc ?opts
                           & (   !rsrc:?rsr^%?style
@@ -5500,7 +5524,7 @@ try {
           & ( featureListing
             =   listing featname inouts in outp K listIO
               .   ( listIO
-                  =   in io I S L M s opt addFeature
+                  =   in io I S L M s opt addFeature listing
                     .   ( addFeature
                         =     in K L featname io
                             , I S listing M s optional
@@ -5570,7 +5594,7 @@ try {
                             & !listing
                         )
                       & 0:?L
-                      & !arg:(?in.?io)
+                      & !arg:(?in.?io.?listing)
                       & !in:(%?in ?opt|?opt)
                       &   whl
                         ' ( !in:%?I^?S*?in
@@ -5611,32 +5635,40 @@ try {
                                 : ?listing
                               )
                         )
+                      & !listing
                   )
                 & :?listing
-                &   ( Single
-                    .       !arg
-                          :   ?
-                              ( ?
-                              ,   ?
-                                + (   %*%:?in
-                                    & ~(:!(glf$('($in.?))) ?)
-                                  . ?
-                                  )
-                                + ?
-                              )
-                              ?
-                        & on
-                      | 
-                    )
-                  : ?listing
+                & ( 
+                  |   ( Single
+                      .       !arg
+                            :   ?
+                                ( ?
+                                ,   ?
+                                  + (   %*%:?in
+                                      & ~(:!(glf$('($in.?))) ?)
+                                    . ?
+                                    )
+                                  + ?
+                                )
+                                ?
+                          & on
+                        | 
+                      )
+                    : ?listing
+                  )
                 &   whl
                   ' ( !arg:(?featname,?inouts) ?arg
                     & 0:?K
                     &   whl
                       ' ( !inouts:#*(?in.?outp)+?inouts
                         & 1+!K:?K
-                        & listIO$(!in.Input)
-                        & listIO$(!outp.Output)
+                        & listIO$(!in.Input.!listing):?listing
+                        & listIO$(!outp.Output.!listing):?listing
+                        & ( 1:!(glf$('($in.?)))*?
+                          |     (str$(!featname !K Single).on)
+                                !listing
+                            : ?listing
+                          )
                         & ( !inouts:0
                           |     (str$(!featname !K More).on)
                                 !listing
@@ -5786,16 +5818,31 @@ try {
                         )
                       & ( aFeature
                         =     NrRequiredAndOptional NrInOutAlternative
-                            , NrSpecification featname
+                            , NrSpecification featname requireds
                             , inout featinout featinoutMore
-                            , featinoutOptional urlparms
+                            , featinoutOptional urlparms FieldSet
                             , feattable featdescription row
                             , specifications specificationTables
-                            , sameFeatureOnceMore
+                            , sameFeatureOnceMore optionals featNSingle
                             , sameSpecificationOnceMore full
                             , specificationTable aSpecification
                             , featinoutSpec featinoutOptMore ret
-                          .   (sameFeatureOnceMore=.)
+                          .   ( sameFeatureOnceMore
+                              =     requireds optionals FieldSet
+                                  , NrRequiredAndOptional
+                                .     !arg
+                                    : ( ?requireds
+                                      . ?optionals
+                                      . ?NrRequiredAndOptional
+                                      . ?FieldSet
+                                      . ?
+                                      )
+                                  & ( !requireds
+                                    . !optionals
+                                    . !NrRequiredAndOptional
+                                    . !FieldSet
+                                    )
+                              )
                             & ( aSpecification
                               =   :?sameSpecificationOnceMore
                                 & 1+!NrSpecification:?NrSpecification
@@ -5874,7 +5921,10 @@ try {
                                 & !sameSpecificationOnceMore
                               )
                             &   !arg
-                              : ( ?NrRequiredAndOptional
+                              : ( ?requireds
+                                . ?optionals
+                                . ?NrRequiredAndOptional
+                                . ?FieldSet
                                 . ?featname
                                 . ?NrInOutAlternative
                                 . ?inout
@@ -5882,8 +5932,6 @@ try {
                                 . ?feattable
                                 . ?featdescription
                                 . ?specificationTables
-                                . ?requireds
-                                . ?optionals
                                 )
                             &   1+!NrRequiredAndOptional
                               : ?NrRequiredAndOptional
@@ -5895,6 +5943,8 @@ try {
                                     !inout
                                   )
                               : ?featinout
+                            & "e.g. facet3.2InputMore
+                                shown after second input of third inputs/output(s) combination"
                             & str$(!featinout More):?featinoutMore
                             &   str$(!featinout Optional)
                               : ?featinoutOptional
@@ -5925,10 +5975,41 @@ try {
                                           $ (!featinoutMore.on)
                                       | 
                                       )
-                                  |   makeCheckboxFormField
-                                    $ ( localized$(more mere)
-                                      . !featinoutMore
-                                      . 
+                                  |     makeCheckboxFormField
+                                      $ ( localized$(more mere)
+                                        . !featinoutMore
+                                        . 
+                                        )
+                                      (   !inout:Input
+                                        & !NrRequiredAndOptional:>1
+                                        &     str
+                                            $ ( !featname
+                                                !NrInOutAlternative
+                                                Single
+                                              )
+                                          : ?featNSingle
+                                        &   makeCheckboxFormField
+                                          $ (   localized
+                                              $ ( "All inputs in single file"
+                                                  "Input samlet i én fil"
+                                                )
+                                            . !featNSingle
+                                            .   ( val
+                                                .       !urlparms
+                                                      :   ?
+                                                          (!featNSingle.on)
+                                                          ?
+                                                    & on
+                                                  | 
+                                                )
+                                                ( desc
+                                                .   localized
+                                                  $ ( "Check if there are e.g. >1 input facet or >1 input language, but everything is combined in a single input file."
+                                                      "Check hvis der fx er > 1 input facet eller > 1 input sprog, men alt er kombineret i én inputfil."
+                                                    )
+                                                )
+                                            )
+                                      | 
                                       )
                                   )
                               : ?row
@@ -5950,17 +6031,30 @@ try {
                                   | 1
                                   )
                               : ?!featinout
-                            & ( (   !!featinoutOptional:
-                                  & !requireds*!!featinout:?requireds
-                                | !optionals !!featinout:?optionals
-                                )
-                              & 
+                            & (   !!featinoutOptional:
+                                &   flg$('$requireds)
+                                  : (=?.?requireds)
+                                & !requireds*!!featinout:?requireds
+                              | !optionals !!featinout:?optionals
+                              )
+                            & (   !inout:Input
+                                &     str
+                                    $ (!featname !NrInOutAlternative Single)
+                                  : ?featNSingle
+                                &   !urlparms
+                                  : ? (!featNSingle.on) ?
+                                &   glf$('(%.$requireds))
+                                  : (=?requireds)
+                              | 
                               )
                             & !FieldSet paragraph$!row:?FieldSet
                             &   '$shouldIAskOptionalFeature
                               : (=?optionalFeature)
                             &     sameFeatureOnceMore
-                                $ ( !NrRequiredAndOptional
+                                $ ( !requireds
+                                  . !optionals
+                                  . !NrRequiredAndOptional
+                                  . !FieldSet
                                   . !featname
                                   . !NrInOutAlternative
                                   . !inout
@@ -5968,16 +6062,22 @@ try {
                                   . !feattable
                                   . !featdescription
                                   . !specificationTables
-                                  . !requireds
-                                  . !optionals
                                   )
-                              : ?ret
+                              : ( ?requireds
+                                . ?optionals
+                                . ?NrRequiredAndOptional
+                                . ?FieldSet
+                                )
                             & tbl$(!featinoutMore,0)
                             & tbl$(!featinoutOptMore,0)
                             & tbl$(!featinoutOptional,0)
                             & tbl$(!featinout,0)
                             & tbl$(!featinoutSpec,0)
-                            & !ret
+                            & ( !requireds
+                              . !optionals
+                              . !NrRequiredAndOptional
+                              . !FieldSet
+                              )
                         )
                       &   !arg
                         : ( ?inoutpairs
@@ -6000,25 +6100,43 @@ try {
                               ( %@?inout
                               & :?optionals
                               & 1:?requireds
-                              &   aFeature
-                                $ ( 0
-                                  . !featname
-                                  . !NrInOutAlternative
-                                  . !inout
-                                  . !urlparms
-                                  . !feattable
-                                  . !featdescription
-                                  . !specificationTables
-                                  . !requireds
-                                  . !optionals
+                              & 0:?NrRequiredAndOptional
+                              &     aFeature
+                                  $ ( !requireds
+                                    . !optionals
+                                    . !NrRequiredAndOptional
+                                    . !FieldSet
+                                    . !featname
+                                    . !NrInOutAlternative
+                                    . !inout
+                                    . !urlparms
+                                    . !feattable
+                                    . !featdescription
+                                    . !specificationTables
+                                    )
+                                : ( ?requireds
+                                  . ?optionals
+                                  . ?NrRequiredAndOptional
+                                  . ?FieldSet
                                   )
-                              & !requireds !optionals:?!inout
+                              & !requireds:~
+                              & (   !inout:Input
+                                  &   flg$('$requireds)
+                                    : (=?flag.?requireds)
+                                  & !requireds !optionals:?Input
+                                  &   glf$('($flag.$Input))
+                                    : (=?Input)
+                                | !requireds !optionals:?Output
+                                )
                               & (shouldIAskOptionalFeature=.)
                               & (optionalFeature=.)
                               & ~
                               )
                               ?
-                        | (!Input.!Output)+!inoutpairs:?inoutpairs
+                        |   !Input:~0
+                          & !Output:~0
+                          & (!Input.!Output)+!inoutpairs:?inoutpairs
+                        | 
                         )
                       &     fieldset$(.!FieldSet)
                             (       checkParmsSimple
@@ -6072,16 +6190,19 @@ try {
                         .       askFieldSet
                               $ ( !inoutpairs
                                 . 0
-                                .   !shortfeatname
-                                  | localized$!featname
+                                . !shortfeatname
                                 . !urlparms
                                 . !feattable
                                 . localized$!featdescription
                                 )
                             : (?formstuff.?inoutpairs)
+                          & log$(inoutpairs !inoutpairs)
                           & !formstuff
                         )
-                  . !Metadata (!shortfeatname,!inoutpairs)
+                  .   !Metadata
+                      ( !inoutpairs:0&
+                      | (!shortfeatname,!inoutpairs)
+                      )
                   )
             )
           & ( validationComments
@@ -6264,6 +6385,7 @@ try {
                     . ?ZZ
                     . ?force
                     )
+                & lst$(Metadata,path$Metadata,NEW)
                 & (   ( !ToolInactive:on
                       | !handle:~
                       )
@@ -6299,6 +6421,7 @@ try {
                               )
                           | !arg
                       )
+                    & lst$(toolprop,path$toolpropAA,NEW)
                     & removeEmptyValues$!toolprop:?toolprop
                     & ( sortFacets
                       =   toolpropFacetsSorted Name facets
@@ -6623,42 +6746,46 @@ try {
             formFields variable. The Metadata variable collects the same data
             in a format similar to the format in the toolprop.table.
             "
-              & ( !featjursURL:? (Single.?Single) ?
-                | :?Single
-                )
-              &     !formFields
-                      fieldset
-                    $ (   localized
-                        $ ( "Single/Multiple input(s)"
-                            "Én eller flere inputfiler"
-                          )
-                      .   paragraph
-                        $ ( makeCheckboxFormField
-                          $ (   localized
-                              $ ( "All inputs in single file"
-                                  "Alt input i én fil"
-                                )
-                            . Single
-                            .   (val.!Single)
-                                ( desc
-                                .   localized
-                                  $ ( "Check if there are e.g. >1 input facet or >1 input language, but everything is combined in a single input file."
-                                      "Check hvis der fx er > 1 input facet eller > 1 input sprog, men alt er kombineret i én inputfil."
+              & ( 
+                |   ( !featjursURL:? (Single.?Single) ?
+                    | :?Single
+                    )
+                  &     !formFields
+                          fieldset
+                        $ (   localized
+                            $ ( "Single/Multiple input(s)"
+                                "Én eller flere inputfiler"
+                              )
+                          .   paragraph
+                            $ ( makeCheckboxFormField
+                              $ (   localized
+                                  $ ( "All inputs in single file"
+                                      "Alt input i én fil"
+                                    )
+                                . Single
+                                .   (val.!Single)
+                                    ( desc
+                                    .   localized
+                                      $ ( "Check if there are e.g. >1 input facet or >1 input language, but everything is combined in a single input file."
+                                          "Check hvis der fx er > 1 input facet eller > 1 input sprog, men alt er kombineret i én inputfil."
+                                        )
                                     )
                                 )
-                            )
+                              )
                           )
-                      )
-                : ?formFields
+                    : ?formFields
+                )
               &   whl
                 ' ( !feats:%?feat+?feats
                   &     askFeature
                       $ (!featjursURL.!feat.!formFields.!Metadata)
                     : (?formFields.?Metadata)
                   )
+              & "Metadata: space separated list of (!shortfeatname,!inoutpairs)"
               & foldInputAndOutput$!Metadata:?Metadata
               & no:?force
-              & (   !Single:on
+              & ( 
+                |   !Single:on
                   &     map
                       $ ( ( 
                           =   feat vals nvals i o
@@ -8438,9 +8565,20 @@ try {
                                       & (   !Val:!val^?sp
                                           &   map
                                             $ ( ( 
-                                                =   
+                                                =   a z
                                                   .         ( !A
-                                                              (!feat,!arg^!sp)
+                                                              ( !feat
+                                                              ,       !sp
+                                                                    : 1
+                                                                  & !arg
+                                                                |     !arg
+                                                                    :   ?a
+                                                                      * !val
+                                                                      * ?z
+                                                                  &   !a
+                                                                    * !Val
+                                                                    * !z
+                                                              )
                                                               !Z
                                                             )
                                                           + !nwg

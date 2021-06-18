@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : JSON2TEIP5ANNO
 PassWord       : 
 Version        : 1
-Title          : JSON to TEI P5 annotation
+Title          : JSON to TEI
 Path in URL    : jsn2teianno	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -174,7 +174,10 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetstlp = false;	/* Type of content in input is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
@@ -226,8 +229,11 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstlp = existsArgumentWithValue("Ifacet", "stlp");
-            $echos = $echos . "Ifacetstlp=$Ifacetstlp ";
+            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
+            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -333,10 +339,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

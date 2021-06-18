@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : plainD2cbf
 PassWord       : 
 Version        : 1
-Title          : Create pre-tokenized Clarin Base Format text
+Title          : plain to TEI
 Path in URL    : plainD2cbf	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -173,15 +173,16 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $IformatplainD = false;	/* Format in input is plain text with ASCII 127 characters (flad tekst with ASCII 127 tegn) if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
-        $Ifacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in input is 0 if true */
-        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is 0 if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
+        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menotas.Menotas.) if true */
 
         if( hasArgument("base") )
             {
@@ -221,8 +222,9 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
-            $echos = $echos . "Ifacetseto=$Ifacetseto ";
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -258,10 +260,10 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacetseto") )
+        if( hasArgument("Ifacettok") )
             {
-            $Ifacetsetosimple = existsArgumentWithValue("Ifacetseto", "simple");
-            $echos = $echos . "Ifacetsetosimple=$Ifacetsetosimple ";
+            $Ifacettoksimple = existsArgumentWithValue("Ifacettok", "simple");
+            $echos = $echos . "Ifacettoksimple=$Ifacettoksimple ";
             }
         if( hasArgument("Ofacetseto") )
             {
@@ -332,10 +334,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 
