@@ -244,7 +244,7 @@ try {
 /* 20180925 added -f to convert first letter in first word to lower case*/
         if($Iformattxtann)
             {
-	    $command = /*$toolbin .*/ $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p .' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' -Xp' . $tempattribute . ' ';
+	    $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p .' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' -Xp' . $tempattribute . ' ';
             if($ancestor != '')
                 {
                 $command = $command . ' -Xa' . $ancestor;
@@ -256,7 +256,7 @@ try {
             }
         else
             {
-            $command = /*$toolbin .*/ $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p . ' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' ';
+            $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p . ' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' ';
             }
         
         logit($command);
@@ -553,7 +553,7 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        $command = "echo $echos >> $BrillTaggerfile";
+        //$command = "echo $echos >> $BrillTaggerfile";
         if($Ilangla)
             $language = "la";
         else if($Ilangen)

@@ -263,6 +263,7 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+    //    logit($echos);
         $anasplitfile = tempFileName("anasplit-results");
         logit("anasplitfile $anasplitfile");
         if(hasArgument("Ofacet"))
