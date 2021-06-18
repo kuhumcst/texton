@@ -9967,36 +9967,39 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   & compatible$(!f.!rs)
             )
           & ( addOutputsToRequestString
-            =   ou requestString extension feat val spec
+            =   ou requestString extension feat val spec vals
               .   !arg:(?ou.?requestString)
                 & xml:?extension
                 &   whl
-                  ' ( !ou:(?feat,%@?val^?spec) ?ou
-                    & NEWSPEC
-                    &     !requestString
-                        + ( O
-                          . Short$!feat
-                          . !val
-                          .     !spec:1
-                              & NEWSPEC
-                              & 0
-                            | !spec
+                  ' ( !ou:(?feat,?vals) ?ou
+                    &   whl
+                      ' ( !vals:%@?val^?spec*?vals
+                        & NEWSPEC
+                        &     !requestString
+                            + ( O
+                              . Short$!feat
+                              . !val
+                              .     !spec:1
+                                  & NEWSPEC
+                                  & 0
+                                | !spec
+                              )
+                          : ?requestString
+                        & (   !feat:(format|Format)
+                            &   ( !val:flat&txt
+                                |     !val
+                                    : ( xm
+                                      | txtbasis
+                                      | txtann
+                                      | teip5
+                                      )
+                                  & xml
+                                | !val
+                                )
+                              : ?extension
+                          | 
                           )
-                      : ?requestString
-                    & (   !feat:(format|Format)
-                        &   ( !val:flat&txt
-                            |     !val
-                                : ( xm
-                                  | txtbasis
-                                  | txtann
-                                  | teip5
-                                  )
-                              & xml
-                            | !val
-                            )
-                          : ?extension
-                      | 
-                      )
+                        )
                     )
                 & (!extension.!requestString)
             )
