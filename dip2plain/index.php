@@ -17,7 +17,7 @@ ToolID         : dip2plain
 PassWord       : 
 Version        : 1.0
 Title          : Diplom fetch corrected text
-ServiceURL     : http://localhost/dip2plain	*** TODO make sure your web service listens on this address and that this script is readable for the webserver. ***
+Path in URL    : dip2plain	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : NoRS
 ContentProvider: NoRS
 Creator        : Bart Jongejan
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -179,17 +179,20 @@ try {
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilanggml = false;	/* Language in input is Middle Low German (middelnedertysk) if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
+        $Ilangsv = false;	/* Language in input is Swedish (svensk) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
-        $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $OformatplainD = false;	/* Format in output is plain text with ASCII 127 characters (flad tekst with ASCII 127 tegn) if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olanggml = false;	/* Language in output is Middle Low German (middelnedertysk) if true */
         $Olangla = false;	/* Language in output is Latin (latin) if true */
+        $Olangsv = false;	/* Language in output is Swedish (svensk) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -247,7 +250,8 @@ try {
             $Ilangda = existsArgumentWithValue("Ilang", "da");
             $Ilanggml = existsArgumentWithValue("Ilang", "gml");
             $Ilangla = existsArgumentWithValue("Ilang", "la");
-            $echos = $echos . "Ilangda=$Ilangda " . "Ilanggml=$Ilanggml " . "Ilangla=$Ilangla ";
+            $Ilangsv = existsArgumentWithValue("Ilang", "sv");
+            $echos = $echos . "Ilangda=$Ilangda " . "Ilanggml=$Ilanggml " . "Ilangla=$Ilangla " . "Ilangsv=$Ilangsv ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -271,8 +275,9 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetseto = existsArgumentWithValue("Ofacet", "seto");
-            $echos = $echos . "Ofacetseto=$Ofacetseto ";
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -284,7 +289,8 @@ try {
             $Olangda = existsArgumentWithValue("Olang", "da");
             $Olanggml = existsArgumentWithValue("Olang", "gml");
             $Olangla = existsArgumentWithValue("Olang", "la");
-            $echos = $echos . "Olangda=$Olangda " . "Olanggml=$Olanggml " . "Olangla=$Olangla ";
+            $Olangsv = existsArgumentWithValue("Olang", "sv");
+            $echos = $echos . "Olangda=$Olangda " . "Olanggml=$Olanggml " . "Olangla=$Olangla " . "Olangsv=$Olangsv ";
             }
         if( hasArgument("Operiod") )
             {
@@ -354,10 +360,10 @@ try {
 
         if($tmpf)
             {
-            logit('output from dip2plain:');
+            //logit('output from dip2plain:');
             while($line = fgets($tmpf))
                 {
-                logit($line);
+                //logit($line);
                 print $line;
                 }
             fclose($tmpf);
@@ -378,10 +384,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

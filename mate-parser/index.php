@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : mate-parser
 PassWord       : 
 Version        : 3.3
-Title          : Bohnets parser
+Title          : Bohnet parser
 Path in URL    : mate-parser	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : mate-tools
 ContentProvider: mate-tools
@@ -173,12 +173,12 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $IfacetlemF = "";	/* Input with type of content lemmas (Lemma) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
-        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
+        $IfacetsegF = "";	/* Input with type of content segments (SÃ¦tningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
@@ -188,8 +188,11 @@ try {
         $Ilangfr = false;	/* Language in input is French (fransk) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
-        $Ofacetstpd = false;	/* Type of content in output is segments,tokens,PoS-tags,dependency relations (segmenter,tokens,PoS-tags,dependency relations) if true */
-        $Ofacetstpld = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas,dependency relations (segmenter,tokens,PoS-tags,lemmaer,dependency relations) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (SÃ¦tningssegmenter) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatconll = false;	/* Format in output is CoNLL if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
@@ -242,7 +245,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (SÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -300,9 +303,12 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetstpd = existsArgumentWithValue("Ofacet", "stpd");
-            $Ofacetstpld = existsArgumentWithValue("Ofacet", "stpld");
-            $echos = $echos . "Ofacetstpd=$Ofacetstpd " . "Ofacetstpld=$Ofacetstpld ";
+            $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -563,10 +569,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

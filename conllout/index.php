@@ -16,13 +16,13 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : conllout
 PassWord       : 
 Version        : 0.1
-Title          : CoNLL converter
+Title          : CoNLL formatter
 Path in URL    : conllout/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : Københavns Universitet
 ContentProvider: Københavns Universitet
 Creator        : Bart Jongejan
 InfoAbout      : http://nextens.uvt.nl/depparse-wiki/DataFormat
-Description    : Converts input to CoNLL 2007 format.
+Description    : Converts input to CoNLL 2009 format.
 ExternalURI    : 
 XMLparms       : 
 PostData       : 
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -181,13 +181,15 @@ try {
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
         $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
-        $Ofacetstlp = false;	/* Type of content in output is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
-        $Ofacetstp = false;	/* Type of content in output is segments,tokens,PoS-tags (segmenter,tokens,PoS-tags) if true */
-        $Oformatconll = false;	/* Format in output is CoNLL2009 if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
+        $Oformatconll = false;	/* Format in output is CoNLL if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -280,10 +282,12 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacetseto = existsArgumentWithValue("Ofacet", "seto");
-            $Ofacetstlp = existsArgumentWithValue("Ofacet", "stlp");
-            $Ofacetstp = existsArgumentWithValue("Ofacet", "stp");
-            $echos = $echos . "Ofacetseto=$Ofacetseto " . "Ofacetstlp=$Ofacetstlp " . "Ofacetstp=$Ofacetstp ";
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetseto=$Ofacetseto " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -364,10 +368,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

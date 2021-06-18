@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : json2org
 PassWord       : 
 Version        : 1
-Title          : JSON to ORG-mode converter
+Title          : JSON to ORG-mode
 Path in URL    : json2org	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -173,15 +173,18 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetstlp = false;	/* Type of content in input is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
         $Ofacettlp = false;	/* Type of content in output is tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) if true */
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
-        $IfacetstlpMenotas = false;	/* Style of type of content segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) in input is Menotas if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $IfacetposMenotas = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Menotas if true */
         $OfacettlpMenotas = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is Menotas if true */
 
         if( hasArgument("base") )
@@ -222,8 +225,11 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstlp = existsArgumentWithValue("Ifacet", "stlp");
-            $echos = $echos . "Ifacetstlp=$Ifacetstlp ";
+            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
+            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -260,10 +266,10 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacetstlp") )
+        if( hasArgument("Ifacetpos") )
             {
-            $IfacetstlpMenotas = existsArgumentWithValue("Ifacetstlp", "Menotas");
-            $echos = $echos . "IfacetstlpMenotas=$IfacetstlpMenotas ";
+            $IfacetposMenotas = existsArgumentWithValue("Ifacetpos", "Menotas");
+            $echos = $echos . "IfacetposMenotas=$IfacetposMenotas ";
             }
         if( hasArgument("Ofacettlp") )
             {
@@ -335,10 +341,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

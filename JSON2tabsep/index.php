@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : JSON2tabsep
 PassWord       : 
 Version        : 1.0
-Title          : JSON to Tab-separated
+Title          : JSON to TSV
 Path in URL    : JSON2tabsep/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
@@ -104,7 +104,7 @@ try {
         
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile(" . $requestParm . ")");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -174,14 +174,20 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetstlp = false;	/* Type of content in input is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
-        $Ipresnml = false;	/* Presentation in input is normal if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappprtty = false;	/* Appearance in output is pretty printed (nydelig opsætning) if true */
-        $Ofacetstlp = false;	/* Type of content in output is segments,tokens,lemmas,PoS-tags (segmenter,tokens,lemmaer,PoS-tags) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
-        $Opresnml = false;	/* Presentation in output is normal if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -226,8 +232,11 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstlp = existsArgumentWithValue("Ifacet", "stlp");
-            $echos = $echos . "Ifacetstlp=$Ifacetstlp ";
+            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
+            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -251,8 +260,11 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetstlp = existsArgumentWithValue("Ofacet", "stlp");
-            $echos = $echos . "Ofacetstlp=$Ofacetstlp ";
+            $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -350,10 +362,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

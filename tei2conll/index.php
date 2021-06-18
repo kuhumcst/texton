@@ -16,7 +16,7 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : tei2conll
 PassWord       : 
 Version        : 1.0
-Title          : TEI P5 to CoNLL-U converter
+Title          : TEI to CoNLL-U
 Path in URL    : /tei2conll	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
@@ -172,9 +172,21 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetstpld = false;	/* Type of content in input is segments,tokens,PoS-tags,lemmas,dependency relations (segmenter,tokens,PoS-tags,lemmaer,dependency relations) if true */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
+        $Ifacetner = false;	/* Type of content in input is name entities (Navne) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
-        $Ofacetstpld = false;	/* Type of content in output is segments,tokens,PoS-tags,lemmas,dependency relations (segmenter,tokens,PoS-tags,lemmaer,dependency relations) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
+        $Ofacetner = false;	/* Type of content in output is name entities (Navne) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatconll = false;	/* Format in output is CoNLL if true */
         $OformatconllclU = false;	/* Style of format CoNLL in output is CoNLL-U (10 columns)CoNLL-U (10 kolonner) if true */
 
@@ -211,8 +223,14 @@ try {
 ************************/
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstpld = existsArgumentWithValue("Ifacet", "stpld");
-            $echos = $echos . "Ifacetstpld=$Ifacetstpld ";
+            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
+            $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
+            $Ifacetner = existsArgumentWithValue("Ifacet", "ner");
+            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetner=$Ifacetner " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -221,8 +239,14 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetstpld = existsArgumentWithValue("Ofacet", "stpld");
-            $echos = $echos . "Ofacetstpld=$Ofacetstpld ";
+            $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetmrf = existsArgumentWithValue("Ofacet", "mrf");
+            $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -302,10 +326,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

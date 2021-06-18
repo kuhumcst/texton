@@ -16,13 +16,13 @@ header("Content-type:text/plain; charset=UTF-8");
 ToolID         : anasplit
 PassWord       : 
 Version        : 0.1
-Title          : Annotation splitter
+Title          : Anno-splitter
 Path in URL    : /anasplit	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
 InfoAbout      : -
-Description    : Takes TEI P5 document containing multiple stand-off anotation groups (spanGrp). Outputs one of the annotation groups.
+Description    : Takes TEI P5 document containing multiple stand-off annotation groups (spanGrp). Outputs one of the annotation groups.
 ExternalURI    : 
 XMLparms       : 
 PostData       : 
@@ -62,7 +62,7 @@ function logit($str) /* TODO You can use this function to write strings to the l
         fclose($ftemp);
         }
     }
-
+    
 class SystemExit extends Exception {}
 try {
     function hasArgument ($parameterName)
@@ -172,11 +172,16 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetpmls = false;	/* Type of content in input is PoS-tags,morphology,lemmas,syntax (Pos-tags,morfologi,lemma,syntaks) if true */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
 
         if( hasArgument("base") )
             {
@@ -211,8 +216,16 @@ try {
 ************************/
         if( hasArgument("Ifacet") )
             {
-            $Ifacetpmls = existsArgumentWithValue("Ifacet", "pmls");
-            $echos = $echos . "Ifacetpmls=$Ifacetpmls ";
+            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
+            $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
+            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
+            $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
+            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetpos=$Ifacetpos " . "Ifacetstx=$Ifacetstx ";
+            }
+        if( hasArgument("Iformat") )
+            {
+            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
+            $echos = $echos . "Iformattxtann=$Iformattxtann ";
             }
         if( hasArgument("Ofacet") )
             {
@@ -221,6 +234,11 @@ try {
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
             $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetpos=$Ofacetpos " . "Ofacetstx=$Ofacetstx ";
+            }
+        if( hasArgument("Oformat") )
+            {
+            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
+            $echos = $echos . "Oformattxtann=$Oformattxtann ";
             }
 
 /*******************************
@@ -295,7 +313,7 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
