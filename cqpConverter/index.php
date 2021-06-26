@@ -216,22 +216,26 @@ try {
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
-        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $IfacetlemF = "";	/* Input with annotationstyper lemmas (Lemma) */
+        $IfacetposF = "";	/* Input with annotationstyper PoS-tags (PoS-tags) */
+        $IfacetsegF = "";	/* Input with annotationstyper segments (Sætningssegmenter) */
+        $IfacettokF = "";	/* Input with annotationstyper tokens (Tokens) */
+        $Iambiguna = false;	/* Flertydighed in input is unambiguous (utvetydig) if true */
+        $Ifacetlem = false;	/* Annotationstyper in input is lemmas (Lemma) if true */
+        $Ifacetpos = false;	/* Annotationstyper in input is PoS-tags (PoS-tags) if true */
+        $Ifacetseg = false;	/* Annotationstyper in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Annotationstyper in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
-        $Ipresnml = false;	/* Assemblage in input is normal if true */
-        $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
-        $Ofacetcls = false;	/* Type of content in output is word class (ordklasse) if true */
-        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
-        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
-        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
-        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
+        $Ipresnml = false;	/* Sammensætning in input is normal if true */
+        $Oambiguna = false;	/* Flertydighed in output is unambiguous (utvetydig) if true */
+        $Ofacetcls = false;	/* Annotationstyper in output is word class (ordklasse) if true */
+        $Ofacetlem = false;	/* Annotationstyper in output is lemmas (Lemma) if true */
+        $Ofacetpos = false;	/* Annotationstyper in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Annotationstyper in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Annotationstyper in output is tokens (Tokens) if true */
         $Oformatvrt = false;	/* Format in output is Corpus Workbench (for CQP queries) if true */
-        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Opresnml = false;	/* Sammensætning in output is normal if true */
 
         if( hasArgument("base") )
             {
@@ -250,6 +254,46 @@ try {
 /*********
 * input  *
 *********/
+        if( hasArgument("IfacetlemF") )
+            {        
+            $IfacetlemF = requestFile("IfacetlemF");
+            if($IfacetlemF == '')
+                {
+                header("HTTP/1.0 404 Input with annotationstyper 'lemmas (Lemma)' not found (IfacetlemF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacetlemF=$IfacetlemF ";
+            }
+        if( hasArgument("IfacetposF") )
+            {        
+            $IfacetposF = requestFile("IfacetposF");
+            if($IfacetposF == '')
+                {
+                header("HTTP/1.0 404 Input with annotationstyper 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacetposF=$IfacetposF ";
+            }
+        if( hasArgument("IfacetsegF") )
+            {        
+            $IfacetsegF = requestFile("IfacetsegF");
+            if($IfacetsegF == '')
+                {
+                header("HTTP/1.0 404 Input with annotationstyper 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacetsegF=$IfacetsegF ";
+            }
+        if( hasArgument("IfacettokF") )
+            {        
+            $IfacettokF = requestFile("IfacettokF");
+            if($IfacettokF == '')
+                {
+                header("HTTP/1.0 404 Input with annotationstyper 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacettokF=$IfacettokF ";
+            }
 
 /************************
 * input/output features *

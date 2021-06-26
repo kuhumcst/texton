@@ -507,7 +507,6 @@ toolsProg=
                                 . ?tdata
                                 )
                               + ?prodtoolprop
-                          & log$(ADD !tdata)
                           & (!tid.!tdata)+!toolprop:?toolprop
                           )
                       & saveTable$toolprop
@@ -2233,6 +2232,12 @@ toolsProg=
             |   log
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
+          &   lst
+            $ ( disambiguatedworkflowlist
+              , path$disambiguatedworkflowlist
+              , NEW
+              , RAW
+              )
           & ( reorder$!disambiguatedworkflowlist
             . topologicalOrder$!disambiguatedworkflowlist
             )
@@ -2474,6 +2479,12 @@ toolsProg=
                 & 0:?currNtools
                 & :?toolUsageList
                 & 0:?toolSetID
+                &   lst
+                  $ ( reorderedworkflowlist
+                    , path$reorderedworkflowlist0
+                    , NEW
+                    , RAW
+                    )
                 &   sum2list$!reorderedworkflowlist
                   : ?reorderedworkflowlist
                 &       map
@@ -4118,20 +4129,17 @@ toolsProg=
       =     combineFeats combineToolIncarnations getBoilerPlate
           , getFeatName getFeatSpecTable getFeatTable listAlts
           , makeName DATA DATATEXT FEATURES FEATURETEXT Features
-          , IO Iopt Oopt STYLES STYLETEXT basejobpost2 boilerPlate
+          , IO STYLES STYLETEXT basejobpost2 boilerPlate
           , boolfunc boolvar data declarations ech featname fname
           , fname1 fname2 fval helperFunctions httpparm iolist
           , lastWord mainfunc name o sptable stringfunc stringvar
-          , toolParameters toolParmTests toolprop value values var
+          , toolParmTests toolprop value values var
           , voidfunc i tooladm features svalues
           , getFeatValues toolid output TUPTUO reverselist
           , annotationStyles basistextStyles facets fileFormats
           , flatFileTypes imageStyles linguae presentations sndStyles
           , tagSets textStyles tokenisationStyles
-        .     !arg
-            : ( (?arg.?toolid)
-              | ?&:?toolid
-              )
+        .   !arg:(?arg.?toolid)
           & :?TUPTUO
           & (output=.str$!arg !TUPTUO:?TUPTUO)
           & ( reverselist
@@ -4186,8 +4194,10 @@ catch (SystemExit $e)
             )
           & ( listAlts
             =     alt featF opts rsr rsrc stl style alts
-                , term Single
-              .   !arg:(?alts.?IO.?featname)
+                , term Single DATA FEATURES STYLES
+              .     !arg
+                  : (?alts.?IO.?featname.?DATA.?FEATURES.?STYLES)
+                & log$(listAlts !arg)
                 &   whl
                   ' ( !alts:(%(%?alt ?opts):?term)+?alts
                     &   (   :!(glf$('($term.?))) ?
@@ -4236,7 +4246,7 @@ catch (SystemExit $e)
                           )
                       )
                     )
-                & 
+                & (!DATA.!FEATURES.!STYLES)
             )
           & ( makeName
             =   name camel c
@@ -4323,184 +4333,215 @@ catch (SystemExit $e)
                 & !table
             )
           & ( combineFeats
-            =   A B M Z b c
+            =   A B M Z b c bi ib ci ic diffs
               .     whl
                   ' ( !arg:?A (?B,?b) ?M (!B,?c) ?Z
-                    & !A (!B,!b+!c) !M !Z:?arg
+                    & (   !b:!c
+                        & !b:(?bi.?)
+                        & !c:(?ci.?)
+                        & 0:?diffs
+                        &   whl
+                          ' ( !bi:%?ib+?bi
+                            & !ci:%?ic+?ci
+                            & (       (   :!(glf$('($ib.?))) ?
+                                        & 1
+                                      | 0
+                                      )
+                                    + (   :!(glf$('($ic.?))) ?
+                                        & 1
+                                      | 0
+                                      )
+                                  : 1
+                                & "The inputs are different: one of them has
+                                   a % prefix, the other has not."
+                                & 1+!diffs:?diffs
+                              | 
+                              )
+                            )
+                        & 0:!diffs
+                        & !A (!B,!b) !M !Z:?arg
+                      | !A (!B,!b !c) !M !Z:?arg
+                      )
                     )
                 & !arg
             )
-          & ( combineToolIncarnations
-            =   A Z name featK featL Tools feats
-              .     whl
-                  ' ( !arg:?A+(?name.?featK)+(!name.?featL)+?Z
-                    & !A+(!name.!featK !featL)+!Z:?arg
-                    )
-                & 0:?Tools
-                &   whl
-                  ' ( !arg:(?name.?feats)+?arg
-                    & !Tools+(!name.combineFeats$!feats):?Tools
-                    )
-                & !Tools
+          & ( logInvalid
+            =   fname1 fname2 toolid
+              .   !arg:(?toolid.?feats)
+                & (     !feats
+                      :   ?
+                          (?fname1,? (?+(%?*%? ?)+?.?) ?)
+                          ?
+                          (?fname2,? (?+(%?*%? ?)+?.?) ?)
+                          ?
+                    &   log
+                      $ ( str
+                        $ ( "Tool "
+                            !toolid
+                            ": inputs differ on two features: "
+                            !fname1
+                            " and "
+                            !fname2
+                            " in the same tool incarnation. This is currently not supported."
+                          )
+                        )
+                  |     !feats
+                      :   ?
+                          (?fname1,? (?.?+(%*% ?)+?) ?)
+                          ?
+                          (?fname2,? (?.?+(%*% ?)+?) ?)
+                          ?
+                    &   log
+                      $ ( str
+                        $ ( "Tool "
+                            !toolid
+                            ": outputs differ on two features: "
+                            !fname1
+                            " and "
+                            !fname2
+                            " in the same tool incarnation. This is currently not supported."
+                          )
+                        )
+                  | 
+                  )
             )
-          & combineToolIncarnations$!toolprop:?toolprop
+          & ( combineToolIncarnations
+            =     A Z name featK featL Tools feats
+                , toolprop toolid
+              .   !arg:(?toolprop.?toolid)
+                & :?Feats
+                &   whl
+                  ' ( !toolprop:?+(!toolid.?featK)+?toolprop
+                    & logInvalid$(!toolid.!featK)
+                    &   whl
+                      ' ( !featK:%?featPair+?featK
+                        & !featPair !Feats:?Feats
+                        )
+                    )
+                & !Feats
+            )
+          & combineToolIncarnations$(!toolprop.!toolid):?Features
+          & lst$(Features,path$Features,NEW)
+          & 0:?DATA
+          & 0:?FEATURES
+          & 0:?STYLES
+          & (     !Features
+                :   ?
+                    ( ?
+                    ,   ?
+                        (   %*% ?:?in
+                          & ~(:!(glf$('($in.?))) ?)
+                        . ?
+                        )
+                        ?
+                    )
+                    ?
+              & "All inputs combined in one file, so IF."
+              & (I...F)+!DATA:?DATA
+            |     !Features
+                : (   ?
+                      (?,? (?+(%*% ?)+?.?) ?:?fval)
+                      ?
+                  |   ?
+                      (?,? (?+(% %)+?.?) ?:?fval)
+                      ?
+                  )
+              & (   !fval:? (?+%@^?+?.?) ?
+                  & "IF in some cases, IfeatvalF in other cases"
+                  & (I...F)+!DATA:?DATA
+                | "Never IF, always IfeatvalF"
+                )
+            |   "Always IF, never IfeatvalF"
+              & (I...F)+!DATA:?DATA
+            )
+          & (     !Features
+                : (   ?
+                      (?,? (?.?+(%*% ?)+?) ?:?fval)
+                      ?
+                  |   ?
+                      (?,? (?.?+(% %)+?) ?:?fval)
+                      ?
+                  )
+              & (   !fval:? (?.?+%@^?+?) ?
+                  & "OF in some cases, OfeatvalF in other cases"
+                  & (O...F)+!DATA:?DATA
+                | "Never OF, always OfeatvalF"
+                )
+            |   "Always OF, never OfeatvalF"
+              & (O...F)+!DATA:?DATA
+            )
           &   whl
-            ' ( !toolprop:(?name.?Features)+?toolprop
-              & (   !toolid:(|!name)
-                  & (     !Features
-                        :   ?
-                            (?fname1,?+#*(?+(%?*%? ?)+?.?)+?)
-                            ?
-                            (?fname2,?+#*(?+(%?*%? ?)+?.?)+?)
-                            ?
-                      &   log
-                        $ ( str
-                          $ ( "Tool "
-                              !name
-                              ": inputs differ on two features: "
-                              !fname1
-                              " and "
-                              !fname2
-                              ". This is currently not supported."
-                            )
-                          )
-                    |     !Features
-                        :   ?
-                            (?fname1,?+#*(?.?+(%*% ?)+?)+?)
-                            ?
-                            (?fname2,?+#*(?.?+(%*% ?)+?)+?)
-                            ?
-                      &   log
-                        $ ( str
-                          $ ( "Tool "
-                              !name
-                              ": outputs differ on two features: "
-                              !fname1
-                              " and "
-                              !fname2
-                              ". This is currently not supported."
-                            )
-                          )
-                    | 
-                    )
-                  & :?Iopt:?Oopt
-                  & 0:?DATA
-                  & 0:?FEATURES
-                  & 0:?STYLES
-                  & (     !Features
-                        :   ?
-                            ( ?
-                            ,   ?
-                              + (   %*% ?:?in
-                                  & ~(:!(glf$('($in.?))) ?)
-                                . ?
-                                )
-                              + ?
-                            )
-                            ?
-                      & "All inputs combined in one file, so IF."
-                      & (I...F)+!DATA:?DATA
-                    |     !Features
-                        : (   ?
-                              (?,?+#*(?+(%*% ?)+?.?)+?:?fval)
-                              ?
-                          |   ?
-                              (?,?+#*(?+(% %)+?.?)+?:?fval)
-                              ?
-                          )
-                      & (   !fval:?+#*(?+%@^?+?.?)+?
-                          & "IF in some cases, IfeatvalF in other cases"
-                          & " (1/2)":?Iopt
-                          & (I...F)+!DATA:?DATA
-                        | "Never IF, always IfeatvalF"
-                        )
-                    |   "Always IF, never IfeatvalF"
-                      & (I...F)+!DATA:?DATA
-                    )
-                  & (     !Features
-                        : (   ?
-                              (?,?+#*(?.?+(%*% ?)+?)+?:?fval)
-                              ?
-                          |   ?
-                              (?,?+#*(?.?+(% %)+?)+?:?fval)
-                              ?
-                          )
-                      & (   !fval:?+#*(?.?+%@^?+?)+?
-                          & "OF in some cases, OfeatvalF in other cases"
-                          & " (1/2)":?Oopt
-                          & (O...F)+!DATA:?DATA
-                        | "Never OF, always OfeatvalF"
-                        )
-                    |   "Always OF, never OfeatvalF"
-                      & (O...F)+!DATA:?DATA
-                    )
-                  &   whl
-                    ' ( !Features:(?fname,?iolist) ?Features
-                      &   whl
-                        ' ( !iolist:#*(?i.?o)+?iolist
-                          & listAlts$(!i.I.!fname)
-                          & listAlts$(!o.O.!fname)
-                          )
-                      )
-                  &     "/*
+            ' ( !Features:(?fname,?iolist) ?Features
+              &   whl
+                ' ( !iolist:(?i.?o) ?iolist
+                  &   listAlts$(!i.I.!fname.!DATA.!FEATURES.!STYLES)
+                    : (?DATA.?FEATURES.?STYLES)
+                  &   listAlts$(!o.O.!fname.!DATA.!FEATURES.!STYLES)
+                    : (?DATA.?FEATURES.?STYLES)
+                  )
+              )
+          & lst$(DATA,path$DATA,NEW,RAW)
+          & lst$(FEATURES,path$FEATURES,NEW,RAW)
+          & lst$(STYLES,path$STYLES,NEW,RAW)
+          &     "/*
 ToolID         : "
-                        !name
-                        "
+                !toolid
+                "
 PassWord       : "
-                        getBoilerPlate$(!name.PassWord)
-                        "
+                getBoilerPlate$(!toolid.PassWord)
+                "
 Version        : "
-                        getBoilerPlate$(!name.Version)
-                        "
+                getBoilerPlate$(!toolid.Version)
+                "
 Title          : "
-                        getBoilerPlate$(!name.Title)
-                        "
+                getBoilerPlate$(!toolid.Title)
+                "
 Path in URL    : "
-                          ( 
-                          =   path
-                            .   @( str$(getBoilerPlate$(!arg.ServiceURL))
-                                 : ? "://" ? "/" ?path
-                                 )
-                              & !path
-                          )
-                        $ !name
-                        \t
-                        "*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
+                  ( 
+                  =   path
+                    .   @( str$(getBoilerPlate$(!arg.ServiceURL))
+                         : ? "://" ? "/" ?path
+                         )
+                      & !path
+                  )
+                $ !toolid
+                \t
+                "*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : "
-                        getBoilerPlate$(!name.Publisher)
-                        "
+                getBoilerPlate$(!toolid.Publisher)
+                "
 ContentProvider: "
-                        getBoilerPlate$(!name.ContentProvider)
-                        "
+                getBoilerPlate$(!toolid.ContentProvider)
+                "
 Creator        : "
-                        getBoilerPlate$(!name.Creator)
-                        "
+                getBoilerPlate$(!toolid.Creator)
+                "
 InfoAbout      : "
-                        getBoilerPlate$(!name.InfoAbout)
-                        "
+                getBoilerPlate$(!toolid.InfoAbout)
+                "
 Description    : "
-                        getBoilerPlate$(!name.Description)
-                        "
+                getBoilerPlate$(!toolid.Description)
+                "
 ExternalURI    : "
-                        getBoilerPlate$(!name.ExternalURI)
-                        "
+                getBoilerPlate$(!toolid.ExternalURI)
+                "
 XMLparms       : "
-                        getBoilerPlate$(!name.XMLparms)
-                        "
+                getBoilerPlate$(!toolid.XMLparms)
+                "
 PostData       : "
-                        getBoilerPlate$(!name.PostData)
-                        "
+                getBoilerPlate$(!toolid.PostData)
+                "
 Inactive       : "
-                        getBoilerPlate$(!name.Inactive)
-                        "
+                getBoilerPlate$(!toolid.Inactive)
+                "
 */
 
 /*******************
 * helper functions *
 *******************/
 $toollog = '../log/"
-                        makeName$!name
-                        ".log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+                makeName$!toolid
+                ".log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -4532,36 +4573,36 @@ function logit($str) /* TODO You can use this function to write strings to the l
 class SystemExit extends Exception {}
 try {
     "
-                        !boolfunc
-                        "hasArgument ("
-                        !stringvar
-                        "parameterName)
+                !boolfunc
+                "hasArgument ("
+                !stringvar
+                "parameterName)
         {
         return isset($_REQUEST[\""
-                        !stringvar
-                        "parameterName\"]);
+                !stringvar
+                "parameterName\"]);
         }
 
     "
-                        !stringfunc
-                        "getArgument ("
-                        !stringvar
-                        "parameterName)
+                !stringfunc
+                "getArgument ("
+                !stringvar
+                "parameterName)
         {
         return isset($_REQUEST[\""
-                        !stringvar
-                        "parameterName\"]) ? $_REQUEST[\""
-                        !stringvar
-                        "parameterName\"] : \"\";
+                !stringvar
+                "parameterName\"]) ? $_REQUEST[\""
+                !stringvar
+                "parameterName\"] : \"\";
         }
 
     "
-                        !boolfunc
-                        "existsArgumentWithValue ("
-                        !stringvar
-                        "parameterName, "
-                        !stringvar
-                        "parameterValue)
+                !boolfunc
+                "existsArgumentWithValue ("
+                !stringvar
+                "parameterName, "
+                !stringvar
+                "parameterValue)
         {
         /* Check whether there is an argument <parameterName> that has value 
            <parameterValue>. 
@@ -4573,10 +4614,10 @@ try {
             {
             list($name, $value) = explode('=', $param);
             if("
-                        !stringvar
-                        "parameterName == urldecode($name) && "
-                        !stringvar
-                        "parameterValue == urldecode($value))
+                !stringvar
+                "parameterName == urldecode($name) && "
+                !stringvar
+                "parameterValue == urldecode($value))
                 return true;
             }
         return false;
@@ -4616,8 +4657,8 @@ try {
             else
                 {
                 $tempfilename = tempFileName(\""
-                        makeName$!name
-                        "_{$requestParm}_\");
+                makeName$!toolid
+                "_{$requestParm}_\");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
@@ -4642,8 +4683,8 @@ try {
         return \"\";
         }    
 "
-                    : ?helperFunctions
-                  &     "
+            : ?helperFunctions
+          &     "
 /***************
 * declarations *
 ***************/
@@ -4658,353 +4699,344 @@ try {
  * is done. (See the global dodelete variable.)
  */
         "
-                        !stringvar
-                        "base = \"\";"
-                        \t
-                        "/* URL from where this web service downloads input. The generated script takes care of that, so you can ignore this variable. */
+                !stringvar
+                "base = \"\";"
+                \t
+                "/* URL from where this web service downloads input. The generated script takes care of that, so you can ignore this variable. */
         "
-                        !stringvar
-                        "job = \"\";"
-                        \t
-                        "/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
+                !stringvar
+                "job = \"\";"
+                \t
+                "/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         "
-                        !stringvar
-                        "post2 = \"\";"
-                        \t
-                        "/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
+                !stringvar
+                "post2 = \"\";"
+                \t
+                "/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         "
-                        !stringvar
-                        "echos = \"\";"
-                        \t
-                        "/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
+                !stringvar
+                "echos = \"\";"
+                \t
+                "/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
 "
-                    : ?declarations
-                  & :?toolParmTests
-                  &     "
+            : ?declarations
+          & :?toolParmTests
+          &     "
         if( hasArgument(\"base\") )
             {
             "
-                        !var
-                        "base = getArgument(\"base\");
+                !var
+                "base = getArgument(\"base\");
             }
         if( hasArgument(\"job\") )
             {
             "
-                        !var
-                        "job = getArgument(\"job\");
+                !var
+                "job = getArgument(\"job\");
             }
         if( hasArgument(\"post2\") )
             {
             "
-                        !var
-                        "post2 = getArgument(\"post2\");
+                !var
+                "post2 = getArgument(\"post2\");
             }
         "
-                        !var
-                        "echos = \"base=$base job=$job post2=$post2 \";
+                !var
+                "echos = \"base=$base job=$job post2=$post2 \";
 "
-                    : ?basejobpost2
-                  & "
+            : ?basejobpost2
+          & "
 /*********
 * input  *
 *********/
 ":?DATATEXT
-                  &   whl
-                    ' ( !DATA:#*(?IO.?featname.?value.F)+?DATA
-                      & "Restriction: There is exactly one output file."
-                      &     (!featname:|I)
-                            !featname
-                            !value
-                            F
-                        : ?httpparm
-                      & (   !IO:I
-                          &     !declarations
-                                "        "
-                                !stringvar
-                                !httpparm
-                                " = \"\";"
-                                \t
-                                "/* "
-                                ( Input
-                                  (   !featname:
-                                    & " (ONLY used if there is exactly ONE input to this workflow step)"
-                                  |   " with "
-                                      low$(getFeatName$!featname)
-                                      " "
-                                      getFeatValues$(!featname.!value)
-                                  )
-                                )
-                                " */\n"
-                            : ?declarations
-                          &   !toolParameters ", " !stringvar !httpparm
-                            : ?toolParameters
-                          &     !DATATEXT
-                                "        if( hasArgument(\""
-                                !httpparm
-                                "\") )
+          &   whl
+            ' ( !DATA:#*(?IO.?featname.?value.F)+?DATA
+              & "Restriction: There is exactly one output file."
+              &     (!featname:|I)
+                    !featname
+                    !value
+                    F
+                : ?httpparm
+              & (   !IO:I
+                  &     !declarations
+                        "        "
+                        !stringvar
+                        !httpparm
+                        " = \"\";"
+                        \t
+                        "/* "
+                        ( Input
+                          (   !featname:
+                            & " (ONLY used if there is exactly ONE input to this workflow step)"
+                          |   " with "
+                              low$(getFeatName$!featname)
+                              " "
+                              getFeatValues$(!featname.!value)
+                          )
+                        )
+                        " */\n"
+                    : ?declarations
+                  &     !DATATEXT
+                        "        if( hasArgument(\""
+                        !httpparm
+                        "\") )
             {        
             "
-                                !var
-                                !httpparm
-                                " = requestFile(\""
-                                !httpparm
-                                "\");
+                        !var
+                        !httpparm
+                        " = requestFile(\""
+                        !httpparm
+                        "\");
             if("
-                                !var
-                                !httpparm
-                                " == '')
+                        !var
+                        !httpparm
+                        " == '')
                 {
                 header(\"HTTP/1.0 404 Input "
-                                ( !featname:
-                                |   "with "
-                                    low$(getFeatName$!featname)
-                                    " '"
-                                    getFeatValues$(!featname.!value)
-                                    "' "
-                                )
-                                "not found ("
-                                !httpparm
-                                " parameter). \");
+                        ( !featname:
+                        |   "with "
+                            low$(getFeatName$!featname)
+                            " '"
+                            getFeatValues$(!featname.!value)
+                            "' "
+                        )
+                        "not found ("
+                        !httpparm
+                        " parameter). \");
                 return;
                 }
             "
-                                !var
-                                "echos = "
-                                !var
-                                "echos . \""
-                                !httpparm
-                                "="
-                                !var
-                                !httpparm
-                                " \";
+                        !var
+                        "echos = "
+                        !var
+                        "echos . \""
+                        !httpparm
+                        "="
+                        !var
+                        !httpparm
+                        " \";
             }
 "
-                            : ?DATATEXT
-                        | 
-                        )
-                      )
-                  &   "
+                    : ?DATATEXT
+                | 
+                )
+              )
+          &   "
 /************************
 * input/output features *
 ************************/
 "
-                    : ?FEATURETEXT
-                  &   whl
-                    ' ( !FEATURES:#*(?IO.?data)\L?svalues+?FEATURES
-                      & ( 
-                        |     !declarations
-                              "    "
-                              !stringvar
-                              !IO
-                              !data
-                              " = \"\";\n"
-                          : ?declarations
-                        )
-                      &     !FEATURETEXT
-                            "        if( hasArgument(\""
-                            !IO
-                            !data
-                            "\") )
+            : ?FEATURETEXT
+          &   whl
+            ' ( !FEATURES:#*(?IO.?data)\L?svalues+?FEATURES
+              & ( 
+                |   !declarations "    " !stringvar !IO !data " = \"\";\n"
+                  : ?declarations
+                )
+              &     !FEATURETEXT
+                    "        if( hasArgument(\""
+                    !IO
+                    !data
+                    "\") )
             {
 "
-                        : ?FEATURETEXT
-                      & :?ech
-                      &   whl
-                        ' ( !svalues:%?values+?svalues
-                          &   whl
-                            ' ( !values:%@?value^?*?values
-                              &     !declarations
-                                    "        "
-                                    !stringvar
-                                    !IO
-                                    !data
-                                    !value
-                                    " = false;"
-                                    \t
-                                    "/* "
-                                    ( getFeatName$!data
-                                      " in "
-                                      ( !IO:I&input
-                                      | output
-                                      )
-                                      " is "
-                                      getFeatValues$(!data.!value)
-                                    )
-                                    " if true */
-"
-                                : ?declarations
-                              &     !ech
-                                    " . \""
-                                    !IO
-                                    !data
-                                    !value
-                                    "="
-                                    !var
-                                    !IO
-                                    !data
-                                    !value
-                                    " \""
-                                : ?ech
-                              &     !FEATURETEXT
-                                    "            "
-                                    !var
-                                    !IO
-                                    !data
-                                    !value
-                                    " = existsArgumentWithValue(\""
-                                    !IO
-                                    !data
-                                    "\", \""
-                                    !value
-                                    "\");\n"
-                                : ?FEATURETEXT
+                : ?FEATURETEXT
+              & :?ech
+              &   whl
+                ' ( !svalues:%?values+?svalues
+                  &   whl
+                    ' ( !values:%@?value^?*?values
+                      &     !declarations
+                            "        "
+                            !stringvar
+                            !IO
+                            !data
+                            !value
+                            " = false;"
+                            \t
+                            "/* "
+                            ( getFeatName$!data
+                              " in "
+                              ( !IO:I&input
+                              | output
                               )
-                          )
+                              " is "
+                              getFeatValues$(!data.!value)
+                            )
+                            " if true */
+"
+                        : ?declarations
+                      &     !ech
+                            " . \""
+                            !IO
+                            !data
+                            !value
+                            "="
+                            !var
+                            !IO
+                            !data
+                            !value
+                            " \""
+                        : ?ech
                       &     !FEATURETEXT
                             "            "
                             !var
-                            "echos = "
-                            !var
-                            echos
-                            !ech
-                            ";
-            }
-"
+                            !IO
+                            !data
+                            !value
+                            " = existsArgumentWithValue(\""
+                            !IO
+                            !data
+                            "\", \""
+                            !value
+                            "\");\n"
                         : ?FEATURETEXT
                       )
-                  &   "
+                  )
+              &     !FEATURETEXT
+                    "            "
+                    !var
+                    "echos = "
+                    !var
+                    echos
+                    !ech
+                    ";
+            }
+"
+                : ?FEATURETEXT
+              )
+          &   "
 /*******************************
 * input/output features styles *
 *******************************/
 "
-                    : ?STYLETEXT
+            : ?STYLETEXT
+          &   whl
+            ' ( !STYLES:#*(?IO.?featname.?data)\L?svalues+?STYLES
+              & ( 
+                |     !declarations
+                      "        "
+                      !stringvar
+                      !IO
+                      !featname
+                      !data
+                      " = \"\";\n"
+                  : ?declarations
+                )
+              &     !STYLETEXT
+                    "        if( hasArgument(\""
+                    !IO
+                    !featname
+                    !data
+                    "\") )
+            {
+"
+                : ?STYLETEXT
+              & :?ech
+              &   whl
+                ' ( !svalues:%?values+?svalues
                   &   whl
-                    ' (   !STYLES
-                        : #*(?IO.?featname.?data)\L?svalues+?STYLES
-                      & ( 
-                        |     !declarations
-                              "        "
-                              !stringvar
-                              !IO
-                              !featname
-                              !data
-                              " = \"\";\n"
-                          : ?declarations
-                        )
-                      &     !STYLETEXT
-                            "        if( hasArgument(\""
+                    ' ( !values:%@?value^?*?values
+                      &     !declarations
+                            "        "
+                            !stringvar
                             !IO
                             !featname
                             !data
-                            "\") )
-            {
+                            !value
+                            " = false;"
+                            \t
+                            "/* Style of "
+                            low$(getFeatName$!featname)
+                            " "
+                            getFeatValues$(!featname.!data)
+                            " in "
+                            ( !IO:I&input
+                            | output
+                            )
+                            " is "
+                            (   getFeatSpecTable$(!featname.!data)
+                              : ?sptable
+                            &   ( !!sptable
+                                | readTable$!sptable&!!sptable
+                                )
+                              : ? (?fval.!value.?) ?
+                            & !fval
+                            )
+                            " if true */
 "
-                        : ?STYLETEXT
-                      & :?ech
-                      &   whl
-                        ' ( !svalues:%?values+?svalues
-                          &   whl
-                            ' ( !values:%@?value^?*?values
-                              &     !declarations
-                                    "        "
-                                    !stringvar
-                                    !IO
-                                    !featname
-                                    !data
-                                    !value
-                                    " = false;"
-                                    \t
-                                    "/* Style of "
-                                    low$(getFeatName$!featname)
-                                    " "
-                                    getFeatValues$(!featname.!data)
-                                    " in "
-                                    ( !IO:I&input
-                                    | output
-                                    )
-                                    " is "
-                                    (   getFeatSpecTable$(!featname.!data)
-                                      : ?sptable
-                                    &   ( !!sptable
-                                        |   readTable$!sptable
-                                          & !!sptable
-                                        )
-                                      : ? (?fval.!value.?) ?
-                                    & !fval
-                                    )
-                                    " if true */
-"
-                                : ?declarations
-                              &     !ech
-                                    " . \""
-                                    !IO
-                                    !featname
-                                    !data
-                                    !value
-                                    "="
-                                    !var
-                                    !IO
-                                    !featname
-                                    !data
-                                    !value
-                                    " \""
-                                : ?ech
-                              &     !STYLETEXT
-                                    "            "
-                                    !stringvar
-                                    !IO
-                                    !featname
-                                    !data
-                                    !value
-                                    " = existsArgumentWithValue(\""
-                                    !IO
-                                    !featname
-                                    !data
-                                    "\", \""
-                                    !value
-                                    "\");\n"
-                                : ?STYLETEXT
-                              )
-                          )
+                        : ?declarations
+                      &     !ech
+                            " . \""
+                            !IO
+                            !featname
+                            !data
+                            !value
+                            "="
+                            !var
+                            !IO
+                            !featname
+                            !data
+                            !value
+                            " \""
+                        : ?ech
                       &     !STYLETEXT
                             "            "
-                            !var
-                            "echos = "
-                            !var
-                            echos
-                            !ech
-                            ";
-            }
-"
+                            !stringvar
+                            !IO
+                            !featname
+                            !data
+                            !value
+                            " = existsArgumentWithValue(\""
+                            !IO
+                            !featname
+                            !data
+                            "\", \""
+                            !value
+                            "\");\n"
                         : ?STYLETEXT
                       )
-                  &   output
-                    $ ( !boilerPlate
-                        !helperFunctions
-                        "\n    "
-                        !voidfunc
-                        (str$("do_" makeName$!name):?mainfunc)
-                        "()
+                  )
+              &     !STYLETEXT
+                    "            "
+                    !var
+                    "echos = "
+                    !var
+                    echos
+                    !ech
+                    ";
+            }
+"
+                : ?STYLETEXT
+              )
+          &   output
+            $ ( !boilerPlate
+                !helperFunctions
+                "\n    "
+                !voidfunc
+                (str$("do_" makeName$!toolid):?mainfunc)
+                "()
         {
         global $dodelete;
         global $tobedeleted;"
-                        !declarations
-                        !basejobpost2
-                        !DATATEXT
-                        !FEATURETEXT
-                        !STYLETEXT
-                        \n
-                        "//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)"
-                        "\n        "
-                        !stringvar
-                        makeName$!name
-                        "file = tempFileName(\""
-                        makeName$!name
-                        "-results\");
+                !declarations
+                !basejobpost2
+                !DATATEXT
+                !FEATURETEXT
+                !STYLETEXT
+                \n
+                "//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)"
+                "\n        "
+                !stringvar
+                makeName$!toolid
+                "file = tempFileName(\""
+                makeName$!toolid
+                "-results\");
         $command = \"echo $echos >> "
-                        !stringvar
-                        makeName$!name
-                        "file\";
+                !stringvar
+                makeName$!toolid
+                "file\";
         logit($command);
 
         if(($cmd = popen($command, \"r\")) == NULL)
@@ -5021,20 +5053,20 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN "
-                        !var
-                        makeName$!name
-                        "file
+                !var
+                makeName$!toolid
+                "file
 //*/
         $tmpf = fopen("
-                        !var
-                        makeName$!name
-                        "file,'r');
+                !var
+                makeName$!toolid
+                "file,'r');
 
         if($tmpf)
             {
             //logit('output from "
-                        makeName$!name
-                        ":');
+                makeName$!toolid
+                ":');
             while($line = fgets($tmpf))
                 {
                 //logit($line);
@@ -5055,12 +5087,9 @@ try {
         }
     loginit();
     "
-                        !mainfunc
-                        "();\n"
-                        !lastWord
-                      )
-                | 
-                )
+                !mainfunc
+                "();\n"
+                !lastWord
               )
           & reverselist$!TUPTUO
       )
@@ -6421,7 +6450,6 @@ try {
                               )
                           | !arg
                       )
-                    & lst$(toolprop,path$toolpropAA,NEW)
                     & removeEmptyValues$!toolprop:?toolprop
                     & ( sortFacets
                       =   toolpropFacetsSorted Name facets
@@ -8568,16 +8596,28 @@ try {
                                                 =   a z
                                                   .         ( !A
                                                               ( !feat
-                                                              ,       !sp
+                                                              ,   (   !sp
                                                                     : 1
-                                                                  & !arg
-                                                                |     !arg
-                                                                    :   ?a
-                                                                      * !val
-                                                                      * ?z
-                                                                  &   !a
-                                                                    * !Val
-                                                                    * !z
+                                                                  |     !arg
+                                                                      :   ?a
+                                                                        * !val
+                                                                        * ?z
+                                                                    &     !a
+                                                                        * !Val
+                                                                        * !z
+                                                                      : ?arg
+                                                                  )
+                                                                & (   !arg
+                                                                    : @
+                                                                  | !( glf
+                                                                     $ ( 
+                                                                       ' ( %
+                                                                         .   
+                                                                           $ arg
+                                                                         )
+                                                                       )
+                                                                     )
+                                                                  )
                                                               )
                                                               !Z
                                                             )
