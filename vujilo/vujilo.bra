@@ -1,0 +1,95 @@
+{vujilo.bra
+
+Convert to lowercase, v -> u and j -> i}
+
+X=
+  ( doit
+  =   in ou XMlorPlain
+    .   !arg:(?in.?ou.?XMlorPlain)
+      & (   !XMlorPlain:(XML|xml)
+          & nestML$(get$(!in,X ML)):?xml
+          & ( rpl
+            =   
+              .   map
+                $ ( ( 
+                    =   e a T
+                      .     !arg:(?e.?a,?T)
+                          & (!e.!a,rpl$!T)
+                        |   str
+                          $ ( vap
+                            $ ( ( 
+                                =   
+                                  .   !arg:v&u
+                                    | !arg:j&i
+                                    | !arg
+                                )
+                              . low$!arg
+                              )
+                            )
+                    )
+                  . !arg
+                  )
+            )
+          & ( trv
+            =   
+              .   map
+                $ ( ( 
+                    =   e a T
+                      .     !arg:(?e.?a,?T)
+                          & ( !e:w&(w.!a,rpl$!T)
+                            | (!e.!a,trv$!T)
+                            )
+                        | !arg
+                    )
+                  . !arg
+                  )
+            )
+          & trv$!xml:?xml
+          & put$(str$(toML$!xml),!ou,NEW)
+        |   put
+          $ (   str
+              $ ( vap
+                $ ( ( 
+                    =   
+                      .   !arg:v&u
+                        | !arg:j&i
+                        | !arg
+                    )
+                  . low$(get$(!in,STR))
+                  )
+                )
+            , !ou
+            , NEW
+            )
+        )
+  )
+  ( new
+  =   in ou XMlorPlain
+    .   ~
+      |   arg$:?in
+        & arg$:?ou
+        & arg$:?XMlorPlain
+        & (its.doit)$(!in.!ou.!XMlorPlain)
+  );
+
+r=
+  get'("vujilo.bra",TXT)
+& rmv$(str$(vujilo ".bak"))
+& ren$("vujilo.bra".str$(vujilo ".bak"))
+&   put
+  $ ( "{vujilo.bra
+
+Convert to lowercase, v -> u and j -> i}
+
+"
+    , "vujilo.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"vujilo.bra",APP)
+& put'(\n,"vujilo.bra",APP,BIN)
+& lst'(r,"vujilo.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"vujilo.bra",APP,BIN)
+& ;
+
+new'X;

@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -319,9 +319,11 @@ try {
         $vujiloXfile = tempFileName("vujilo-results");
 
         if($Iformattxtann)
-            $command = "python3 vujilox.py $F $vujiloXfile";
+            //$command = "python3 vujilox.py $F $vujiloXfile";
+            $command = "../bin/bracmat \"get$\\\"vujilo.bra\\\"\" $F $vujiloXfile xml";
         else if($Iformatflat)
-            $command = "python3 vujilo.py $F $vujiloXfile";
+            //$command = "python3 vujilo.py $F $vujiloXfile";
+            $command = "../bin/bracmat \"get$\\\"vujilo.bra\\\"\" $F $vujiloXfile plain";
         else
             $command = "cp $F $vujiloXfile";
 
