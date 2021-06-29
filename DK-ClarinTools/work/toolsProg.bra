@@ -2232,12 +2232,6 @@ toolsProg=
             |   log
               $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
-          &   lst
-            $ ( disambiguatedworkflowlist
-              , path$disambiguatedworkflowlist
-              , NEW
-              , RAW
-              )
           & ( reorder$!disambiguatedworkflowlist
             . topologicalOrder$!disambiguatedworkflowlist
             )
@@ -2479,12 +2473,6 @@ toolsProg=
                 & 0:?currNtools
                 & :?toolUsageList
                 & 0:?toolSetID
-                &   lst
-                  $ ( reorderedworkflowlist
-                    , path$reorderedworkflowlist0
-                    , NEW
-                    , RAW
-                    )
                 &   sum2list$!reorderedworkflowlist
                   : ?reorderedworkflowlist
                 &       map
@@ -4126,7 +4114,7 @@ toolsProg=
  * (Other languages may be supported in the future.)
  */"
       ( wrapper
-      =     combineFeats combineToolIncarnations getBoilerPlate
+      =     combineToolIncarnations getBoilerPlate
           , getFeatName getFeatSpecTable getFeatTable listAlts
           , makeName DATA DATATEXT FEATURES FEATURETEXT Features
           , IO STYLES STYLETEXT basejobpost2 boilerPlate
@@ -4332,39 +4320,6 @@ catch (SystemExit $e)
                     + ?
                 & !table
             )
-          & ( combineFeats
-            =   A B M Z b c bi ib ci ic diffs
-              .     whl
-                  ' ( !arg:?A (?B,?b) ?M (!B,?c) ?Z
-                    & (   !b:!c
-                        & !b:(?bi.?)
-                        & !c:(?ci.?)
-                        & 0:?diffs
-                        &   whl
-                          ' ( !bi:%?ib+?bi
-                            & !ci:%?ic+?ci
-                            & (       (   :!(glf$('($ib.?))) ?
-                                        & 1
-                                      | 0
-                                      )
-                                    + (   :!(glf$('($ic.?))) ?
-                                        & 1
-                                      | 0
-                                      )
-                                  : 1
-                                & "The inputs are different: one of them has
-                                   a % prefix, the other has not."
-                                & 1+!diffs:?diffs
-                              | 
-                              )
-                            )
-                        & 0:!diffs
-                        & !A (!B,!b) !M !Z:?arg
-                      | !A (!B,!b !c) !M !Z:?arg
-                      )
-                    )
-                & !arg
-            )
           & ( logInvalid
             =   fname1 fname2 toolid
               .   !arg:(?toolid.?feats)
@@ -4421,7 +4376,6 @@ catch (SystemExit $e)
                 & !Feats
             )
           & combineToolIncarnations$(!toolprop.!toolid):?Features
-          & lst$(Features,path$Features,NEW)
           & 0:?DATA
           & 0:?FEATURES
           & 0:?STYLES
@@ -4480,9 +4434,6 @@ catch (SystemExit $e)
                     : (?DATA.?FEATURES.?STYLES)
                   )
               )
-          & lst$(DATA,path$DATA,NEW,RAW)
-          & lst$(FEATURES,path$FEATURES,NEW,RAW)
-          & lst$(STYLES,path$STYLES,NEW,RAW)
           &     "/*
 ToolID         : "
                 !toolid
@@ -8214,6 +8165,48 @@ try {
                   )
                 & !arg
             )
+          & ( inner
+            =   A B BB L M a b wrong
+              .     ( wrong
+                    =   F Z ZZ A tool f v TLS
+                      .   1:?F
+                        & 1:?TLS
+                        & 1:?ZZ
+                        &   whl
+                          ' ( !arg:?Z*(?tool,(%?A.?))*?arg
+                            & !Z*!ZZ:?ZZ
+                            & !TLS*!tool:?TLS
+                            &   whl
+                              ' ( !A:(?f,%@?v^?) ?A
+                                & !f^!v*!F:?F
+                                )
+                            )
+                        & !F:?*?^(%+%)*?*?^(%+%)*?
+                    )
+                  & !arg:%?A*%?BB
+                  & :?L
+                  &   whl
+                    ' ( !A:%?a+?A
+                      & !BB:?B
+                      &   whl
+                        ' ( !B:%?b+?B
+                          & ( wrong$(!a*!b)
+                            | !a*!b !L:?L
+                            )
+                          )
+                      )
+                  &   whl
+                    ' ( !L:% %
+                      & :?M
+                      &   whl
+                        ' ( !L:%?a %?b ?L
+                          & !a+!b !M:?M
+                          )
+                      & !L !M:?L
+                      )
+                  & !L
+                | !arg
+            )
           & ( fulfilGoal
             =     tools forkk goaly
                 , toolspath pathsonetool tool ltools path1
@@ -8362,7 +8355,8 @@ try {
                       )
                     * !forkk
                   : ?forkk
-                & 1+!forkk+-1
+                & inner$!forkk:?forkk
+                & !forkk
             )
           & ( fulfilGoalProduct
             =   goalterm tools forkk goaly restriction source
