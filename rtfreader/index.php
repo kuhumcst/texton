@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/CSTRTFread.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/rtfreader.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -41,6 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -52,6 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -147,6 +149,85 @@ try {
         logit("empty");
         return "";
         }    
+/*
+    function php_fix_raw_query()
+        {
+        //logit(" php_fix_raw_query");
+        $post = '';
+
+        // Try globals array
+        if (!$post && isset($_GLOBALS) && isset($_GLOBALS["HTTP_RAW_POST_DATA"]))
+            $post = $_GLOBALS["HTTP_RAW_POST_DATA"];
+        //logit("A");
+        // Try globals variable
+        if (!$post)
+            {
+            $post = file_get_contents('php://input');
+            if(!isset($post))
+                $post = '';
+            }
+        //logit("B");
+        // Try stream
+        if (!$post)
+            {
+            if (!function_exists('file_get_contents'))
+                {
+                $fp = fopen("php://input", "r");
+                if ($fp)
+                    {
+                    $post = '';
+
+                    while (!feof($fp))
+                        $post = fread($fp, 1024);
+
+                    fclose($fp);
+                    }
+                }
+            else
+                {
+                $post = "" . file_get_contents("php://input");
+                }
+            }
+        //logit("C");
+        $raw = !empty($_SERVER['QUERY_STRING']) ? sprintf('%s&%s', $_SERVER['QUERY_STRING'], $post) : $post;
+
+        //logit("raw=".$raw);
+
+        $arr = array();
+        $pairs = explode('&', $raw);
+        //logit("K");
+        //logit("K");
+        foreach($pairs as $i)
+            {
+            if(!empty($i))
+                {
+                list($name, $value) = explode('=', $i, 2);
+                //logit("name=".$name." value=".$value);
+                if (isset($arr[$name]) )
+                    {
+                    //logit("isset(" .$arr[$name].")");
+                    if (is_array($arr[$name]) )
+                        {
+                        //logit("is_array(" .$name.")");
+                        $arr[$name] = array_merge($arr[$name], array($value));
+                        //logit("Merge: " . var_export($arr[$name], true));
+                        }
+                    else
+                        {
+                        $arr[$name] = array($arr[$name], $value);
+                        }
+                    }
+                else
+                    {
+                    $arr[$name] = $value;
+                    }
+                }
+            }
+        $_REQUEST = $arr;
+        # optionally return result array
+            return $arr;
+        }
+ */
 
     function do_CSTRTFread()
         {
@@ -297,7 +378,7 @@ try {
             $echos = $echos . "OfacettokPT=$OfacettokPT " . "Ofacettoksimple=$Ofacettoksimple ";
             }
 
-//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+/* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $CSTRTFreadfile = tempFileName("CSTRTFread-results");
         $command = "echo $echos >> $CSTRTFreadfile";
         logit($command);
@@ -315,8 +396,101 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+   /*     $parms = php_fix_raw_query();	
+        ob_start();
+        var_dump($_REQUEST);
+        $dump = ob_get_clean();
+        logit($dump);
+        ob_start();
+        var_dump($parms);
+        $dump = ob_get_clean();
+        logit($dump);
+ */
+        $CSTRTFreadfile = tempFileName("CSTRTFread-results");
+
+        $command = "echo $echos >> $CSTRTFreadfile";
+        logit($command);
+
+        $tool = "../bin/rtfreader";
+        $abbr = "";
+        $res = "../texton-linguistic-resources";
+
+        if($Iappocr)
+            $nopt = " -n- ";
+        else
+            $nopt = " -n ";
+
+        if( hasArgument("Ilang") )
+            {
+            $lang = getArgument("Ilang");
+            switch($lang)
+                {
+                case "ast":
+                case "ca":
+                case "cy":
+                case "gl":
+                    $abbr = "-a $res/$lang/tokeniser/$lang.dat ";
+                    break;
+                case "nb":
+                    $abbr = "-a $res/no/tokeniser/abbr ";
+                    break;
+                case "bg":
+                case "cs":
+                case "da":
+                case "de":
+                case "el":
+                case "en":
+                case "es":
+                case "et":
+                case "fa":
+                case "fr":
+                case "hu":
+                case "is":
+                case "it":
+                case "la":
+                case "mk":
+                case "nl":
+                case "no":
+                case "pl":
+                case "pt":
+                case "ro":
+                case "ru":
+                case "sk":
+                case "sl":
+                case "sr":
+                case "sv":
+                case "tr":
+                case "uk":
+                    $abbr = "-a $res/$lang/tokeniser/abbr ";
+                    break;
+                default:
+                    $abbr = "";
+                }
+            }
+
+        $tokentype = "-T- ";
+        $DEL = "-D- ";
+
+        if($Ofacettok && ($OformatplainD || !$Ifacettok))
+            {
+            if($Olangen)
+                $tokentype = "-P ";
+            else
+                $tokentype = "-T ";
+            if($OformatplainD)
+                $DEL = "-D ";
+            }
+
+        $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t $CSTRTFreadfile $DEL";
+
+        $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
+
+        logit($command);
+
+        exec($command);
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRTFreadfile
 //*/
+/*
         $tmpf = fopen($CSTRTFreadfile,'r');
 
         if($tmpf)
@@ -339,6 +513,9 @@ try {
                 }
             unset($tobedeleted);
             }
+*/
+        logit('RETURN 202');
+        header("HTTP/1.0 202 Accepted");
         }
     loginit();
     do_CSTRTFread();
