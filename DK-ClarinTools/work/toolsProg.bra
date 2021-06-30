@@ -6366,7 +6366,6 @@ try {
                     . ?ZZ
                     . ?force
                     )
-                & lst$(Metadata,path$Metadata,NEW)
                 & (   ( !ToolInactive:on
                       | !handle:~
                       )
@@ -7697,7 +7696,8 @@ try {
                 & !gvaluesAlt:? [!len
                 & 1:?PathPart
                 &   whl
-                  ' ( !gvaluesAlt:%@?gvaluePoss^?gspc*?gvaluesAlt
+                  ' ( !outAlt:~1
+                    & !gvaluesAlt:%@?gvaluePoss^?gspc*?gvaluesAlt
                     &   !outAlt
                       :     !gvaluePoss
                           ^ ( (   ~1:?ispc
@@ -7720,7 +7720,7 @@ try {
           & ( matchAlternative
             =     toolfeat gvaluesAlt toolAlt input gfield
                 , oinput A Z done newGoal
-                , PathPart outAlt
+                , PathPart outAlt ninput inp
               .   !arg:(?toolfeat.?gvaluesAlt.?gfield.?newGoal)
                 & 0:?done
                 &   whl
@@ -7748,7 +7748,16 @@ try {
                                 : ?pathfields
                               &   (     !newGoal
                                       : ?A (!gfield,?oinput) ?Z
-                                    & !A (!gfield,!oinput+!input) !Z
+                                    & !oinput:?ninput
+                                    &   whl
+                                      ' ( !input:%?inp+?input
+                                        & ( !ninput:?+!inp+?
+                                          | !inp+!ninput:?ninput
+                                          )
+                                        )
+                                    & ( !oinput:!ninput
+                                      | !A (!gfield,!ninput) !Z
+                                      )
                                   | !newGoal (!gfield,!input)
                                   )
                                 : ?newGoal
@@ -8217,6 +8226,7 @@ try {
               .   "Check whether source and goal already have been connected by tool and stored as a step."
                 & !arg:(?source.?goaly.?tools.?restriction.?forkk)
                 & !forkk:~0
+                & log$(fulfilGoaly !goaly)
                 &     (     (unfulfillable..find)$(str$!goaly)
                           : ? (?.!source) ?
                         & 1+!impassages:?impassages
@@ -8237,6 +8247,7 @@ try {
                                 & 1+!notttcnt:?notttcnt
                               |     isfulfilled$(!source.!goaly.!tool)
                                   : (?source.?goal.?memopaths)
+                                & log$(!tool alreadyfulfills !goaly)
                                 & 1+!memos:?memos
                                 & whl'(!ltools:(!tool.?)+?ltools)
                                 &   denumerizeSum$(!toolspath+!memopaths)
@@ -8373,9 +8384,10 @@ try {
                             $ (!source.!goaly.!tools.!restriction.!forkk)
                           : ?forkk
                         )
-                  |     fulfilGoal
-                      $ (!source.!goalterm.!tools.!restriction.!forkk)
-                    : ?forkk
+                  |   log$(goalterm !goalterm)
+                    &     fulfilGoal
+                        $ (!source.!goalterm.!tools.!restriction.!forkk)
+                      : ?forkk
                   )
                 & 1+!forkk+-1
             )
@@ -8640,11 +8652,13 @@ try {
           & (   !goal:
               &   getImplicatedGoals$(!activeTools.!restriction)
                 : (?goal.?restriction)
+              & log$(implicatedGoals !goal restriction !restriction)
             | 0:?restriction
             )
           & ( !superset:
             |   readTable$SuperSets
               & getSuperGoals$!goal:?goal
+              & log$(superGoals !goal)
             )
           &   0
             : ?memoizedSteps
@@ -9436,7 +9450,7 @@ try {
               & 1+!NN:?NN
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
-              & ( !pipe3:0&log$ZERO
+              & ( !pipe3:0
                 |   validateInputsForEachTool$!pipe3
                   & ( !pipes:?+!pipe3+?
                     | !pipe3+!pipes:?pipes
@@ -9740,17 +9754,34 @@ try {
                         & 100000000:?calls
                       |   
                         & selectCommonTracks$!incarnationpipes:?As
-                        & 0:?pipesN
+                        & :?pipesN
                         &   whl
                           ' ( !As:%?Ax+?As
                             & unfoldTree$(1.!Ax):?Z
                             &   whl
                               ' ( !Z:(?.?ax)+?Z
-                                & ( !pipesN:?+!ax+?
-                                  | !pipesN+!ax:?pipesN
+                                & ( ~&!pipesN:?+!ax+?
+                                  | !ax !pipesN:?pipesN
                                   )
                                 )
                             )
+                        & sort$!pipesN:?pipesN
+                        &     ( 
+                              =   L a
+                                .   :?L
+                                  &   whl
+                                    ' ( !arg:%?a ?arg
+                                      & !a !L:?L
+                                      )
+                                  & 0:?arg
+                                  &   whl
+                                    ' ( !L:%?a ?L
+                                      & !a+!arg:?arg
+                                      )
+                                  & !arg
+                              )
+                            $ !pipesN
+                          : ?pipesN
                         & "The 1 is the initial stop list, which is formed as a product."
                         & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
                         & !pipesN:?+[?NNN
