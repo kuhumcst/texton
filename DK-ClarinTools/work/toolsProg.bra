@@ -7128,70 +7128,59 @@ try {
             )
       )
       ( unify
-      =     source goal gfield gvalue gopt sopt
-          , A Z other gspc sspc gvalues svalues
-          , uni R zgvalue asvalue zsvalue tail
-        .   !arg:(?source.?goal)
+      =     source goal gfield gvalue gopt sopt ss
+          , A Z other gspc sspc gvalues svalues gs
+          , uni R zgvalue asvalue zsvalue tail U
+        .   ( uni
+            =   ss gs g ngs tail
+              .   !arg:(?ss.?gs)
+                & !gs:%(%?g^? ?)*?ngs
+                & (   ~(!ss:?*(!g^? ?)*?)
+                    & (     (!ngs:1|uni$(!ss.!ngs))
+                          : ?tail
+                        & !g*!tail
+                      | `~
+                      )
+                  | U$(!ss.!gs) !ss
+                  )
+            )
+          & ( U
+            =   ss g go gp gs a z sp so tail ngs
+              .   !arg:(?ss.?gs)
+                & !gs:%(%?g^?gp ?go)*?ngs
+                & !ss:?a*(!g^?sp ?so)*?z
+                & ( !go:!so
+                  | !go:
+                  | !so:
+                  )
+                & ( !gp:1
+                  | !sp:1
+                  | shared$(!gp.!sp):~1:?sp
+                  )
+                &   ( !a*!z:1
+                    | !ngs:1
+                    | uni$(!a*!z.!ngs)
+                    )
+                  : ?tail
+                & (!g^!sp !so)*!tail
+            )
+          & !arg:(?source.?goal)
           & ( !goal:&!source
             |   !goal:(?gfield,?gvalues) ?goal
               & (   ~(!source:? (!gfield,?) ?)
-                  & unify$(!source.!goal):?other
-                  & (!gfield,!gvalues) !other
+                  & (   unify$(!source.!goal):?other
+                      & (!gfield,!gvalues) !other
+                    | `~
+                    )
                 |   !source:?A (!gfield,?svalues) ?Z
-                  & NEWSPEC
                   &   !gvalues
                     :     ?
-                        + ( %(`%?gvalue^?gspc ?gopt)*?zgvalue
+                        + ( `%?gs
                           &   !svalues
                             :   ?
-                              +   ?asvalue
-                                * (!gvalue^?sspc ?sopt)
-                                * ( ?zsvalue
-                                  & ( !gopt:!sopt
-                                    | !gopt:
-                                    | !sopt:
-                                    )
-                                  & ( !gspc:1
-                                    | !sspc:1
-                                    |   shared$(!gspc.!sspc)
-                                      : ~1
-                                      : ?sspc
-                                    )
-                                  & "asvalue, sopt and zsvalue are empty"
-                                  & ( uni
-                                    =     ss gs g gp go
-                                        , a sp so z tail
-                                      .     !arg:(?ss.?gs)
-                                          &   1
-                                            : (!ss|!gs)
-                                        |   !gs:%(%?g^?gp ?go)*?gs
-                                          & NEWSPEC
-                                          & (   ~(!ss:?*(!g^? ?)*?)
-                                              & uni$(!ss.!gs):?tail
-                                              & !g*!tail
-                                            |     !ss
-                                                : ?a*(!g^?sp ?so)*?z
-                                              & ( !go:!so
-                                                | !go:
-                                                | !so:
-                                                )
-                                              & ( !gp:1
-                                                | !sp:1
-                                                |   shared$(!gp.!sp)
-                                                  : ~1
-                                                  : ?sp
-                                                )
-                                              &   uni$(!a*!z.!gs)
-                                                : ?tail
-                                              & (!g^!sp !so)*!tail
-                                            )
-                                    )
-                                  &   uni$(!asvalue*!zsvalue.!zgvalue)
-                                    : ?tail
-                                  & NEWSPEC
-                                  & (!gvalue^!sspc !sopt)*!tail:?R
-                                  &   unify$(!A !Z.!goal)
-                                    : ?other
+                              + `%( ?ss
+                                  & U$(!ss.!gs):?R
+                                  & unify$(!A !Z.!goal):?other
                                   )
                               + ?
                           )
@@ -7201,6 +7190,15 @@ try {
                 )
             )
       )
+      "fold: input and output are products of feature lists.
+      (1) If two feature lists are equal, with the exception of a single common
+          feature with different values, then these two feature lists are
+          collapsed into one feature list, multiplying the values to create a
+          new common feature value.
+      (2) If a feature list has the same feature twice, then these occurrences
+          are collapsed into one occurrence, with the product of the original
+          values as new value.
+      "
       ( fold
       =   A M Z B a f v1 v2 z
         .       !arg
@@ -7222,8 +7220,10 @@ try {
       ( supplyMissingFields
       =     features x outfeat infeat childfeaturevalue
           , childfeaturevalues featurename featurevalue
-          , nfeatures xs v getChildVal cleanSum
-        .     !arg:(?outfeat.?infeat.?features)
+          , nfeatures xs v
+        .       !arg
+              : (?outfeat.(?infeat.?)|?infeat.?features)
+            & fold$!infeat:?infeat
             & :?nfeatures
             &   whl
               ' (   !features
@@ -7231,26 +7231,8 @@ try {
                 & ( !outfeat:? (!featurename,?) ?
                   |     !nfeatures
                         ( !featurename
-                        ,   ( cleanSum
-                            =   A M Z
-                              .   (   !arg:#%+?arg
-                                    & cleanSum$!arg
-                                  |   !arg:?A+#%*?M+?Z
-                                    & cleanSum$(!A+!M+!Z)
-                                  )
-                                | !arg
-                            )
-                          & ( getChildVal
-                            =   val A v
-                              .     !arg:(?val.?arg)
-                                  & !arg:((?A.?)|?A)
-                                  & fold$!A:?A
-                                  & !A:? (!val,?v) ?
-                                  & !v
-                                | 0
-                            )
-                          &   getChildVal$(!featurename.!infeat)
-                            : ?childfeaturevalues
+                        ,     !infeat
+                            : ? (!featurename,?childfeaturevalues) ?
                           & 0:?xs
                           &   whl
                             ' (   !childfeaturevalues
@@ -7682,7 +7664,7 @@ try {
       = .!lg:1&log$!arg|
       )
       ( matchGoalWithFeatures
-      =     goal toolFeatures
+      =     goaly toolFeatures
           , newGoal pathfields gfield gvaluesAlts ngoal
           , Ar Zr gvaluePoss gspc ispc gvaluesAlt
           , input A Z oinput gval done
@@ -7692,22 +7674,21 @@ try {
             =     outAlt gvaluesAlt len gvaluePoss gspc ispc
                 , PathPart
               .   !arg:(?outAlt.?gvaluesAlt)
-                & !outAlt:? [?len
-                & !gvaluesAlt:? [!len
+                & "gvaluesAlt can have % prefix.
+                   If so, outAlt must match all factors. 
+                   If not, outAlt must match exactly one factor."
+                & !outAlt:?*[?len
+                & !gvaluesAlt:?*[!len
                 & 1:?PathPart
                 &   whl
                   ' ( !outAlt:~1
                     & !gvaluesAlt:%@?gvaluePoss^?gspc*?gvaluesAlt
                     &   !outAlt
                       :     !gvaluePoss
-                          ^ ( (   ~1:?ispc
-                                &   shared$(!gspc.!ispc)
-                                  : ( ~1:?ispc
-                                    | ?&!gspc:1
-                                    )
+                          ^ ( ( 1&!gspc:?ispc
                               |   ?ispc
-                                : ( 1
-                                  | ?&!gspc:1
+                                & ( !gspc:1
+                                  | shared$(!gspc.!ispc):?ispc
                                   )
                               )
                             & !PathPart*!gvaluePoss^!ispc:?PathPart
@@ -7721,7 +7702,8 @@ try {
             =     toolfeat gvaluesAlt toolAlt input gfield
                 , oinput A Z done newGoal
                 , PathPart outAlt ninput inp
-              .   !arg:(?toolfeat.?gvaluesAlt.?gfield.?newGoal)
+              .     !arg
+                  : (?toolfeat.?gfield,?gvaluesAlt.?newGoal)
                 & 0:?done
                 &   whl
                   ' ( !toolfeat:%?toolAlt+?toolfeat
@@ -7769,15 +7751,19 @@ try {
                 & !done:~0
                 & !newGoal
             )
-          & !arg:(?goal.?toolFeatures)
+          & !arg:(?goaly.?toolFeatures)
+          & "ALL of goaly must be satisfied by a single tool.
+             goaly can be a single factor of a complex goal that must be satisfied by multiple tools.
+             If the goal is complex, but must be satisfied by a single tool with a complex output,
+             then goaly is complex and prefixed with a % sign."
           & :?newGoal
           & :?pathfields
           & 0:?done
           &   whl
-            ' ( !goal:(?gfield,?gvaluesAlts) ?ngoal
-              & "Each goal field must be satisfied."
+            ' ( !goaly:(?gfield,?gvaluesAlts) ?ngoal
+              & "Each goaly field must be satisfied."
               & (   ( ~(!toolFeatures:? (!gfield,?) ?)
-                    | !goal:(sml,nsl)
+                    | !goaly:(sml,nsl)
                     )
                   & "Assume that tool leaves field unchanged: percolate output requirement to input."
                   & !pathfields (!gfield,!gvaluesAlts):?pathfields
@@ -7786,27 +7772,32 @@ try {
                   & "toolfeat is a sum of alternative (input.output) specs."
                   & !Ar !Zr:?toolFeatures
                   & 0:?done
-                  & "gvaluesAlts is a sum of alternative goal specifications for a single feature. 
-                     A term can be the product of multiple feature values, e.g. @(lem*pos*syn) for the feature 'facet'."
+                  & "gvaluesAlts is a sum of alternative goaly specifications for a single feature. 
+                     A term can be the product of multiple feature values, e.g. %(lem*pos*syn) for the feature 'facet'."
                   &   whl
                     ' ( !gvaluesAlts:%?gvaluesAlt+?gvaluesAlts
-                      & (   "matchAlternative can fail"
-                          &     matchAlternative
-                              $ (!toolfeat.!gvaluesAlt.!gfield.!newGoal)
+                      & (       matchAlternative
+                              $ ( !toolfeat
+                                . !gfield,!gvaluesAlt
+                                . !newGoal
+                                )
                             : ?newGoal
                           & 1:?done
                         | 
                         )
                       )
-                  & "If this test fails, none of the goal feature values is satisfied by the current tool.
-                       Consequence: whl loop is exited and 'goal' does not get nil, causing matchGoalWithFeatures to fail."
+                  & "If this test fails, none of the goaly feature values is
+                     satisfied by the current tool.
+                       Consequence: whl loop is exited and 'goaly' does not get
+                                    nil, causing matchGoalWithFeatures to fail.
+                    "
                   & !done:1
                 )
-              & !ngoal:?goal
+              & !ngoal:?goaly
               & log1$(ngoal !ngoal)
               )
           & "Each field must match"
-          & !goal:
+          & !goaly:
           & createNewGoal$(!newGoal.!toolFeatures):?nnewGoal
           & ( !newGoal:!nnewGoal
             |   (   !tool
@@ -7946,7 +7937,19 @@ try {
           & !arg
       )
       "20111024 collect worked only if the first argument was output from a 
-       previous step, not if it was the very first input."
+       previous step, not if it was the very first input.
+      
+      collect:
+      The first argument is output from previous steps, and can be ambiguous.
+      It can alternatively be the very input to the workflow.
+
+      The second argument is a feature name 'f' and its value 'v'. The value
+      can be composed of several values, but is not ambiguous, i.e. just a
+      single term. The second argument derives from the current goal.
+
+      The third argument is the ambiguous list of feature values in which 'v'
+      is one of the terms.
+      "
       ( collect
       =     f v outp a featprod alts opts partOf V remainder
           , actualOptions A Z common partOfFunc vs strictPartOf
@@ -7973,18 +7976,24 @@ try {
                 |   !arg:(%?S*?Z.?a*`!S*?z)
                   & strictPartOf$(!Z.!a*!z)
             )
-          & (     fct$!vs
-                :   ?
-                  * %(%?V+!V^%&!v:? ?*!V^?*? ?)
-                  * ?
-              & '$strictPartOf:(=?partOfFunc)
-            | '$partOf:(=?partOfFunc)
-            )
+          &   (     fct$!vs
+                  :   ?
+                    * %( %?V+#*!V^%+?
+                       & !v:? ?*!V^?*? ?
+                       )
+                    * ?
+                & "vs looks like a*b*c+a*b^x*c+a*b^x*c
+                   or            a*b*c+a*b^x*c+a*b^y*c
+                   etc., giving factors (b+2*b^x) resp. (b+b^x+b^y)
+                  "
+                & '$strictPartOf
+              | '$partOf
+              )
+            : (=?partOfFunc)
           & ( actualOptions
             =   a z S Z spc spc2
               .   !arg:(1.?)&1
                 |   !arg:(%@?S^?spc*?Z.?z)
-                  & NEWSPEC
                   & (     !z
                         :   ?a
                             `( !S
@@ -8000,9 +8009,11 @@ try {
           & 0:?outp
           & (!v:%?v %?opts|1:?opts)
           & !arg:?alts
+          & "step through the alternative paths"
           &   whl
             ' ( !alts:%?a+?alts
-              & (   !a:(?featprod.?)*?
+              & (   !a:(?featprod.?)
+                  & "There are previous workflow steps (the ?)."
                   & (     fold$!featprod
                         :   ?
                           * ( ?
@@ -8021,6 +8032,9 @@ try {
                     | 
                     )
                 |   !a:?featprod
+                  & "The input itself is ambiguous!
+                     (TODO: can it really be a product?)
+                    "
                   & (     fold$!featprod
                         :   ?A
                             ( !f
@@ -8038,6 +8052,29 @@ try {
               )
           & !outp
       )
+      " distribute:
+      The first argument is a feature list designating a goal, the second
+      argument is input that matches the goal, but is structured differently.
+      If the goal has a multivalued feature (i.e. a product of values), then
+      the input either
+      (1) has a feature list for each value
+      (2) has a feature list with a multivalued value, just like the goal.
+      The second is the case if the multivalued feature in the goal is prefixed
+      with a % sign.
+
+      The input can be the very input to the workflow or the potential outputs
+      from previous steps. In the second case, the input is a sum of
+      alternative paths, each term structured as (output.path-to-output), where
+      'output' can be a product of paths coming together.
+
+      The very input to the workflow can consist of more than one file.
+
+      The purpose of 'distribute' is to handle all features that have
+      alternating values, i.e. values that are sums of two or more values
+      or products of values. The result of 'distribute' is a sum of 
+      disambiguated feature lists, each feature list paired with the
+      corresponding workflow(s).
+      "
       ( distribute
       =     Res prop input a f vs z aa v
           , incarnationInput
@@ -8226,7 +8263,6 @@ try {
               .   "Check whether source and goal already have been connected by tool and stored as a step."
                 & !arg:(?source.?goaly.?tools.?restriction.?forkk)
                 & !forkk:~0
-                & log$(fulfilGoaly !goaly)
                 &     (     (unfulfillable..find)$(str$!goaly)
                           : ? (?.!source) ?
                         & 1+!impassages:?impassages
@@ -8652,13 +8688,11 @@ try {
           & (   !goal:
               &   getImplicatedGoals$(!activeTools.!restriction)
                 : (?goal.?restriction)
-              & log$(implicatedGoals !goal restriction !restriction)
             | 0:?restriction
             )
           & ( !superset:
             |   readTable$SuperSets
               & getSuperGoals$!goal:?goal
-              & log$(superGoals !goal)
             )
           &   0
             : ?memoizedSteps
@@ -9419,7 +9453,7 @@ try {
                               * ?a
                             )
                         & ( !a:1
-                          |   ~
+                          |   
                             &   log
                               $ ( "In feature bundle"
                                   !A
@@ -9436,7 +9470,7 @@ try {
                                 )
                             & !arg:?CULPRIT
                             & lst$(CULPRIT,path$CULPRIT,RAW,NEW)
-                            & lst$(pipe1,path$pipe1WRONG,NEW)
+                            & lst$(pipe3,path$pipe3WRONG,NEW)
                             & ~
                           )
                   )
@@ -9448,14 +9482,19 @@ try {
           &   whl
             ' ( !arg:%?pipe1+?arg
               & 1+!NN:?NN
+              & lst$(pipe1,path$pipe1,APP)
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
+              & lst$(pipe2,path$pipe2,APP)
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
-              & ( !pipe3:0
-                |   validateInputsForEachTool$!pipe3
+              & lst$(pipe3,path$pipe3,APP)
+              & ( !pipe3:0&log$ZERO
+                |   put$("checking...",path$pipe3,APP)
+                  & validateInputsForEachTool$!pipe3
+                  & put$(VALID,path$pipe3,APP)
                   & ( !pipes:?+!pipe3+?
                     | !pipe3+!pipes:?pipes
                     )
-                | 
+                | put$(FAIL,path$pipe3,APP)
                 )
               )
           & !pipes
@@ -9738,6 +9777,12 @@ try {
                   )
                 & !arg:(?pipes.?parms.?sources)
                 & 0:?newpipes
+                & put$(,path$pipesN0,NEW)
+                & put$(,path$pipesN1,NEW)
+                & put$(,path$pipesN2,NEW)
+                & put$(,path$pipe1,NEW)
+                & put$(,path$pipe2,NEW)
+                & put$(,path$pipe3,NEW)
                 &   whl
                   ' ( !calls:<567890
                     & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -9791,7 +9836,9 @@ try {
                             & filter$(!pipesN.!restriction):?pipesN
                           | 
                           )
+                        & lst$(pipesN,path$pipesN1,APP)
                         & percolateForgottenFeatures$!pipesN:?pipesN
+                        & lst$(pipesN,path$pipesN2,APP)
                         & !pipesN:?+[?NNN
                         &   whl
                           ' ( !pipesN:%?pipe+?pipesN
@@ -9855,7 +9902,9 @@ try {
                           + (?.?fP&haz$(!fP.!restriction))
                           + ?
                       )
+                    & lst$(FP,path$FP,NEW)
                     & (   prunePipes$(!FP.!arg.!i):?FP
+                        & lst$(FP,path$FPpruned,NEW)
                         &   makeWorkflowsSequential$!FP
                           : (?reorderedworkflowlist.?topologicalOrderedTools)
                         & ( !recentTasks:?recentTasks [30 ?
