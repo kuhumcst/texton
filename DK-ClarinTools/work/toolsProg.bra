@@ -1861,6 +1861,7 @@ toolsProg=
                             | 
                             )
                         |   !arg:?A (?F,%*%:?v1) ?B
+                          & flg$('$v1):(=?.?v1)
                           & !A (!F,!(glf$('(%.$v1)))) !B
                         | !arg
                     )
@@ -7669,7 +7670,7 @@ try {
           , Ar Zr gvaluePoss gspc ispc gvaluesAlt
           , input A Z oinput gval done
           , matchAlternative matchOutputAlternative
-          , nnewGoal toolfeat
+          , nnewGoal toolfeat xispc
         .   ( matchOutputAlternative
             =     outAlt gvaluesAlt len gvaluePoss gspc ispc
                 , PathPart
@@ -7688,7 +7689,8 @@ try {
                           ^ ( ( 1&!gspc:?ispc
                               |   ?ispc
                                 & ( !gspc:1
-                                  | shared$(!gspc.!ispc):?ispc
+                                  |   shared$(!gspc.!ispc):?xispc
+                                    & !xispc:~1:?ispc
                                   )
                               )
                             & !PathPart*!gvaluePoss^!ispc:?PathPart
@@ -8283,7 +8285,6 @@ try {
                                 & 1+!notttcnt:?notttcnt
                               |     isfulfilled$(!source.!goaly.!tool)
                                   : (?source.?goal.?memopaths)
-                                & log$(!tool alreadyfulfills !goaly)
                                 & 1+!memos:?memos
                                 & whl'(!ltools:(!tool.?)+?ltools)
                                 &   denumerizeSum$(!toolspath+!memopaths)
@@ -9482,19 +9483,14 @@ try {
           &   whl
             ' ( !arg:%?pipe1+?arg
               & 1+!NN:?NN
-              & lst$(pipe1,path$pipe1,APP)
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
-              & lst$(pipe2,path$pipe2,APP)
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
-              & lst$(pipe3,path$pipe3,APP)
-              & ( !pipe3:0&log$ZERO
-                |   put$("checking...",path$pipe3,APP)
-                  & validateInputsForEachTool$!pipe3
-                  & put$(VALID,path$pipe3,APP)
+              & ( !pipe3:0
+                |   validateInputsForEachTool$!pipe3
                   & ( !pipes:?+!pipe3+?
                     | !pipe3+!pipes:?pipes
                     )
-                | put$(FAIL,path$pipe3,APP)
+                | 
                 )
               )
           & !pipes
@@ -9777,12 +9773,6 @@ try {
                   )
                 & !arg:(?pipes.?parms.?sources)
                 & 0:?newpipes
-                & put$(,path$pipesN0,NEW)
-                & put$(,path$pipesN1,NEW)
-                & put$(,path$pipesN2,NEW)
-                & put$(,path$pipe1,NEW)
-                & put$(,path$pipe2,NEW)
-                & put$(,path$pipe3,NEW)
                 &   whl
                   ' ( !calls:<567890
                     & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -9836,9 +9826,7 @@ try {
                             & filter$(!pipesN.!restriction):?pipesN
                           | 
                           )
-                        & lst$(pipesN,path$pipesN1,APP)
                         & percolateForgottenFeatures$!pipesN:?pipesN
-                        & lst$(pipesN,path$pipesN2,APP)
                         & !pipesN:?+[?NNN
                         &   whl
                           ' ( !pipesN:%?pipe+?pipesN
@@ -9902,9 +9890,7 @@ try {
                           + (?.?fP&haz$(!fP.!restriction))
                           + ?
                       )
-                    & lst$(FP,path$FP,NEW)
                     & (   prunePipes$(!FP.!arg.!i):?FP
-                        & lst$(FP,path$FPpruned,NEW)
                         &   makeWorkflowsSequential$!FP
                           : (?reorderedworkflowlist.?topologicalOrderedTools)
                         & ( !recentTasks:?recentTasks [30 ?
