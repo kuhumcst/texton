@@ -182,7 +182,7 @@ try {
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
-        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menotas.Menotas.) if true */
+        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menota.Menota.) if true */
 
         if( hasArgument("base") )
             {

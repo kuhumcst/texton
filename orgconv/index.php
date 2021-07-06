@@ -190,9 +190,9 @@ try {
         $Ofacettlp = false;	/* Type of content in output is tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) if true */
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
         $Opresnml = false;	/* Presentation in output is normal if true */
-        $IfacettlpMenotas = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in input is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menotas.Menotas.) if true */
-        $IfacettpMenotas = false;	/* Style of type of content tokens,PoS-tags (tokens,PoS-tags) in input is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menotas.Menotas.) if true */
-        $OfacettlpMenotas = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menotas.Menotas.) if true */
+        $IfacettlpMenota = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in input is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menota.Menota.) if true */
+        $IfacettpMenota = false;	/* Style of type of content tokens,PoS-tags (tokens,PoS-tags) in input is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menota.Menota.) if true */
+        $OfacettlpMenota = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menota.Menota.) if true */
 
         if( hasArgument("base") )
             {
@@ -316,18 +316,18 @@ try {
 *******************************/
         if( hasArgument("Ifacettlp") )
             {
-            $IfacettlpMenotas = existsArgumentWithValue("Ifacettlp", "Menotas");
-            $echos = $echos . "IfacettlpMenotas=$IfacettlpMenotas ";
+            $IfacettlpMenota = existsArgumentWithValue("Ifacettlp", "Menota");
+            $echos = $echos . "IfacettlpMenota=$IfacettlpMenota ";
             }
         if( hasArgument("Ifacettp") )
             {
-            $IfacettpMenotas = existsArgumentWithValue("Ifacettp", "Menotas");
-            $echos = $echos . "IfacettpMenotas=$IfacettpMenotas ";
+            $IfacettpMenota = existsArgumentWithValue("Ifacettp", "Menota");
+            $echos = $echos . "IfacettpMenota=$IfacettpMenota ";
             }
         if( hasArgument("Ofacettlp") )
             {
-            $OfacettlpMenotas = existsArgumentWithValue("Ofacettlp", "Menotas");
-            $echos = $echos . "OfacettlpMenotas=$OfacettlpMenotas ";
+            $OfacettlpMenota = existsArgumentWithValue("Ofacettlp", "Menota");
+            $echos = $echos . "OfacettlpMenota=$OfacettlpMenota ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)

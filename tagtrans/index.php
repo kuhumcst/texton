@@ -22,7 +22,7 @@ Publisher      : CST
 ContentProvider: CST
 Creator        : Bart Jongejan
 InfoAbout      : -
-Description    : Translate from DSL's tag set to Menotas
+Description    : Translate from DSL's tag set to Menota
 ExternalURI    : 
 XMLparms       : 
 PostData       : 
@@ -198,7 +198,7 @@ try {
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $IfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in input is DSL-tagset if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
-        $OfacetposMenotas = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menotas if true */
+        $OfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menota if true */
 
         if( hasArgument("base") )
             {
@@ -333,8 +333,8 @@ try {
             }
         if( hasArgument("Ofacetpos") )
             {
-            $OfacetposMenotas = existsArgumentWithValue("Ofacetpos", "Menotas");
-            $echos = $echos . "OfacetposMenotas=$OfacetposMenotas ";
+            $OfacetposMenota = existsArgumentWithValue("Ofacetpos", "Menota");
+            $echos = $echos . "OfacetposMenota=$OfacetposMenota ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
@@ -370,9 +370,9 @@ try {
         logit("language $lang");
         $tagtransfile = tempFileName("tagtrans-results");
         if($Iformatjson)
-            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$F' '$F' '$tagtransfile' '$lang' 'DSL' 'Menotas'";
+            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$F' '$F' '$tagtransfile' '$lang' 'DSL' 'Menota'";
         else
-            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$IfacetposF' '$IfacetlemF' '$tagtransfile' '$lang' 'DSL' 'Menotas'";
+            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$IfacetposF' '$IfacetlemF' '$tagtransfile' '$lang' 'DSL' 'Menota'";
 
         logit($command);
 
