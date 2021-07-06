@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -368,11 +368,19 @@ try {
         else 
             $lang = "";
         logit("language $lang");
-        $tagtransfile = tempFileName("tagtrans-results");
+	$tagtransfile = tempFileName("tagtrans-results");
+        $intag = 'Uni';
+        if($IfacetposDSL)
+            $intag = 'DSL';
+	else if($IfacetposUni)
+            $intag = 'Uni';	
+	$outtag = 'Uni';
+	if($OfacetposMenota)
+            $outtag = 'Menota';
         if($Iformatjson)
-            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$F' '$F' '$tagtransfile' '$lang' 'DSL' 'Menota'";
+            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$F' '$F' '$tagtransfile' '$lang' $intag $outtag";
         else
-            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$IfacetposF' '$IfacetlemF' '$tagtransfile' '$lang' 'DSL' 'Menota'";
+            $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$IfacetposF' '$IfacetlemF' '$tagtransfile' '$lang' $intag $outtag";
 
         logit($command);
 
