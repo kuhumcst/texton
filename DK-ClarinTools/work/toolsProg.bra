@@ -1700,6 +1700,20 @@ toolsProg=
                   , (!abbrevs.!struct)
                   )
             )
+          & ( groupIfSameTools
+            =   L seen n a b c d e B
+              .   0:?L
+                & :?seen
+                &   whl
+                  ' ( !arg:((?a.?b.?c),?B)+?arg
+                    & sort$!b:?sb
+                    & ( !seen:? (!sb.?b) ?
+                      | (!sb.!b) !seen:?seen
+                      )
+                    & !L+((!a.!b.!c),!B):?L
+                    )
+                & !L
+            )
           & 0:?reorderedworkflowlist
           &   map
             $ ( ( 
@@ -1713,6 +1727,8 @@ toolsProg=
                 )
               . !arg
               )
+          &   groupIfSameTools$!reorderedworkflowlist
+            : ?reorderedworkflowlist
           &   ( 
               =   L p n a b c d e B
                 .   :?L
@@ -7670,7 +7686,7 @@ try {
           , Ar Zr gvaluePoss gspc ispc gvaluesAlt
           , input A Z oinput gval done
           , matchAlternative matchOutputAlternative
-          , nnewGoal toolfeat xispc
+          , nnewGoal toolfeat xispc updateInput
         .   ( matchOutputAlternative
             =     outAlt gvaluesAlt len gvaluePoss gspc ispc
                 , PathPart
@@ -7686,19 +7702,53 @@ try {
                     & !gvaluesAlt:%@?gvaluePoss^?gspc*?gvaluesAlt
                     &   !outAlt
                       :     !gvaluePoss
-                          ^ ( ( 1&!gspc:?ispc
-                              |   ?ispc
-                                & ( !gspc:1
-                                  |   shared$(!gspc.!ispc):?xispc
-                                    & !xispc:~1:?ispc
-                                  )
-                              )
-                            & !PathPart*!gvaluePoss^!ispc:?PathPart
+                          ^ (   (1|!gspc)
+                              & !PathPart*!gvaluePoss^!gspc:?PathPart
+                            |   ?ispc
+                              & ( !gspc:1
+                                |   shared$(!gspc.!ispc):?xispc
+                                  & !xispc:~1:?ispc
+                                )
+                              & !PathPart*!gvaluePoss^!ispc:?PathPart
                             )
                         * ?outAlt
                     )
                 & 1:!gvaluesAlt:!outAlt
                 & !PathPart
+            )
+          & ( updateInput
+            =   Nw Inp inp nip in pu osp NW val In sip
+              .   !arg:(?Inp.?val)
+                & 0:?Nw
+                &   whl
+                  ' ( !Inp:%?inp+?Inp
+                    & :?sip
+                    &   whl
+                      ' ( !inp:%?In ?inp
+                        & 1:?NW
+                        & !In:?FLG
+                        &   whl
+                          ' ( !In:%@?in^?pu*?nip
+                            &     !NW
+                                *   !in
+                                  ^ (   !pu:1
+                                      & (   !val:?*!in^?osp*?
+                                          & !osp
+                                        | 1
+                                        )
+                                    | !pu
+                                    )
+                              : ?NW
+                            & !nip:?In
+                            )
+                        & (   !In:1
+                            & !sip !(glf$('($FLG.$NW))):?sip
+                          | 
+                          )
+                        )
+                    & (!sip:|!Nw+!sip:?Nw)
+                    )
+                & !Nw:~0
             )
           & ( matchAlternative
             =     toolfeat gvaluesAlt toolAlt input gfield
@@ -7707,6 +7757,9 @@ try {
               .     !arg
                   : (?toolfeat.?gfield,?gvaluesAlt.?newGoal)
                 & 0:?done
+                & "Input can be a sum. Each term can have optional values,
+                   but optional values cannot be products of two or more values.
+                   E.g. (test.facet,((lex kwic)+(headmov*lem wrdsplt npr).Ngram))"
                 &   whl
                   ' ( !toolfeat:%?toolAlt+?toolfeat
                     & (   !toolAlt
@@ -7719,6 +7772,8 @@ try {
                                     : ?PathPart
                                   )
                                 + ?
+                              &   updateInput$(!input.!PathPart)
+                                : ?input
                               &   (     !pathfields
                                       : ?A (!gfield,?gval) ?Z
                                     &   !A
@@ -7801,13 +7856,7 @@ try {
           & "Each field must match"
           & !goaly:
           & createNewGoal$(!newGoal.!toolFeatures):?nnewGoal
-          & ( !newGoal:!nnewGoal
-            |   (   !tool
-                  : (json2org|PruLePo|lempos)
-                | 
-                )
-              & !nnewGoal:?newGoal
-            )
+          & !nnewGoal:?newGoal
           & (!pathfields.sort$!newGoal)
       )
       "
@@ -8297,12 +8346,6 @@ try {
                                       + ?ltools
                                   &   makeSmell$!toolFeatures
                                     : ?toolFeatures
-                                  & (   !tool
-                                      : ( Tesseract-OCR
-                                        | CuneiForm
-                                        )
-                                    | 
-                                    )
                                   & (       matchGoalWithFeatures
                                           $ (!goaly.!toolFeatures)
                                         : (?pathfields.?newGoal)
@@ -8412,8 +8455,11 @@ try {
               .   "Check whether source and goal already have been connected by tool and stored as a step."
                 & !arg:(?source.?goalterm.?tools.?restriction)
                 & 1:?forkk
-                & (   "Test if % prepended. If no, split product."
-                    & 1:!(glf$('($goalterm.?)))*?
+                & (   "Test if % prepended. If no, split product. 
+                       glf$ fails if the second argument already has
+                       the prefix of the first argument"
+                    & glf$('(%.$goalterm))
+                    & "No % here"
                     &   whl
                       ' ( !forkk:~0
                         & !goalterm:%?goaly*?goalterm
@@ -8421,10 +8467,9 @@ try {
                             $ (!source.!goaly.!tools.!restriction.!forkk)
                           : ?forkk
                         )
-                  |   log$(goalterm !goalterm)
-                    &     fulfilGoal
-                        $ (!source.!goalterm.!tools.!restriction.!forkk)
-                      : ?forkk
+                  |     fulfilGoal
+                      $ (!source.!goalterm.!tools.!restriction.!forkk)
+                    : ?forkk
                   )
                 & 1+!forkk+-1
             )
@@ -8470,8 +8515,9 @@ try {
                           * ( ?AAA
                               ( ?gfield
                               ,   %?M1*%?M2:?prod
-                                & "Test if % prepended. If yes, do nothing to split product."
-                                & 1:!(glf$('($prod.?)))*?
+                                & "Test if % prepended. If yes, do nothing to split product.
+                                   glf$ fails if $prod has % prefix"
+                                & glf$('(%.$prod))
                               )
                               ?ZZZ
                             )
@@ -9043,61 +9089,6 @@ try {
             | !arg
             )
       )
-      ( IntersectionOLD
-      =   x y f v I e g w V W h
-        .   !arg:(?x.?y)
-          & :?I
-          &   (   !x
-                :   ?
-                    (?f,@?v^?e:?V)
-                    ( ?
-                    & (   !y:? (!f,@?w^?g:?W) ?
-                        & ( !w:~!v
-                          |   !e:~1
-                            & !g:~1
-                            & !e:~!g
-                          |   (   (!e:~1|!g:~1)
-                                & !e*!g:%?h^?
-                              | 1:?h
-                              )
-                            & (!f,!v^!h) !I:?I
-                          )
-                      | (!f,!v^!e) !I:?I
-                      )
-                    & ~
-                    )
-              |   !y
-                :   ?
-                    ( ?f
-                    ,   @?v^?e:?V
-                      & ~(!I:? (!f,!V) ?)
-                    )
-                    ( ?
-                    & (   !x:? (!f,@?w^?g:?W) ?
-                        & ( !w:~!v
-                          |   !e:~1
-                            & !g:~1
-                            & !e:~!g
-                          |   (   (!e:~1|!g:~1)
-                                & !e*!g:%?h^?
-                              | 1:?h
-                              )
-                            & (!f,!v^!h):?V
-                            & ( !I:? !V ?
-                              | !V !I:?I
-                              )
-                          )
-                      |   (!f,!v^!e):?V
-                        & (!I:? !V ?|!V !I:?I)
-                      )
-                    & ~
-                    )
-              | !I
-              )
-            : ?I
-          & sort$!I:?I
-          & !I
-      )
       ( Intersection
       =   x y f v I e g w V W h
         .   !arg:(?x.?y)
@@ -9225,11 +9216,6 @@ try {
                         * !nres
                       : ?nres
                     )
-                & (   !nres:1
-                    & log$UpdateResultsFromMethods/nres1
-                    & get'
-                  | 
-                  )
                 & !nres
             )
           & ( sig
