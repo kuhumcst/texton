@@ -184,8 +184,8 @@ try {
         $Ofacettlp = false;	/* Type of content in output is tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) if true */
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $IfacetposMenotas = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Menotas if true */
-        $OfacettlpMenotas = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is Menotas if true */
+        $IfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Menota if true */
+        $OfacettlpMenota = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is Menota if true */
 
         if( hasArgument("base") )
             {
@@ -268,13 +268,13 @@ try {
 *******************************/
         if( hasArgument("Ifacetpos") )
             {
-            $IfacetposMenotas = existsArgumentWithValue("Ifacetpos", "Menotas");
-            $echos = $echos . "IfacetposMenotas=$IfacetposMenotas ";
+            $IfacetposMenota = existsArgumentWithValue("Ifacetpos", "Menota");
+            $echos = $echos . "IfacetposMenota=$IfacetposMenota ";
             }
         if( hasArgument("Ofacettlp") )
             {
-            $OfacettlpMenotas = existsArgumentWithValue("Ofacettlp", "Menotas");
-            $echos = $echos . "OfacettlpMenotas=$OfacettlpMenotas ";
+            $OfacettlpMenota = existsArgumentWithValue("Ofacettlp", "Menota");
+            $echos = $echos . "OfacettlpMenota=$OfacettlpMenota ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
