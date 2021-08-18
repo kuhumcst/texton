@@ -159,6 +159,7 @@ toolsProg=
             | 
             )
           & str$("[" jsn$(clk$+!StartClk) "]")
+          & 
       )
       (path=.str$(!toolshome !arg))
       ( log
@@ -170,14 +171,14 @@ toolsProg=
               & 0:?logno
             |   (!logno|0:?logno)
               &     ( :?spc
-                    & NEWSPEC
                     & 1+!logno:?logno
                     & !indent:?i
                     &   whl
                       ' ( !i+-1:>0:?i
                         & " " !spc:?spc
                         )
-                    & str$("[" !indent "] " !logno !spc)
+                    &   str
+                      $ ("[" !indent "] " (|!logno) !spc)
                     )
                     !arg
                 : ?arg
@@ -276,7 +277,6 @@ toolsProg=
       "Reusable patterns in errorInMetadata function"
       ( ISO639
       = [%( readTable$linguae
-          & log$(ISO639 !sjt "?")
           & !( 
              ' ( $linguae
                : ( ? (?.$sjt.?) ?
@@ -284,7 +284,6 @@ toolsProg=
                  )
                )
              )
-          & log$(ISO639 !sjt "!!!")
           )
       )
       ( DATE
@@ -405,8 +404,7 @@ toolsProg=
       ( importTables
       =     prod missingToolprop prodtoolprop productionTables tdata
           , tid
-        .     log$(importTables !arg)
-            & !arg:(?prod.?arg)
+        .     !arg:(?prod.?arg)
             & @(!arg:alltables ?)
             & ( (   !prod:
                   &     map
@@ -485,9 +483,7 @@ toolsProg=
                             & ( !name:toolprop
                               |     !productioncontent
                                   : ?(&!name)
-                                & log$(saving !name)
                                 & saveTable$!name
-                                & log$(!name saved)
                               )
                         )
                       . !productionTables
@@ -532,7 +528,6 @@ toolsProg=
         .     ( !where:(?.?) ?
               | readTable$where
               )
-            & log$(exportTables !arg)
             & !arg:(?prod.?arg)
             & (   @(!arg:(|alltables ?))
                 & 0:?tabs
@@ -663,7 +658,6 @@ toolsProg=
       ( setTypeFace
       =   A Z
         .   !arg:?TyPeFaCe
-          & log$(setTypeFace !TyPeFaCe)
           & (   !hiddenData:?A (TyPeFaCe.?) ?Z
               & !A !Z:?hiddenData
             | 
@@ -794,7 +788,6 @@ toolsProg=
           &   whl
             ' ( !parms:? (!parm.?val) ?parms
               & !hiddenData (!parm.!val):?hiddenData
-              & NEWSPEC
               &   whl
                 ' ( !val:%?abBr^?spec+?val
                   & !table:? (?.!abBr.?) ?
@@ -810,7 +803,6 @@ toolsProg=
           & (   !arg:?A_?B
               & (lexan$(!ops.!A))_(lexan$(!ops.!B))
             |   !ops:%?op ?ops
-              & NEWSPEC
               & (   @(!arg:?A !op ?B)
                   &   !op
                     : (   " "
@@ -838,7 +830,6 @@ toolsProg=
           & :?nparms
           &   whl
             ' ( !parms:?A (!parm.?val) ?parms
-              & NEWSPEC
               & ( lexan$(" " "+" "*" "^".!val):?val
                 | 
                 )
@@ -1105,7 +1096,6 @@ toolsProg=
           |   !arg:%?a*%?b
             & "(" enumerateTools$!a ∪ enumerateTools$!b ")"
           |   !arg:%?a+%?b
-            & NEWSPEC
             & "(" enumerateTools$!a "|" enumerateTools$!b ")"
           | !arg:(?o.?inp)&enumerateTools$!inp
           | 
@@ -1250,15 +1240,16 @@ toolsProg=
                     )
               )
             & "de/inmul(tiply) are used to replace (commutative) * operators
-			   with (noncommutative) , operators. And back again. Reason:
-			   During simplification factors can swap place, leading to
-			   mismatch with the tool plumbing pattern."
+               with (noncommutative) , operators. And back again. Reason:
+               During simplification factors can swap place, leading to
+               mismatch with the tool plumbing pattern."
             & ( demul
               =   a b
                 .     !arg:%?a*%?b
                     & demul$!a:?a
                     & demul$!b:?b
                     & !(glf$('($arg.$a,$b)))
+                  | !arg:(?a.OnE)&(demul$!a.OnE)
                   |   !arg:?a_?b
                     & (demul$!a)_(demul$!b)
                   | !arg
@@ -1274,18 +1265,23 @@ toolsProg=
                     . !arg
                     )
               )
+            & ( cm
+              =   x
+                .   !arg:(?x,?arg)&!x*cm$!arg
+                  | !arg
+              )
             & ( c2m
               =   x
-                .   !arg:(?x,?arg)&!x*c2m$!arg
+                .     !arg:(?x,?arg)
+                    & c2m$!x*c2m$!arg
+                  | !arg:(?x.OnE)&(cm$!x.OnE)
                   | !arg
               )
             & ( inmul
               =   a b
                 .     !arg:(@?a,?b)
-                    & ( !a
-                      ,   c2m$!b:?a
-                        & !(glf$('($b.$a)))
-                      )
+                    & (!a,c2m$!b:?a)
+                  | !arg:(?a.OnE)&(cm$!a.OnE)
                   |   !arg:?a_?b
                     & (inmul$!a)_(inmul$!b)
                   | !arg
@@ -1321,44 +1317,50 @@ toolsProg=
       ( describefeature
       =     featvals table specificationTables featdesc
           , featval spec full stbl sps sp
-        .   !arg:(?featvals.?table.?specificationTables)
+          , featvalspec featvalspecs
+        .   ( addFeatvalSpec
+            =     !featdesc
+                  (!featdesc:|" & ")
+                  (   !!table:? (?full.!featval.?) ?
+                    & localized$!full
+                  | !featval
+                  )
+                  ( !spec:1&
+                  |   "["
+                      (   !specificationTables
+                        :   ?
+                            (? (%@:!featval) ?.?stbl)
+                            ?
+                      & :?sps
+                      & (!!stbl|readTable$!stbl)
+                      &   whl
+                        ' ( !spec:%?sp+?spec
+                          &     !sps
+                                (!sps:|"|")
+                                (   !!stbl:? (?full.!sp.?) ?
+                                  & localized$!full
+                                | !sp
+                                )
+                            : ?sps
+                          )
+                      & !sps
+                      )
+                      "]"
+                  )
+              : ?featdesc
+            )
+          & !arg:(?featvals.?table.?specificationTables)
           & :?featdesc
-          & NEWSPEC
           &   whl
-            ' ( !featvals:%?featval^?spec*?featvals
-              &     !featdesc
-                    (!featdesc:|" & ")
-                    (   !!table:? (?full.!featval.?) ?
-                      & localized$!full
-                    | !featval
-                    )
-                    (   !spec:1
-                      & NEWSPEC
-                      & 
-                    |   "["
-                        (   !specificationTables
-                          :   ?
-                              (? (%@:!featval) ?.?stbl)
-                              ?
-                        & :?sps
-                        & (!!stbl|readTable$!stbl)
-                        &   whl
-                          ' ( !spec:%?sp+?spec
-                            & NEWSPEC
-                            &     !sps
-                                  (!sps:|"|")
-                                  (     !!stbl
-                                      : ? (?full.!sp.?) ?
-                                    & localized$!full
-                                  | !sp
-                                  )
-                              : ?sps
-                            )
-                        & !sps
+            ' ( !featvals:%?featvalspec*?featvals
+              &   !featvalspec
+                : (   (?featvalspecs.OnE)
+                    &   whl
+                      ' ( !featvalspecs:%?featval^?spec*?featvalspecs
+                        & !addFeatvalSpec
                         )
-                        "]"
-                    )
-                : ?featdesc
+                  | %?featval^?spec&!addFeatvalSpec
+                  )
               )
           & !featdesc
       )
@@ -1494,7 +1496,6 @@ toolsProg=
                           .   0:?S
                             &   whl
                               ' ( !arg:%?t ?arg
-                                & NEWSPEC
                                 & !S+!t:?S
                                 )
                             & !S
@@ -1857,11 +1858,9 @@ toolsProg=
                           | ?i&:?predecessors
                         )
                       )
-                  & (|ToolTitle$!tool:?tool)
                   & ( myfold
                     =   a b A B F R v1 v2
                       .     !arg:%?a*%?b
-                          & :!(glf$('($arg.?))) ?
                           & myfold$!b:?b
                           & (     !a
                                 :   ?
@@ -1876,9 +1875,6 @@ toolsProg=
                               & !R
                             | 
                             )
-                        |   !arg:?A (?F,%*%:?v1) ?B
-                          & flg$('$v1):(=?.?v1)
-                          & !A (!F,!(glf$('(%.$v1)))) !B
                         | !arg
                     )
                   &   ( !predecessors:
@@ -1888,7 +1884,6 @@ toolsProg=
                 |   !arg:%?a*%?b
                   & enumerateToolsDetail$!a*enumerateToolsDetail$!b
                 |   !arg:%?a+%?b
-                  & NEWSPEC
                   & enumerateToolsDetail$!a+enumerateToolsDetail$!b
                 |   !arg:(?o.?i)
                   & enumerateToolsDetail$!i
@@ -2166,11 +2161,8 @@ toolsProg=
             =   n i o x y
               .     !arg:(?n.?i.~(?.?):?o)
                   & (!n.(!i.!o).!i.!o)
-                |   !arg:%?x*%?y
-                  & (   :!(glf$('($arg.?))) ?
-                      & saveio$!x*saveio$!y
-                    | !arg
-                    )
+                | !arg:%?x*%?y&saveio$!x*saveio$!y
+                | !arg:(?x.OnE)&!arg
                 |   !arg:?x_?y
                   & (saveio$!x)_(saveio$!y)
                 | !arg
@@ -2197,7 +2189,8 @@ toolsProg=
           &   whl
             ' ( 1+!n:?n:<1000000
               & !workflowlist:(#?nr.?workflow) ?workflowlist
-              & "*"$(simplify$!workflow):(=?toolPlumbing)
+              &   toolPattern$(simplify$!workflow)
+                : (=?toolPlumbing)
               & (!nr,!workflow):?wfs
               &     map
                   $ ( ( 
@@ -2310,11 +2303,7 @@ toolsProg=
                     &   ( !name:&spotInput$!A
                         |   0:?nrefs
                           & 1:?max
-                          & (     !inputs
-                                : ? (?,%*%:?P) ?
-                              & ~(:!(glf$('($P.?))) ?)
-                              & "There is a % preceding the product. That means: single file input."
-                            |   !inputs
+                          & (   !inputs
                               :   ?
                                   ( ?
                                   ,   ?
@@ -2573,8 +2562,7 @@ toolsProg=
                         )
                       (br.,)
                   : ?buttons
-                &   (   (|!toolUsageList:? [>1)
-                      &     map
+                &   (       map
                           $ ( ( 
                               =   ID cur
                                 .   !arg:(?ID.?cur)
@@ -3636,7 +3624,6 @@ toolsProg=
           & ( !stable:? [<5
             | sort$!stable:?stable
             )
-          & log$(stable !stable)
           &   ( option
               .   (id.str$(b !tabind)) (value.)
                 , chu$8239
@@ -3710,8 +3697,7 @@ toolsProg=
       ( upload
       =     jobNr jobID jobstatus JOB
           , A Z files toolURL parms file
-        .     log$(upload !arg)
-            & !arg:? (job.@(?:?jobNr "-" ?jobID)) ?
+        .     !arg:? (job.@(?:?jobNr "-" ?jobID)) ?
             & (   readTable$jobs
                 & (     !jobs
                       :   ?A
@@ -3986,7 +3972,8 @@ toolsProg=
                         "&usedonly="
                         !usedonly
                         "&TyPeFaCe="
-                        queryEncode$!TyPeFaCe
+                          queryEncode
+                        $ (!TyPeFaCe|"Comic Sans MS")
                         (!offset:|"#" !offset)
                       )
                   )
@@ -4200,31 +4187,52 @@ catch (SystemExit $e)
             )
           & ( listAlts
             =     alt featF opts rsr rsrc stl style alts
-                , term Single DATA FEATURES STYLES
+                , term DATA FEATURES STYLES
               .     !arg
                   : (?alts.?IO.?featname.?DATA.?FEATURES.?STYLES)
-                & log$(listAlts !arg)
                 &   whl
                   ' ( !alts:(%(%?alt ?opts):?term)+?alts
-                    &   (   :!(glf$('($term.?))) ?
-                          & 
-                        | on
-                        )
-                      : ?Single
-                    & (   !Single:
-                        & (   !alt:%*%
-                            & ( featF
-                              = (!IO.!featname.!rsr.F)+!DATA:?DATA
-                              )
-                          |   !opts:% ?
-                            & ( featF
-                              = (!IO.!featname.!rsr.F)+!DATA:?DATA
-                              )
-                          )
-                      | (featF=)
+                    & (!alt:%*%|!opts:% ?)
+                    & ( featF
+                      =   IO featname rsr DATA
+                        .   !arg:(?DATA.?IO.?featname.?rsr)
+                          & (!IO.!featname.!rsr.F)+!DATA
                       )
                     &   whl
                       ' ( !alt:%?rsrc*?alt
+                        & 1:?stls
+                        & ( !rsrc:@?rsr
+                          |   (   !rsrc:(?rsrcs.OnE)
+                                & :?valstr
+                                &   whl
+                                  ' ( !rsrcs:%?rsr*?rsrcs
+                                    & !rsr:%@?rsr^?style
+                                    & !valstr "_" !rsr:?valstr
+                                    &   whl
+                                      ' ( !style:%?stl+?style
+                                        & ( !stl:1
+                                          |     str$("__" !rsr "_" !stl)
+                                              * !stls
+                                            : ?stls
+                                          )
+                                        )
+                                    )
+                                & str$!valstr:?rsr
+                              |   !rsrc:?rsr^%?style
+                                &     whl
+                                    ' ( !style:%?stl+?style
+                                      & !stls*!stl:?stls
+                                      )
+                                  : ?DATA
+                              )
+                            &   (!IO.!featname.!rsr)\L!stls+!STYLES
+                              : ?STYLES
+                          )
+                        & (!IO.!featname)\L!rsr+!FEATURES:?FEATURES
+                        & featF$(!DATA.!IO.!featname.!rsr):?DATA
+                        )
+                    &   whl
+                      ' ( !opts:%?rsrc ?opts
                         & (   !rsrc:?rsr^%?style
                             &   whl
                               ' ( !style:%?stl+?style
@@ -4234,23 +4242,8 @@ catch (SystemExit $e)
                           | !rsrc:?rsr
                           )
                         & (!IO.!featname)\L!rsr+!FEATURES:?FEATURES
-                        & !featF
+                        & (!IO.!featname.!rsr.F)+!DATA:?DATA
                         )
-                    & ( !Single:on
-                      |   whl
-                        ' ( !opts:%?rsrc ?opts
-                          & (   !rsrc:?rsr^%?style
-                              &   whl
-                                ' ( !style:%?stl+?style
-                                  &   (!IO.!featname.!rsr)\L!stl+!STYLES
-                                    : ?STYLES
-                                  )
-                            | !rsrc:?rsr
-                            )
-                          & (!IO.!featname)\L!rsr+!FEATURES:?FEATURES
-                          & (!IO.!featname.!rsr.F)+!DATA:?DATA
-                          )
-                      )
                     )
                 & (!DATA.!FEATURES.!STYLES)
             )
@@ -4317,11 +4310,35 @@ catch (SystemExit $e)
                 & !table
             )
           & ( getFeatValues
-            =   featname value fval fvalAlt
+            =   featname value fval fvalAlt featTable
               .   !arg:(?featname.?value)
-                &   !(getFeatTable$!featname)
-                  : ? (%?fval ? @?fvalAlt.!value.?) ?
-                & !fval (!fvalAlt:|" (" !fvalAlt ")")
+                & !(getFeatTable$!featname):?featTable
+                &   (     !featTable
+                        : ? (%?fval ? @?fvalAlt.!value.?) ?
+                      &   !fval
+                          (!fvalAlt:|" (" !fvalAlt ")")
+                    |       vap
+                          $ ( ( 
+                              =   fval fvalAlt
+                                .   !arg:
+                                  |     !featTable
+                                      :   ?
+                                          (%?fval ? @?fvalAlt.!arg.?)
+                                          ?
+                                    &   " and "
+                                        !fval
+                                        ( !fvalAlt:
+                                        | " (" !fvalAlt ")"
+                                        )
+                              )
+                            . !value
+                            . "_"
+                            )
+                        : (" and " ?value|?value)
+                      & !value
+                    )
+                  : ?value
+                & !value
             )
           & ( getFeatSpecTable
             =   table val
@@ -4398,19 +4415,6 @@ catch (SystemExit $e)
           & 0:?FEATURES
           & 0:?STYLES
           & (     !Features
-                :   ?
-                    ( ?
-                    ,   ?
-                        (   %*% ?:?in
-                          & ~(:!(glf$('($in.?))) ?)
-                        . ?
-                        )
-                        ?
-                    )
-                    ?
-              & "All inputs combined in one file, so IF."
-              & (I...F)+!DATA:?DATA
-            |     !Features
                 : (   ?
                       (?,? (?+(%*% ?)+?.?) ?:?fval)
                       ?
@@ -4925,13 +4929,34 @@ try {
                             | output
                             )
                             " is "
-                            (   getFeatSpecTable$(!featname.!data)
-                              : ?sptable
-                            &   ( !!sptable
-                                | readTable$!sptable&!!sptable
+                            (     getFeatSpecTable$(!featname.!data)
+                                : ?sptable
+                              &   ( !!sptable
+                                  |   readTable$!sptable
+                                    & !!sptable
+                                  )
+                                : ?specTable
+                              & (     !specTable
+                                    : ? (?fval.!value.?) ?
+                                  & !fval
+                                | 
                                 )
-                              : ? (?fval.!value.?) ?
-                            & !fval
+                            |   @(!value:"__" ?data "_" ?value)
+                              &   getFeatSpecTable$(!featname.!data)
+                                : ?sptable
+                              &   ( !!sptable
+                                  |   readTable$!sptable
+                                    & !!sptable
+                                  )
+                                : ?specTable
+                              &   (     !specTable
+                                      : ? (?fval.!value.?) ?
+                                    & !fval
+                                  | 
+                                  )
+                                  " for the "
+                                  getFeatValues$(!featname.!data)
+                                  " component"
                             )
                             " if true */
 "
@@ -5073,20 +5098,7 @@ try {
   * which can be deposited in the repository in a later phase, and a part that
   * is mainly used for integrated tools. The second part collects very precise
   * and formalised information that enables the Tools module to compute
-  * workflows with tools and resources that fit together. Only some of the
-  * information from this part can be deposited in the repository: a condensed
-  * list of supported languages, dataformats and facets, in both input and 
-  * output. Missing in the deposited metadata are the restrictions on 
-  * combinations of input and output features and between features. 
-  * For example there is no formal way for the deposited metadata to express
-  * that the input facet 'Part Of Speech' can be combined with input languages
-  * Danish and English, but not with Russian as an input language. Nor can
-  * deposited metadata formally express that input language Danish implies 
-  * output language Danish, and input lnaguage Russian either output language
-  * Russian or English. (Implying that the tool can translate from Russian to
-  * English.) 
-  * Such relations must be written in natural language in the description of
-  * the tool.
+  * workflows with tools and resources that fit together. 
   *
   * Affected tables: 
   *         tooladm.table   (general part), 
@@ -5107,27 +5119,19 @@ try {
           , ToolName ToolVersion FullToolName PassWord password
           , ToolURL ToolPublisher ContentProvider passwordAsHandle
           , ToolCreator InfoAbout ToolDescription mail2
-          , ToolExternalURI ToolXMLparms
-          , ToolPostData ToolInactive
+          , ToolExternalURI ToolXMLparms aFeature askOptional
+          , ToolPostData ToolInactive askOnE
+          , additionalFormFields additionalMetadata
           , formFields storeTool handle
-          , unfoldInputAndOutput foldInputAndOutput askFeature
+          , unfoldInputAndOutput foldInputAndOutput createFeatureFieldset
           , nth AA ZZ feats windfw ContactEmail contactEmail
-          , featjursPreexisting featjursURL feat error Submit
-          , createBoilerPlate force
-          , validationComments
+          , featjursPreexisting featjursURL aboutFeature error Submit
+          , createBoilerPlate force askFieldSet
+          , validationComments unfoldedInputAndOutput
           , storeToolButton replaceToolButton
           , deleteToolButton UpdateButton PHPbutton
         .   clean$
-          & :?servicedSources:?servicedGoals
-          &   localized$("Save metadata" "Gem oplysninger")
-            : ?storeToolButton
-          &   localized$("Replace metadata" "Erstat oplysninger")
-            : ?replaceToolButton
-          &   localized$("Delete metadata" "Slet oplysninger")
-            : ?deleteToolButton
-          &   localized$("Show more entry fields" "Vis flere inputfelter")
-            : ?UpdateButton
-          & localized$("PHP wrapper" PHP-kode):?PHPbutton
+          & "createBoilerPlate fails if user is  granted access."
           & ( createBoilerPlate
             =     ToolName ToolVersion FullToolName
                 , URL Publisher ContentProvider
@@ -5154,7 +5158,6 @@ try {
                       .   sim$(trim$!sjt,trim$!arg):1
                         & ?
                     )
-                  & log$(createBoilerPlate !arg)
                   & "TODO RESET ALL OF urlparm IF TOOL NOT FOUND"
                   & !arg:?urlparm
                   &   !urlparm
@@ -5164,6 +5167,7 @@ try {
                       )
                     : ? (contactEmail.~:?url-contactEmail) ?
                   & :?ContactEmail
+                  & log$wertyui
                   & (     !tooladm
                         :   ?
                           + (   ?
@@ -5524,10 +5528,10 @@ try {
               .   ( listIO
                   =   in io I S L M s opt addFeature listing
                     .   ( addFeature
-                        =     in K L featname io
+                        =     moreToCome K L featname io
                             , I S listing M s optional
                           .     !arg
-                              : ( ?in
+                              : ( ?moreToCome
                                 . ?K
                                 . ?L
                                 . ?featname
@@ -5536,6 +5540,7 @@ try {
                                 . ?S
                                 . ?listing
                                 . ?optional
+                                . ?OnE
                                 )
                             &     (str$(!featname !K "." !L !io).!I)
                                   ( !optional:
@@ -5544,7 +5549,13 @@ try {
                                     . on
                                     )
                                   )
-                                  (   !in:(1|)
+                                  ( !OnE:
+                                  | ( str$(!featname !K "." !L !io !OnE)
+                                    . on
+                                    )
+                                  )
+                                  (     !moreToCome
+                                      : (1|)
                                     & 
                                   | ( str$(!featname !K "." !L !io More)
                                     . on
@@ -5556,7 +5567,6 @@ try {
                             & ( !S:1
                               |   whl
                                 ' ( !S:%?s+?S
-                                  & NEWSPEC
                                   & 1+!M:?M
                                   &     (   str
                                           $ ( !featname
@@ -5596,29 +5606,49 @@ try {
                       & !in:(%?in ?opt|?opt)
                       &   whl
                         ' ( !in:%?I^?S*?in
-                          & 1+!L:?L
-                          &     addFeature
-                              $ ( !in
-                                . !K
-                                . !L
-                                . !featname
-                                . !io
-                                . !I
-                                . !S
-                                . !listing
-                                . 
-                                )
-                            : ?listing
+                          & (   !I:(?Is.OnE)
+                              & :?OnE
+                              &   whl
+                                ' ( !Is:%@?I^?S*?Is
+                                  & 1+!L:?L
+                                  &     addFeature
+                                      $ ( !Is*!in
+                                        . !K
+                                        . !L
+                                        . !featname
+                                        . !io
+                                        . !I
+                                        . !S
+                                        . !listing
+                                        . 
+                                        . !OnE
+                                        )
+                                    : ?listing
+                                  & OnE:?OnE
+                                  )
+                            |   1+!L:?L
+                              &     addFeature
+                                  $ ( !in
+                                    . !K
+                                    . !L
+                                    . !featname
+                                    . !io
+                                    . !I
+                                    . !S
+                                    . !listing
+                                    . 
+                                    . 
+                                    )
+                                : ?listing
+                            )
                           )
                       & ( !opt:
                         |       (str$(!featname !K "." !L !io More).on)
                                 !listing
                             : ?listing
-                          & NEWSPEC
                           &   whl
                             ' ( !opt:%?I^?S ?opt
                               & 1+!L:?L
-                              & NEWSPEC
                               &     addFeature
                                   $ ( !opt
                                     . !K
@@ -5629,6 +5659,7 @@ try {
                                     . !S
                                     . !listing
                                     . Optional
+                                    . 
                                     )
                                 : ?listing
                               )
@@ -5636,24 +5667,6 @@ try {
                       & !listing
                   )
                 & :?listing
-                & ( 
-                  |   ( Single
-                      .       !arg
-                            :   ?
-                                ( ?
-                                ,   ?
-                                  + (   %*%:?in
-                                      & ~(:!(glf$('($in.?))) ?)
-                                    . ?
-                                    )
-                                  + ?
-                                )
-                                ?
-                          & on
-                        | 
-                      )
-                    : ?listing
-                  )
                 &   whl
                   ' ( !arg:(?featname,?inouts) ?arg
                     & 0:?K
@@ -5662,11 +5675,6 @@ try {
                         & 1+!K:?K
                         & listIO$(!in.Input.!listing):?listing
                         & listIO$(!outp.Output.!listing):?listing
-                        & ( 1:!(glf$('($in.?)))*?
-                          |     (str$(!featname !K Single).on)
-                                !listing
-                            : ?listing
-                          )
                         & ( !inouts:0
                           |     (str$(!featname !K More).on)
                                 !listing
@@ -5783,396 +5791,360 @@ try {
                   . !arg
                   )
             )
-          & ( askFeature
-            =     inoutpairs feat urlparms formstuff
-                , formFields Metadata featname
-                , askFieldSet shortfeatname
-                , featdescription feattable specificationTables
-              .   ( askFieldSet
-                  =     sameFeaturePairOnceMore NrInOutAlternative
-                      , featname inout featurePair inoutpairs
-                      , featurePairMore FieldSet optionalFeature ret
-                      , NrRequiredAndOptional optionals requireds
-                      , shouldIAskOptionalFeature
-                      , urlparms feattable featdescription formstuff
-                      , askOptional aFeature Input Output
-                    .   ( sameFeaturePairOnceMore
-                        = .!arg:(?arg.?)&(.!arg)
-                        )
-                      & ( askOptional
-                        =   urlparms featinoutOptional
-                          .   !arg:(?urlparms.?featinoutOptional)
-                            &   (   checkParmsSimple
-                                  $ (!urlparms.!featinoutOptional)
-                                | 
-                                )
-                              : ?!featinoutOptional
-                            &   makeCheckboxFormField
-                              $ ( optional
-                                . !featinoutOptional
-                                . val
-                                . !!featinoutOptional
-                                )
-                        )
-                      & ( aFeature
-                        =     NrRequiredAndOptional NrInOutAlternative
-                            , NrSpecification featname requireds
-                            , inout featinout featinoutMore
-                            , featinoutOptional urlparms FieldSet
-                            , feattable featdescription row
-                            , specifications specificationTables
-                            , sameFeatureOnceMore optionals featNSingle
-                            , sameSpecificationOnceMore full
-                            , specificationTable aSpecification
-                            , featinoutSpec featinoutOptMore ret
-                          .   ( sameFeatureOnceMore
-                              =     requireds optionals FieldSet
-                                  , NrRequiredAndOptional
-                                .     !arg
-                                    : ( ?requireds
-                                      . ?optionals
-                                      . ?NrRequiredAndOptional
-                                      . ?FieldSet
-                                      . ?
-                                      )
-                                  & ( !requireds
-                                    . !optionals
-                                    . !NrRequiredAndOptional
-                                    . !FieldSet
-                                    )
-                              )
-                            & ( aSpecification
-                              =   :?sameSpecificationOnceMore
-                                & 1+!NrSpecification:?NrSpecification
-                                &     str
-                                    $ ( !featname
-                                        !NrInOutAlternative
-                                        "."
-                                        !NrRequiredAndOptional
-                                        "."
-                                        !NrSpecification
-                                        !inout
-                                        Spc
-                                      )
-                                  : ?featinoutSpec
-                                &   str$(!featinoutSpec More)
-                                  : ?featinoutOptMore
-                                & (       checkParms
-                                        $ ( !urlparms
-                                          . !featinoutSpec
-                                          .   !!specificationTable
-                                            |   readTable$!specificationTable
-                                              & !!specificationTable
-                                          )
-                                      : ?!featinoutSpec
-                                    & NEWSPEC
-                                    &     ( !!featinoutSpec:~:~1
-                                          | 0
-                                          )
-                                        + !specifications
-                                      : ?specifications
-                                  | :?!featinoutSpec
-                                  )
-                                &     !row
-                                        makeSelectFormField
-                                      $ (   str
-                                          $ ( (     !!feattable
-                                                  :   ?
-                                                      (?full.!!featinout.?)
-                                                      ?
-                                                & localized$!full
-                                              |   "featinout:"
-                                                  !featinout
-                                                  "=="
-                                                  !!featinout
-                                                  " and feattable "
-                                                  !feattable
-                                                  " looks like this:"
-                                                  !!feattable
-                                              )
-                                              " style"
-                                            )
-                                        . !featinoutSpec
-                                        . options
-                                        .   makeOptionList
-                                          $ (!!specificationTable.!!featinoutSpec)
-                                        )
-                                      (       checkParmsSimple
-                                            $ (!urlparms.!featinoutOptMore)
-                                          : ?!featinoutOptMore
-                                        & (   !!featinoutOptMore:on
-                                            &   '$aSpecification
-                                              : ( 
-                                                = ?sameSpecificationOnceMore
-                                                )
-                                            &   makeHiddenFields
-                                              $ (!featinoutOptMore.on)
-                                          | 
-                                          )
-                                      |   makeCheckboxFormField
-                                        $ ( localized$(more mere)
-                                          . !featinoutOptMore
-                                          . 
-                                          )
-                                      )
-                                  : ?row
-                                & !sameSpecificationOnceMore
-                              )
-                            &   !arg
-                              : ( ?requireds
-                                . ?optionals
-                                . ?NrRequiredAndOptional
-                                . ?FieldSet
-                                . ?featname
-                                . ?NrInOutAlternative
-                                . ?inout
-                                . ?urlparms
-                                . ?feattable
-                                . ?featdescription
-                                . ?specificationTables
-                                )
-                            &   1+!NrRequiredAndOptional
-                              : ?NrRequiredAndOptional
-                            &     str
-                                $ ( !featname
-                                    !NrInOutAlternative
-                                    "."
-                                    !NrRequiredAndOptional
-                                    !inout
-                                  )
-                              : ?featinout
-                            & "e.g. facet3.2InputMore
-                                shown after second input of third inputs/output(s) combination"
-                            & str$(!featinout More):?featinoutMore
-                            &   str$(!featinout Optional)
-                              : ?featinoutOptional
-                            & :?!featinoutOptional
-                            &   (   checkParms
-                                  $ (!urlparms.!featinout.!!feattable)
-                                | 
-                                )
-                              : ?!featinout
-                            &       makeSelectFormField
-                                  $ ( !inout
-                                    . !featinout
-                                    .   ( options
-                                        .   makeOptionList
-                                          $ (!!feattable.!!featinout)
-                                        )
-                                        (desc.!featdescription)
-                                    )
-                                    optionalFeature
-                                  $ (!urlparms.!featinoutOptional)
-                                  (       checkParmsSimple
-                                        $ (!urlparms.!featinoutMore)
-                                      : ?!featinoutMore
-                                    & (   !!featinoutMore:on
-                                        &   '$aFeature
-                                          : (=?sameFeatureOnceMore)
-                                        &   makeHiddenFields
-                                          $ (!featinoutMore.on)
-                                      | 
-                                      )
-                                  |     makeCheckboxFormField
-                                      $ ( localized$(more mere)
-                                        . !featinoutMore
-                                        . 
-                                        )
-                                      (   !inout:Input
-                                        & !NrRequiredAndOptional:>1
-                                        &     str
-                                            $ ( !featname
-                                                !NrInOutAlternative
-                                                Single
-                                              )
-                                          : ?featNSingle
-                                        &   makeCheckboxFormField
-                                          $ (   localized
-                                              $ ( "All inputs in single file"
-                                                  "Input samlet i én fil"
-                                                )
-                                            . !featNSingle
-                                            .   ( val
-                                                .       !urlparms
-                                                      :   ?
-                                                          (!featNSingle.on)
-                                                          ?
-                                                    & on
-                                                  | 
-                                                )
-                                                ( desc
-                                                .   localized
-                                                  $ ( "Check if there are e.g. >1 input facet or >1 input language, but everything is combined in a single input file."
-                                                      "Check hvis der fx er > 1 input facet eller > 1 input sprog, men alt er kombineret i én inputfil."
-                                                    )
-                                                )
-                                            )
-                                      | 
-                                      )
-                                  )
-                              : ?row
-                            & 0:?specifications
-                            & NEWSPEC
-                            & (   !specificationTables
-                                :   ?
-                                    ( ? (%@:!!featinout) ?
-                                    .   ?specificationTable
-                                      & 0:?NrSpecification
-                                      & !aSpecification
-                                    )
-                                    ?
-                              | 
-                              )
-                            & NEWSPEC
-                            &     !!featinout
-                                ^ ( !specifications:~0:~
-                                  | 1
-                                  )
-                              : ?!featinout
-                            & (   !!featinoutOptional:
-                                &   flg$('$requireds)
-                                  : (=?.?requireds)
-                                & !requireds*!!featinout:?requireds
-                              | !optionals !!featinout:?optionals
-                              )
-                            & (   !inout:Input
-                                &     str
-                                    $ (!featname !NrInOutAlternative Single)
-                                  : ?featNSingle
-                                &   !urlparms
-                                  : ? (!featNSingle.on) ?
-                                &   glf$('(%.$requireds))
-                                  : (=?requireds)
-                              | 
-                              )
-                            & !FieldSet paragraph$!row:?FieldSet
-                            &   '$shouldIAskOptionalFeature
-                              : (=?optionalFeature)
-                            &     sameFeatureOnceMore
-                                $ ( !requireds
-                                  . !optionals
-                                  . !NrRequiredAndOptional
-                                  . !FieldSet
-                                  . !featname
-                                  . !NrInOutAlternative
-                                  . !inout
-                                  . !urlparms
-                                  . !feattable
-                                  . !featdescription
-                                  . !specificationTables
-                                  )
-                              : ( ?requireds
-                                . ?optionals
-                                . ?NrRequiredAndOptional
-                                . ?FieldSet
-                                )
-                            & tbl$(!featinoutMore,0)
-                            & tbl$(!featinoutOptMore,0)
-                            & tbl$(!featinoutOptional,0)
-                            & tbl$(!featinout,0)
-                            & tbl$(!featinoutSpec,0)
-                            & ( !requireds
-                              . !optionals
-                              . !NrRequiredAndOptional
-                              . !FieldSet
-                              )
-                        )
-                      &   !arg
-                        : ( ?inoutpairs
-                          . ?NrInOutAlternative
-                          . ?featname
-                          . ?urlparms
-                          . ?feattable
-                          . ?featdescription
+          & ( askOptional
+            =   urlparms featinoutOptional
+              .   !arg:(?urlparms.?featinoutOptional)
+                &   ( checkParmsSimple$(!urlparms.!featinoutOptional)
+                    | 
+                    )
+                  : ?!featinoutOptional
+                &   makeCheckboxFormField
+                  $ (optional.!featinoutOptional.val.!!featinoutOptional)
+            )
+          & ( askOnE
+            =   urlparms featinoutOnE
+              .     !arg
+                  : (?urlparms.?featinoutOnE.?featinout.?values.?inout)
+                & (   !inout:Input
+                    & (   !values:% ?
+                        &   ( checkParmsSimple$(!urlparms.!featinoutOnE)
+                            | 
+                            )
+                          : ?!featinoutOnE
+                        &   makeCheckboxFormField
+                          $ (     !!featinoutOnE:
+                                & (!!featinout:|🗎)
+                              | ⮭
+                            . !featinoutOnE
+                            . val
+                            . !!featinoutOnE
+                            )
+                      | !!featinout:
+                      | 🗎
+                      )
+                  | 
+                  )
+            )
+          & ( aFeature
+            =     NrRequiredAndOptional NrInOutAlternative
+                , NrSpecification shortfeatname requireds
+                , inout featinout featinoutMore featinoutOnE
+                , featinoutOptional urlparms FieldSet
+                , feattable featdescription row aboutFeature
+                , specifications specificationTables
+                , sameFeatureOnceMore optionals
+                , sameSpecificationOnceMore full
+                , additionalFieldSet additionalOptionals
+                , specificationTable aSpecification
+                , featinoutSpec featinoutOptMore ret
+              .   ( sameFeatureOnceMore
+                  = .!arg:(?arg.?)&(.!arg.)
+                  )
+                & ( aSpecification
+                  =   :?sameSpecificationOnceMore
+                    & 1+!NrSpecification:?NrSpecification
+                    &     str
+                        $ ( !shortfeatname
+                            !NrInOutAlternative
+                            "."
+                            !NrRequiredAndOptional
+                            "."
+                            !NrSpecification
+                            !inout
+                            Spc
                           )
-                      & 1+!NrInOutAlternative:?NrInOutAlternative
-                      &   str$(!featname !NrInOutAlternative)
-                        : ?featurePair
-                      & str$(!featurePair More):?featurePairMore
-                      & :?FieldSet
-                      & (optionalFeature=.)
-                      &   '$askOptional
-                        : (=?shouldIAskOptionalFeature)
-                      & (   Input Output
-                          :   ?
-                              ( %@?inout
-                              & :?optionals
-                              & 1:?requireds
+                      : ?featinoutSpec
+                    & str$(!featinoutSpec More):?featinoutOptMore
+                    & (       checkParms
+                            $ ( !urlparms
+                              . !featinoutSpec
+                              .   !!specificationTable
+                                |   readTable$!specificationTable
+                                  & !!specificationTable
+                              )
+                          : ?!featinoutSpec
+                        &     ( !!featinoutSpec:~:~1
+                              | 0
+                              )
+                            + !specifications
+                          : ?specifications
+                      | :?!featinoutSpec
+                      )
+                    &     !row
+                            makeSelectFormField
+                          $ (   str
+                              $ ( (     !!feattable
+                                      : ? (?full.!!featinout.?) ?
+                                    & localized$!full
+                                  |   "featinout:"
+                                      !featinout
+                                      "=="
+                                      !!featinout
+                                      " and feattable "
+                                      !feattable
+                                      " looks like this:"
+                                      !!feattable
+                                  )
+                                  " style"
+                                )
+                            . !featinoutSpec
+                            . options
+                            .   makeOptionList
+                              $ (!!specificationTable.!!featinoutSpec)
+                            )
+                          (       checkParmsSimple
+                                $ (!urlparms.!featinoutOptMore)
+                              : ?!featinoutOptMore
+                            & (   !!featinoutOptMore:on
+                                &   '$aSpecification
+                                  : (=?sameSpecificationOnceMore)
+                                & makeHiddenFields$(!featinoutOptMore.on)
+                              | 
+                              )
+                          |   makeCheckboxFormField
+                            $ (localized$(more mere).!featinoutOptMore.)
+                          )
+                      : ?row
+                    & !sameSpecificationOnceMore
+                  )
+                &   !arg
+                  : ( ?requireds
+                    . ( ?NrRequiredAndOptional
+                      . ?inout
+                      . ?NrInOutAlternative
+                      . ?aboutFeature
+                      )
+                    . ?urlparms
+                    )
+                &   !aboutFeature
+                  : ? (short.?shortfeatname) ?
+                  : ? (description.?featdescription) ?
+                  : ? (table.?feattable) ?
+                  : ( ? (specificationTable.?specificationTables) ?
+                    | ?&:?specificationTables
+                    )
+                & 1+!NrRequiredAndOptional:?NrRequiredAndOptional
+                &     str
+                    $ ( !shortfeatname
+                        !NrInOutAlternative
+                        "."
+                        !NrRequiredAndOptional
+                        !inout
+                      )
+                  : ?featinout
+                & "e.g. facet3.2InputMore
+                   shown after second input of third inputs/output(s) combination"
+                & str$(!featinout More):?featinoutMore
+                & str$(!featinout Optional):?featinoutOptional
+                & :?!featinoutOptional
+                & str$(!featinout OnE):?featinoutOnE
+                & :?!featinoutOnE
+                &   ( checkParms$(!urlparms.!featinout.!!feattable)
+                    | 
+                    )
+                  : ?!featinout
+                &       makeSelectFormField
+                      $ ( !inout
+                        . !featinout
+                        .   (options.makeOptionList$(!!feattable.!!featinout))
+                            (desc.localized$!featdescription)
+                        )
+                        askOnE
+                      $ ( !urlparms
+                        . !featinoutOnE
+                        . !featinout
+                        . !requireds
+                        . !inout
+                        )
+                      optionalFeature$(!urlparms.!featinoutOptional)
+                      (     checkParmsSimple$(!urlparms.!featinoutMore)
+                          : on
+                        &   '$aFeature
+                          : (=?sameFeatureOnceMore)
+                        & makeHiddenFields$(!featinoutMore.on)
+                      |   makeCheckboxFormField
+                        $ (localized$(more mere).!featinoutMore.)
+                      )
+                  : ?row
+                & 0:?specifications
+                & (   !specificationTables
+                    :   ?
+                        ( ? (%@:!!featinout) ?
+                        .   ?specificationTable
+                          & 0:?NrSpecification
+                          & !aSpecification
+                        )
+                        ?
+                  | 
+                  )
+                &     !!featinout
+                    ^ (!specifications:~0:~|1)
+                  : ?!featinout
+                &   (   !!featinoutOptional:
+                      &     (   !!featinoutOnE:
+                              & !!featinout
+                            | (OnE.!!featinout)
+                            )
+                            !requireds
+                        : ?requireds
+                      & 
+                    | !!featinout
+                    )
+                  : ?optionals
+                & paragraph$!row:?FieldSet
+                &   '$shouldIAskOptionalFeature
+                  : (=?optionalFeature)
+                &     sameFeatureOnceMore
+                    $ ( !requireds
+                      . ( !NrRequiredAndOptional
+                        . !inout
+                        . !NrInOutAlternative
+                        . !aboutFeature
+                        )
+                      . !urlparms
+                      )
+                  : (?additionalFieldSet.?requireds.?additionalOptionals)
+                & tbl$(!featinoutMore,0)
+                & tbl$(!featinoutOptMore,0)
+                & tbl$(!featinoutOptional,0)
+                & tbl$(!featinoutOnE,0)
+                & tbl$(!featinout,0)
+                & tbl$(!featinoutSpec,0)
+                & ( !FieldSet !additionalFieldSet
+                  . !requireds
+                  . !optionals !additionalOptionals
+                  )
+            )
+          & ( askFieldSet
+            =     NrInOutAlternative additionalInoutpairs
+                , shortfeatname inout featurePair inoutpairs
+                , featurePairMore FieldSet optionalFeature ret
+                , NrRequiredAndOptional optionals requireds
+                , shouldIAskOptionalFeature
+                , urlparms feattable featdescription formstuff
+                , Input Output
+              .   "askFieldSet: recursive function that returns a list of
+                       fieldset elements, one for each input/output pair of the
+                       current feature. After the last fieldset element follows
+                       a checkbox input element inviting to create an extra
+                       fieldset element if the user checks the box and reloads
+                       the page. The list contains minimally one input/output
+                       element.
+                       askFieldSet is called recursively when the URL
+                       parameter list has a <featurename><cardinal #>More
+                       element, e.g. facet2More=on
+                      "
+                &   !arg
+                  : ((?NrInOutAlternative.?aboutFeature).?urlparms)
+                &   !aboutFeature
+                  : ? (short.?shortfeatname) ?
+                  : ? (description.?featdescription) ?
+                  : ? (table.?feattable) ?
+                & 1+!NrInOutAlternative:?NrInOutAlternative
+                &   str$(!shortfeatname !NrInOutAlternative)
+                  : ?featurePair
+                & :?FieldSet
+                & (optionalFeature=.)
+                &   '$askOptional
+                  : (=?shouldIAskOptionalFeature)
+                & :?FieldSet
+                & (     map
+                      $ ( ( 
+                          =   
+                            .   !arg:%@?inout
+                              & :?requireds
                               & 0:?NrRequiredAndOptional
                               &     aFeature
                                   $ ( !requireds
-                                    . !optionals
-                                    . !NrRequiredAndOptional
-                                    . !FieldSet
-                                    . !featname
-                                    . !NrInOutAlternative
-                                    . !inout
+                                    . ( !NrRequiredAndOptional
+                                      . !inout
+                                      . !NrInOutAlternative
+                                      . !aboutFeature
+                                      )
                                     . !urlparms
-                                    . !feattable
-                                    . !featdescription
-                                    . !specificationTables
                                     )
-                                : ( ?requireds
-                                  . ?optionals
-                                  . ?NrRequiredAndOptional
-                                  . ?FieldSet
+                                : (?additionalFieldSet.?Lrequireds.?optionals)
+                              & 1:?requireds:?OnErequired
+                              &   whl
+                                ' ( !Lrequireds:%?required ?Lrequireds
+                                  & (   !required:(OnE.?required)
+                                      &   !required*!OnErequired
+                                        : ?OnErequired
+                                    |     !required*!OnErequired
+                                        : ?OnErequired
+                                      &     (   !OnErequired:%*%
+                                              & (!OnErequired.OnE)
+                                            | !OnErequired
+                                            )
+                                          * !requireds
+                                        : ?requireds
+                                      & 1:?OnErequired
+                                    )
                                   )
-                              & !requireds:~
+                              &   !FieldSet !additionalFieldSet
+                                : ?FieldSet
+                              & !requireds:~:~1
                               & (   !inout:Input
-                                  &   flg$('$requireds)
-                                    : (=?flag.?requireds)
                                   & !requireds !optionals:?Input
-                                  &   glf$('($flag.$Input))
-                                    : (=?Input)
                                 | !requireds !optionals:?Output
                                 )
                               & (shouldIAskOptionalFeature=.)
                               & (optionalFeature=.)
-                              & ~
-                              )
-                              ?
-                        |   !Input:~0
-                          & !Output:~0
-                          & (!Input.!Output)+!inoutpairs:?inoutpairs
-                        | 
+                          )
+                        . Input Output
                         )
-                      &     fieldset$(.!FieldSet)
-                            (       checkParmsSimple
-                                  $ (!urlparms.!featurePairMore)
-                                : ?!featurePairMore
-                              & (   !!featurePairMore:on
-                                  &   '$askFieldSet
-                                    : (=?sameFeaturePairOnceMore)
-                                  & makeHiddenFields$(!featurePairMore.on)
-                                | 
-                                )
-                            |   makeCheckboxFormField
-                              $ (   localized
-                                  $ ( "Add an input/output combination"
-                                      "Tilføj en input/output-kombination"
-                                    )
-                                . !featurePairMore
-                                . 
-                                )
-                            )
-                            (     sameFeaturePairOnceMore
-                                $ ( !inoutpairs
-                                  . !NrInOutAlternative
-                                  . !featname
-                                  . !urlparms
-                                  . !feattable
-                                  . !featdescription
-                                  )
-                              : (?formstuff.?inoutpairs)
-                            & !formstuff
-                            )
-                        : ?ret
-                      & tbl$(!featurePairMore,0)
-                      & tbl$(!featurePair,0)
-                      & (!ret.!inoutpairs)
+                    & !Input:~0
+                    & !Output:~0
+                    & (!Input.!Output):?inoutpairs
+                  | 
                   )
-                & !arg:(?urlparms.?feat.?formFields.?Metadata)
-                &   !feat
+                &     fieldset$(.!FieldSet)
+                      ( str$(!featurePair More):?featurePairMore
+                      & (   checkParmsSimple$(!urlparms.!featurePairMore)
+                          & makeHiddenFields$(!featurePairMore.on)
+                          &     askFieldSet
+                              $ ( (!NrInOutAlternative.!aboutFeature)
+                                . !urlparms
+                                )
+                            : (?formstuff.?additionalInoutpairs)
+                          &   !inoutpairs !additionalInoutpairs
+                            : ?inoutpairs
+                          & "If user has checked 'more' for opening creating
+                                 another input/output pair, then 'askFieldSet'
+                                 is called.
+                                "
+                          & !formstuff
+                        |   "The last input/output combination is always
+                                 followed by an invitation to add another one.
+                                "
+                          &   makeCheckboxFormField
+                            $ (   localized
+                                $ ( "Add an input/output combination"
+                                    "Tilføj en input/output-kombination"
+                                  )
+                              . !featurePairMore
+                              . 
+                              )
+                        )
+                      )
+                  : ?ret
+                & (!ret.!inoutpairs)
+            )
+          & ( createFeatureFieldset
+            =     inoutpairs aboutFeature urlparms formstuff
+                , formFields Metadata featname shortfeatname
+                , featdescription feattable specificationTables
+              .   !arg:(?aboutFeature.?urlparms)
+                & "
+                   urlparms: the URL parameters in Bracmat structures. When
+                   starting the edit, there is not much in them. After pressing
+                   'store' or 'replace', urlparms contains all the data that is
+                   in the form, including the changes the user has just made.
+
+                   aboutFeature: the general information about a feature. This
+                   is constant, system-wide info.
+                  "
+                &   !aboutFeature
                   : ? (name.?featname) ?
                   : ? (short.?shortfeatname) ?
                   : ? (description.?featdescription) ?
@@ -6182,25 +6154,11 @@ try {
                     )
                 & 0:?inoutpairs
                 & readTable$!feattable
-                & (   !formFields
-                        fieldset
-                      $ ( localized$!featname
-                        .       askFieldSet
-                              $ ( !inoutpairs
-                                . 0
-                                . !shortfeatname
-                                . !urlparms
-                                . !feattable
-                                . localized$!featdescription
-                                )
-                            : (?formstuff.?inoutpairs)
-                          & log$(inoutpairs !inoutpairs)
-                          & !formstuff
-                        )
-                  .   !Metadata
-                      ( !inoutpairs:0&
-                      | (!shortfeatname,!inoutpairs)
-                      )
+                &   askFieldSet$((0.!aboutFeature).!urlparms)
+                  : (?formstuff.?inoutpairs)
+                & ( fieldset$(localized$!featname.!formstuff)
+                  .   !inoutpairs:0&
+                    | (!shortfeatname,!inoutpairs)
                   )
             )
           & ( validationComments
@@ -6625,6 +6583,16 @@ try {
           & "Body of Register starts here"
           & log$NEW
           & log$INGESTLOGJE
+          & :?servicedSources:?servicedGoals
+          &   localized$("Save metadata" "Gem oplysninger")
+            : ?storeToolButton
+          &   localized$("Replace metadata" "Erstat oplysninger")
+            : ?replaceToolButton
+          &   localized$("Delete metadata" "Slet oplysninger")
+            : ?deleteToolButton
+          &   localized$("Show more entry fields" "Vis flere inputfelter")
+            : ?UpdateButton
+          & localized$("PHP wrapper" PHP-kode):?PHPbutton
           & 0:?tabind
           & :?hiddenData:?formFields:?Metadata
           & readTable$facets
@@ -6640,6 +6608,7 @@ try {
           & ( !arg:? (mail2.?mail2) ?
             | :?mail2
             )
+          & log$CallcreateBoilerPlate
           & (     createBoilerPlate$!arg
                 : (?ToolName.?password.?contactEmail.?arg)
               & staticFields$!arg:?formFields
@@ -6656,72 +6625,119 @@ try {
                     !formFields
                 : ?formFields
               & "
-            Decide in how far the features as received in the request string
-            (the arg variable) or the features as defined in toolprop.table
-            should be used in the ensuing process (storage as needed and
-            creation of the form to be returned to the caller):
-            One of the submit buttons pressed or tool not defined in 
-            toolprop.table (i.e. tool is not integrated): use info from request
-            string.
-            Otherwise: use metadata from toolprop.table.
-            "
-              &   (     !arg
+                Decide in how far the features as received in the request
+                string (the arg variable) or the features as defined in
+                toolprop.table should be used in the ensuing process (storage
+                as needed and creation of the form to be returned to the
+                caller): One of the submit buttons pressed or tool not defined
+                in toolprop.table (i.e. tool is not integrated): use info from
+                request string.
+                Otherwise: use metadata from toolprop.table.
+                "
+              &   (   !ToolName:
+                    & -1:?nth
+                    & "Register a new tool. The tool hasn't any features yet."
+                    & !arg
+                  |     !arg
                       :   ?
                           ( bsubmit
                           . @(?:(prev|next) #?nth)
                           )
                           ?
                     & "
-                  If user wants to navigate to the next or previous incarnation
-                  wind to the requested incarnation of tool and read tools'
-                  properties from toolprop.table. ZZ is the part of
-                  toolprop.table coming after this incarnation of this tool.
-                  This variable is later used to decide whether a 'next' button
-                  is needed and also to locate the old version of the
-                  incarnation if the user wants to remove or replace it.
-                  "
+                      If user wants to navigate to the next or previous
+                      incarnation wind to the requested incarnation of tool and
+                      read tools' properties from toolprop.table. ZZ is the
+                      part of the toolprop table coming after this incarnation
+                      of this tool. This variable is later used to decide
+                      whether a 'next' button is needed and also to locate the
+                      old version of the incarnation if the user wants to
+                      remove or replace it.
+                      "
                     &   windfw$(!toolprop.!ToolName.!nth)
                       : (?featjursPreexisting.?ZZ.?nth)
                     &   featureListing
                       $ (unfoldInputAndOutput$!featjursPreexisting)
                   |   !arg:? (nth.?nth) ?
                     & "
-                  The cardinal number of the incarnation is known.
-                  "
+                      The cardinal number of the incarnation is known.
+                      "
                     &   windfw$(!toolprop.!ToolName.!nth)
                       : (?featjursPreexisting.?ZZ.?nth)
-                    & (   !arg:? (bsubmit.?) ?
+                    & (   !arg:? (bsubmit.?) ?½
                         & "
-                      User presses one of the 'submit' buttons 
-                      (!storeToolButton, !replaceToolButton,
-                       !deleteToolButton, !UpdateButton, !PHPbutton).
-                      The features as shown in the form should overrule the
-                      properties as recorded in toolprop.table for this
-                      incarnation of the tool, so ignore the preexisting
-                      properties.
-                      "
+                          User presses one of the 'submit' buttons 
+                          (!storeToolButton, !replaceToolButton,
+                           !deleteToolButton, !UpdateButton, !PHPbutton).
+                          The features as shown in the form should overrule the
+                          properties as recorded in the toolprop table for this
+                          incarnation of the tool, so ignore the preexisting
+                          properties.
+                          "
                         & !arg
                       |   featureListing
                         $ (unfoldInputAndOutput$!featjursPreexisting)
                       )
-                  |     windfw$(!toolprop.!ToolName.0)
+                  |   "We are just entering the form for the selected tool.
+                       The cardinal number of the incarnation is not known.
+                       Navigate to the first incarnation of the tool.
+                      "
+                    &   windfw$(!toolprop.!ToolName.0)
                       : (?featjursPreexisting.?ZZ.?nth)
-                    & "
-                  The cardinal number of the incarnation is not known.
-                  Navigate to the first incarnation of the tool.
-                  "
+                    & "featjursPreexisting e.g. for a tool with features
+                       'facet' and 'lang':
+
+                              ( facet
+                              , ( ner*(seg*tok^PT.OnE)*(tok^simple*txt.OnE)
+                                . pos^PT*seg*tok
+                                )
+                              )
+                              (lang,(da.da))
+
+                       Or, another tool:
+
+                              (ambig,(una.una))
+                              (facet,(lem+pos+tok+txt+(seg*tok.OnE).rep))
+                              (format,(flat.html^ROTM))
+                              (pres,(nml.frq))
+                      
+                       ZZ are other incarnations of the same tool and other
+                       tools altogether, all coming AFTER the tool incarnation
+                       currently being shown.
+
+                       nth is the incarnation number.
+                      
+                       Unfolding makes sure that (input.output) pairs with sums
+                       in the input and/or output are converted to sum of
+                       pairs.
+
+                              ( facet
+                              , ( ner*(seg*tok^PT.OnE)*(tok^simple*txt.OnE)
+                                . pos^PT*seg*tok
+                                )
+                              )
+                              (lang,(da.da))
+
+                      Or
+                              (ambig,(una.una))
+                              ( facet
+                              ,   (lem.rep)
+                                + (pos.rep)
+                                + (tok.rep)
+                                + (txt.rep)
+                                + ((seg*tok.OnE).rep)
+                              )
+                              (format,(flat.html^ROTM))
+                              (pres,(nml.frq))
+
+                      "
                     &   featureListing
                       $ (unfoldInputAndOutput$!featjursPreexisting)
-                  |   -1:?nth
-                    & "
-                  The tool hasn't any features (yet).
-                  "
-                    & !arg
                   )
                 : ?featjursURL
               & "
-            Add 'previous' and 'next' buttons as needed.
-            "
+                Add 'previous' and 'next' buttons as needed.
+                "
               & ( !nth:<0
                 |   (   !nth:>0
                       &   !formFields submit$(str$(prev !nth+-1))
@@ -6737,75 +6753,60 @@ try {
               & !formFields helplink$:?formFields
               & !features:?feats
               & "
-            Step through the (short) list of features (facet, format, language)
-            For each feature, create an input field and collect in the
-            formFields variable. The Metadata variable collects the same data
-            in a format similar to the format in the toolprop.table.
-            "
-              & ( 
-                |   ( !featjursURL:? (Single.?Single) ?
-                    | :?Single
-                    )
-                  &     !formFields
-                          fieldset
-                        $ (   localized
-                            $ ( "Single/Multiple input(s)"
-                                "Én eller flere inputfiler"
+                Step through the (short) list of features (facet, format,
+                language). For each feature, create an input field and collect
+                in the formFields variable. The Metadata variable collects the
+                same data in a format similar to the format in the toolprop
+                table. A feature can look like:
+
+                          + ( (inDex.B)
+                              (name.Language Sprog)
+                              (short.lang)
+                              ( description
+                              .   \"Language of the text\" 
+                                  \"Sproget i teksten.\"
                               )
-                          .   paragraph
-                            $ ( makeCheckboxFormField
-                              $ (   localized
-                                  $ ( "All inputs in single file"
-                                      "Alt input i én fil"
-                                    )
-                                . Single
-                                .   (val.!Single)
-                                    ( desc
-                                    .   localized
-                                      $ ( "Check if there are e.g. >1 input facet or >1 input language, but everything is combined in a single input file."
-                                          "Check hvis der fx er > 1 input facet eller > 1 input sprog, men alt er kombineret i én inputfil."
-                                        )
-                                    )
-                                )
+                              (table.linguae)
+                              ( sourcehelp
+                              .   \"You can leave this as it is.\"
+                                  \"Du må gerne angive inputtets sprog\"
                               )
-                          )
-                    : ?formFields
-                )
+                              ( goalhelp
+                              .   \"You should fill out this field.\"
+                                  \"Du bør specificere outputtets sprog\"
+                              )
+                            )
+                "
               &   whl
-                ' ( !feats:%?feat+?feats
-                  &     askFeature
-                      $ (!featjursURL.!feat.!formFields.!Metadata)
-                    : (?formFields.?Metadata)
+                ' ( !feats:%?aboutFeature+?feats
+                  &   createFeatureFieldset$(!aboutFeature.!featjursURL)
+                    : (?additionalFormFields.?additionalMetadata)
+                  & !formFields !additionalFormFields:?formFields
+                  & !Metadata !additionalMetadata:?Metadata
                   )
-              & "Metadata: space separated list of (!shortfeatname,!inoutpairs)"
+              & " formFields is basically a list of HTML fieldset elements.
+                 The first two are for boilerplate info. Each of the remaining
+                 fieldsets is dedicated to one feature (facet, language, ...).
+                 These latter fieldsets are created by createFeatureFieldset.
+
+                 Each fieldset element consists (among other fields) of a list
+                 of fieldset elements, on for each input/output combination.
+
+                 Each input/output combination has paragraph (p) elements for
+                 input lines followed by output lines.
+
+                 A line consists of a label, a select element and one or more
+                 checkbox input elements.
+
+                 Metadata: space separated list of (!shortfeatname,!inoutpairs)
+                "
+              & "Before editing the tool metadata, the metadata were unfolded.
+                 Now, before storing them, they are refolded to save space and
+                 to make computation of workflows a little bit faster. (Is that
+                 also true: computations becoming faster?)
+                "
               & foldInputAndOutput$!Metadata:?Metadata
               & no:?force
-              & ( 
-                |   !Single:on
-                  &     map
-                      $ ( ( 
-                          =   feat vals nvals i o
-                            .   !arg:(?feat,?vals)
-                              & 0:?nvals
-                              &   whl
-                                ' ( !vals:(?i.?o)+?vals
-                                  & (   !i:%*% ?
-                                      & !(glf$('(%.$i))):?i
-                                      & yes:?force
-                                    | 
-                                    )
-                                  & !nvals+(!i.!o):?nvals
-                                  )
-                              & ( !nvals:0&
-                                | (!feat,!nvals)
-                                )
-                          )
-                        . !Metadata
-                        )
-                    : ?Metadata
-                  & !Metadata
-                | 
-                )
               & (!ToolName.!Metadata):?Metadata
               & (   ( !arg:? (bsubmit.?Submit) ?
                     | :?Submit
@@ -7083,8 +7084,7 @@ try {
       " If something went wrong, e.g. an URL that could not be fetched, call unstore. Called from create.java "
       ( unstore
       =   A Z
-        .   log$(unstore !arg)
-          & readTable$Uploads
+        .   readTable$Uploads
           & !Uploads:?A (?.?.!arg..) ?Z
           & !A !Z:?Uploads
           & saveTable$Uploads
@@ -7121,7 +7121,6 @@ try {
           |   !arg:%?car %?cdr
             & " " select$!car " " element$(opt..select$!cdr)
           |   !arg:%?car^%?cdr
-            & NEWSPEC
             & " " select$!car " " element$(spec..select$!cdr)
           | !arg:(0|1)&
           | !arg
@@ -7133,7 +7132,6 @@ try {
       =   gspc isp ispc ispcs
         .   !arg:(?gspc.?ispcs)
           & 0:?ispc
-          & NEWSPEC
           & (   !gspc+!ispcs
               :   ?
                 + ( 2*%@?isp+?
@@ -7570,7 +7568,6 @@ try {
               & !depends:((?.?.?bignumber),?.)
               & (~|!bignumber:<250000)
               )
-          & log$(bignumber !bignumber)
           & !bignumber:~<140000
       )
       ( selectCommonTracks
@@ -7691,6 +7688,7 @@ try {
             =     outAlt gvaluesAlt len gvaluePoss gspc ispc
                 , PathPart
               .   !arg:(?outAlt.?gvaluesAlt)
+                & (!gvaluesAlt:(?gvaluesAlt.OnE)|)
                 & "gvaluesAlt can have % prefix.
                    If so, outAlt must match all factors. 
                    If not, outAlt must match exactly one factor."
@@ -7717,32 +7715,51 @@ try {
                 & !PathPart
             )
           & ( updateInput
-            =   Nw Inp inp nip in pu osp NW val In sip
+            =     Nw Inp inp nip in pu osp NW val In Ins
+                , sip
               .   !arg:(?Inp.?val)
                 & 0:?Nw
                 &   whl
                   ' ( !Inp:%?inp+?Inp
                     & :?sip
                     &   whl
-                      ' ( !inp:%?In ?inp
+                      ' ( !inp:%?Ins ?inp
                         & 1:?NW
-                        & !In:?FLG
                         &   whl
-                          ' ( !In:%@?in^?pu*?nip
-                            &     !NW
-                                *   !in
-                                  ^ (   !pu:1
-                                      & (   !val:?*!in^?osp*?
-                                          & !osp
-                                        | 1
-                                        )
-                                    | !pu
+                          ' ( !Ins:%?In*?Ins
+                            & (   !In:(?In.OnE)
+                                & 1:?NIN
+                                &   whl
+                                  ' ( !In:%@?in^?pu*?nip
+                                    &     !NIN
+                                        *   !in
+                                          ^ (   !pu:1
+                                              & (     !val
+                                                    : ?*!in^?osp*?
+                                                  & !osp
+                                                | 1
+                                                )
+                                            | !pu
+                                            )
+                                      : ?NIN
+                                    & !nip:?In
                                     )
-                              : ?NW
-                            & !nip:?In
+                                & !NW*(!NIN.OnE):?NW
+                              |   !In:%@?in^?pu
+                                &     !NW
+                                    *   !in
+                                      ^ (   !pu:1
+                                          & (   !val:?*!in^?osp*?
+                                              & !osp
+                                            | 1
+                                            )
+                                        | !pu
+                                        )
+                                  : ?NW
+                              )
                             )
-                        & (   !In:1
-                            & !sip !(glf$('($FLG.$NW))):?sip
+                        & (   !Ins:1
+                            & !sip !NW:?sip
                           | 
                           )
                         )
@@ -7794,7 +7811,8 @@ try {
                                           | !inp+!ninput:?ninput
                                           )
                                         )
-                                    & ( !oinput:!ninput
+                                    & (   !oinput:!ninput
+                                        & (!gfield,!ninput)
                                       | !A (!gfield,!ninput) !Z
                                       )
                                   | !newGoal (!gfield,!input)
@@ -7830,7 +7848,7 @@ try {
                   & !Ar !Zr:?toolFeatures
                   & 0:?done
                   & "gvaluesAlts is a sum of alternative goaly specifications for a single feature. 
-                     A term can be the product of multiple feature values, e.g. %(lem*pos*syn) for the feature 'facet'."
+                     A term can be the product of multiple feature values, e.g. (lem*pos*syn.OnE) for the feature 'facet'."
                   &   whl
                     ' ( !gvaluesAlts:%?gvaluesAlt+?gvaluesAlts
                       & (       matchAlternative
@@ -7851,7 +7869,6 @@ try {
                   & !done:1
                 )
               & !ngoal:?goaly
-              & log1$(ngoal !ngoal)
               )
           & "Each field must match"
           & !goaly:
@@ -7867,12 +7884,14 @@ try {
       =     goal pipes toolA toolB outputA outputB inputA inputB
           , vA featA vB agree explicitlySanctioned
           , WRONGPIPES OKPIPES pipe npipes
-        .   !arg:(?goal.?pipes)
-          & ( agree
+        .   ( agree
             =   a ea b eb E
-              .   !arg:(%?a^?ea.%?b^?eb)
+              .     !arg
+                  : ( %?a^?ea
+                    .   (?b.OnE)&1:?eb
+                      | %?b^?eb
+                    )
                 & !a:!b
-                & NEWSPEC
                 & ( !ea:1
                   | !eb:1
                   | !ea:?+(%@?E&!eb:?+!E+?)+?
@@ -7889,12 +7908,9 @@ try {
                       )
                     * ?
             )
+          & !arg:(?goal.?pipes)
           & 0:?OKPIPES
           & 0:?WRONGPIPES
-          & ( 
-            |   !pipes:?+[?npipes
-              & log$(illegalSolution npipes !npipes)
-            )
           &   whl
             ' ( !pipes:%?pipe+?pipes
               & (     !pipe
@@ -8266,14 +8282,10 @@ try {
           & ( inner
             =   A B BB L M a b wrong
               .     ( wrong
-                    =   F Z ZZ A tool f v TLS
+                    =   F A tool f v
                       .   1:?F
-                        & 1:?TLS
-                        & 1:?ZZ
                         &   whl
-                          ' ( !arg:?Z*(?tool,(%?A.?))*?arg
-                            & !Z*!ZZ:?ZZ
-                            & !TLS*!tool:?TLS
+                          ' ( !arg:?*(?tool,(%?A.?))*?arg
                             &   whl
                               ' ( !A:(?f,%@?v^?) ?A
                                 & !f^!v*!F:?F
@@ -8455,22 +8467,13 @@ try {
               .   "Check whether source and goal already have been connected by tool and stored as a step."
                 & !arg:(?source.?goalterm.?tools.?restriction)
                 & 1:?forkk
-                & (   "Test if % prepended. If no, split product. 
-                       glf$ fails if the second argument already has
-                       the prefix of the first argument"
-                    & glf$('(%.$goalterm))
-                    & "No % here"
-                    &   whl
-                      ' ( !forkk:~0
-                        & !goalterm:%?goaly*?goalterm
-                        &     fulfilGoal
-                            $ (!source.!goaly.!tools.!restriction.!forkk)
-                          : ?forkk
-                        )
-                  |     fulfilGoal
-                      $ (!source.!goalterm.!tools.!restriction.!forkk)
-                    : ?forkk
-                  )
+                &   whl
+                  ' ( !forkk:~0
+                    & !goalterm:%?goaly*?goalterm
+                    &     fulfilGoal
+                        $ (!source.!goaly.!tools.!restriction.!forkk)
+                      : ?forkk
+                    )
                 & 1+!forkk+-1
             )
           & " unfoldGoal:
@@ -8513,12 +8516,7 @@ try {
                       :   ?A
                         +   ?AA
                           * ( ?AAA
-                              ( ?gfield
-                              ,   %?M1*%?M2:?prod
-                                & "Test if % prepended. If yes, do nothing to split product.
-                                   glf$ fails if $prod has % prefix"
-                                & glf$('(%.$prod))
-                              )
+                              (?gfield,%?M1*%?M2:?prod)
                               ?ZZZ
                             )
                           * ?ZZ
@@ -8558,8 +8556,15 @@ try {
                                         | ?+[>2000
                                         )
                                     & 0
-                                  |     illegalSolution$(!goalterm.!forkk)
+                                  |   ~
+                                    &   illegalSolution$(!goalterm.!forkk)
                                       : (?WRONGPIPES.?OKPIPES)
+                                    &   log
+                                      $ ( WRONGPIPES
+                                          !WRONGPIPES
+                                          OKPIPES
+                                          !OKPIPES
+                                        )
                                     & (!goalterm.!OKPIPES)
                                   | (!goalterm.!forkk)
                                   )
@@ -8611,7 +8616,7 @@ try {
                                       .   !arg:(?f,?v)
                                         & ( !f
                                           ,     !v:%*%
-                                              & !(glf$('(%.$v)))
+                                              & N21$!v
                                             | !v
                                           )
                                     )
@@ -8668,6 +8673,10 @@ try {
                   )
                 & (getGoals$!allios.!restrictedTools)
             )
+          & "N21: Mark the argument as feature values all found in a single
+             file. If the argument is atomic, just return the argument. Else,
+             embed the product of feature values a, b and c in (a*b*c.OnE)."
+          & (N21=.!arg:@|(!arg.OnE))
           & ( getSuperGoals
             =   goal nwg
               .   !arg:?goal:?nwg
@@ -8676,6 +8685,7 @@ try {
                       =   feat vals A Z Val
                         .     !arg:(?feat.?vals)
                             & !goal:?A (!feat,?Val) ?Z
+                            & !Val:@
                             &   map
                               $ ( ( 
                                   =   val alts sp
@@ -8699,14 +8709,7 @@ try {
                                                                   )
                                                                 & (   !arg
                                                                     : @
-                                                                  | !( glf
-                                                                     $ ( 
-                                                                       ' ( %
-                                                                         .   
-                                                                           $ arg
-                                                                         )
-                                                                       )
-                                                                     )
+                                                                  | N21$!arg
                                                                   )
                                                               )
                                                               !Z
@@ -8752,23 +8755,7 @@ try {
           & new$hash:?notThisTool
           & 0:?Calls
           & log$"Calling fulfil"
-          &   fulfil$(!activeTools.!source.!goal.0.!restriction)
-            : ?reslt
-          &   log
-            $ ( "Calls to fulfil"
-                !Calls
-                memos
-                !memos
-                duplic
-                !duplic
-                sourcegoalmatch
-                !sourcegoalmatch
-                impassages
-                !impassages
-                notttcnt
-                !notttcnt
-              )
-          & !reslt
+          & fulfil$(!activeTools.!source.!goal.0.!restriction)
       )
       ( extractIOfeaturesFromHTTParg
       =   fs IorO f name short p A v Z feat spec io V
@@ -8788,7 +8775,6 @@ try {
               &   whl
                 ' ( !arg:?A (!p.?v) ?Z
                   & !A !Z:?arg
-                  & NEWSPEC
                   & ( !v:%?feat^%?spec
                     |   !v:@(?:?feat "^" ?spec)
                       & !feat^!spec:?v
@@ -8881,26 +8867,49 @@ try {
        A feature (F,a*b*c) has elements a, b and c.
       "
       ( supplement
-      =   f v NF OF e A Z G
-        .   !arg:(?NF.?OF)
+      =   f v NF OF e A Z G updateWithSubSpec$
+        .   ( updateWithSubSpec
+            =   vn v e nv nvs ve w0 ws w a
+              .   !arg:(?vn.?ve:@?v^%?e)
+                & 1:?nv
+                &   whl
+                  ' ( !vn:%?w0*?vn
+                    &     !nv
+                        * (   !w0:(?ws.?OnE)
+                            & 1:?nvs
+                            &   whl
+                              ' ( !ws:?a*!v*?ws
+                                & !nvs*!a*!ve:?nvs
+                                )
+                            & (!nvs*!ws.OnE)
+                          | !w0:!v&!ve
+                          | !w0
+                          )
+                      : ?nv
+                    )
+                & !nv
+            )
+          & !arg:(?NF.?OF)
           &   map
             $ ( ( 
-                =   a z f vO vN vn e v G A Z
+                =   a z f vO vN vn e v G A Z ve
                   .   !arg:(?f,?vO)
                     & (   !NF:?A (!f,?vN:?vn) ?Z
-                        & (   !vN:?vn
-                            &   whl
-                              ' ( !vO:?*%@?v^(~1:?e)*?vO
-                                & !vn:?a*%@!v^?G*?z
-                                & (   !G:1
-                                    & !a*!v^!e*!z:?vn
-                                  | 
-                                  )
-                                )
-                            & ( !vn:!vN
-                              | !A (!f,!vn) !Z:?NF
+                        &   whl
+                          ' ( !vO:%?v*?vO
+                            & (   !v:(?vs.OnE)
+                                &   whl
+                                  ' ( !vs:?*(%^%:?ve)*?vs
+                                    &   updateWithSubSpec$(!vn.!ve)
+                                      : ?vn
+                                    )
+                              |   !v:%^%
+                                & updateWithSubSpec$(!vn.!v):?vn
+                              | 
                               )
-                          | 
+                            )
+                        & ( !vn:!vN
+                          | !A (!f,!vn) !Z:?NF
                           )
                       | !arg !NF:?NF
                       )
@@ -8910,9 +8919,17 @@ try {
               )
           & sort$!NF
       )
+      "containedBy takes two feature bundles, 'short' and 'long'.
+       It tries to prove that the short bundle is compatible with the long one.
+       If 'long' has a value subspecification while 'short' doesn't, then
+       'short' copies the subspecification from 'long'. All features in 'short'
+       must match a feature in 'long'.
+       The returned value is 'short', enriched with subspecifications.
+      "
       ( containedBy
-      =   short long fea val e E rem
-        .   !arg:(?short.?long)
+      =     short long fea val e E rem Val P nval nVal
+          , saves savel
+        .   !arg:(?short:?saves.?long:?savel)
           & ( !short:
             |   !short:(?fea,@?val^?e) ?short
               & !long:? (!fea,!val^?E) ?
@@ -8923,6 +8940,21 @@ try {
                   & containedBy$(!short.!long):?rem
                   & (!fea,!val^!e) !rem
                 )
+            |   !short:(?fea,(?val.OnE)) ?short
+              & !long:? (!fea,?Val) ?
+              & 1:?P
+              &   whl
+                ' ( !val:%@?v^?e*?nval
+                  & !Val:!v^?E*?nVal
+                  & (   !e:(1|!E)
+                      & !P*!v^!E:?P
+                    | !E:1&!P*!v^!e:?P
+                    )
+                  & (!nval.!nVal):(?val.?Val)
+                  )
+              & 1:!val:!Val
+              & containedBy$(!short.!long):?rem
+              & (!fea,(!P.OnE)) !rem
             |   !short:(?fea,%*%:?val) ?short
               & !long:? (!fea,!val) ?
               & containedBy$(!short.!long):?rem
@@ -8930,17 +8962,15 @@ try {
             )
       )
       ( Tubst
-      =   OI I A o i sub prog,H h h1 H1 O rpl
+      =     OI I A o i sub prog
+          , H h h1 H1 O rpl SAVEIN
         .   ( rpl
-            =   vals fea gold A B exp aa zz
-              .   !arg:(?vals.?fea.?gold)
+            =   vals fea gold A B exp aa zz SAVEARG
+              .   !arg:(?vals.?fea.?gold):?SAVEARG
                 & (   !vals:%?A*%?B
-                    & (   :!(glf$('($vals.?))) ?
-                        & rpl$(!A.!fea.!gold):?A
-                        & rpl$(!B.!fea.!gold):?B
-                        & !A*!B
-                      | !vals
-                      )
+                    & rpl$(!A.!fea.!gold):?A
+                    & rpl$(!B.!fea.!gold):?B
+                    & !A*!B
                   |   !vals:%?A %?B
                     & rpl$(!A.!fea.!gold):?A
                     & (rpl$(!B.!fea.!gold):?B|)
@@ -8955,12 +8985,19 @@ try {
                             | !B:1&!exp
                             )
                           : ?B
-                        & !aa*!A^!B*!zz
+                        & !A^!B
                       | !A^!B
+                      )
+                  |   !vals:(?.OnE)
+                    & "Instead of prepending with %, we group the product and mark it with OnE."
+                    & (     !gold
+                          : ?*(? (!fea,?*!vals*?:?B) ?)*?
+                        & !B
+                      | !vals
                       )
                   )
             )
-          & !arg:(?arg.?OI)
+          & !arg:(?arg.?OI):?SAVEIN
           & (   !arg:(((?,?) ?)*?:?H.?arg)
               & Tubst$(!arg.!OI):?arg
               & 1:?h
@@ -9029,6 +9066,9 @@ try {
             | !arg
             )
       )
+      "Subst: In a given workflow, replace all occurrences of (Output.Input)
+       feature bundle pairs with the possibly richer (at subspec level) version
+       found in the second argument."
       ( Subst
       =   OI H h h1 H1 O
         .   !arg:(?arg.?OI)
@@ -9037,33 +9077,33 @@ try {
              OI is a product of tool names with exponents. 
              Each exponent is a term or sum of terms. 
              A term is a dotted pair (output features.input features).
-             A term can have a numeral factcor."
+             A term can have a numeral factor."
           & (   !arg:(((?,?) ?)*?:?H.?arg)
               & "If single input, H is e.g 
               
-                (ambig,una)
-                (app,nrm)
-                (facet,lem*mrf*pos^Uni*stx)
-                (format,txtann)
-                (lang,da)
-                (period,c21)
-                (pres,nml)
-            .   dapipe
-              , (   (ambig,una)
+                    (ambig,una)
                     (app,nrm)
                     (facet,lem*mrf*pos^Uni*stx)
                     (format,txtann)
-                    (lang,da)   
+                    (lang,da)
+                    (period,c21)
+                    (pres,nml)
+                .   dapipe
+                  , (   (ambig,una)
+                        (app,nrm)
+                        (facet,lem*mrf*pos^Uni*stx)
+                        (format,txtann)
+                        (lang,da)   
               
-              [...]
+                  [...]
 
 
-              or 
-              "
+                  "
               & Tubst$(!arg.!OI):?arg
               & 1:?h
               &   whl
                 ' ( !H:%?H1*?H
+                  & "H1 is input expected to come from one tool"
                   & (     !arg
                         : (   ?
                             * ( ?
@@ -9219,13 +9259,17 @@ try {
                 & !nres
             )
           & ( sig
-            =   
-              .   !arg:%@?a^?*?arg&!a*sig$!arg
+            =   a
+              .     !arg:%?a*?arg
+                  &   ( !a:(?a.OnE)&sig$!a
+                      | !a:%@?a^?&!a
+                      )
+                    * sig$!arg
                 | 1
             )
           & ( UpdateResultsFromMethods
-            =     r[esults methods nres result A method
-                , Sig SR SM
+            =     results methods nres result A method
+                , Sig SR SM B
               .   ( Sig
                   =   
                     .   map
@@ -9242,7 +9286,17 @@ try {
                 &   whl
                   ' ( !results:%?result*?results
                     & Sig$!result:?SR
-                    &     (   !methods:?A*!result*?methods
+                    &     map
+                        $ ( ( 
+                            =   f v
+                              .     !arg
+                                  : (?f,(?v.OnE)|?v)
+                                & (!f,!v)
+                            )
+                          . !result
+                          )
+                      : ?B
+                    &     (   !methods:?A*!B*?methods
                             & !A*!methods:?methods
                             & !result
                           |     !methods
@@ -9263,22 +9317,52 @@ try {
                             & !A*!methods:?methods
                             &   map
                               $ ( ( 
-                                  =   F v e E nvs vs
+                                  =   F v e E nvs vs VS NVS
                                     .   !arg:(?F,?vs)
                                       & 1:?nvs
                                       &   whl
-                                        ' ( !vs:%@?v^?e*?vs
+                                        ' ( !vs:%?v*?vs
                                           &     !nvs
-                                              * (   !e:1
-                                                  &   !v
-                                                    ^ (     !method
-                                                          :   ?
-                                                              (!F,?*!v^?E*?)
-                                                              ?
-                                                        & !E
-                                                      | 1
+                                              * (   !v:(?VS.OnE)
+                                                  & 1:?NVS
+                                                  &   whl
+                                                    ' ( !VS:%@?v^?e*?VS
+                                                      &     !NVS
+                                                          *   !v
+                                                            ^ (   !e:1
+                                                                & (     !method
+                                                                      :   ?
+                                                                          ( !F
+                                                                          ,   ?
+                                                                            *   !v
+                                                                              ^ ?E
+                                                                            * ?
+                                                                          )
+                                                                          ?
+                                                                    & !E
+                                                                  | 1
+                                                                  )
+                                                              | !e
+                                                              )
+                                                        : ?NVS
                                                       )
-                                                | !v^!e
+                                                  & (!NVS.OnE)
+                                                |   !v:@?v^?e
+                                                  &   !v
+                                                    ^ (   !e:1
+                                                        & (     !method
+                                                              :   ?
+                                                                  ( !F
+                                                                  ,   ?
+                                                                    * !v^?E
+                                                                    * ?
+                                                                  )
+                                                                  ?
+                                                            & !E
+                                                          | 1
+                                                          )
+                                                      | !e
+                                                      )
                                                 )
                                             : ?nvs
                                           )
@@ -9306,12 +9390,24 @@ try {
                           & (   !OF:?A (!f,?ovs) ?Z
                               & (   sig$!ovs:!nsg
                                   &   whl
-                                    ' ( !nvs:?*%@?v^%?e*?nvs
-                                      & !ovs:?a*!v^?E*?z
-                                      & ( ( !e:!E
-                                          | !E:~1
-                                          )
-                                        | !a*!v^!e*!z:?ovs
+                                    ' ( !nvs:%?nv*?nvs
+                                      & (   !nv:(?nv.OnE)
+                                          &   whl
+                                            ' ( !nv:?*%@?v^%?e*?nv
+                                              & !ovs:?a*!v^?E*?z
+                                              & ( ( !e:!E
+                                                  | !E:~1
+                                                  )
+                                                | !a*!v^!e*!z:?ovs
+                                                )
+                                              )
+                                        |   !nv:@?v^%?e
+                                          & !ovs:?a*!v^?E*?z
+                                          & ( ( !e:!E
+                                              | !E:~1
+                                              )
+                                            | !a*!v^!e*!z:?ovs
+                                            )
                                         )
                                       )
                                   & !A (!f,!ovs) !Z:?OF
@@ -9326,7 +9422,7 @@ try {
             )
           & ( harmonizeSubspecsOnSimilarFeatures
             =   OF NF
-              .   !arg:((@?,~(?.?)) ?:?NF.?OF)
+              .   !arg:((@?,~(?.~OnE)) ?:?NF.?OF)
                 & (supplement$(!NF.!OF).updateOFwithNF$(!OF.!NF))
             )
           & ( oUts
@@ -9378,7 +9474,7 @@ try {
                   & fromMethods$(!methods.!OF):(?methods.?NF)
                   & (   UpdateResultsFromMethods$(!results.oUts$!methods)
                       : ?results
-                    | 
+                    | log$(UpdateResultsFromMethods FAILED)
                     )
                   & ((!results.!methods).!NF)
                 | Results$!arg
@@ -9434,6 +9530,23 @@ try {
                         &   whl
                           ' ( !a
                             :   ( %?A
+                                &     map
+                                    $ ( ( 
+                                        =   f vs v nvs
+                                          .   !arg:(?f,?vs)
+                                            & 1:?nvs
+                                            &   whl
+                                              ' ( !vs:%?v*?vs
+                                                & ( !v:(?v.OnE)
+                                                  | 
+                                                  )
+                                                & !nvs*!v:?nvs
+                                                )
+                                            & (!f,!nvs)
+                                        )
+                                      . !A
+                                      )
+                                  : ?A
                                 &   !b
                                   : (?*(?,(!A.?))*?|?*!A*?)
                                 )
@@ -9457,7 +9570,6 @@ try {
                                 )
                             & !arg:?CULPRIT
                             & lst$(CULPRIT,path$CULPRIT,RAW,NEW)
-                            & lst$(pipe3,path$pipe3WRONG,NEW)
                             & ~
                           )
                   )
@@ -9473,10 +9585,11 @@ try {
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
               & ( !pipe3:0
                 |   validateInputsForEachTool$!pipe3
+                  & log$validated
                   & ( !pipes:?+!pipe3+?
                     | !pipe3+!pipes:?pipes
                     )
-                | 
+                | log$INVALID
                 )
               )
           & !pipes
@@ -9648,7 +9761,8 @@ try {
                    zero (if it isn't). So it does not FAIL."
                 & ( wantThis
                   =     sig nsig clashing NoValueConflicts copySpecs
-                      , signatures unifySignatures nittyGritty
+                      , signatures unifySignaturesAtSpecLevel
+                      , mergeOIbundlesWherePossible
                     .   "signatures: create a product of tool names with
                          exponents that descibe output and input features, as
                          dotted pairs.
@@ -9678,7 +9792,7 @@ try {
                           .   !arg:((?Ao.?Ai),(?Bo.?Bi))
                             & (supplement$(!Ao.!Bo).supplement$(!Ai.!Bi))
                         )
-                      & ( nittyGritty
+                      & ( mergeOIbundlesWherePossible
                         =   oi1 oi2 A M Z
                           .       !arg
                                 :   ?A
@@ -9689,7 +9803,7 @@ try {
                                       & NoValueConflicts$(!oi1,!oi2)
                                       )
                                   + ?Z
-                              &   nittyGritty
+                              &   mergeOIbundlesWherePossible
                                 $ ( !A
                                   +   copySpecs
                                     $ (!oi2,copySpecs$(!oi1,!oi2))
@@ -9698,13 +9812,13 @@ try {
                                   )
                             | !arg
                         )
-                      & ( unifySignatures
+                      & ( unifySignaturesAtSpecLevel
                         =   tool A sigs
                           .       !arg
                                 : ?A*%@?tool^(%+%:?sigs)*?arg
                               &   !A
-                                * !tool^nittyGritty$!sigs
-                                * unifySignatures$!arg
+                                * !tool^mergeOIbundlesWherePossible$!sigs
+                                * unifySignaturesAtSpecLevel$!arg
                             | !arg
                         )
                       & ( clashing
@@ -9744,14 +9858,28 @@ try {
                                 + ?
                         )
                       & signatures$!arg:?sig
+                      & "sig is a product of tool IDs. Each ID has an exponent
+                         that is the sum of all (O.I) specs occuring in the
+                         current computed workflow. Here, O and I are feature
+                         bundles."
                       & (   !sig:?*?^(%+%:clashing$)*?
                           & "Discard solutions that contain steps that are
                              equal (or at least compatible) at the un-
-                             subspecified level, but clash at the spec level."
+                             subspecified level, but clash at the spec level.
+                             Such solutions are not 'wrong', but unlikely what
+                             the user wants."
                           & 0
-                        |   unifySignatures$!sig:?nsig
-                          & Subst$(!arg.!nsig):?arg
-                          & "Either each tool is used in exactly one way, or
+                        |   unifySignaturesAtSpecLevel$!sig:?nsig
+                          & "nsig is a product of maximally compressed
+                             signatures. If two (O.I) feature bundle pairs can
+                             enrich each other without clashing, then those
+                             pairs are merged into one. These enriched (O.I)
+                             pairs do nowhere occur in the current workflow, so
+                             now we substitute the rich O.I pairs for the
+                             original ones."
+                          & Subst$(!arg:?OLDARG.!nsig):?arg
+                          & "arg has become more complete subspec-wise.
+                             Either each tool is used in exactly one way, or
                              the different ways ALL differ more than only at
                              the subspec level."
                           & !arg
@@ -9824,12 +9952,10 @@ try {
                             )
                       )
                     )
-                & log$(prunePipesCallsNow !calls)
                 & !calls:<567890
                 & !newpipes
             )
           & !arg:(?arg.?nth)
-          & log$(nth !nth)
           & 0:?indent:?calls
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
@@ -9838,7 +9964,10 @@ try {
             | :?superset
             )
           & readTable$features
-          & (!recentTasks|readTable$recentTasks)
+          & ( !recentTasks
+            | readTable$recentTasks
+            | :?recentTasks&saveTable$recentTasks
+            )
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
           & (!i.!o.!restriction.!superset):?userInput
@@ -9863,7 +9992,6 @@ try {
                 . allRight
                 )
             |   "The next call fails if no workflows found." l
-              & log$"Calling fp"
               & fp$!userInput:?FP
               & log$"Calling fp success"
               & ( !userInput
@@ -9899,6 +10027,20 @@ try {
                   | (!FP.onlyWithoutRestriction)
                 )
             )
+      )
+      ( composeValueString
+      =   valstr v s specstr vals
+        .   :?valstr
+          & 0:?specs
+          & !arg:?vals
+          &   whl
+            ' ( !vals:%@?v^?s*?vals
+              & !valstr "_" !v:?valstr
+              & ( !s:(|1)
+                | !specs+(str$("__" !v "_" !s).0):?specs
+                )
+              )
+          & (str$!valstr.!specs)
       )
       " convert2URLs receives a list of job steps, each step describing the 
 step's tool, its output and its inputs. The inputs not only tell the type of
@@ -10061,14 +10203,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   ' ( !ou:(?feat,?vals) ?ou
                     &   whl
                       ' ( !vals:%@?val^?spec*?vals
-                        & NEWSPEC
                         &     !requestString
                             + ( O
                               . Short$!feat
                               . !val
-                              .     !spec:1
-                                  & NEWSPEC
-                                  & 0
+                              .   !spec:1&0
                                 | !spec
                               )
                           : ?requestString
@@ -10092,7 +10231,29 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & ( getDepsAndAddInputsToRequestString
             =   in nfiles requestString newJobs
-              .   !arg:(?in.?nfiles.?requestString.?newJobs)
+              .   ( getCompatibleInputFile
+                  =     Items FiLfeats item feats Uploads
+                      , fileitem meta feats
+                    .   !arg:(?Items.?Uploads.?FiLfeats)
+                      &   !Items
+                        :   ?
+                            ( Item
+                            .   %?item ?feats
+                              &   !Uploads
+                                :   ?
+                                    ( ?
+                                    . !item
+                                    . ?fileitem
+                                    . ?
+                                    .   ?feats
+                                      & compatible$(!feats.!FiLfeats)
+                                    )
+                                    ?
+                            )
+                            ?
+                      & !fileitem
+                  )
+                & !arg:(?in.?nfiles.?requestString.?newJobs)
                 &     map
                     $ ( ( 
                         =     feat vals Val spec file
@@ -10101,61 +10262,56 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             & :?dep
                             &   whl
                               ' ( !vals:%?Val*?vals
+                                & 0:?specs
                                 &   !Val
                                   : ( ( %@?val^?spec
                                       .     @?file
                                           & OffSet$!file:?file
                                           &   !dep (!file,pending)
                                             : ?dep
-                                          &   ( F
-                                              .   (   !newJobs
-                                                    :   ?
-                                                        ( !jobNr
-                                                        . !file
-                                                        . ?
-                                                        . ?
-                                                        . ?
-                                                        . ?file
-                                                        )
-                                                        ?
-                                                  |   log
-                                                    $ ( OOPS
-                                                        !jobNr
-                                                        file
-                                                        !file
-                                                      )
-                                                  )
-                                                & !file
-                                              )
-                                            : ?fileTerm
+                                          & (   !newJobs
+                                              :   ?
+                                                  (!jobNr.!file.?.?.?.?file)
+                                                  ?
+                                            |   log
+                                              $ (OOPS !jobNr file !file)
+                                            )
+                                          & (F.!file):?fileTerm
                                         |   (FiL.?FiLfeats)
-                                          &   !Items
-                                            :   ?
-                                                ( Item
-                                                .   %?item ?feats
-                                                  &   !Uploads
-                                                    :   ?
-                                                        ( ?
-                                                        . !item
-                                                        . ?fileitem
-                                                        .   ?meta
-                                                          :   ?
-                                                              (DATE.?DATE)
-                                                              ?
-                                                        .   ?feats
-                                                          &   compatible
-                                                            $ (!feats.!FiLfeats)
-                                                        )
-                                                        ?
-                                                )
-                                                ?
+                                          &     getCompatibleInputFile
+                                              $ (!Items.!Uploads.!FiLfeats)
+                                            : ?fileitem
                                           & !dep !fileitem:?dep
                                           & (F.!fileitem):?fileTerm
                                       )
                                     |   %@?val^?spec
                                       & 0:?fileTerm
+                                    | ( ?val&1:?spec
+                                      .     @?file
+                                          &   composeValueString$!val
+                                            : (?val.?specs)
+                                          & OffSet$!file:?file
+                                          &   !dep (!file,pending)
+                                            : ?dep
+                                          & (   !newJobs
+                                              :   ?
+                                                  (!jobNr.!file.?.?.?.?file)
+                                                  ?
+                                            |   log
+                                              $ (OOPS !jobNr file !file)
+                                            )
+                                          & (F.!file):?fileTerm
+                                        |   (FiL.?FiLfeats)
+                                          &     getCompatibleInputFile
+                                              $ (!Items.!Uploads.!FiLfeats)
+                                            : ?fileitem
+                                          & !dep !fileitem:?dep
+                                          & (F.!fileitem):?fileTerm
+                                      )
+                                    |   ?val
+                                      & log$(UNMATCHED !val)
+                                      & ~
                                     )
-                                & NEWSPEC
                                 &     !requestString
                                     + (   !nfiles:1
                                         & !fileTerm
@@ -10168,11 +10324,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                             & !fileTerm
                                           | 0
                                           )
-                                        + (   !spec:1
-                                            & NEWSPEC
+                                        + (     !spec
+                                              : (0|1)
                                             & 0
                                           | (!spec.0)
                                           )
+                                        + !specs
                                       )
                                   : ?requestString
                                 )
@@ -10183,6 +10340,75 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   : ?dep
                 & (!dep.!requestString)
             )
+          & ( distillInputsFromRequestString
+            =     requestString inputs someinputs firstinput
+                , moreinputs other oh fh
+              .   !arg:?requestString
+                &   !requestString
+                  : ( ?+(F.@(?:?inputs "-step" #% ?))+?
+                    |     ?
+                        + ( I
+                          .   ?
+                            + ( ?
+                              .   ?someinputs
+                                + ( ?
+                                  .   ?
+                                    + (F.@(?:?firstinput "-step" #% ?))
+                                    + ?
+                                  )
+                                + ?moreinputs
+                              )
+                            + ?
+                          )
+                        + ?
+                      & :?inputs
+                      & !someinputs+!moreinputs:?moreinputs
+                      &   whl
+                        ' (   !moreinputs
+                            :   ?
+                              + ( ?
+                                .   ?
+                                  + ( F
+                                    . @( ?
+                                       : ( ?other "-step" #% ?
+                                         | ?other
+                                         )
+                                       )
+                                    )
+                                  + ?
+                                )
+                              + ?moreinputs
+                          & @(!firstinput:?fh [%@(!other:?oh !sjt))
+                          &     str
+                              $ (   ( !fh:
+                                    | !oh:
+                                    |   @(!fh:!oh "-" #?)
+                                      & :?oh
+                                    )
+                                  & (     !inputs
+                                        : (|!firstinput)
+                                      &   (   @(!firstinput:? !fh ?)
+                                            & 
+                                          | !fh
+                                          )
+                                          (   @(!firstinput:? !oh ?)
+                                            & 
+                                          | !oh
+                                          )
+                                          !firstinput
+                                    | !inputs "_" !other
+                                    )
+                                |   ( !inputs:&!fh "_"
+                                    | 
+                                    )
+                                    !oh
+                                )
+                            : ?inputs
+                          )
+                    )
+                & !inputs
+            )
+          & log$(convert2URLs !arg)
           & 0:?maxjobID
           & readTable$features
           & readTable$tooladm
@@ -10213,175 +10439,84 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               &     getDepsAndAddInputsToRequestString
                   $ (!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
+              &     !dep
+                    ( :?files
+                    & ( !requestString:?+(F.?)+?
+                      |   !Items:?items
+                        &   whl
+                          ' (   !items
+                              : (Item.%?item ?feats) ?items
+                            &   !Uploads
+                              :   ?
+                                  ( ?
+                                  . !item
+                                  . ?file
+                                  . ? (DATE.?DATE) ?
+                                  . ?feats
+                                  )
+                                  ?
+                            &     !requestString
+                                + (   !discerningFeature:
+                                    & !files !file:?files
+                                    & (F.!file)
+                                  |     !feats
+                                      : ? (!discerningFeature.?v) ?
+                                    &   getShort$(!discerningFeature.!v)
+                                      : ?v
+                                    &   Long$!discerningFeature
+                                      : ?DiscerningFeature
+                                    & notIncompatible$(!feats.!In)
+                                    & compatible$(!feats.!In)
+                                    &   !In
+                                      :   ?
+                                          (   !discerningFeature
+                                            | !DiscerningFeature
+                                          ,   ?+?*!v^?*?+?
+                                            | (?+?*!v^?*?+?.?)
+                                            | ?+?*!v*?+?
+                                            | (?+?*!v*?+?.?)
+                                          )
+                                          ?
+                                    & !v:%@?v^?
+                                    & !files !file:?files
+                                    & (I.!discerningFeature.!v.F.!file)
+                                  | 0
+                                  )
+                              : ?requestString
+                            )
+                      )
+                    & (     !requestString
+                          : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
+                            | ?+(F.?)+?
+                            )
+                        & simpleInput$!requestString:?requestString
+                      |   !requestString+forceFeed$!Items
+                        : ?requestString
+                      )
+                    & !files
+                    )
+                : ?inputs
+              & compact$!requestString:?requestString
               &     !newJobs
                     ( !jobNr
                     . !jobID
-                    .     !dep
-                          ( :?files
-                          & ( !requestString:?+(F.?)+?
-                            |   !Items:?items
-                              &   whl
-                                ' (   !items
-                                    : (Item.%?item ?feats) ?items
-                                  &   !Uploads
-                                    :   ?
-                                        ( ?
-                                        . !item
-                                        . ?file
-                                        .   ?meta
-                                          : ? (DATE.?DATE) ?
-                                        . ?feats
-                                        )
-                                        ?
-                                  &     !requestString
-                                      + (   !discerningFeature:
-                                          & !files !file:?files
-                                          & (F.!file)
-                                        |     !feats
-                                            :   ?
-                                                (!discerningFeature.?v)
-                                                ?
-                                          &     getShort
-                                              $ (!discerningFeature.!v)
-                                            : ?v
-                                          &   Long$!discerningFeature
-                                            : ?DiscerningFeature
-                                          & notIncompatible$(!feats.!In)
-                                          & compatible$(!feats.!In)
-                                          &   !In
-                                            :   ?
-                                                (   !discerningFeature
-                                                  | !DiscerningFeature
-                                                ,   ?+?*!v^?*?+?
-                                                  | (?+?*!v^?*?+?.?)
-                                                  | ?+?*!v*?+?
-                                                  | (?+?*!v*?+?.?)
-                                                )
-                                                ?
-                                          & !v:%@?v^?
-                                          & !files !file:?files
-                                          & ( I
-                                            . !discerningFeature
-                                            . !v
-                                            . F
-                                            . !file
-                                            )
-                                        | 0
-                                        )
-                                    : ?requestString
-                                  )
-                            )
-                          & (     !requestString
-                                : (   ?
-                                    + (I.?+(?.?+(?.?+(F.?)+?)+?)+?)
-                                    + ?
-                                  | ?+(F.?)+?
-                                  )
-                              &   simpleInput$!requestString
-                                : ?requestString
-                            |   !requestString+forceFeed$!Items
-                              : ?requestString
-                            )
-                          & !files
-                          )
-                      : ?inputs
+                    . !inputs
                     . !URL
-                    . compact$!requestString:?requestString
+                    . !requestString
                     .   "Output from tool:"
-                      & @(!jobID:? #?ID)
                       &   str
                         $ ( (     !inputs
                                 : ? (@(?:step ?),?) ?
-                              &   !requestString
-                                : (   ?
-                                    + (F.@(?:?inputs "-step" #% ?))
-                                    + ?
-                                  |     ?
-                                      + ( I
-                                        .   ?
-                                          + ( ?
-                                            .   ?someinputs
-                                              + ( ?
-                                                .   ?
-                                                  + ( F
-                                                    . @( ?
-                                                       :   ?firstinput
-                                                           "-step"
-                                                           #%
-                                                           ?
-                                                       )
-                                                    )
-                                                  + ?
-                                                )
-                                              + ?moreinputs
-                                            )
-                                          + ?
-                                        )
-                                      + ?
-                                    & :?inputs
-                                    &   !someinputs+!moreinputs
-                                      : ?moreinputs
-                                    &   whl
-                                      ' (   !moreinputs
-                                          :   ?
-                                            + ( ?
-                                              .   ?
-                                                + ( F
-                                                  . @( ?
-                                                     : ( ?other "-step" #% ?
-                                                       | ?other
-                                                       )
-                                                     )
-                                                  )
-                                                + ?
-                                              )
-                                            + ?moreinputs
-                                        & @( !firstinput
-                                           : ?fh [%@(!other:?oh !sjt)
-                                           )
-                                        &     str
-                                            $ (   ( !fh:
-                                                  | !oh:
-                                                  |   @(!fh:!oh "-" #?)
-                                                    & :?oh
-                                                  )
-                                                & (     !inputs
-                                                      : ( 
-                                                        | !firstinput
-                                                        )
-                                                    &   (   @( !firstinput
-                                                             : ? !fh ?
-                                                             )
-                                                          & 
-                                                        | !fh
-                                                        )
-                                                        (   @( !firstinput
-                                                             : ? !oh ?
-                                                             )
-                                                          & 
-                                                        | !oh
-                                                        )
-                                                        !firstinput
-                                                  | !inputs "_" !other
-                                                  )
-                                              |   (   !inputs:
-                                                    & !fh "_"
-                                                  | 
-                                                  )
-                                                  !oh
-                                              )
-                                          : ?inputs
-                                        )
-                                  )
-                              & !inputs
+                              & distillInputsFromRequestString$!requestString
                             |   ( !inputs:@
-                                |     2
-                                    *   mod
-                                      $ ( div$(!DATE*(1+clk$),1)
-                                        , 4231764527
-                                        )
-                                  + !jobNr*100
-                                  + !ID
+                                |   @(!jobID:? #?ID)
+                                  &     2
+                                      *   mod
+                                        $ ( div$(!DATE*(1+clk$),1)
+                                          , 4231764527
+                                          )
+                                    + !jobNr*100
+                                    + !ID
                                 )
                                 "-"
                                 !jobNr
@@ -10429,7 +10564,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & -15:?err
                 & (   !test:justtesting
                     & -16:?err
-                    & log$(getNextJobID !arg !jobID)
                     & -17:?err
                     & !jobID
                   |       !A
@@ -10437,14 +10571,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           !Z
                       : ?jobs
                     & -18:?err
-                    & (   log$(starting !arg !jobID)
-                        & -19:?err
+                    & (   -19:?err
                         & (   saveTable$jobs
                             & -20:?err
-                            & (   log$(getNextJobID !arg !jobID)
-                                & !jobID
-                              | !err
-                              )
+                            & (!jobID|!err)
                           | !err
                           )
                       | !err
@@ -10957,8 +11087,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . ?
                     )
                     ?
-              &   log
-                $ (str$("isTEIoutput(" !JobNr "." !jobID ")=[" !format "]"))
               & !format
             | 
             )
@@ -11264,7 +11392,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     !maxRunningThreads
                   )
                 )
-            & log$(JobNr !JobNr jobID !jobID DATE !DATE)
             & str$(!DATE "-" !JobNr "-" !jobID):?CTBID
             & (readTable$CTBs|:?CTBs)
             &   ( !SPANGRPfil:
@@ -12037,7 +12164,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , Href2 Href2nometa Href2relations
                 , stage steps shortletter type
               .   !arg:(?steps.?shortletter.?type)
-                & log$("STEPS:type=" !type)
                 &     map
                     $ ( ( 
                         =   relationsfil
@@ -12591,8 +12717,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( setTypefaceNotPermanently
       =   
-        .   (   !arg:? (TyPeFaCe.?arg) ?
-              & log$(TyPeFaCe !arg)
+        .   ( !arg:? (TyPeFaCe.?arg) ?
             |   "reset to default"
               & readTable$Typeface:%?arg ?
             )
@@ -12621,7 +12746,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , isDiplom input getInput isTabSeparated
               .     !arg
                   : (?arg.?nofonts.?DestinationDir.?LocalFileName)
-                & log$(analyseContentType !arg nofonts !nofonts)
                 & @( !arg
                    : ((%? "/" %?:?ct) ";" ?|?ct)
                    )
@@ -12943,7 +13067,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     : ? (format.json|dipl) ?
                   | !R (ambig.una):?R
                   )
-                & log$("analyseContentType returns:" !R)
                 & !R
             )
           & :?Items
@@ -13580,9 +13703,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                     :   ?
                                                         (%?presel^?spec.!arg)
                                                         ?
-                                                  & NEWSPEC
                                                   & (   !spec:1
-                                                      & NEWSPEC
                                                       &   makeSelectFormField
                                                         $ ( 
                                                           .   str
@@ -13725,9 +13846,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             .   (   !items:? (?.?.% ?) ?
                                   &   mentionBookmarkedWorkflows$!items
                                     : (?links.?allLinked)
-                                  & ( !allLinked:
-                                    | log$(allLinked !allLinked)
-                                    )
                                   & !links
                                 | :?allLinked
                                 )
@@ -13817,7 +13935,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , itemGroupsExt linkedWorkflows
                 , hiddenData Items
               .   !arg:(?presels.?hiddenData.?Items)
-                & log$"We are at the start. Show an input form."
                 & (   !Items:
                     &   str
                       $ ( 200~~~
@@ -14651,8 +14768,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           & ( !NO:
                             | (!NO.!step) !NOS:?NOS
                             )
-                          & (     !deps
-                                : (?stp.!I:(?a,?b) ?c)
+                          & (   !I:?InoOnE
+                              &   whl
+                                ' (   !InoOnE
+                                    : ?a (?x,(?b.OnE)) ?c
+                                  & !a (!x,!b) !c:?InoOnE
+                                  )
+                              &   !deps
+                                : (?stp.!InoOnE:(?a,?b) ?c)
                               & (!a,(!b.!stp)):?I
                               &   whl
                                 ' ( !c:%?a ?c
@@ -14661,18 +14784,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               & ((!step.!ID.!O.!I).!step.!O)
                             |   (     !I
                                     : ?a (?b,%*%:?input) ?c
-                                  & "Make sure input isn't all in one file. (Input has % flag if that were the case)."
-                                  & "This fails 
-                                         :%? ? 
-                                     This succeeds
-                                         :? ?
-
-                                     On fail: treat as single-input workflow step.
-                                    "
-                                  & :!(glf$('($input.?))) ?
                                   & :?nc
                                   &   whl
                                     ' ( !input:%?ad*?input
+                                      & ( !ad:(?ad.OnE)
+                                        | 
+                                        )
                                       &     !nc
                                             (     !deps
                                                 :   ?x
@@ -14776,9 +14893,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       !jobAbout
                   : ?jobAbout
                 & saveTable$jobAbout
-                & log$(getNextJobID JobNr !JobNr)
                 & getNextJobID$(!JobNr.justtesting):?JobId
-                & log$(JobId !JobId)
                 &   str
                   $ ( 200
                       "~"
@@ -15926,7 +16041,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$toolprop
           & readTable$tooladm
           & !toolprop:?tools
-          & NEWSPEC
           & ( count
             =   ret term spcno factor spcs
               .   0:?ret
@@ -15982,7 +16096,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   "Unfold toolprop. Each subspecification doubles count due to specification.
              Counts 360 tools that are active (not 'inactive') 20130424"
           & !arg:?tools
-          & NEWSPEC
           & ( count
             =   ret term spcno fix opt,Nspc Nopt
               .   0:?ret
@@ -16093,7 +16206,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                             $ (da en)
                                                             "&TyPeFaCe="
                                                               queryEncode
-                                                            $ !TyPeFaCe
+                                                            $ ( !TyPeFaCe
+                                                              | "Comic Sans MS"
+                                                              )
                                                           )
                                                       )
                                                     ,   localized
