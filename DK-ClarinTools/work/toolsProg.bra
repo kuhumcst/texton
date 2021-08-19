@@ -4192,11 +4192,16 @@ catch (SystemExit $e)
                   : (?alts.?IO.?featname.?DATA.?FEATURES.?STYLES)
                 &   whl
                   ' ( !alts:(%(%?alt ?opts):?term)+?alts
-                    & (!alt:%*%|!opts:% ?)
-                    & ( featF
-                      =   IO featname rsr DATA
-                        .   !arg:(?DATA.?IO.?featname.?rsr)
-                          & (!IO.!featname.!rsr.F)+!DATA
+                    & (   (!alt:%*%|!opts:% ?)
+                        & ( featF
+                          =   IO featname rsr DATA
+                            .   !arg:(?DATA.?IO.?featname.?rsr)
+                              & (!IO.!featname.!rsr.F)+!DATA
+                          )
+                      | ( featF
+                        =   IO featname rsr DATA
+                          . !arg:(?DATA.?)&!DATA
+                        )
                       )
                     &   whl
                       ' ( !alt:%?rsrc*?alt
@@ -4219,11 +4224,10 @@ catch (SystemExit $e)
                                     )
                                 & str$!valstr:?rsr
                               |   !rsrc:?rsr^%?style
-                                &     whl
-                                    ' ( !style:%?stl+?style
-                                      & !stls*!stl:?stls
-                                      )
-                                  : ?DATA
+                                &   whl
+                                  ' ( !style:%?stl+?style
+                                    & !stls*!stl:?stls
+                                    )
                               )
                             &   (!IO.!featname.!rsr)\L!stls+!STYLES
                               : ?STYLES
@@ -4408,7 +4412,15 @@ catch (SystemExit $e)
                         & !featPair !Feats:?Feats
                         )
                     )
-                & !Feats
+                & combineFeats$!Feats
+            )
+          & ( combineFeats
+            =   A B M Z b c
+              .     whl
+                  ' ( !arg:?A (?B,?b) ?M (!B,?c) ?Z
+                    & !A (!B,!b+!c) !M !Z:?arg
+                    )
+                & !arg
             )
           & combineToolIncarnations$(!toolprop.!toolid):?Features
           & 0:?DATA
@@ -4422,7 +4434,10 @@ catch (SystemExit $e)
                       (?,? (?+(% %)+?.?) ?:?fval)
                       ?
                   )
-              & (   !fval:? (?+%@^?+?.?) ?
+              & (     !fval
+                    : ( ? (?+%@^?+?.?) ?
+                      | ? (?+((?.OnE).?)+?.?) ?
+                      )
                   & "IF in some cases, IfeatvalF in other cases"
                   & (I...F)+!DATA:?DATA
                 | "Never IF, always IfeatvalF"
@@ -4449,7 +4464,7 @@ catch (SystemExit $e)
           &   whl
             ' ( !Features:(?fname,?iolist) ?Features
               &   whl
-                ' ( !iolist:(?i.?o) ?iolist
+                ' ( !iolist:#*(?i.?o)+?iolist
                   &   listAlts$(!i.I.!fname.!DATA.!FEATURES.!STYLES)
                     : (?DATA.?FEATURES.?STYLES)
                   &   listAlts$(!o.O.!fname.!DATA.!FEATURES.!STYLES)
@@ -4911,6 +4926,35 @@ try {
                 ' ( !svalues:%?values+?svalues
                   &   whl
                     ' ( !values:%@?value^?*?values
+                      &     !ech
+                            " . \""
+                            !IO
+                            !featname
+                            !data
+                            !value
+                            "="
+                            !var
+                            !IO
+                            !featname
+                            !data
+                            !value
+                            " \""
+                        : ?ech
+                      &     !STYLETEXT
+                            "            "
+                            !stringvar
+                            !IO
+                            !featname
+                            !data
+                            !value
+                            " = existsArgumentWithValue(\""
+                            !IO
+                            !featname
+                            !data
+                            "\", \""
+                            !value
+                            "\");\n"
+                        : ?STYLETEXT
                       &     !declarations
                             "        "
                             !stringvar
@@ -4961,35 +5005,6 @@ try {
                             " if true */
 "
                         : ?declarations
-                      &     !ech
-                            " . \""
-                            !IO
-                            !featname
-                            !data
-                            !value
-                            "="
-                            !var
-                            !IO
-                            !featname
-                            !data
-                            !value
-                            " \""
-                        : ?ech
-                      &     !STYLETEXT
-                            "            "
-                            !stringvar
-                            !IO
-                            !featname
-                            !data
-                            !value
-                            " = existsArgumentWithValue(\""
-                            !IO
-                            !featname
-                            !data
-                            "\", \""
-                            !value
-                            "\");\n"
-                        : ?STYLETEXT
                       )
                   )
               &     !STYLETEXT
@@ -5167,7 +5182,6 @@ try {
                       )
                     : ? (contactEmail.~:?url-contactEmail) ?
                   & :?ContactEmail
-                  & log$wertyui
                   & (     !tooladm
                         :   ?
                           + (   ?
