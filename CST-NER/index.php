@@ -207,6 +207,7 @@ try {
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -224,9 +225,9 @@ try {
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
-        $Iformatflatutf8 = false;	/* Style of format plain (flad) in input is 0 if true */
-        $Oformatflatutf8 = false;	/* Style of format plain (flad) in output is 0 if true */
+        $Ifacet_seg_tok__tok_simple = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is  for the tokens (Tokens) component if true */
+        $Iformatflatutf8 = false;	/* Style of format plain (flad) in input is  if true */
+        $Oformatflatutf8 = false;	/* Style of format plain (flad) in output is  if true */
 
         if( hasArgument("base") )
             {
@@ -291,9 +292,10 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -358,10 +360,10 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacettok") )
+        if( hasArgument("Ifacet_seg_tok") )
             {
-            $Ifacettoksimple = existsArgumentWithValue("Ifacettok", "simple");
-            $echos = $echos . "Ifacettoksimple=$Ifacettoksimple ";
+            $Ifacet_seg_tok__tok_simple = existsArgumentWithValue("Ifacet_seg_tok", "__tok_simple");
+            $echos = $echos . "Ifacet_seg_tok__tok_simple=$Ifacet_seg_tok__tok_simple ";
             }
         if( hasArgument("Iformatflat") )
             {
