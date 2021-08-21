@@ -175,6 +175,7 @@ try {
         $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -258,9 +259,10 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -352,8 +354,8 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         logit($echos);
-	logit("KoDE");
-	$toolres = "../texton-linguistic-resources";
+        logit("KoDE");
+        $toolres = "../texton-linguistic-resources";
         if($F != "")
             {
             logit("F $F");
@@ -370,7 +372,7 @@ try {
                 }
             logit($command);
 
-	    $Laposfile = /*"laposfile";//*/ tempFileName("Lapos-results");
+            $Laposfile = /*"laposfile";//*/ tempFileName("Lapos-results");
             if(($cmd = popen($command, "r")) == NULL)
                 {
                 throw new SystemExit(); // instead of exit()

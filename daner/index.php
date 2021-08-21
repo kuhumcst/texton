@@ -204,6 +204,7 @@ try {
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -285,9 +286,10 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {

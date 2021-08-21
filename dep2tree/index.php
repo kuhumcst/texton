@@ -202,10 +202,18 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetstx = false;	/* Annotationstyper in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ifacet_lem_mrf_ner_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (Lemma) and morphological features (morfologiske træk) and name entities (Navne) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
+        $Ifacet_lem_mrf_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (Lemma) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
+        $Ifacet_lem_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
+        $Ifacet_pos_seg_stx_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
         $Iformatconll = false;	/* Format in input is CoNLL if true */
-        $Ofacetstx = false;	/* Annotationstyper in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformathtml = false;	/* Format in output is HTML if true */
+        $IformatconllclU = false;	/* Style of format CoNLL in input is CoNLL-U (10 columns)CoNLL-U (10 kolonner) if true */
+        $OformathtmlROTM = false;	/* Style of format HTML in output is Traditional tags (h, p, etc.)Med traditionelle tags (h, p, etc.) if true */
 
         if( hasArgument("base") )
             {
@@ -240,8 +248,11 @@ try {
 ************************/
         if( hasArgument("Ifacet") )
             {
-            $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
-            $echos = $echos . "Ifacetstx=$Ifacetstx ";
+            $Ifacet_lem_mrf_ner_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_lem_mrf_ner_pos_seg_stx_tok");
+            $Ifacet_lem_mrf_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_lem_mrf_pos_seg_stx_tok");
+            $Ifacet_lem_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_lem_pos_seg_stx_tok");
+            $Ifacet_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_pos_seg_stx_tok");
+            $echos = $echos . "Ifacet_lem_mrf_ner_pos_seg_stx_tok=$Ifacet_lem_mrf_ner_pos_seg_stx_tok " . "Ifacet_lem_mrf_pos_seg_stx_tok=$Ifacet_lem_mrf_pos_seg_stx_tok " . "Ifacet_lem_pos_seg_stx_tok=$Ifacet_lem_pos_seg_stx_tok " . "Ifacet_pos_seg_stx_tok=$Ifacet_pos_seg_stx_tok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -250,8 +261,11 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
-            $echos = $echos . "Ofacetstx=$Ofacetstx ";
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -262,6 +276,16 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Iformatconll") )
+            {
+            $IformatconllclU = existsArgumentWithValue("Iformatconll", "clU");
+            $echos = $echos . "IformatconllclU=$IformatconllclU ";
+            }
+        if( hasArgument("Oformathtml") )
+            {
+            $OformathtmlROTM = existsArgumentWithValue("Oformathtml", "ROTM");
+            $echos = $echos . "OformathtmlROTM=$OformathtmlROTM ";
+            }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $dep2treefile = tempFileName("dep2tree-results");
@@ -295,17 +319,17 @@ try {
                 }
             }
         $fp = fopen($nocomment, "w+");
-	flock($fp, LOCK_EX);
+        flock($fp, LOCK_EX);
         foreach($out as $line)
             {
             fwrite($fp, $line);
-	    }
+            }
         flock($fp, LOCK_UN);
         fclose($fp);  
         $command = "export LANG=en_US.UTF-8 && python3 dependency2tree.py -o $odir/D.svg -c $nocomment --ignore-double-indices";
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
-	pclose($cmd);
+        pclose($cmd);
         $odirlst = scandir($odir);
 	
         $fp = fopen($lsodir, "w+");
@@ -345,15 +369,14 @@ try {
             unset($tobedeleted);
             }
         }
-    //loginit();
+    loginit();
     do_dep2tree();
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
-    //logit('An error occurred' . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
+    logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 

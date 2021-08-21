@@ -172,13 +172,9 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
-        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
-        $Ifacetner = false;	/* Type of content in input is name entities (Navne) if true */
-        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $Ifacet_lem_mrf_ner_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (Lemma) and morphological features (morfologiske træk) and name entities (Navne) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
+        $Ifacet_lem_mrf_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (Lemma) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
+        $Ifacet_lem_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and syntax (dependency structure) (Syntaks (dependensstruktur)) and tokens (Tokens) if true */
         $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
@@ -223,14 +219,10 @@ try {
 ************************/
         if( hasArgument("Ifacet") )
             {
-            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
-            $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
-            $Ifacetner = existsArgumentWithValue("Ifacet", "ner");
-            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetner=$Ifacetner " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
+            $Ifacet_lem_mrf_ner_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_lem_mrf_ner_pos_seg_stx_tok");
+            $Ifacet_lem_mrf_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_lem_mrf_pos_seg_stx_tok");
+            $Ifacet_lem_pos_seg_stx_tok = existsArgumentWithValue("Ifacet", "_lem_pos_seg_stx_tok");
+            $echos = $echos . "Ifacet_lem_mrf_ner_pos_seg_stx_tok=$Ifacet_lem_mrf_ner_pos_seg_stx_tok " . "Ifacet_lem_mrf_pos_seg_stx_tok=$Ifacet_lem_mrf_pos_seg_stx_tok " . "Ifacet_lem_pos_seg_stx_tok=$Ifacet_lem_pos_seg_stx_tok ";
             }
         if( hasArgument("Iformat") )
             {

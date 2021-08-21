@@ -173,16 +173,15 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $IformatplainD = false;	/* Format in input is plain text with ASCII 127 characters (flad tekst with ASCII 127 tegn) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
-        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menota.Menota.) if true */
+        $Ifacet_seg_tok__tok_simple = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is  for the tokens (Tokens) component if true */
+        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is  if true */
 
         if( hasArgument("base") )
             {
@@ -222,9 +221,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -260,10 +258,10 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacettok") )
+        if( hasArgument("Ifacet_seg_tok") )
             {
-            $Ifacettoksimple = existsArgumentWithValue("Ifacettok", "simple");
-            $echos = $echos . "Ifacettoksimple=$Ifacettoksimple ";
+            $Ifacet_seg_tok__tok_simple = existsArgumentWithValue("Ifacet_seg_tok", "__tok_simple");
+            $echos = $echos . "Ifacet_seg_tok__tok_simple=$Ifacet_seg_tok__tok_simple ";
             }
         if( hasArgument("Ofacetseto") )
             {

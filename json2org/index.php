@@ -173,10 +173,7 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
-        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $Ifacet_lem_pos_seg_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
@@ -184,7 +181,7 @@ try {
         $Ofacettlp = false;	/* Type of content in output is tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) if true */
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $IfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Menota if true */
+        $Ifacet_lem_pos_seg_tok__pos_Menota = false;	/* Style of type of content lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Menota for the PoS-tags (PoS-tags) component if true */
         $OfacettlpMenota = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is Menota if true */
 
         if( hasArgument("base") )
@@ -225,11 +222,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
-            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $Ifacet_lem_pos_seg_tok = existsArgumentWithValue("Ifacet", "_lem_pos_seg_tok");
+            $echos = $echos . "Ifacet_lem_pos_seg_tok=$Ifacet_lem_pos_seg_tok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -266,10 +260,10 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacetpos") )
+        if( hasArgument("Ifacet_lem_pos_seg_tok") )
             {
-            $IfacetposMenota = existsArgumentWithValue("Ifacetpos", "Menota");
-            $echos = $echos . "IfacetposMenota=$IfacetposMenota ";
+            $Ifacet_lem_pos_seg_tok__pos_Menota = existsArgumentWithValue("Ifacet_lem_pos_seg_tok", "__pos_Menota");
+            $echos = $echos . "Ifacet_lem_pos_seg_tok__pos_Menota=$Ifacet_lem_pos_seg_tok__pos_Menota ";
             }
         if( hasArgument("Ofacettlp") )
             {

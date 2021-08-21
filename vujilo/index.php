@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/vujilo.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/vujiloX.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -174,9 +174,8 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
@@ -236,10 +235,9 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseto=$Ifacetseto ";
             }
         if( hasArgument("Iformat") )
             {

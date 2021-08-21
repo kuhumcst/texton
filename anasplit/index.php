@@ -172,10 +172,7 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
-        $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
-        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ifacet_lem_mrf_pos_stx = false;	/* Type of content in input is lemmas (Lemma) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
@@ -216,11 +213,8 @@ try {
 ************************/
         if( hasArgument("Ifacet") )
             {
-            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
-            $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
-            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetpos=$Ifacetpos " . "Ifacetstx=$Ifacetstx ";
+            $Ifacet_lem_mrf_pos_stx = existsArgumentWithValue("Ifacet", "_lem_mrf_pos_stx");
+            $echos = $echos . "Ifacet_lem_mrf_pos_stx=$Ifacet_lem_mrf_pos_stx ";
             }
         if( hasArgument("Iformat") )
             {

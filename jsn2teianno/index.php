@@ -174,10 +174,7 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
-        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
-        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $Ifacet_lem_pos_seg_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
@@ -229,11 +226,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
-            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $Ifacet_lem_pos_seg_tok = existsArgumentWithValue("Ifacet", "_lem_pos_seg_tok");
+            $echos = $echos . "Ifacet_lem_pos_seg_tok=$Ifacet_lem_pos_seg_tok ";
             }
         if( hasArgument("Iformat") )
             {

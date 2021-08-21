@@ -41,7 +41,6 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +52,6 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -175,10 +173,9 @@ try {
         $IfacetlemF = "";	/* Input with type of content lemmas (Lemma) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
+        $Ifacet_lem_pos_seg_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
@@ -196,6 +193,7 @@ try {
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Ifacet_lem_pos_seg_tok__pos_DSL = false;	/* Style of type of content lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
         $IfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in input is DSL-tagset if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
         $OfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menota if true */
@@ -258,11 +256,10 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_lem_pos_seg_tok = existsArgumentWithValue("Ifacet", "_lem_pos_seg_tok");
             $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
             $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_lem_pos_seg_tok=$Ifacet_lem_pos_seg_tok " . "Ifacetlem=$Ifacetlem " . "Ifacetpos=$Ifacetpos ";
             }
         if( hasArgument("Iformat") )
             {
@@ -325,6 +322,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ifacet_lem_pos_seg_tok") )
+            {
+            $Ifacet_lem_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_lem_pos_seg_tok", "__pos_DSL");
+            $echos = $echos . "Ifacet_lem_pos_seg_tok__pos_DSL=$Ifacet_lem_pos_seg_tok__pos_DSL ";
+            }
         if( hasArgument("Ifacetpos") )
             {
             $IfacetposDSL = existsArgumentWithValue("Ifacetpos", "DSL");
@@ -368,14 +370,14 @@ try {
         else 
             $lang = "";
         logit("language $lang");
-	$tagtransfile = tempFileName("tagtrans-results");
+        $tagtransfile = tempFileName("tagtrans-results");
         $intag = 'Uni';
         if($IfacetposDSL)
             $intag = 'DSL';
-	else if($IfacetposUni)
+        else if($IfacetposUni)
             $intag = 'Uni';	
-	$outtag = 'Uni';
-	if($OfacetposMenota)
+        $outtag = 'Uni';
+        if($OfacetposMenota)
             $outtag = 'Menota';
         if($Iformatjson)
             $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$F' '$F' '$tagtransfile' '$lang' $intag $outtag";

@@ -177,6 +177,7 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -313,9 +314,10 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -515,10 +517,10 @@ try {
                     //$traindata = "$res/da/lemmatiser/training/tabfile";
                     //$flexrules = "$res/da/lemmatiser/notags/c13-c18/2/flex.bra";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-B-2-4202-step2.4cole";
-		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
-		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
-		    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
-		    $traindata = "$res/da/lemmatiser/training/diplAndDSLFRQ";
+                    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
+                    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
+                    //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
+                    $traindata = "$res/da/lemmatiser/training/diplAndDSLFRQ";
                     }
                 }
             if($Ilangde)
@@ -534,7 +536,7 @@ try {
                 //$flexrules = "$res/nl/lemmatiser/notags/0/flexrules.elex.tab.ph_ziggurat_XS.bra";
                 $traindata = "$res/nl/lemmatiser/training/dict_nl_without_doubles_UTF8.ph";
                 //$traindata = "$res/nl/lemmatiser/training/elex.tab";
-		//The e-Lex data have many errors and highly unusual word-lemma pairs.
+                //The e-Lex data have many errors and highly unusual word-lemma pairs.
                 }
             else if($Ilangen)
                 {
@@ -678,7 +680,7 @@ try {
             {
             header("HTTP/1.0 404 Input not found (IF). ");
             return;
-	    }*/
+            }*/
         if($Oformatjson)
             {
             $lemposfile = tempFileName("json");
