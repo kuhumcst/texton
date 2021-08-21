@@ -149,8 +149,74 @@ try {
             }
         logit("empty");
         return "";
-        }    
+        }
 
+    function php_fix_raw_query()
+        {
+        $post = '';
+
+        // Try globals array
+        if (!$post && isset($_GLOBALS) && isset($_GLOBALS["HTTP_RAW_POST_DATA"]))
+            $post = $_GLOBALS["HTTP_RAW_POST_DATA"];
+        // Try globals variable
+        if (!$post)
+            {
+            $post = file_get_contents('php://input');
+            if(!isset($post))
+                $post = '';
+            }
+        // Try stream
+        if (!$post)
+            {
+            if (!function_exists('file_get_contents'))
+                {
+                $fp = fopen("php://input", "r");
+                if ($fp)
+                    {
+                    $post = '';
+
+                    while (!feof($fp))
+                        $post = fread($fp, 1024);
+
+                    fclose($fp);
+                    }
+                }
+            else
+                {
+                $post = "" . file_get_contents("php://input");
+                }
+            }
+        $raw = !empty($_SERVER['QUERY_STRING']) ? sprintf('%s&%s', $_SERVER['QUERY_STRING'], $post) : $post;
+
+        $arr = array();
+        $pairs = explode('&', $raw);
+        foreach($pairs as $i)
+            {
+            if(!empty($i))
+                {
+                list($name, $value) = explode('=', $i, 2);
+                if (isset($arr[$name]) )
+                    {
+                    if (is_array($arr[$name]) )
+                        {
+                        $arr[$name] = array_merge($arr[$name], array($value));
+                        }
+                    else
+                        {
+                        $arr[$name] = array($arr[$name], $value);
+                        }
+                    }
+                else
+                    {
+                    $arr[$name] = $value;
+                    }
+                }
+            }
+        $_REQUEST = $arr;
+        # optionally return result array
+            return $arr;
+        }
+ 
     function navnegenkenderCSTNER($filename)
         {
         $toolres = '../texton-linguistic-resources/';
@@ -394,6 +460,16 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+        $parms = php_fix_raw_query();
+        ob_start();
+        var_dump($_REQUEST);
+        $dump = ob_get_clean();
+        logit($dump);
+        ob_start();
+        var_dump($parms);
+        $dump = ob_get_clean();
+        logit($dump);
+
         if($F != "")
             {
             logit("F:" . $F);
@@ -409,9 +485,9 @@ try {
                     //copy($IfacetsegF,"IfacetsegF");
                     logit("CSTNER($IfacetsegF,$IfacettokF)");
                     $plaintext = combine($IfacettokF,$IfacetsegF);
-		    //copy($plaintext,"plaintext");
+		            //copy($plaintext,"plaintext");
                     $nerfileRAW = navnegenkenderCSTNER($plaintext);
-		    //copy($nerfileRAW,"nerfileRAW");
+		            //copy($nerfileRAW,"nerfileRAW");
                     $CSTNERfile = NERannotation($IfacettokF,$nerfileRAW,$plaintext);
                     logit('filename:'.$CSTNERfile);
                     }

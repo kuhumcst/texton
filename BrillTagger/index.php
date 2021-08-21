@@ -41,6 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -52,6 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -147,6 +149,84 @@ try {
         logit("empty");
         return "";
         }    
+
+    function php_fix_raw_query()
+        {
+        //logit(" php_fix_raw_query");
+        $post = '';
+
+        // Try globals array
+        if (!$post && isset($_GLOBALS) && isset($_GLOBALS["HTTP_RAW_POST_DATA"]))
+            $post = $_GLOBALS["HTTP_RAW_POST_DATA"];
+        //logit("A");
+        // Try globals variable
+        if (!$post)
+            {
+            $post = file_get_contents('php://input');
+            if(!isset($post))
+                $post = '';
+            }
+        //logit("B");
+        // Try stream
+        if (!$post)
+            {
+            if (!function_exists('file_get_contents'))
+                {
+                $fp = fopen("php://input", "r");
+                if ($fp)
+                    {
+                    $post = '';
+
+                    while (!feof($fp))
+                        $post = fread($fp, 1024);
+
+                    fclose($fp);
+                    }
+                }
+            else
+                {
+                $post = "" . file_get_contents("php://input");
+                }
+            }
+        //logit("C");
+        $raw = !empty($_SERVER['QUERY_STRING']) ? sprintf('%s&%s', $_SERVER['QUERY_STRING'], $post) : $post;
+
+        //logit("raw=".$raw);
+
+        $arr = array();
+        $pairs = explode('&', $raw);
+        //logit("K");
+        //logit("K");
+        foreach($pairs as $i)
+            {
+            if(!empty($i))
+                {
+                list($name, $value) = explode('=', $i, 2);
+                //logit("name=".$name." value=".$value);
+                if (isset($arr[$name]) )
+                    {
+                    //logit("isset(" .$arr[$name].")");
+                    if (is_array($arr[$name]) )
+                        {
+                        //logit("is_array(" .$name.")");
+                        $arr[$name] = array_merge($arr[$name], array($value));
+                        //logit("Merge: " . var_export($arr[$name], true));
+                        }
+                    else
+                        {
+                        $arr[$name] = array($arr[$name], $value);
+                        }
+                    }
+                else
+                    {
+                    $arr[$name] = $value;
+                    }
+                }
+            }
+        $_REQUEST = $arr;
+        # optionally return result array
+            return $arr;
+        }
 
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
         {
@@ -542,6 +622,16 @@ try {
         $command = "echo $echos >> $BrillTaggerfile";
         logit($command);
 
+        $parms = php_fix_raw_query();
+        ob_start();
+        var_dump($_REQUEST);
+        $dump = ob_get_clean();
+        logit($dump);
+        ob_start();
+        var_dump($parms);
+        $dump = ob_get_clean();
+        logit($dump);
+
         if(($cmd = popen($command, "r")) == NULL)
             {
             throw new SystemExit(); // instead of exit()
@@ -555,7 +645,16 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        //$command = "echo $echos >> $BrillTaggerfile";
+        $parms = php_fix_raw_query();	
+        ob_start();
+        var_dump($_REQUEST);
+        $dump = ob_get_clean();
+        logit($dump);
+        ob_start();
+        var_dump($parms);
+        $dump = ob_get_clean();
+        logit($dump);
+
         if($Ilangla)
             $language = "la";
         else if($Ilangen)
@@ -585,7 +684,7 @@ try {
         else
             $period = "c21";
 
-        logit("	period $period IfacettokF $IfacettokF IfacetsegF $IfacetsegF IF $IF");
+        //logit("	period $period IfacettokF $IfacettokF IfacetsegF $IfacetsegF IF $IF");
          
         $message = '';
         $BrillTaggerfile = '';
