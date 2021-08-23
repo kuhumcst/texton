@@ -178,11 +178,13 @@ try {
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
-        $Ofacettlp = false;	/* Type of content in output is tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $Ifacet_lem_pos_seg_tok__pos_Menota = false;	/* Style of type of content lemmas (Lemma) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Menota for the PoS-tags (PoS-tags) component if true */
-        $OfacettlpMenota = false;	/* Style of type of content tokens,PoS-tags,lemmas (tokens,PoS-tags,lemmaer) in output is Menota if true */
+        $OfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menota if true */
 
         if( hasArgument("base") )
             {
@@ -243,8 +245,10 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacettlp = existsArgumentWithValue("Ofacet", "tlp");
-            $echos = $echos . "Ofacettlp=$Ofacettlp ";
+            $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -265,10 +269,10 @@ try {
             $Ifacet_lem_pos_seg_tok__pos_Menota = existsArgumentWithValue("Ifacet_lem_pos_seg_tok", "__pos_Menota");
             $echos = $echos . "Ifacet_lem_pos_seg_tok__pos_Menota=$Ifacet_lem_pos_seg_tok__pos_Menota ";
             }
-        if( hasArgument("Ofacettlp") )
+        if( hasArgument("Ofacetpos") )
             {
-            $OfacettlpMenota = existsArgumentWithValue("Ofacettlp", "Menota");
-            $echos = $echos . "OfacettlpMenota=$OfacettlpMenota ";
+            $OfacetposMenota = existsArgumentWithValue("Ofacetpos", "Menota");
+            $echos = $echos . "OfacetposMenota=$OfacetposMenota ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
