@@ -172,18 +172,18 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $Ifacet_lem_pos_tokF = "";	/* Input with type of content lemmas (Lemma) and PoS-tags (PoS-tags) and tokens (Tokens) */
+        $Ifacet_pos_tokF = "";	/* Input with type of content PoS-tags (PoS-tags) and tokens (Tokens) */
         $IfacettlF = "";	/* Input with type of content tokens,lemmas (tokens,lemmaer) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
-        $IfacettpF = "";	/* Input with type of content tokens,PoS-tags (tokens,PoS-tags) */
         $Iambigamb = false;	/* Ambiguity in input is ambiguous (tvetydig) if true */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacet_lem_pos_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and tokens (Tokens) if true */
+        $Ifacet_pos_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and tokens (Tokens) if true */
         $Ifacettl = false;	/* Type of content in input is tokens,lemmas (tokens,lemmaer) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
-        $Ifacettp = false;	/* Type of content in input is tokens,PoS-tags (tokens,PoS-tags) if true */
         $Iformatdipl = false;	/* Format in input is Org-mode if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambigamb = false;	/* Ambiguity in output is ambiguous (tvetydig) if true */
@@ -198,7 +198,7 @@ try {
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $Ifacet_lem_pos_tok__pos_Menota = false;	/* Style of type of content lemmas (Lemma) and PoS-tags (PoS-tags) and tokens (Tokens) in input is Menota for the PoS-tags (PoS-tags) component if true */
-        $IfacettpMenota = false;	/* Style of type of content tokens,PoS-tags (tokens,PoS-tags) in input is Menota if true */
+        $Ifacet_pos_tok__pos_Menota = false;	/* Style of type of content PoS-tags (PoS-tags) and tokens (Tokens) in input is Menota for the PoS-tags (PoS-tags) component if true */
         $OfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menota if true */
 
         if( hasArgument("base") )
@@ -228,6 +228,16 @@ try {
                 }
             $echos = $echos . "Ifacet_lem_pos_tokF=$Ifacet_lem_pos_tokF ";
             }
+        if( hasArgument("Ifacet_pos_tokF") )
+            {        
+            $Ifacet_pos_tokF = requestFile("Ifacet_pos_tokF");
+            if($Ifacet_pos_tokF == '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'PoS-tags (PoS-tags) and tokens (Tokens)' not found (Ifacet_pos_tokF parameter). ");
+                return;
+                }
+            $echos = $echos . "Ifacet_pos_tokF=$Ifacet_pos_tokF ";
+            }
         if( hasArgument("IfacettlF") )
             {        
             $IfacettlF = requestFile("IfacettlF");
@@ -247,16 +257,6 @@ try {
                 return;
                 }
             $echos = $echos . "IfacettokF=$IfacettokF ";
-            }
-        if( hasArgument("IfacettpF") )
-            {        
-            $IfacettpF = requestFile("IfacettpF");
-            if($IfacettpF == '')
-                {
-                header("HTTP/1.0 404 Input with type of content 'tokens,PoS-tags (tokens,PoS-tags)' not found (IfacettpF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacettpF=$IfacettpF ";
             }
 
 /************************
@@ -278,10 +278,10 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacet_lem_pos_tok = existsArgumentWithValue("Ifacet", "_lem_pos_tok");
+            $Ifacet_pos_tok = existsArgumentWithValue("Ifacet", "_pos_tok");
             $Ifacettl = existsArgumentWithValue("Ifacet", "tl");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $Ifacettp = existsArgumentWithValue("Ifacet", "tp");
-            $echos = $echos . "Ifacet_lem_pos_tok=$Ifacet_lem_pos_tok " . "Ifacettl=$Ifacettl " . "Ifacettok=$Ifacettok " . "Ifacettp=$Ifacettp ";
+            $echos = $echos . "Ifacet_lem_pos_tok=$Ifacet_lem_pos_tok " . "Ifacet_pos_tok=$Ifacet_pos_tok " . "Ifacettl=$Ifacettl " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -333,10 +333,10 @@ try {
             $Ifacet_lem_pos_tok__pos_Menota = existsArgumentWithValue("Ifacet_lem_pos_tok", "__pos_Menota");
             $echos = $echos . "Ifacet_lem_pos_tok__pos_Menota=$Ifacet_lem_pos_tok__pos_Menota ";
             }
-        if( hasArgument("Ifacettp") )
+        if( hasArgument("Ifacet_pos_tok") )
             {
-            $IfacettpMenota = existsArgumentWithValue("Ifacettp", "Menota");
-            $echos = $echos . "IfacettpMenota=$IfacettpMenota ";
+            $Ifacet_pos_tok__pos_Menota = existsArgumentWithValue("Ifacet_pos_tok", "__pos_Menota");
+            $echos = $echos . "Ifacet_pos_tok__pos_Menota=$Ifacet_pos_tok__pos_Menota ";
             }
         if( hasArgument("Ofacetpos") )
             {
@@ -369,7 +369,7 @@ try {
         if($Ifacet_lem_pos_tok)
             $command = "../bin/bracmat 'get\$\"orgconv.bra\"' '$orgconvfile' '$IfacettokF' '$Ifacet_lem_pos_tokF' '$Ifacet_lem_pos_tokF' '$Iappnrm'";
         else
-            $command = "../bin/bracmat 'get\$\"orgconv.bra\"' '$orgconvfile' '$IfacettokF' '$IfacettpF' '$IfacettlF' '$Iappnrm'";
+            $command = "../bin/bracmat 'get\$\"orgconv.bra\"' '$orgconvfile' '$IfacettokF' '$Ifacet_pos_tokF' '$IfacettlF' '$Iappnrm'";
 
         //logit($command);
 
@@ -414,10 +414,9 @@ try {
     }
 catch (SystemExit $e) 
     { 
-    header("HTTP/1.0 404 An error occurred:" . $ERROR);
-    //logit('An error occurred' . $ERROR);
+    header('HTTP/1.0 404 An error occurred: ' . $ERROR);
+    logit('An error occurred' . $ERROR);
     echo $ERROR;
     }
-
 ?>
 
