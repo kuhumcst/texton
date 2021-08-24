@@ -180,12 +180,13 @@ try {
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
-        $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $OfacetsetoPT = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is Penn Treebank if true */
-        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is (Penn Treebank.PT.)(CST-tagset.Par.)(Parole-Moses.ParMos.)(DSL-tagset.DSL.)(CST new tag setCST_nyt_tagsæt.CSTnyt.)(Universal Part-of-Speech Tagset.Uni.)(Menota.Menota.) if true */
+        $OfacettokPT = false;	/* Style of type of content tokens (Tokens) in output is  if true */
+        $Ofacettoksimple = false;	/* Style of type of content tokens (Tokens) in output is  if true */
 
         if( hasArgument("base") )
             {
@@ -252,8 +253,9 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetseto = existsArgumentWithValue("Ofacet", "seto");
-            $echos = $echos . "Ofacetseto=$Ofacetseto ";
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -274,11 +276,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ofacetseto") )
+        if( hasArgument("Ofacettok") )
             {
-            $OfacetsetoPT = existsArgumentWithValue("Ofacetseto", "PT");
-            $Ofacetsetosimple = existsArgumentWithValue("Ofacetseto", "simple");
-            $echos = $echos . "OfacetsetoPT=$OfacetsetoPT " . "Ofacetsetosimple=$Ofacetsetosimple ";
+            $OfacettokPT = existsArgumentWithValue("Ofacettok", "PT");
+            $Ofacettoksimple = existsArgumentWithValue("Ofacettok", "simple");
+            $echos = $echos . "OfacettokPT=$OfacettokPT " . "Ofacettoksimple=$Ofacettoksimple ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
@@ -351,7 +353,7 @@ try {
             }
 
         $teitokfile = tempFileName("teitokfile-results");
-        if($OfacetsetoPT)
+        if($OfacettokPT)
             $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile PT $abbr $lang";
         else
             $command = "../bin/bracmat \"get'\\\"teitok.bra\\\"\" $F $teitokfile simple $abbr $lang";

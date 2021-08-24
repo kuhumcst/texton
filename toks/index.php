@@ -175,7 +175,7 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
         $Ilangbg = false;	/* Language in input is Bulgarian (bulgarsk) if true */
@@ -329,8 +329,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
-            $echos = $echos . "Ifacetseto=$Ifacetseto ";
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok ";
             }
         if( hasArgument("Iformat") )
             {

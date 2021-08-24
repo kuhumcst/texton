@@ -173,7 +173,7 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
@@ -219,8 +219,8 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
-            $echos = $echos . "Ifacetseto=$Ifacetseto ";
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok ";
             }
         if( hasArgument("Iformat") )
             {

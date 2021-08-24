@@ -171,24 +171,24 @@ try {
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
+        $Ifacet_seg_tokF = "";	/* Input with type of content segments (Sætningssegmenter) and tokens (Tokens) */
         $IfacetlemF = "";	/* Input with type of content lemmas (Lemma) */
         $IfacetmrfF = "";	/* Input with type of content morphological features (morfologiske træk) */
         $IfacetnerF = "";	/* Input with type of content name entities (Navne) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
         $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
-        $IfacetsetoF = "";	/* Input with type of content segments,tokens (Sætningssegmenter,tokens) */
         $IfacetstxF = "";	/* Input with type of content syntax (dependency structure) (Syntaks (dependensstruktur)) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
         $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
         $Ifacetner = false;	/* Type of content in input is name entities (Navne) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -226,6 +226,16 @@ try {
 /*********
 * input  *
 *********/
+        if( hasArgument("Ifacet_seg_tokF") )
+            {        
+            $Ifacet_seg_tokF = requestFile("Ifacet_seg_tokF");
+            if($Ifacet_seg_tokF == '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter) and tokens (Tokens)' not found (Ifacet_seg_tokF parameter). ");
+                return;
+                }
+            $echos = $echos . "Ifacet_seg_tokF=$Ifacet_seg_tokF ";
+            }
         if( hasArgument("IfacetlemF") )
             {        
             $IfacetlemF = requestFile("IfacetlemF");
@@ -276,16 +286,6 @@ try {
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
             }
-        if( hasArgument("IfacetsetoF") )
-            {        
-            $IfacetsetoF = requestFile("IfacetsetoF");
-            if($IfacetsetoF == '')
-                {
-                header("HTTP/1.0 404 Input with type of content 'segments,tokens (Sætningssegmenter,tokens)' not found (IfacetsetoF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetsetoF=$IfacetsetoF ";
-            }
         if( hasArgument("IfacetstxF") )
             {        
             $IfacetstxF = requestFile("IfacetstxF");
@@ -324,15 +324,15 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
             $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
             $Ifacetner = existsArgumentWithValue("Ifacet", "ner");
             $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
             $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetner=$Ifacetner " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetseto=$Ifacetseto " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetner=$Ifacetner " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -412,10 +412,10 @@ try {
 //        TODO your code!
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
-        $rms = " && rm $TEIannofile && rm $rawXML && rm $IfacetsetoF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF ";
+        $rms = " && rm $TEIannofile && rm $rawXML && rm $Ifacet_seg_tokF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF ";
         $xmllint = "&& xmllint --format --output $TEIannofile $rawXML ";
 /*
-        copy($IfacetsetoF,"IfacetsetoF"); 
+        copy($Ifacet_seg_tokF,"Ifacet_seg_tokF"); 
         copy($IfacettokF,"IfacettokF"); 
         copy($IfacetposF,"IfacetposF"); 
         copy($IfacetmrfF,"IfacetmrfF");
@@ -439,7 +439,7 @@ try {
             copy($IfacetnerF,"IfacetnerF");
 /*/
 //*/
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF $rawXML $xmllint";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF $rawXML $xmllint";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
         else if(  $Ofacetlem
@@ -457,7 +457,7 @@ try {
             copy($IfacetstxF,"IfacetstxF");
 /*/
 //*/
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\" $rawXML $xmllint";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\" $rawXML $xmllint";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
         else if(  $Ofacetlem
@@ -470,7 +470,7 @@ try {
             logit("Ofacet lem-mrf-ner-pos-tok");
             $rmsa = " && rm $IfacetnerF ";
             //copy($IfacetnerF,"IfacetnerF");
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML $xmllint";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML $xmllint";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
         else if(  $Ofacetlem
@@ -480,7 +480,7 @@ try {
                )
             {
             logit("Ofacet lem-mrf-pos-tok");
-            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $IfacetsetoF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
+            $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
             }
         logit($command);

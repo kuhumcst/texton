@@ -175,7 +175,6 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacetseto = false;	/* Type of content in input is segments,tokens (Sætningssegmenter,tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
@@ -184,7 +183,6 @@ try {
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
-        $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
@@ -236,8 +234,7 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
-            $Ifacetseto = existsArgumentWithValue("Ifacet", "seto");
-            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseto=$Ifacetseto ";
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -269,9 +266,8 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
-            $Ofacetseto = existsArgumentWithValue("Ofacet", "seto");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetseg=$Ofacetseg " . "Ofacetseto=$Ofacetseto " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {

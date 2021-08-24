@@ -177,11 +177,12 @@ try {
         $IformatplainD = false;	/* Format in input is plain text with ASCII 127 characters (flad tekst with ASCII 127 tegn) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
-        $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $Ifacet_seg_tok__tok_simple = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is  for the tokens (Tokens) component if true */
-        $Ofacetsetosimple = false;	/* Style of type of content segments,tokens (Sætningssegmenter,tokens) in output is  if true */
+        $Ofacettoksimple = false;	/* Style of type of content tokens (Tokens) in output is  if true */
 
         if( hasArgument("base") )
             {
@@ -241,8 +242,9 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetseto = existsArgumentWithValue("Ofacet", "seto");
-            $echos = $echos . "Ofacetseto=$Ofacetseto ";
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -263,10 +265,10 @@ try {
             $Ifacet_seg_tok__tok_simple = existsArgumentWithValue("Ifacet_seg_tok", "__tok_simple");
             $echos = $echos . "Ifacet_seg_tok__tok_simple=$Ifacet_seg_tok__tok_simple ";
             }
-        if( hasArgument("Ofacetseto") )
+        if( hasArgument("Ofacettok") )
             {
-            $Ofacetsetosimple = existsArgumentWithValue("Ofacetseto", "simple");
-            $echos = $echos . "Ofacetsetosimple=$Ofacetsetosimple ";
+            $Ofacettoksimple = existsArgumentWithValue("Ofacettok", "simple");
+            $echos = $echos . "Ofacettoksimple=$Ofacettoksimple ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)

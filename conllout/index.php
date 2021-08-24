@@ -186,10 +186,10 @@ try {
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
-        $Ofacetseto = false;	/* Type of content in output is segments,tokens (Sætningssegmenter,tokens) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatconll = false;	/* Format in output is CoNLL if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Oformatconllcnl2009 = false;	/* Style of format CoNLL in output is CoNLL 2009 (14 columns)CoNLL 2009 (14 kolonner) if true */
 
         if( hasArgument("base") )
             {
@@ -285,9 +285,8 @@ try {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
-            $Ofacetseto = existsArgumentWithValue("Ofacet", "seto");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetseto=$Ofacetseto " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -303,6 +302,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Oformatconll") )
+            {
+            $Oformatconllcnl2009 = existsArgumentWithValue("Oformatconll", "cnl2009");
+            $echos = $echos . "Oformatconllcnl2009=$Oformatconllcnl2009 ";
+            }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $conlloutfile = tempFileName("conllout-results");
