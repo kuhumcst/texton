@@ -171,20 +171,19 @@ try {
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $IfacetlemF = "";	/* Input with annotationstyper lemmas (Lemma) */
-        $IfacetposF = "";	/* Input with annotationstyper PoS-tags (PoS-tags) */
-        $IfacettokF = "";	/* Input with annotationstyper tokens (Tokens) */
-        $Ifacetlem = false;	/* Annotationstyper in input is lemmas (Lemma) if true */
-        $Ifacetpos = false;	/* Annotationstyper in input is PoS-tags (PoS-tags) if true */
-        $Ifacettok = false;	/* Annotationstyper in input is tokens (Tokens) if true */
+        $IfacetlemF = "";	/* Input with type of content lemmas (Lemma) */
+        $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
+        $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
+        $Ifacetlem = false;	/* Type of content in input is lemmas (Lemma) if true */
+        $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
-        $Ofacetlem = false;	/* Annotationstyper in output is lemmas (Lemma) if true */
-        $Ofacetpos = false;	/* Annotationstyper in output is PoS-tags (PoS-tags) if true */
-        $Ofacettl = false;	/* Annotationstyper in output is tokens,lemmas (tokens,lemmaer) if true */
-        $Ofacettok = false;	/* Annotationstyper in output is tokens (Tokens) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatdipl = false;	/* Format in output is Org-mode if true */
-        $IfacetposMenota = false;	/* Style of annotationstyper PoS-tags (PoS-tags) in input is Menota if true */
-        $OfacetposMenota = false;	/* Style of annotationstyper PoS-tags (PoS-tags) in output is Menota if true */
+        $IfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Menota if true */
+        $OfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menota if true */
 
         if( hasArgument("base") )
             {
@@ -208,7 +207,7 @@ try {
             $IfacetlemF = requestFile("IfacetlemF");
             if($IfacetlemF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'lemmas (Lemma)' not found (IfacetlemF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'lemmas (Lemma)' not found (IfacetlemF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetlemF=$IfacetlemF ";
@@ -218,7 +217,7 @@ try {
             $IfacetposF = requestFile("IfacetposF");
             if($IfacetposF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetposF=$IfacetposF ";
@@ -228,7 +227,7 @@ try {
             $IfacettokF = requestFile("IfacettokF");
             if($IfacettokF == '')
                 {
-                header("HTTP/1.0 404 Input with annotationstyper 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'tokens (Tokens)' not found (IfacettokF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacettokF=$IfacettokF ";
@@ -253,9 +252,8 @@ try {
             {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
-            $Ofacettl = existsArgumentWithValue("Ofacet", "tl");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacettl=$Ofacettl " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {

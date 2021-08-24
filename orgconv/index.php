@@ -172,8 +172,8 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $Ifacet_lem_pos_tokF = "";	/* Input with type of content lemmas (Lemma) and PoS-tags (PoS-tags) and tokens (Tokens) */
+        $Ifacet_lem_tokF = "";	/* Input with type of content lemmas (Lemma) and tokens (Tokens) */
         $Ifacet_pos_tokF = "";	/* Input with type of content PoS-tags (PoS-tags) and tokens (Tokens) */
-        $IfacettlF = "";	/* Input with type of content tokens,lemmas (tokens,lemmaer) */
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambigamb = false;	/* Ambiguity in input is ambiguous (tvetydig) if true */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
@@ -181,8 +181,8 @@ try {
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacet_lem_pos_tok = false;	/* Type of content in input is lemmas (Lemma) and PoS-tags (PoS-tags) and tokens (Tokens) if true */
+        $Ifacet_lem_tok = false;	/* Type of content in input is lemmas (Lemma) and tokens (Tokens) if true */
         $Ifacet_pos_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and tokens (Tokens) if true */
-        $Ifacettl = false;	/* Type of content in input is tokens,lemmas (tokens,lemmaer) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatdipl = false;	/* Format in input is Org-mode if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
@@ -228,6 +228,16 @@ try {
                 }
             $echos = $echos . "Ifacet_lem_pos_tokF=$Ifacet_lem_pos_tokF ";
             }
+        if( hasArgument("Ifacet_lem_tokF") )
+            {        
+            $Ifacet_lem_tokF = requestFile("Ifacet_lem_tokF");
+            if($Ifacet_lem_tokF == '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'lemmas (Lemma) and tokens (Tokens)' not found (Ifacet_lem_tokF parameter). ");
+                return;
+                }
+            $echos = $echos . "Ifacet_lem_tokF=$Ifacet_lem_tokF ";
+            }
         if( hasArgument("Ifacet_pos_tokF") )
             {        
             $Ifacet_pos_tokF = requestFile("Ifacet_pos_tokF");
@@ -237,16 +247,6 @@ try {
                 return;
                 }
             $echos = $echos . "Ifacet_pos_tokF=$Ifacet_pos_tokF ";
-            }
-        if( hasArgument("IfacettlF") )
-            {        
-            $IfacettlF = requestFile("IfacettlF");
-            if($IfacettlF == '')
-                {
-                header("HTTP/1.0 404 Input with type of content 'tokens,lemmas (tokens,lemmaer)' not found (IfacettlF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacettlF=$IfacettlF ";
             }
         if( hasArgument("IfacettokF") )
             {        
@@ -278,10 +278,10 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacet_lem_pos_tok = existsArgumentWithValue("Ifacet", "_lem_pos_tok");
+            $Ifacet_lem_tok = existsArgumentWithValue("Ifacet", "_lem_tok");
             $Ifacet_pos_tok = existsArgumentWithValue("Ifacet", "_pos_tok");
-            $Ifacettl = existsArgumentWithValue("Ifacet", "tl");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacet_lem_pos_tok=$Ifacet_lem_pos_tok " . "Ifacet_pos_tok=$Ifacet_pos_tok " . "Ifacettl=$Ifacettl " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_lem_pos_tok=$Ifacet_lem_pos_tok " . "Ifacet_lem_tok=$Ifacet_lem_tok " . "Ifacet_pos_tok=$Ifacet_pos_tok " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -369,7 +369,7 @@ try {
         if($Ifacet_lem_pos_tok)
             $command = "../bin/bracmat 'get\$\"orgconv.bra\"' '$orgconvfile' '$IfacettokF' '$Ifacet_lem_pos_tokF' '$Ifacet_lem_pos_tokF' '$Iappnrm'";
         else
-            $command = "../bin/bracmat 'get\$\"orgconv.bra\"' '$orgconvfile' '$IfacettokF' '$Ifacet_pos_tokF' '$IfacettlF' '$Iappnrm'";
+            $command = "../bin/bracmat 'get\$\"orgconv.bra\"' '$orgconvfile' '$IfacettokF' '$Ifacet_pos_tokF' '$Ifacet_lem_tokF' '$Iappnrm'";
 
         //logit($command);
 
