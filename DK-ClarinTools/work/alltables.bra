@@ -991,8 +991,8 @@ SuperSets=
         lem*mrf*pos*seg*stx*tok
         lem*mrf*ner*pos*seg*stx*tok
     )
-    (tok.seto ner*seg*tok)
-    (seg.seto)
+    (tok.seg*tok ner*seg*tok)
+    (seg.seg*tok)
     ( mrf
     .   lem*mrf*pos*stx
         lem*mrf*pos*seg*stx*tok
@@ -1328,7 +1328,6 @@ facets=
   ("multiple word terms" flerordstermer.mwu.)
   (lexicon leksikon.lex.)
   ("head movements" hovedbevægelser.headmov.)
-  ("segments,tokens" "Sætningssegmenter,tokens".seto.)
   ( "segments,tokens,named entities" "Sætningssegmenter,tokens,navne"
   . stn
   . 
@@ -1384,29 +1383,7 @@ features=
         "Subtype af resource, fx basistekst, tokens, alfabetisk liste."
     )
     (table.facets)
-    ( specificationTable
-    .   (   "pmls-------  lem*mrf*pos*stx"
-            pos
-            "spo--------  cls*pos*seg
-            stp--------  pos*seg*tok
-            stpd-------  pos*seg*stx*tok
-            stlp-------  lem*pos*seg*tok
-            stopl------  cls*lem*pos*seg*tok
-            stpld------  lem*pos*seg*stx*tok
-            stpmld-----  lem*mrf*pos*seg*stx*tok
-            stpmldn----  lem*mrf*ner*pos*seg*stx*tok"
-            seto
-            "tlpm-------  lem*mrf*pos*tok
-            tlpmn------  lem*mrf*ner*pos*tok
-            stl--------  lem*seg*tok
-            sl---------  lem*seg
-            stn--------  ner*seg*tok
-            seto         (seg*tok.OnE)
-            "
-        . tagSets
-        )
-        (seto stn tok.tokenisationStyles)
-    )
+    (specificationTable.(pos.tagSets) (tok.tokenisationStyles))
     ( sourcehelp
     .   "The default type of content of the input is \"text\". Change it if necessary."
         "Normalt antager Text Tonsorium at inputtet ikke er annoteret. Ændr til en anden værdi om nødvendigt."
@@ -3570,24 +3547,18 @@ toolprop=
   .   (ambig,(pru.pru)+(una.una))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      ,   ( lem*mrf*ner*pos^Uni*seto*tok
+      ,   ( lem*mrf*ner*pos^Uni*seg*stx*tok*(seg*tok.OnE)
+          . lem*mrf*ner*pos^Uni*seg*stx*tok
+          )
+        + ( lem*mrf*ner*pos^Uni*tok*(seg*tok.OnE)
           . lem*mrf*ner*pos*tok
           )
-        + ( lem*mrf*pos^Uni*seg*seto*stx*tok
+        + ( lem*mrf*pos^Uni*seg*stx*tok*(seg*tok.OnE)
           . lem*mrf*pos*seg*stx*tok
           )
-        + (lem*mrf*pos^Uni*seto*tok.lem*mrf*pos*tok)
-      )
-      (format,(txtann.teip5))
-      (pres,(nml.nml))
-  )
-+ ( TEIanno
-  .   (ambig,(pru.pru)+(una.una))
-      (app,(nrm.nrm)+(unn.unn))
-      ( facet
-      , ( lem*mrf*ner*pos^Uni*seg*seto*stx*tok
-        . lem*mrf*ner*pos^Uni*seg*stx*tok
-        )
+        + ( lem*mrf*pos^Uni*tok*(seg*tok.OnE)
+          . lem*mrf*pos*tok
+          )
       )
       (format,(txtann.teip5))
       (pres,(nml.nml))
@@ -3695,7 +3666,7 @@ toolprop=
       ( facet
       ,   (lem*pos*seg*tok.lem*pos*seg*tok)
         + (pos*seg*tok.pos*seg*tok)
-        + (seg*tok.seto)
+        + (seg*tok.seg*tok)
       )
       (format,(txtann.conll^cnl2009))
       (pres,(nml.nml))
@@ -4019,14 +3990,14 @@ toolprop=
   )
 + ( plainD2cbf
   .   (ambig,(una.una))
-      (facet,((seg*tok^simple.OnE).seto^simple))
+      (facet,((seg*tok^simple.OnE).seg*tok^simple))
       (format,(plainD.txtann))
       (pres,(nml.nml))
   )
 + (seg.(facet,(sent*tok.seg)) (format,(txtann.txtann)))
 + ( sent
   .   (ambig,(una.una))
-      (facet,(seto.sent))
+      (facet,((seg*tok.OnE).sent))
       (format,(txtann.txtann))
       (pres,(nml.nml))
   )
@@ -4084,14 +4055,14 @@ toolprop=
   )
 + ( teitok
   .   (app,(nrm.nrm)+(unn.unn))
-      (facet,(txt.seto^PT))
+      (facet,(txt.seg*tok^PT))
       (format,(teip5.txtann))
       (lang,(en.en))
       (pres,(nml.nml))
   )
 + ( teitok
   .   (app,(nrm.nrm)+(unn.unn))
-      (facet,(txt.seto^simple))
+      (facet,(txt.seg*tok^simple))
       (format,(teip5.txtann))
       (pres,(nml.nml))
   )
@@ -4110,7 +4081,7 @@ toolprop=
 + ( toks
   .   (ambig,(una.una))
       (app,(nrm.nrm)+(unn.unn))
-      (facet,(seto.tok))
+      (facet,((seg*tok.OnE).tok))
       (format,(txtann.txtann))
       ( lang
       ,   (af.af)
@@ -4165,7 +4136,7 @@ toolprop=
 + ( toks
   .   (ambig,(una.una))
       (app,(nrm.nrm)+(unn.unn))
-      (facet,(seto.tok))
+      (facet,((seg*tok.OnE).tok))
       (format,(txtann.txtann))
       (lang,(da.da))
       (period,(c13.c13)+(c20.c20)+(c21.c21))
@@ -4190,7 +4161,7 @@ toolprop=
   )
 + ( vujiloX
   .   (app,(unn.nrm))
-      (facet,(seto.seto))
+      (facet,((seg*tok.OnE).seg*tok))
       (format,(txtann.txtann))
       (lang,(la.la))
       (period,(c1.c1)+(c13.c13))
