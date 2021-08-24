@@ -7132,39 +7132,34 @@ try {
       ( unify
       =     source goal gfield gvalue gopt sopt ss
           , A Z other gspc sspc gvalues svalues gs
-          , uni R zgvalue asvalue zsvalue tail U
-        .   ( uni
-            =   ss gs g ngs tail
-              .   !arg:(?ss.?gs)
-                & !gs:%(%?g^? ?)*?ngs
-                & (   ~(!ss:?*(!g^? ?)*?)
-                    & (     (!ngs:1|uni$(!ss.!ngs))
-                          : ?tail
-                        & !g*!tail
-                      | `~
-                      )
-                  | U$(!ss.!gs) !ss
-                  )
-            )
-          & ( U
+          , R zgvalue asvalue zsvalue tail U
+        .   ( U
             =   ss g go gp gs a z sp so tail ngs
               .   !arg:(?ss.?gs)
+                & "take the first factor of the goal feature value"
                 & !gs:%(%?g^?gp ?go)*?ngs
+                & "Match it with a source feature value"
                 & !ss:?a*(!g^?sp ?so)*?z
+                & "At this point we may have failure."
+                & "Make sure subspecifications match."
                 & ( !go:!so
                   | !go:
                   | !so:
                   )
-                & ( !gp:1
-                  | !sp:1
-                  | shared$(!gp.!sp):~1:?sp
-                  )
-                &   ( !a*!z:1
-                    | !ngs:1
-                    | uni$(!a*!z.!ngs)
+                & "At this point we may have failure."
+                &   ( !gp:1&!sp
+                    | !sp:1&!gp
+                    | shared$(!gp.!sp):~1
                     )
-                  : ?tail
-                & (!g^!sp !so)*!tail
+                  : ?sp
+                & "At this point we may have failure."
+                & (   !ngs:1
+                    & "All goal feature values are matched. We're done."
+                    & !g^!sp !so
+                  |   "Match remaining goal feature values with remaining source feature values."
+                    & U$(!a*!z.!ngs):?tail
+                    & (!g^!sp !so)*!tail
+                  )
             )
           & !arg:(?source.?goal)
           & ( !goal:&!source
@@ -7175,18 +7170,26 @@ try {
                     | `~
                     )
                 |   !source:?A (!gfield,?svalues) ?Z
+                  & "All gvalues must be satisfied by svalues. 
+                   There may be svalues that are not satisfied by gvalues."
                   &   !gvalues
-                    :     ?
-                        + ( `%?gs
-                          &   !svalues
-                            :   ?
-                              + `%( ?ss
-                                  & U$(!ss.!gs):?R
-                                  & unify$(!A !Z.!goal):?other
-                                  )
-                              + ?
-                          )
-                        + ?
+                    :   ( ~
+                        :   ?
+                          + ( `%?gs
+                            &   !svalues
+                              :   ?
+                                + `%( ?ss
+                                    & "Satisfy first gvalue by some svalue. If success, satisfy remaining gvalues."
+                                    & U$(!ss.!gs):?R
+                                    & "R is the result of the unification"
+                                    & "Unify remaining goal features with remaining source features."
+                                    &   unify$(!A !Z.!goal)
+                                      : ?other
+                                    )
+                                + ?
+                            )
+                          + ?
+                        )
                         ?
                   & (!gfield,!R) !other
                 )
@@ -7817,7 +7820,7 @@ try {
           & "ALL of goaly must be satisfied by a single tool.
              goaly can be a single factor of a complex goal that must be satisfied by multiple tools.
              If the goal is complex, but must be satisfied by a single tool with a complex output,
-             then goaly is complex and prefixed with a % sign."
+             then goaly is complex and structured as (%*%.OnE)."
           & :?newGoal
           & :?pathfields
           & 0:?done
@@ -8012,15 +8015,17 @@ try {
             =   a z S Z spc
               .   !arg:(1.?a)&!a
                 |     !arg
-                    : ( %@?S^?spc*?Z
-                      .   ?a
-                        * `( !S
-                           ^ ( !spc
-                             | ?&1:!spc
-                             | 1
+                    : ( ( %@?S^?spc*?Z
+                        .   ?a
+                          * `( !S
+                             ^ ( !spc
+                               | ?&1:!spc
+                               | 1
+                               )
                              )
-                           )
-                        * ?z
+                          * ?z
+                        )
+                      | (((?.OnE):?S)*?Z.?a*!S*?z)
                       )
                   & partOf$(!Z.!a*!z)
             )
@@ -8560,12 +8565,13 @@ try {
                               & refold$!nnnpathh
                             )
                           : ?Pipeline
+                        & !Pipeline
                         & 1+!found:?found
                         & !Pipeline+!accPipelines:?accPipelines
                       | 
                       )
                     )
-                & ( !accPipelines:~0
+                & ( !accPipelines:~0&!accPipelines
                   | !found:~0&0
                   )
             )
