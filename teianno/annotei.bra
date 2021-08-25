@@ -8,9 +8,7 @@ program-annotei=
   =   Id
     .   !arg:(?tei.?tok.?pos.?mrf.?lem.?seg.?stx.?ner.?output)
       & get$(!tei,X ML):?XmL
-      & lst$(XmL,XmL,NEW)
       & nestML$!XmL:?Nest
-      & lst$(Nest,Nest,NEW)
       &   nestML$(get$(!tei,X ML))
         : (     ?teiA
                 (TEI.?TEIatt,?head (text.?textatt,?tei) ?tail)
@@ -139,8 +137,7 @@ program-annotei=
                     | :?MS
                     )
                   & "Remove doublets"
-                  & ( 
-                    |   !PS:? [1
+                  & (   !PS:? [1
                       &   whl
                         ' ( !LS:?a %@?b ?c !b ?d
                           & !a !b !c !d:?LS
@@ -971,17 +968,20 @@ program-annotei=
           .   !arg:(?id.?subid.?parentID.?tei)
             & (   map
                 $ ( ( 
-                    =   e a c A M Z ID v nc x
+                    =   e a c A M Z ID v nc x id
                       .   !arg:@
                         |   !arg:(?e.?a,?c)
                           & (     !a
                                 :   ?A
-                                    ("xml:id"|id.?)
+                                    ("xml:id"|id.?ID)
                                     ?M
                                     ( ("xml:id"|id):?id
                                     . ?v
                                     )
                                     ?Z
+                              & ( (IDS..find)$!ID:(?.?ID)
+                                | (IDS..insert)$(!ID.str$!parentID)
+                                )
                               &   !A !M !Z
                                 : (   ?A (exclude.?x) ?Z
                                     &   ( exclude

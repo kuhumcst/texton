@@ -48,85 +48,79 @@ X=
               . !arg
               )
         )
-      & ( getIDs
-        =   id n e a c
-          .   !arg:(?arg.?n)
-            &   whl
-              ' ( !arg:? (?e.?a,?c) ?arg
-                & (   !e:(w|c)
-                    &   !a
-                      : ? ("xml:id"|id.?id) ?
-                    & (tokids..insert)$(!id.1+!n:?n)
-                  | getIDs$(!c.!n):?n
-                  )
-                )
-            & !n
+      & ( makeLine
+        =   a c e C msd pos id lemma ana to nBI
+          .   !arg:((?e.?a,?c).?id)
+            & (     !c
+                  :   ?
+                      ((?.? (exclude.?) ?,?):?c)
+                      ?
+                & makeLine$(!c.!id)
+              |     !a
+                  : (   ? (msd.?msd) ?
+                      & (   @(!msd:? "UPosTag=" ?pos)
+                          & (   @(!pos:?pos "|" ?msd)
+                              & ((!msd.":"):("_".?msd)|)
+                            | "_":?msd
+                            )
+                        | "_":?pos
+                        )
+                    |   ? (pos.?pos) ?
+                      & (   @(!pos:? "UPosTag=" ?pos)
+                          & (   @(!pos:?pos "|" ?msd)
+                              & ((!msd.":"):("_".?msd)|)
+                            | "_":?msd
+                            )
+                        | "_":?msd
+                        )
+                    )
+                  : ( ? (join.?join) ?
+                    | ?&:?join
+                    )
+                & str$(cont$!c):?C
+                &   !a
+                  : ( ? (lemma.?lemma) ?
+                    | ?&!C:?lemma
+                    )
+                & !linkGrp:? (!id.?ana.?to) ?
+                &   !id
+                    \t
+                    !C
+                    \t
+                    !lemma
+                    \t
+                    !pos
+                    "\t_\t"
+                    !msd
+                    \t
+                    !to
+                    \t
+                    ( (@(!ana:"ud-syn:" ?ana)|)
+                    & !ana
+                    )
+                    "\t_\tNER="
+                    ( !Type:&O
+                    |   !BI:?nBI
+                      & I:?BI
+                      & !nBI "-" !Type
+                    )
+                    ( !join:
+                    |   "|"
+                        ( !join:right&SpaceAfter
+                        | SpaceBefore
+                        )
+                        "=No"
+                    )
+                    \n
+              | WHAT
+              )
         )
       & ( doLine
         =   a c e C msd pos id lemma ana to nBI
           .     !arg:(?e.?a,?c)
-              & (     !a
-                    : (   ? (msd.?msd) ?
-                        & (   @(!msd:? "UPosTag=" ?pos)
-                            & (   @(!pos:?pos "|" ?msd)
-                                & ( (!msd.":"):("_".?msd)
-                                  | 
-                                  )
-                              | "_":?msd
-                              )
-                          | "_":?pos
-                          )
-                      |   ? (pos.?pos) ?
-                        & (   @(!pos:? "UPosTag=" ?pos)
-                            & (   @(!pos:?pos "|" ?msd)
-                                & ( (!msd.":"):("_".?msd)
-                                  | 
-                                  )
-                              | "_":?msd
-                              )
-                          | "_":?msd
-                          )
-                      )
-                    : ? ("xml:id".?id) ?
-                    : ( ? (join.?join) ?
-                      | ?&:?join
-                      )
-                  & str$(cont$!c):?C
-                  &   !a
-                    : ( ? (lemma.?lemma) ?
-                      | ?&!C:?lemma
-                      )
+              & (   !a:? ("xml:id".?id) ?
                   & (tokids..find)$!id:(?.?id)
-                  & !linkGrp:? (!id.?ana.?to) ?
-                  &   !id
-                      \t
-                      !C
-                      \t
-                      !lemma
-                      \t
-                      !pos
-                      "\t_\t"
-                      !msd
-                      \t
-                      !to
-                      \t
-                      ( (@(!ana:"ud-syn:" ?ana)|)
-                      & !ana
-                      )
-                      "\t_\tNER="
-                      ( !Type:&O
-                      |   !BI:?nBI
-                        & I:?BI
-                        & !nBI "-" !Type
-                      )
-                      ( !join:
-                      |   "|"
-                          ( !join:right&SpaceAfter
-                          | SpaceBefore
-                          )
-                          "=No"
-                      )
-                      \n
+                  & makeLine$(!arg.!id)
                 |   !e:name
                   & !a:? (type.?type) ?
                   & DoLine$(!c.!type)
@@ -174,30 +168,29 @@ X=
             &     map
                 $ ( ( 
                     =   to from ana
-                      .       !arg
-                            : ( link
-                              .     (ana.?ana)
-                                    ( target
-                                    . @( ?
-                                       :   ?
-                                           "#"
-                                           ?to
-                                           ( " "
-                                           | \n
-                                           | \r
-                                           | \t
-                                           )
-                                           ?
-                                           "#"
-                                           ?from
-                                       )
-                                    )
-                                , ?
-                              )
-                          & (tokids..find)$!to:(?.?to)
-                          & (tokids..find)$!from:(?.?from)
-                          & (!from.!ana.!to)
-                        | 
+                      .     !arg
+                          : ( link
+                            .     (ana.?ana)
+                                  ( target
+                                  . @( ?
+                                     :   ?
+                                         "#"
+                                         ?to
+                                         ( " "
+                                         | \n
+                                         | \r
+                                         | \t
+                                         )
+                                         ?
+                                         "#"
+                                         ?from
+                                     )
+                                  )
+                              , ?
+                            )
+                        & (tokids..find)$!to:(?.?to)
+                        & (tokids..find)$!from:(?.?from)
+                        & (!from.!ana.!to)
                     )
                   . !linkGrp
                   )
@@ -271,7 +264,7 @@ X=
           $ ( "C:\\projects\\parlamint\\ParlaMint-DK-TEI-ana\\conllner\\ParlaMint-DK_2014-10-31-20141-M10-439.xml-1176-step11.xml"
             . "C:\\projects\\parlamint\\ParlaMint-DK-TEI-ana\\conllner\\ParlaMint-DK_2014-10-31-20141-M10.conll"
             )
-      |   
+      |   ~
         &   (its.doit)
           $ ( "C:\\projects\\parlamint\\tei2conll\\plain-all\\text-1-1196-step11.xml"
             . "C:\\projects\\parlamint\\tei2conll\\plain-all\\text-1-1196-step11.conll"
