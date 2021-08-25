@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -410,6 +410,7 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+        logit("TEIANNO");
         $rawXML = tempFileName("TEIannofile-rawXML");
         $TEIannofile = tempFileName("TEIannofile-results");
         $rms = " && rm $TEIannofile && rm $rawXML && rm $Ifacet_seg_tokF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF ";
@@ -422,6 +423,7 @@ try {
         copy($IfacetlemF,"IfacetlemF"); 
 /*/
 //*/
+        $command = "";
         if(  $Ofacetlem
           && $Ofacetmrf
           && $Ofacetner
