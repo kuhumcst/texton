@@ -186,6 +186,7 @@ try {
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ilanges = false;	/* Language in input is Spanish (spansk) if true */
         $Ilangfr = false;	/* Language in input is French (fransk) if true */
+        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
@@ -199,6 +200,7 @@ try {
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Olanges = false;	/* Language in output is Spanish (spansk) if true */
         $Olangfr = false;	/* Language in output is French (fransk) if true */
+        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
         $Oformatconllcnl2009 = false;	/* Style of format CoNLL in output is CoNLL 2009 (14 columns)CoNLL 2009 (14 kolonner) if true */
@@ -291,6 +293,11 @@ try {
             $Ilangfr = existsArgumentWithValue("Ilang", "fr");
             $echos = $echos . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilangfr=$Ilangfr ";
             }
+        if( hasArgument("Iperiod") )
+            {
+            $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
+            $echos = $echos . "Iperiodc21=$Iperiodc21 ";
+            }
         if( hasArgument("Ipres") )
             {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
@@ -323,6 +330,11 @@ try {
             $Olanges = existsArgumentWithValue("Olang", "es");
             $Olangfr = existsArgumentWithValue("Olang", "fr");
             $echos = $echos . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olangfr=$Olangfr ";
+            }
+        if( hasArgument("Operiod") )
+            {
+            $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
+            $echos = $echos . "Operiodc21=$Operiodc21 ";
             }
         if( hasArgument("Opres") )
             {
