@@ -1,0 +1,186 @@
+{udpipe.bra
+
+Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
+
+X=
+  ( doit
+  =   output tmp1 tmp2 A B C D E F G H xml
+    .   ( turnCONLLintoTEIP5
+        =   s segid sentnr
+          .   !arg:(? ("xml:id".?segid) ?,?arg)
+            & 1:?sentnr
+            & :?s
+            &   vap
+              $ ( ( 
+                  =   prefix sentid
+                    .     !arg:
+                        & :?S:?L
+                        & str$(!segid "." !sentnr):?sentid
+                        & str$(!sentid "."):?prefix
+                        &   whl
+                          ' (   !s
+                              :   @( ?
+                                   :   ?from
+                                       \t
+                                       ?word
+                                       \t
+                                       ?lemma
+                                       \t
+                                       ?pos
+                                       \t
+                                       ?
+                                       \t
+                                       ?msd
+                                       \t
+                                       ?to
+                                       \t
+                                       ?h
+                                       \t
+                                       ?
+                                       \t
+                                       ?
+                                   )
+                                  ?s
+                            &     (   !pos:PUNCT
+                                    & ( pc
+                                      .     (msd."UPosTag=PUNCT")
+                                            ("xml:id".str$(!prefix !from))
+                                        , !word
+                                      )
+                                  | ( w
+                                    .     (lemma.!lemma)
+                                          ( msd
+                                          . str$("UPosTag=" !pos "|" !msd)
+                                          )
+                                          ("xml:id".str$(!prefix !from))
+                                      , !word
+                                    )
+                                  )
+                                  !S
+                              : ?S
+                            &     ( link
+                                  .     (ana.str$("ud-syn:" !h))
+                                        ( target
+                                        .   str
+                                          $ ( "#"
+                                              (!to:0&!sentid|!prefix !to)
+                                              " #"
+                                              !prefix
+                                              !from
+                                            )
+                                        )
+                                    , 
+                                  )
+                                  !L
+                              : ?L
+                            )
+                        & ( !S:
+                          |   1+!sentnr:?sentnr
+                            & ( s
+                              .   ("xml:id".!sentid)
+                                ,   !S
+                                    ( linkGrp
+                                    .     (targFunc."head argument")
+                                          (type.UD-SYN)
+                                      , !L
+                                    )
+                              )
+                          )
+                      |   ( @(!arg:"#" ?)
+                          | !arg !s:?s
+                          )
+                        & 
+                  )
+                . !arg
+                . \n
+                )
+        )
+      & ( transform
+        =   
+          .   map
+            $ ( ( 
+                =   e a c
+                  .     !arg:(?e.?a,?c)
+                      & (   !e:seg
+                          & put$(!c,!tmp1,NEW)
+                          &     str
+                              $ ( "/opt/texton/udpipe/udpipe/udpipe --tokenize --tag --parse ./udpipe/udpipe-ud-2.5-191206/danish-ddt-ud-2.5-191206.udpipe "
+                                  !tmp1
+                                  " > "
+                                  !tmp2
+                                )
+                            : ?command
+                          & sys$!command
+                          & get$(!tmp2,STR):?c
+                          & turnCONLLintoTEIP5$(!a,!c):?c
+                          & (!e.!a,!c)
+                        | (!e.!a,transform$!c)
+                        )
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      & !arg:(?arg.?output.?tmp1.?tmp2)
+      & nestML$(get$(!arg,X ML)):?xml
+      &   !xml
+        :   ?A
+            ( TEI
+            . ?B,?C (text.?D,?E (body.?F,?body) ?G) ?H
+            )
+            ?I
+      & (     ( 
+              =   xmlid a z
+                .   !arg:?a ("xml:id".?xmlid) ?z
+                  & !a ("xml:id".str$(!xmlid "-ana")) !z
+              )
+            $ !B
+          : ?B
+        | 
+        )
+      &   (~&udpipe|transform$!body)
+        : ?body
+      &     !A
+            ( TEI
+            . !B,!C (text.!D,!E (body.!F,!body) !G) !H
+            )
+            !I
+        : ?xmln
+      & put$(toML$!xmln,!output,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |     (   ~
+              & ( "ParlaMint-DK_20191_M1_2019-10-01.xml"
+                . "ParlaMint-DK_20191_M1_2019-10-01.out.xml"
+                . tmp1
+                . tmp2
+                )
+            | (arg$.arg$.arg$.arg$)
+            )
+          : (?input.?output.?tmp1.?tmp2)
+        & (its.doit)$(!input.!output.!tmp1.!tmp2)
+  );
+
+r=
+  get'("udpipe.bra",TXT)
+& rmv$(str$(udpipe ".bak"))
+& ren$("udpipe.bra".str$(udpipe ".bak"))
+&   put
+  $ ( "{udpipe.bra
+
+Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
+
+"
+    , "udpipe.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"udpipe.bra",APP)
+& put'(\n,"udpipe.bra",APP,BIN)
+& lst'(r,"udpipe.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"udpipe.bra",APP,BIN)
+& ;
+
+new'X;
