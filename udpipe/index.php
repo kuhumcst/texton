@@ -15,7 +15,7 @@ header("Content-type:text/plain; charset=UTF-8");
 /*
 ToolID         : udpipe
 PassWord       : 
-Version        : 1.0
+Version        : 1.2
 Title          : udpipe
 Path in URL    : udpipe/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : ITU
@@ -209,7 +209,6 @@ try {
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Ifacettxt = false;	/* Type of content in input is text (Ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
@@ -223,7 +222,6 @@ try {
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatconll = false;	/* Format in output is CoNLL if true */
-        $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
@@ -302,9 +300,8 @@ try {
         if( hasArgument("Iformat") )
             {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
-            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
             $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformatteip5=$Iformatteip5 " . "Iformattxtann=$Iformattxtann ";
+            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformattxtann=$Iformattxtann ";
             }
         if( hasArgument("Ilang") )
             {
@@ -344,9 +341,8 @@ try {
         if( hasArgument("Oformat") )
             {
             $Oformatconll = existsArgumentWithValue("Oformat", "conll");
-            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
             $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformatteip5=$Oformatteip5 " . "Oformattxtann=$Oformattxtann ";
+            $echos = $echos . "Oformatconll=$Oformatconll " . "Oformattxtann=$Oformattxtann ";
             }
         if( hasArgument("Olang") )
             {
