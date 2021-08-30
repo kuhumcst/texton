@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+  //  return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -186,20 +186,12 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
 
     $wt = "\$w\\t";
     
-    /*  $Ofacetlem
-        $Ofacetsl
-        $Ofacetstl
-        $Ofacetstlp
-        $Ofacettl
-        $Ofacettlp
-    */
-
-    /* $Ofacetlem || $Ofacetsl */
+    /* $Ofacetlem */
     if($Ofacetlem && !$Ofacetpos && !$Ofacettok)
         $wt = ""; 
 
     $eind = "\$s\\n";
-    /* $Ofacetlem || $Ofacettl || $Ofacettlp */
+    /* $Ofacetlem */
     if($Ofacetlem && !$Ofacetseg) 
         $eind = "\\n";
 
@@ -433,31 +425,91 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         {
         logit("Not normal!");
         if($Opresalf)
+            {
             if($Ofacetlem)
-                $command = "$toolbin/cstlemma -L $Iflat -eU -p -qwft -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$f\\t\$w\\n' -b'\$f\\t\$w\\n' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
-            else if($ShowTag)
-                $command = "$toolbin/cstlemma -L $Iflat -eU -p -qwft -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                {
+                if(!Ofacettok && !$ShowTag)
+                    {
+                    $command =             "-qwft -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
+                    }
+                else if($ShowTag)
+                    {
+                    $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' $Iflat";
+                    }
+                else
+                    {
+                    $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w'       $Iflat";
+                    }
+                }
             else
-                $command = "$toolbin/cstlemma -L $Iflat -eU -p -qwft -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
-        else if($Opresfrq ) 
+                {
+                if($ShowTag)
+                    {
+                    $command =             "-qwft -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w\\t\$t' $Iflat";
+                    }
+                else
+                    {
+                    $command =             "-qwft -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w'       $Iflat";
+                    }
+                }
+            }
+        else if($Opresfrq )
+            {
             if($Ofacetlem)
-                $command = "$toolbin/cstlemma -L $Iflat -eU -p -qfwt -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$f\\t\$w\\n' -b'\$f\\t\$w\\n' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
-            else if($ShowTag)
-                $command = "$toolbin/cstlemma -L $Iflat -eU -p -qfwt -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                {
+                if(!$Ofacettok && !$ShowTag)
+                    {
+                    $command =             "-qfwt -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
+                    }
+                else if($ShowTag)
+                    {
+                    $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' $Iflat";
+                    }
+                else
+                    {
+                    $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w'       $Iflat";
+                    }
+                }
             else
-                $command = "$toolbin/cstlemma -L $Iflat -eU -p -qfwt -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                {
+                if($ShowTag)
+                    {
+                    $command =             "-qfwt -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w\\t\$t' $Iflat";
+                    }
+                else
+                    {
+                    $command =             "-qfwt -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w'       $Iflat";
+                    }
+                }
+            }
         else
-            $command = "$toolbin/cstlemma -L $Iflat -eU -p -q- -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$w' -b'\$w' -c'$c' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                    {
+                    $command =             "-q-   -B'\$w'                -b'\$w'                -c'$c'              $Iflat";
+                    }
         }
     else if($emptyattribute != "")
         if($posattribute != "")
-            $command = "$toolbin/cstlemma -L -Xl$emptyattribute -Xp$posattribute -eU -p -q- -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$w' -b'\$w' -c'$cx' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                    {
+                    $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'                        -Xl$emptyattribute -Xp$posattribute";
+                    }
         else
-            $command = "$toolbin/cstlemma -L -Xl$emptyattribute -I'\$w\\s' -eU -p -q- -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$w' -b'\$w' -c'$cx' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                    {
+                    $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'             -I'\$w\\s' -Xl$emptyattribute";
+                    }
     else if($XMLinput == 'j')
-        $command = "$toolbin/cstlemma -L -X $Iflat -eU -p -q- -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$w' -b'\$w' -c'$cx' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                    {
+                    $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'             $Iflat -X";
+                    }
     else
-        $command = "$toolbin/cstlemma -L $Iflat -eU -p -q- -t$toptarg -U$Uminus -u$Uminus -H$H -B'\$w' -b'\$w' -c'$c' -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno";
+                    {
+                    $command =             "-q-   -B'\$w'                -b'\$w'                -c'$c'              $Iflat";
+                    }
+
+    logit("commandA:" . $command);
+
+    $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno " . $command;
+
+    logit("commandB:" . $command);
 
     if($XMLinput == 'j')
         {
