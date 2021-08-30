@@ -1102,7 +1102,7 @@ toolsProg=
       )
       ( disam
       =     nextvar ding nextn nextvars wfs wflw N toolPlumbing
-          , demul demultiply inmul inmultiply c2m
+          , demul demultiply inmul inmultiply c2m cm
         .     0:?nextn
             & :?nextvars
             & ( nextvar
@@ -1317,7 +1317,7 @@ toolsProg=
       ( describefeature
       =     featvals table specificationTables featdesc
           , featval spec full stbl sps sp
-          , featvalspec featvalspecs
+          , featvalspec featvalspecs addFeatvalSpec
         .   ( addFeatvalSpec
             =     !featdesc
                   (!featdesc:|" & ")
@@ -1468,7 +1468,7 @@ toolsProg=
             )
       )
       ( reorder
-      =     reorderedworkflowlist nr
+      =     reorderedworkflowlist nr groupIfSameTools
           , workflow weighted presentable
         .   ( presentable
             =     mul2com accumulateAbbreviations findUnvisitedWF
@@ -1702,7 +1702,7 @@ toolsProg=
                   )
             )
           & ( groupIfSameTools
-            =   L seen n a b c d e B
+            =   L seen a b c B sb
               .   0:?L
                 & :?seen
                 &   whl
@@ -1751,9 +1751,9 @@ toolsProg=
             $ !reorderedworkflowlist
       )
       ( topologicalOrder
-      =     edges workflow A Z
-          , 2p Kahn edg pr
-          , pairs
+      =     edges workflow A Z ABC XYZ
+          , 2p Kahn edg pr shorting
+          , pairs shrtlst nshrtlst kahn
         .   ( edg
             =   a b
               .   !arg:%?a %?b&edg$!b edg$!a
@@ -1824,12 +1824,56 @@ toolsProg=
                           )
                         )
                     )
-                & ( !pairs:0
-                  | log$"graph has at least one cycle"
+                & ( !pairs:0&!L
+                  | "graph has at least one cycle"&
                   )
-                & !L
             )
-          & Kahn$!pairs
+          & ( shorting
+            =   A Z L p S x y shrtlst
+              .   !arg:(?p,?arg:?L)
+                & 0:?S
+                & :?shrtlst
+                &   whl
+                  ' ( !L:#*(?x.?y)+?L
+                    & !x+!y+!S:?S
+                    )
+                & "Edges with node(s) occurring in that edge only are not
+                   eligible for deletion.
+                   Such nodes have no explicit numerical factor in S."
+                & (   !arg:%+%
+                    & (   !arg
+                        :   ?A
+                          + (     #
+                                * ( ?x&~(!S:?+!x+?)
+                                  . ?y&~(!S:?+!y+?)
+                                  )
+                              + ?Z
+                            & (!p+!A,!Z) !shrtlst:?shrtlst
+                            & ~
+                            )
+                      | !shrtlst
+                      )
+                  | (!p,0)
+                  )
+            )
+          & (0,!pairs):?shrtlst:?nshrtlst
+          & log$(nshrtlst !nshrtlst)
+          & :?kahn
+          &   whl
+            ' (   whl
+                ' ( !shrtlst:(?ABC,?XYZ) ?shrtlst
+                  & Kahn$(!ABC+!XYZ):?kahn:
+                  )
+              & !kahn:
+              & "Cycle(s) found. Remove one edge, try again. The A edges should
+                 not be touched. Remove edge from Z."
+              &   whl
+                ' ( !nshrtlst:(?ABC,?XYZ) ?nshrtlst
+                  & shorting$(!ABC,!XYZ) !shrtlst:?shrtlst
+                  )
+              )
+          & log$(kahn !kahn)
+          & !kahn
       )
       ( set
       =   S L e
@@ -2838,8 +2882,7 @@ toolsProg=
       ( makeWorkflowVisualisation
       =   n o struct translateOneToHumanLanguage
         .   ( translateOneToHumanLanguage
-            =     description seqno struct abbrevs o
-                , describeLong
+            =   description seqno struct o describeLong
               .   ( describeLong
                   =   describe simplearrow
                     .   ( simplearrow
@@ -3573,8 +3616,7 @@ toolsProg=
             )
       )
       ( makeOptionList
-      =     table aBbR full selected prefix startchar
-          , name stable
+      =   table aBbR full selected prefix stable
         .     !arg
             : ( ?table
               .   (?selected.?prefix)
@@ -3619,7 +3661,7 @@ toolsProg=
       = .map$((=.low$!arg.!arg.xml-id$!arg).!arg)
       )
       ( makeOptionListSimple
-      =   idval full name stable prefix
+      =   idval full stable prefix
         .   !arg:(?stable.?prefix)
           & ( !stable:? [<5
             | sort$!stable:?stable
@@ -4126,12 +4168,12 @@ toolsProg=
           , boolfunc boolvar data declarations ech featname fname
           , fname1 fname2 fval helperFunctions httpparm iolist
           , lastWord mainfunc name o sptable stringfunc stringvar
-          , toolParmTests toolprop value values var
+          , toolParmTests toolprop value values var logInvalid
           , voidfunc i tooladm features svalues edata
           , getFeatValues toolid output TUPTUO reverselist
           , annotationStyles basistextStyles facets fileFormats
           , flatFileTypes imageStyles linguae presentations sndStyles
-          , tagSets textStyles tokenisationStyles
+          , tagSets textStyles tokenisationStyles combineFeats
         .   !arg:(?arg.?toolid)
           & :?TUPTUO
           & (output=.str$!arg !TUPTUO:?TUPTUO)
@@ -4187,7 +4229,7 @@ catch (SystemExit $e)
             )
           & ( listAlts
             =     alt featF opts rsr rsrc stl style alts
-                , term DATA FEATURES STYLES
+                , term DATA FEATURES STYLES rsrcs stls valstr
               .     !arg
                   : (?alts.?IO.?featname.?DATA.?FEATURES.?STYLES)
                 &   whl
@@ -4199,8 +4241,7 @@ catch (SystemExit $e)
                               & (!IO.!featname.!rsr.F)+!DATA
                           )
                       | ( featF
-                        =   IO featname rsr DATA
-                          . !arg:(?DATA.?)&!DATA
+                        = DATA.!arg:(?DATA.?)&!DATA
                         )
                       )
                     &   whl
@@ -4360,7 +4401,7 @@ catch (SystemExit $e)
                 & !table
             )
           & ( logInvalid
-            =   fname1 fname2 toolid
+            =   fname1 fname2 toolid feats
               .   !arg:(?toolid.?feats)
                 & (     !feats
                       :   ?
@@ -4400,8 +4441,7 @@ catch (SystemExit $e)
                   )
             )
           & ( combineToolIncarnations
-            =     A Z name featK featL Tools feats
-                , toolprop toolid
+            =   featK toolprop toolid Feats featPair
               .   !arg:(?toolprop.?toolid)
                 & :?Feats
                 &   whl
@@ -5114,8 +5154,7 @@ try {
           , unfoldInputAndOutput foldInputAndOutput createFeatureFieldset
           , nth AA ZZ feats windfw ContactEmail contactEmail
           , featjursPreexisting featjursURL aboutFeature error Submit
-          , createBoilerPlate force askFieldSet
-          , validationComments unfoldedInputAndOutput
+          , createBoilerPlate force askFieldSet validationComments
           , storeToolButton replaceToolButton
           , deleteToolButton UpdateButton PHPbutton
         .   clean$
@@ -5513,10 +5552,21 @@ try {
           & ( featureListing
             =   listing featname inouts in outp K listIO
               .   ( listIO
-                  =   in io I S L M s opt addFeature listing
+                  =     in
+                        io
+                        I
+                        S
+                        L
+                        M
+                        s
+                        opt
+                        addFeature
+                        listing
+                        Is
+                        OnE
                     .   ( addFeature
                         =     moreToCome K L featname io
-                            , I S listing M s optional
+                            , I S listing M s optional OnE
                           .     !arg
                               : ( ?moreToCome
                                 . ?K
@@ -5789,7 +5839,7 @@ try {
                   $ (optional.!featinoutOptional.val.!!featinoutOptional)
             )
           & ( askOnE
-            =   urlparms featinoutOnE
+            =   urlparms featinoutOnE featinout inout values
               .     !arg
                   : (?urlparms.?featinoutOnE.?featinout.?values.?inout)
                 & (   !inout:Input
@@ -5823,7 +5873,7 @@ try {
                 , sameSpecificationOnceMore full
                 , additionalFieldSet additionalOptionals
                 , specificationTable aSpecification
-                , featinoutSpec featinoutOptMore ret
+                , featinoutSpec featinoutOptMore
               .   ( sameFeatureOnceMore
                   = .!arg:(?arg.?)&(.!arg.)
                   )
@@ -6037,7 +6087,10 @@ try {
                 & :?FieldSet
                 & (     map
                       $ ( ( 
-                          =   
+                          =     Lrequireds
+                                OnErequired
+                                additionalFieldSet
+                                required
                             .   !arg:%@?inout
                               & :?requireds
                               & 0:?NrRequiredAndOptional
@@ -6119,7 +6172,7 @@ try {
             )
           & ( createFeatureFieldset
             =     inoutpairs aboutFeature urlparms formstuff
-                , formFields Metadata featname shortfeatname
+                , featname shortfeatname
                 , featdescription feattable specificationTables
               .   !arg:(?aboutFeature.?urlparms)
                 & "
@@ -6651,7 +6704,7 @@ try {
                       "
                     &   windfw$(!toolprop.!ToolName.!nth)
                       : (?featjursPreexisting.?ZZ.?nth)
-                    & (   !arg:? (bsubmit.?) ?½
+                    & (   !arg:? (bsubmit.?) ?
                         & "
                           User presses one of the 'submit' buttons 
                           (!storeToolButton, !replaceToolButton,
@@ -7225,7 +7278,7 @@ try {
       ( supplyMissingFields
       =     features x outfeat infeat childfeaturevalue
           , childfeaturevalues featurename featurevalue
-          , nfeatures xs v
+          , nfeatures xs
         .       !arg
               : (?outfeat.(?infeat.?)|?infeat.?features)
             & fold$!infeat:?infeat
@@ -7706,7 +7759,7 @@ try {
             )
           & ( updateInput
             =     Nw Inp inp nip in pu osp NW val In Ins
-                , sip
+                , sip NIN
               .   !arg:(?Inp.?val)
                 & 0:?Nw
                 &   whl
@@ -7873,7 +7926,7 @@ try {
       ( illegalSolution
       =     goal pipes toolA toolB outputA outputB inputA inputB
           , vA featA vB agree explicitlySanctioned
-          , WRONGPIPES OKPIPES pipe npipes
+          , WRONGPIPES OKPIPES pipe
         .   ( agree
             =   a ea b eb E
               .     !arg
@@ -8218,10 +8271,10 @@ try {
       ( fp
       =     tool source goal restriction superset makeSmell
           , fulfil memoizedSteps activeTools Calls smell
-          , memos reslt duplic impassages notttcnt getSuperGoals
+          , memos duplic impassages notttcnt getSuperGoals
           , sourcegoalmatch unfulfillable notThisTool fulfilGoal
           , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
-          , getActiveTools getGoals getImplicatedGoals
+          , getActiveTools getGoals getImplicatedGoals N21 inner
         .   0:?smell
           & ( makeSmell
             =   A Z o
@@ -8860,9 +8913,9 @@ try {
        A feature (F,a*b*c) has elements a, b and c.
       "
       ( supplement
-      =   f v NF OF e A Z G updateWithSubSpec$
+      =   f v NF OF A Z updateWithSubSpec
         .   ( updateWithSubSpec
-            =   vn v e nv nvs ve w0 ws w a
+            =   vn v e nv nvs ve w0 ws a OnE
               .   !arg:(?vn.?ve:@?v^%?e)
                 & 1:?nv
                 &   whl
@@ -8885,7 +8938,7 @@ try {
           & !arg:(?NF.?OF)
           &   map
             $ ( ( 
-                =   a z f vO vN vn e v G A Z ve
+                =   f vO vN vn v A Z ve vs
                   .   !arg:(?f,?vO)
                     & (   !NF:?A (!f,?vN:?vn) ?Z
                         &   whl
@@ -8921,7 +8974,7 @@ try {
       "
       ( containedBy
       =     short long fea val e E rem Val P nval nVal
-          , saves savel
+          , saves savel v
         .   !arg:(?short:?saves.?long:?savel)
           & ( !short:
             |   !short:(?fea,@?val^?e) ?short
@@ -9123,7 +9176,7 @@ try {
             )
       )
       ( Intersection
-      =   x y f v I e g w V W h
+      =   x y f v I e g V h ns vs xs ys
         .   !arg:(?x.?y)
           &     map
               $ ( ( 
@@ -9377,7 +9430,7 @@ try {
               .   !arg:(?OF.?NF)
                 &   map
                   $ ( ( 
-                      =   f nvs ovs v e E A Z a z nsg
+                      =   f nvs ovs v e E A Z a z nsg nv
                         .   !arg:(?f,?nvs)
                           & sig$!nvs:?nsg
                           & (   !OF:?A (!f,?ovs) ?Z
@@ -9578,7 +9631,6 @@ try {
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
               & ( !pipe3:0
                 |   validateInputsForEachTool$!pipe3
-                  & log$validated
                   & ( !pipes:?+!pipe3+?
                     | !pipe3+!pipes:?pipes
                     )
@@ -9870,7 +9922,7 @@ try {
                              pairs do nowhere occur in the current workflow, so
                              now we substitute the rich O.I pairs for the
                              original ones."
-                          & Subst$(!arg:?OLDARG.!nsig):?arg
+                          & Subst$(!arg.!nsig):?arg
                           & "arg has become more complete subspec-wise.
                              Either each tool is used in exactly one way, or
                              the different ways ALL differ more than only at
@@ -10022,7 +10074,7 @@ try {
             )
       )
       ( composeValueString
-      =   valstr v s specstr vals
+      =   valstr v s vals specs
         .   :?valstr
           & 0:?specs
           & !arg:?vals
@@ -10067,7 +10119,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
 "
       ( convert2URLs
       =     requestString Items items file files newJobs feats
-          , base post2 val vals JobStack Val item meta In
+          , base post2 val vals JobStack Val item In
           , jobIDoffset A OffSet addOutputsToRequestString
           , extension ID forceFeed jobNr jobID maxjobID
           , Short Long DiscerningFeature getDisFe
@@ -10076,6 +10128,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , inputs moreinputs firstinput other fh oh
           , compact compatible simpleInput someinputs
           , getDepsAndAddInputsToRequestString
+          , distillInputsFromRequestString
         .   "getDisFe establishes the feature that the given tool has to look
              for among the input Items, if it needs an item from that list.
              It is not useful for steps that only take input from earlier
@@ -10223,10 +10276,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & (!extension.!requestString)
             )
           & ( getDepsAndAddInputsToRequestString
-            =   in nfiles requestString newJobs
+            =   in nfiles requestString newJobs getCompatibleInputFile
               .   ( getCompatibleInputFile
                   =     Items FiLfeats item feats Uploads
-                      , fileitem meta feats
+                      , fileitem feats
                     .   !arg:(?Items.?Uploads.?FiLfeats)
                       &   !Items
                         :   ?
@@ -13415,7 +13468,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           )
                   )
                 & ( linksAndLinked
-                  =   stable exr L itmgrp
+                  =   stable exr L itmgrp id
                     .   !arg:(?stable.?exr)
                       & !exr:?itmgrp
                       & (!itmgrp:";" ?itmgrp|)
@@ -14199,7 +14252,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , val allpipes batch returnCode restriction sources
         .   ( ShowAllPipes
             =     hiddenData reorderedworkflowlist
-                , "visualizedWorkFlow(s)"
+                , "visualizedWorkFlow(s)" struct
               .     !arg
                   : ( ?hiddenData
                     . ?reorderedworkflowlist
@@ -14262,7 +14315,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
             )
           & ( NothingToDo
-            =   hiddenData pipes rstr "visualizedWorkFlow(s)"
+            =   hiddenData rstr
               .   !arg:?hiddenData
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
@@ -14742,7 +14795,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   ( stepping
                   =     a b ID NO I O input
                       , step ad bd deps stp c
-                      , nc x y
+                      , nc x y InoOnE
                     .   !arg:(?arg.?deps)
                       & (   !arg:%?a %?b
                           & stepping$(!a.!deps):(?a.?ad)
