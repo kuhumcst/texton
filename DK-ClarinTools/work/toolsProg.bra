@@ -159,7 +159,6 @@ toolsProg=
             | 
             )
           & str$("[" jsn$(clk$+!StartClk) "]")
-          & 
       )
       (path=.str$(!toolshome !arg))
       ( log
@@ -177,8 +176,7 @@ toolsProg=
                       ' ( !i+-1:>0:?i
                         & " " !spc:?spc
                         )
-                    &   str
-                      $ ("[" !indent "] " (|!logno) !spc)
+                    & str$("[" !indent "] " !logno !spc)
                     )
                     !arg
                 : ?arg
@@ -13389,7 +13387,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           )
                   )
                 & ( selectServicedValues
-                  =   short table pat
+                  =   short table pat Pat
                     .     !arg:(?short.?table.(=?pat))
                         & readTable$toolprop
                         & readTable$tooladm
@@ -13399,6 +13397,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           $ ( ( 
                               =   tool Full abbr YYy
                                 .   !arg:(?Full.?abbr.?YYy)
+                                  & !pat:(=?Pat)
                                   & (   !( 
                                          ' ( $toolprop
                                            :   ?
@@ -13414,7 +13413,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                        )
                                                      + ?
                                                .   ?
-                                                   ($short,?+$pat+?)
+                                                   ($short,$Pat)
                                                    ?
                                                )
                                              + ?
@@ -13725,7 +13724,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       $ ( !short
                                         . !table
                                         . ( 
-                                          = ?+?*!abbr^?*?+? ?.?
+                                          =   
+                                            ' ( ?
+                                              + (     ?
+                                                    +   ?
+                                                      * ( $abbr^?
+                                                        | ( ?*$abbr^?*?
+                                                          . OnE
+                                                          )
+                                                        )
+                                                      * ?
+                                                    + ?
+                                                    ?
+                                                . ?
+                                                )
+                                              + ?
+                                              )
                                           )
                                         )
                                     : ?servicedSourcesTable
@@ -13826,7 +13840,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 |       selectServicedValues
                                       $ ( !short
                                         . !table
-                                        . (=?.?+?*!abbr^?*?+? ?)
+                                        . ( 
+                                          =   
+                                            ' ( ?
+                                              + (?.?+?*$abbr^?*?+? ?)
+                                              + ?
+                                              )
+                                          )
                                         )
                                     : ?servicedGoalsTable
                                   &     (!short.!servicedGoalsTable)
