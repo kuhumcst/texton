@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/rtfreader.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/CSTRTFread.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -262,16 +262,17 @@ try {
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
+        $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $OformatplainD = false;	/* Format in output is plain text with ASCII 127 characters (flad tekst with ASCII 127 tegn) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
-        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is 0 if true */
-        $OfacettokPT = false;	/* Style of type of content tokens (Tokens) in output is 0 if true */
-        $Ofacettoksimple = false;	/* Style of type of content tokens (Tokens) in output is 0 if true */
+        $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is Penn Treebank if true */
+        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is Simple if true */
+        $OfacettokPT = false;	/* Style of type of content tokens (Tokens) in output is Penn Treebank if true */
+        $Ofacettoksimple = false;	/* Style of type of content tokens (Tokens) in output is Simple if true */
 
         if( hasArgument("base") )
             {
@@ -341,9 +342,10 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetpar = existsArgumentWithValue("Ofacet", "par");
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetpar=$Ofacetpar " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -482,6 +484,11 @@ try {
             }
 
         $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t $CSTRTFreadfile $DEL";
+
+        if($Ofacetpar)
+            {
+            $command .= " -p";
+            }
 
         $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
 
