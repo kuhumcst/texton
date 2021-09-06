@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-//    return;
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-//    return;
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -407,7 +407,9 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
+        $Ifacet_ner_par_seg_tok = false;	/* Type of content in input is name entities (Navne) and paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacet_ner_seg_tok = false;	/* Type of content in input is name entities (Navne) and segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetner = false;	/* Type of content in input is name entities (Navne) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
@@ -425,6 +427,7 @@ try {
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
         $Ofacetcls = false;	/* Type of content in output is word class (ordklasse) if true */
+        $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
@@ -437,8 +440,9 @@ try {
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacet_seg_tok__tok_PT = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is  for the tokens (Tokens) component if true */
-        $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is  if true */
+        $Ifacet_par_seg_tok__tok_PT = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the tokens (Tokens) component if true */
+        $Ifacet_seg_tok__tok_PT = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the tokens (Tokens) component if true */
+        $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is Penn Treebank if true */
         $OfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in output is DSL-tagset if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
         $OfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in output is CST-tagset if true */
@@ -518,12 +522,14 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_ner_par_seg_tok = existsArgumentWithValue("Ifacet", "_ner_par_seg_tok");
             $Ifacet_ner_seg_tok = existsArgumentWithValue("Ifacet", "_ner_seg_tok");
+            $Ifacet_par_seg_tok = existsArgumentWithValue("Ifacet", "_par_seg_tok");
             $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetner = existsArgumentWithValue("Ifacet", "ner");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacet_ner_seg_tok=$Ifacet_ner_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetner=$Ifacetner " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_ner_par_seg_tok=$Ifacet_ner_par_seg_tok " . "Ifacet_ner_seg_tok=$Ifacet_ner_seg_tok " . "Ifacet_par_seg_tok=$Ifacet_par_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetner=$Ifacetner " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -564,10 +570,11 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetcls = existsArgumentWithValue("Ofacet", "cls");
+            $Ofacetpar = existsArgumentWithValue("Ofacet", "par");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetcls=$Ofacetcls " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetcls=$Ofacetcls " . "Ofacetpar=$Ofacetpar " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -598,6 +605,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ifacet_par_seg_tok") )
+            {
+            $Ifacet_par_seg_tok__tok_PT = existsArgumentWithValue("Ifacet_par_seg_tok", "__tok_PT");
+            $echos = $echos . "Ifacet_par_seg_tok__tok_PT=$Ifacet_par_seg_tok__tok_PT ";
+            }
         if( hasArgument("Ifacet_seg_tok") )
             {
             $Ifacet_seg_tok__tok_PT = existsArgumentWithValue("Ifacet_seg_tok", "__tok_PT");

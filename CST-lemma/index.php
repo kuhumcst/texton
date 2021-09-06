@@ -640,6 +640,8 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
+        $Ifacet_par_pos_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacet_pos_seg_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
@@ -683,6 +685,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
@@ -722,6 +725,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Opresalf = false;	/* Assemblage in output is alphabetic list (alfabetisk liste) if true */
         $Opresfrq = false;	/* Assemblage in output is frequency list (frekvensliste) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_Uni = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_DSL = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_PT = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_Par = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
@@ -800,11 +807,13 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_par_pos_seg_tok = existsArgumentWithValue("Ifacet", "_par_pos_seg_tok");
+            $Ifacet_par_seg_tok = existsArgumentWithValue("Ifacet", "_par_seg_tok");
             $Ifacet_pos_seg_tok = existsArgumentWithValue("Ifacet", "_pos_seg_tok");
             $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacet_pos_seg_tok=$Ifacet_pos_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetpos=$Ifacetpos " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_par_pos_seg_tok=$Ifacet_par_pos_seg_tok " . "Ifacet_par_seg_tok=$Ifacet_par_seg_tok " . "Ifacet_pos_seg_tok=$Ifacet_pos_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetpos=$Ifacetpos " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -871,10 +880,11 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         if( hasArgument("Ofacet") )
             {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetpar = existsArgumentWithValue("Ofacet", "par");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpar=$Ofacetpar " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -932,6 +942,14 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ifacet_par_pos_seg_tok") )
+            {
+            $Ifacet_par_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_DSL");
+            $Ifacet_par_pos_seg_tok__pos_PT = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_PT");
+            $Ifacet_par_pos_seg_tok__pos_Par = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_Par");
+            $Ifacet_par_pos_seg_tok__pos_Uni = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_Uni");
+            $echos = $echos . "Ifacet_par_pos_seg_tok__pos_DSL=$Ifacet_par_pos_seg_tok__pos_DSL " . "Ifacet_par_pos_seg_tok__pos_PT=$Ifacet_par_pos_seg_tok__pos_PT " . "Ifacet_par_pos_seg_tok__pos_Par=$Ifacet_par_pos_seg_tok__pos_Par " . "Ifacet_par_pos_seg_tok__pos_Uni=$Ifacet_par_pos_seg_tok__pos_Uni ";
+            }
         if( hasArgument("Ifacet_pos_seg_tok") )
             {
             $Ifacet_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_DSL");

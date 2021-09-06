@@ -273,6 +273,7 @@ try {
         $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
+        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
@@ -284,6 +285,7 @@ try {
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Ofacetner = false;	/* Type of content in output is name entities (Navne) if true */
+        $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
@@ -291,9 +293,10 @@ try {
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacet_seg_tok__tok_simple = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is  for the tokens (Tokens) component if true */
-        $Iformatflatutf8 = false;	/* Style of format plain (flad) in input is  if true */
-        $Oformatflatutf8 = false;	/* Style of format plain (flad) in output is  if true */
+        $Ifacet_par_seg_tok__tok_simple = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) in input is Simple for the tokens (Tokens) component if true */
+        $Ifacet_seg_tok__tok_simple = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is Simple for the tokens (Tokens) component if true */
+        $Iformatflatutf8 = false;	/* Style of format plain (flad) in input is UTF-8 if true */
+        $Oformatflatutf8 = false;	/* Style of format plain (flad) in output is UTF-8 if true */
 
         if( hasArgument("base") )
             {
@@ -358,10 +361,11 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_par_seg_tok = existsArgumentWithValue("Ifacet", "_par_seg_tok");
             $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
+            $echos = $echos . "Ifacet_par_seg_tok=$Ifacet_par_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -397,9 +401,10 @@ try {
         if( hasArgument("Ofacet") )
             {
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
+            $Ofacetpar = existsArgumentWithValue("Ofacet", "par");
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetner=$Ofacetner " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
+            $echos = $echos . "Ofacetner=$Ofacetner " . "Ofacetpar=$Ofacetpar " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             }
         if( hasArgument("Oformat") )
             {
@@ -426,6 +431,11 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ifacet_par_seg_tok") )
+            {
+            $Ifacet_par_seg_tok__tok_simple = existsArgumentWithValue("Ifacet_par_seg_tok", "__tok_simple");
+            $echos = $echos . "Ifacet_par_seg_tok__tok_simple=$Ifacet_par_seg_tok__tok_simple ";
+            }
         if( hasArgument("Ifacet_seg_tok") )
             {
             $Ifacet_seg_tok__tok_simple = existsArgumentWithValue("Ifacet_seg_tok", "__tok_simple");
