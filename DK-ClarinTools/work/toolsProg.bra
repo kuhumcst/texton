@@ -1786,92 +1786,98 @@ toolsProg=
                 )
               . !arg
               )
-          & pr$(.!edges):?pairs
-          & ( 2p
-            =   a b
-              .     !arg:%@?a %@?b ?arg
-                  & (!a.!b)+2p$(!b !arg)
-                | 0
-            )
-          & ( Kahn
-            =   pairs A Z i S L m n
-              .   "create topological ordering"
-                & !arg:?pairs
-                & :?S:?L
-                & (   !pairs
-                    :   ?
-                      +   #
-                        * (   ?i
-                            & ~(!pairs:?+#*(?.!i)+?)
-                            & ~(!S:? !i ?)
-                            & !i !S:?S
-                            & ~
-                          . ?
-                          )
-                      + ?
-                  | 
-                  )
-                &   whl
-                  ' ( !S:%?n ?S
-                    & !L !n:?L
-                    &   whl
-                      ' ( !pairs:?A+#*(!n.?m)+?Z
-                        & !A+!Z:?pairs
-                        & ( !pairs:?+#*(?.!m)+?
-                          | !m !S:?S
-                          )
-                        )
-                    )
-                & ( !pairs:0&!L
-                  | "graph has at least one cycle"&
-                  )
-            )
-          & ( shorting
-            =   A Z L p S x y shrtlst
-              .   !arg:(?p,?arg:?L)
-                & 0:?S
-                & :?shrtlst
-                &   whl
-                  ' ( !L:#*(?x.?y)+?L
-                    & !x+!y+!S:?S
-                    )
-                & "Edges with node(s) occurring in that edge only are not
-                   eligible for deletion.
-                   Such nodes have no explicit numerical factor in S."
-                & (   !arg:%+%
-                    & (   !arg
-                        :   ?A
-                          + (     #
-                                * ( ?x&~(!S:?+!x+?)
-                                  . ?y&~(!S:?+!y+?)
-                                  )
-                              + ?Z
-                            & (!p+!A,!Z) !shrtlst:?shrtlst
-                            & ~
-                            )
-                      | !shrtlst
+          & (   !edges:@
+              & "There is only one step."
+              & !edges
+            |   pr$(.!edges):?pairs
+              & ( 2p
+                =   a b
+                  .     !arg:%@?a %@?b ?arg
+                      & (!a.!b)+2p$(!b !arg)
+                    | 0
+                )
+              & ( Kahn
+                =   pairs A Z i S L m n
+                  .   "create topological ordering"
+                    & !arg:?pairs
+                    & :?S:?L
+                    & (   !pairs
+                        :   ?
+                          +   #
+                            * (   ?i
+                                & ~(!pairs:?+#*(?.!i)+?)
+                                & ~(!S:? !i ?)
+                                & !i !S:?S
+                                & ~
+                              . ?
+                              )
+                          + ?
+                      | 
                       )
-                  | (!p,0)
-                  )
-            )
-          & (0,!pairs):?shrtlst:?nshrtlst
-          & log$(nshrtlst !nshrtlst)
-          & :?kahn
-          &   whl
-            ' (   whl
-                ' ( !shrtlst:(?ABC,?XYZ) ?shrtlst
-                  & Kahn$(!ABC+!XYZ):?kahn:
-                  )
-              & !kahn:
-              & "Cycle(s) found. Remove one edge, try again. The A edges should
-                 not be touched. Remove edge from Z."
+                    &   whl
+                      ' ( !S:%?n ?S
+                        & !L !n:?L
+                        &   whl
+                          ' ( !pairs:?A+#*(!n.?m)+?Z
+                            & !A+!Z:?pairs
+                            & ( !pairs:?+#*(?.!m)+?
+                              | !m !S:?S
+                              )
+                            )
+                        )
+                    & ( !pairs:0&!L
+                      | "graph has at least one cycle"&
+                      )
+                )
+              & ( shorting
+                =   A Z L p S x y shrtlst
+                  .   !arg:(?p,?arg:?L)
+                    & 0:?S
+                    & :?shrtlst
+                    &   whl
+                      ' ( !L:#*(?x.?y)+?L
+                        & !x+!y+!S:?S
+                        )
+                    & "Edges with node(s) occurring in that edge only are not
+                       eligible for deletion.
+                       Such nodes have no explicit numerical factor in S."
+                    & (   !arg:%+%
+                        & (   !arg
+                            :   ?A
+                              + (     #
+                                    * (   ?x
+                                        & ~(!S:?+!x+?)
+                                      .   ?y
+                                        & ~(!S:?+!y+?)
+                                      )
+                                  + ?Z
+                                &   (!p+!A,!Z) !shrtlst
+                                  : ?shrtlst
+                                & ~
+                                )
+                          | !shrtlst
+                          )
+                      | (!p,0)
+                      )
+                )
+              & (0,!pairs):?shrtlst:?nshrtlst
+              & :?kahn
               &   whl
-                ' ( !nshrtlst:(?ABC,?XYZ) ?nshrtlst
-                  & shorting$(!ABC,!XYZ) !shrtlst:?shrtlst
+                ' (   whl
+                    ' ( !shrtlst:(?ABC,?XYZ) ?shrtlst
+                      & Kahn$(!ABC+!XYZ):?kahn:
+                      )
+                  & !kahn:
+                  & "Cycle(s) found. Remove one edge, try again. The A edges
+                     should not be touched. Remove edge from Z."
+                  &   whl
+                    ' ( !nshrtlst:(?ABC,?XYZ) ?nshrtlst
+                      & shorting$(!ABC,!XYZ) !shrtlst:?shrtlst
+                      )
                   )
-              )
-          & log$(kahn !kahn)
-          & !kahn
+              & log$(kahn !kahn)
+              & !kahn
+            )
       )
       ( set
       =   S L e
@@ -2227,7 +2233,7 @@ toolsProg=
           & "workflowlist is numbered list of workflows, with equal branches not merged yet, and with I/O duplicated."
           & :?groupedworkflowlist
           & :?toolPlumbing
-          & 0:?disambiguatedworkflowlist
+          & :?disambiguatedworkflowlist
           &   whl
             ' ( 1+!n:?n:<1000000
               & !workflowlist:(#?nr.?workflow) ?workflowlist
