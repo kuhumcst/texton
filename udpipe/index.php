@@ -442,7 +442,7 @@ try {
                 $command = "../bin/bracmat \"get'\\\"udpipe.bra\\\"\" $F $udpipefile $tmp1 $tmp2";
                 $rms = " && rm $F";
                 }
-            $command .= " && curl -v -F job=$job -F name=$udpipefile -F data=@$udpipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $udpipefile && rm $F > ../log/udpipe.log 2>&1 &";
+            $command .= " && curl -v -F job=$job -F name=$udpipefile -F data=@$udpipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $udpipefile >> ../log/udpipe.log 2>&1 &";
             logit($command);
             exec($command);
 
