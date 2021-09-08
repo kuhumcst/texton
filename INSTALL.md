@@ -254,6 +254,25 @@ Dapipe is at https://github.com/ITUnlp/dapipe
 
 Afterwards there will be a subdirectory `dapipe/dapipe`.
 
+### udpipe
+
+UDPipe is at https://github.com/ufal/udpipe
+The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
+Copy the 
+
+    $> cd ~
+    $> git clone https://github.com/ufal/udpipe.git
+    $> cd udpipe/src
+    $> make
+    $> cp udpipe <texton folder>/bin
+
+The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
+Unzip this resource:
+
+    $> cd <texton folder>/udpipe
+    $> cp ~/udpipe-ud-2.5-191206.zip .
+    $> unzip udpipe-ud-2.5-191206.zip
+
 ### espeak
 
 This is simply installed by the following command:
