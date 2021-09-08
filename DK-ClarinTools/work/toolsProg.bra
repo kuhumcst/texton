@@ -1753,28 +1753,40 @@ toolsProg=
       =     edges workflow A Z ABC XYZ
           , 2p Kahn edg pr shorting
           , pairs shrtlst nshrtlst kahn
-        .   ( edg
+        .   log$topologicalOrder
+          & ( edg
             =   a b
               .   !arg:%?a %?b&edg$!b edg$!a
                 | !arg:(?a,?b)&edg$!a+edg$!b
                 | !arg:(?a.?b)&!a
             )
           & ( pr
-            =   nxt a b c
-              .     !arg:(?nxt.%?a+%?b)
-                  & pr$(!nxt.!a)+pr$(!nxt.!b)
-                | !arg:(?nxt.#%*%?a)&pr$(!nxt.!a)
-                |   !arg:(?nxt.%?a %?b)
-                  &   ( !nxt:&0
+            =   nxt a b c dpt S
+              .   !arg:(?dpt.?nxt.?arg)
+                & (!nxt:#%*?nxt|)
+                & (   !arg:%+%
+                    & 0:?S
+                    &   whl
+                      ' ( !arg:%?a+?arg
+                        & pr$(1+!dpt.!nxt.!a)+!S:?S
+                        )
+                    & !S
+                  |   !arg:#%*%?a
+                    & pr$(1+!dpt.!nxt.!a)
+                  |   !arg:%?a %?b
+                    &   ( !nxt:&0
+                        | (!a.!nxt)
+                        )
+                      + (   !b:%@?b ?c
+                          & (!b.!a)+pr$(1+!dpt.!b.!c)
+                        | pr$(1+!dpt.!a.!b)
+                        )
+                  |   !arg:%@?a ?
+                    & ( !nxt:&0
                       | (!a.!nxt)
                       )
-                    + (   !b:%@?b ?c
-                        & (!b.!a)+pr$(!b.!c)
-                      | pr$(!a.!b)
-                      )
-                |   !arg:(?nxt.%@?a ?)
-                  & (!nxt:&0|(!a.!nxt))
-                | 0
+                  | 0
+                  )
             )
           & 0:?edges
           &   map
@@ -1788,9 +1800,12 @@ toolsProg=
               . !arg
               )
           & (   !edges:@
-              & "There is only one step."
+              & log$"There is only one step."
               & !edges
-            |   pr$(.!edges):?pairs
+            |   log$callPR
+              & lst$(edges,path$edges,NEW)
+              & pr$(0..!edges):?pairs
+              & log$callPRdone
               & ( 2p
                 =   a b
                   .     !arg:%@?a %@?b ?arg
@@ -1834,6 +1849,7 @@ toolsProg=
                 =   A Z L p S x y shrtlst
                   .   !arg:(?p,?arg:?L)
                     & 0:?S
+                    & log$shorting
                     & :?shrtlst
                     &   whl
                       ' ( !L:#*(?x.?y)+?L
@@ -1856,19 +1872,22 @@ toolsProg=
                                   : ?shrtlst
                                 & ~
                                 )
-                          | !shrtlst
+                          | log$AAA&!shrtlst
                           )
-                      | (!p,0)
+                      | log$BBB&(!p,0)
                       )
                 )
+              & log$sofarsogood
               & (0,!pairs):?shrtlst:?nshrtlst
               & :?kahn
+              & log$whl
               &   whl
                 ' (   whl
                     ' ( !shrtlst:(?ABC,?XYZ) ?shrtlst
                       & Kahn$(!ABC+!XYZ):?kahn:
                       )
                   & !kahn:
+                  & log$cycle
                   & "Cycle(s) found. Remove one edge, try again. The A edges
                      should not be touched. Remove edge from Z."
                   &   whl
@@ -2226,10 +2245,8 @@ toolsProg=
               &   saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist
                 : ?workflowlist
               )
-          & (   !n:<1000000
-              & log$("while enumerateToolsDetail:" !n)
-            |   log
-              $ "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
+          & ( !n:<1000000
+            | "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
           & "workflowlist is numbered list of workflows, with equal branches not merged yet, and with I/O duplicated."
           & :?groupedworkflowlist
@@ -2238,6 +2255,7 @@ toolsProg=
           &   whl
             ' ( 1+!n:?n:<1000000
               & !workflowlist:(#?nr.?workflow) ?workflowlist
+              & log$(nr !nr)
               &   toolPattern$(simplify$!workflow)
                 : (=?toolPlumbing)
               & (!nr,!workflow):?wfs
@@ -2287,12 +2305,16 @@ toolsProg=
                     !disambiguatedworkflowlist
                 : ?disambiguatedworkflowlist
               )
+          & log$disambiguatedworkflowlistCREATED
           & ( !n:<1000000
-            |   log
-              $ "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
+            | "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
-          & ( reorder$!disambiguatedworkflowlist
-            . topologicalOrder$!disambiguatedworkflowlist
+          & (   reorder$!disambiguatedworkflowlist:?XYZZ
+              & log$reorderED
+              & !XYZZ
+            .   topologicalOrder$!disambiguatedworkflowlist:?XYZZ
+              & log$topologicalOrderED
+              & !XYZZ
             )
       )
       ( Circle
@@ -2873,10 +2895,13 @@ toolsProg=
                               . (class.tooltiptextL),inoutdesc$!o
                               )
                         )
-                  |   localized
-                    $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
-                        "Det ser ud til at inputtet allerede opfylder dit mål. Eller vi har ikke fundet de nødvendige oplysninger om inputtet. Brug knappen \"Forrige\" for at ændre dine valg."
-                      )
+                  |   log$"It seems that the input already matches your goal"
+                    & log$(description !description)
+                    & log$(struct !struct)
+                    &   localized
+                      $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
+                          "Det ser ud til at inputtet allerede opfylder dit mål. Eller vi har ikke fundet de nødvendige oplysninger om inputtet. Brug knappen \"Forrige\" for at ændre dine valg."
+                        )
                   )
             )
           & !arg:(?reorderedworkflowlist.?topologicalOrderedTools)
@@ -5035,15 +5060,11 @@ try {
                             " is "
                             (     getFeatSpecTable$(!featname.!data)
                                 : ?sptable
-                              & log$(sptable !sptable)
-                              & log$("!!sptable" !!sptable)
                               &   ( !!sptable
                                   |   readTable$!sptable
                                     & !!sptable
                                   )
                                 : ?specTable
-                              & log$(specTable !specTable)
-                              & log$(value !value)
                               & (     !specTable
                                     : ? (?fval.!value.?) ?
                                   & !fval
@@ -5603,18 +5624,8 @@ try {
           & ( featureListing
             =   listing featname inouts in outp K listIO
               .   ( listIO
-                  =     in
-                        io
-                        I
-                        S
-                        L
-                        M
-                        s
-                        opt
-                        addFeature
-                        listing
-                        Is
-                        OnE
+                  =     in io I S L M s
+                      , opt addFeature listing Is OnE
                     .   ( addFeature
                         =     moreToCome K L featname io
                             , I S listing M s optional OnE
@@ -8839,13 +8850,14 @@ try {
           & (N21=.!arg:@|(!arg.OnE))
           & ( getSuperGoals
             =   goal nwg
-              .   !arg:?goal:?nwg
+              .   !arg:?goal
+                & 0:?nwg
                 &   map
                   $ ( ( 
                       =   feat vals A Z Val
                         .     !arg:(?feat.?vals)
                             & !goal:?A (!feat,?Val) ?Z
-                            & (   !Val:@
+                            & (   !Val:@^?
                                 &   map
                                   $ ( ( 
                                       =   val alts sp
@@ -8887,8 +8899,45 @@ try {
                                       )
                                     . !vals
                                     )
-                              |   (!A (!feat,N21$!Val) !Z)+!nwg
-                                : ?nwg
+                              |   0:?agg
+                                &   map
+                                  $ ( ( 
+                                      =   L
+                                        .   !arg:(?.?L)
+                                          &   map
+                                            $ ( ( 
+                                                = .!arg+!agg:?agg
+                                                )
+                                              . !L
+                                              )
+                                      )
+                                    . !vals
+                                    )
+                                & 0:?n21s
+                                &   whl
+                                  ' ( !agg:%?vals+?agg
+                                    & (!vals:#%*?vals|)
+                                    & !Val:?VALS
+                                    &   whl
+                                      ' ( !VALS:%@?VAL^?Vsp*?NVALS
+                                        & !vals:?a*!VAL^?vsp*?z
+                                        &   (   !Vsp:1
+                                              & !vsp
+                                            |   !vsp:1
+                                              & !Vsp
+                                            | !Vsp:!vsp
+                                            )
+                                          : ?Vsp
+                                        & !a*!VAL^!Vsp*!z:?vals
+                                        & !NVALS:?VALS
+                                        )
+                                    & (   !VALS:1
+                                        & N21$!vals+!n21s:?n21s
+                                      | 
+                                      )
+                                    )
+                                &   !A (!feat,!n21s) !Z+!nwg
+                                  : ?nwg
                               )
                           | 
                       )
@@ -8904,8 +8953,20 @@ try {
                 : (?goal.?restriction)
             | 0:?restriction
             )
-          & ( !superset:
-            |   readTable$SuperSets
+          & (   !superset:
+              &     map
+                  $ ( ( 
+                      =   n v
+                        .     !arg:(?n,%*%:?v)
+                            & (!n,(!v.OnE))
+                          | !arg
+                      )
+                    . !goal
+                    )
+                : ?goal
+            |   ( !servicedSuperGoals:?SuperSets
+                | readTable$SuperSets
+                )
               & getSuperGoals$!goal:?goal
             )
           &   0
@@ -8918,7 +8979,7 @@ try {
           & new$hash:?unfulfillable
           & new$hash:?notThisTool
           & 0:?Calls
-          & log$"Calling fulfil"
+          & log$("Calling fulfil" !goal)
           & fulfil$(!activeTools.!source.!goal.0.!restriction)
       )
       ( extractIOfeaturesFromHTTParg
@@ -9782,7 +9843,7 @@ try {
       )
       ( Pipelines
       =     i o restriction FP fP superset userInput
-          , prunePipes calls nth windFW
+          , prunePipes calls nth windFW parms
           , A Z reorderedworkflowlist topologicalOrderedTools
         .   ( windFW
             =   nth ZZ pipes pipe
@@ -14028,15 +14089,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 $ ( namecell$(!features.!short.!name)
                                       featurehelpcell
                                     $ (!features.!short.goalhelp)
-                                      cell
-                                    $ ( makeSelectFormField
-                                      $ ( 
-                                        . str$(O !short)
-                                        . options
-                                        .   makeOptionList
-                                          $ (!servicedGoalsTable.)
-                                        )
-                                      )
                                     (     !expandedSelectLists
                                         : ? (!short.?optgroups) ?
                                       &   cell
@@ -14047,7 +14099,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                             . !optgroups
                                             )
                                           )
-                                    | 
+                                    |   cell
+                                      $ ( makeSelectFormField
+                                        $ ( 
+                                          . str$(O !short)
+                                          . options
+                                          .   makeOptionList
+                                            $ (!servicedGoalsTable.)
+                                          )
+                                        )
                                     )
                                   )
                             | 
