@@ -151,6 +151,7 @@ toolsProg=
       )
       (servicedSources=)
       (servicedGoals=)
+      (servicedSuperGoals=)
       (StartClk=)
       (startclock=.-1*clk$:?StartClk)
       ( clock
@@ -3661,6 +3662,51 @@ toolsProg=
                 . !stable
                 )
       )
+      ( makeOptgroupList
+      =     featTbl aBbR full selected prefix stable
+          , valueExpandedListPairs
+        .     !arg
+            : ( ?valueExpandedListPairs,?featTbl
+              .   (?selected.?prefix)
+                | ?selected&:?prefix
+              )
+          &     ( option
+                .   (id.str$(b !tabind)) (value.)
+                  , chu$8239
+                )
+                \r\n
+                  map
+                $ ( ( 
+                    =   f a
+                      .   !arg:(?F.?exp)
+                        & !featTbl:? (?f.!F.?) ?
+                        & ( optgroup
+                          .   (label.low$(localized$!f))
+                            ,   map
+                              $ ( ( 
+                                  =   
+                                    .   
+                                      &   ( option
+                                          .     (id.xml-id$!arg)
+                                                (value.str$(!prefix !arg))
+                                                (   !selected:!arg
+                                                  & (selected.selected)
+                                                | 
+                                                )
+                                            , str$!arg
+                                          )
+                                          \r\n
+                                  )
+                                . !exp
+                                )
+                          )
+                    )
+                  . !valueExpandedListPairs
+                  )
+            : ?stable
+          & lst$(stable,path$stable,NEW)
+          & !stable
+      )
       ( listToThreeColumnTable
       = .map$((=.low$!arg.!arg.xml-id$!arg).!arg)
       )
@@ -6628,7 +6674,10 @@ try {
           & "Body of Register starts here"
           & log$NEW
           & log$REGISTER
-          & :?servicedSources:?servicedGoals
+          &   
+            : ?servicedSources
+            : ?servicedGoals
+            : ?servicedSuperGoals
           &   localized$("Save metadata" "Gem oplysninger")
             : ?storeToolButton
           &   localized$("Replace metadata" "Erstat oplysninger")
@@ -8273,13 +8322,93 @@ try {
               )
           & !outp
       )
+      ( getActiveTools
+      =   T F L S tlprp
+        .   :?L
+          & readTable$tooladm
+          & readTable$toolprop
+          & !toolprop:?tlprp
+          &   whl
+            ' ( !tlprp:(?T.?F)+?tlprp
+              & (     !tooladm
+                    :   ?
+                      + ( ? (ToolID.!T) ?
+                        : ? (ServiceURL.~) ?
+                        : ? (Inactive.) ?
+                        )
+                      + ?
+                  & (!T.!F) !L:?L
+                | 
+                )
+              )
+          & 0:?S
+          & whl'(!L:%?T ?L&!T+!S:?S)
+          & !S
+      )
+      ( constructSuperSets
+      =   XXXX,Feats activeTools collector SuperSets
+        .   !arg:?activeTools
+          & 1:?collector
+          &   whl
+            ' ( !activeTools:(?.?Feats)+?activeTools
+              &   map
+                $ ( ( 
+                    =   ios o os
+                      .   !arg:(?name,?ios)
+                        & 0:?Os
+                        &   whl
+                          ' ( !ios:(?.?os)+?ios
+                            &   whl
+                              ' ( !os:%?o+?os
+                                &   whl
+                                  ' ( !o:?a*%@?m^%?e*?z
+                                    & !a*!m*!z:?o
+                                    )
+                                & !Os+!o:?Os
+                                )
+                            )
+                        & !name^!Os*!collector:?collector
+                    )
+                  . !Feats
+                  )
+              )
+          & lst$(collector,path$collector,NEW)
+          & 0:?vs
+          & :?SuperSets
+          &   whl
+            ' ( !collector:%?name^%(?os:?Os)*?collector
+              & :?c
+              &   whl
+                ' ( !os:?+#*~#%?o+?os
+                  &   whl
+                    ' (!o:%?v*?o&!v+!vs:?vs)
+                  )
+              &   whl
+                ' ( !vs:?+#*~#%@?v+?vs
+                  & !Os:?os
+                  & :?ss
+                  &   whl
+                    ' (   !os
+                        : ?+(?*!v*?:#*(~#%@*?:?s))+?os
+                      & !ss !s:?ss
+                      )
+                  & !c (!v.!ss):?c
+                  )
+              & (   !c:? (?.? %*% ?) ?
+                  & !SuperSets (!name.!c):?SuperSets
+                | 
+                )
+              )
+          & lst$(SuperSets,path$SuperSets,NEW)
+          & !SuperSets
+      )
       ( fp
       =     tool source goal restriction superset makeSmell
           , fulfil memoizedSteps activeTools Calls smell
           , memos duplic impassages notttcnt getSuperGoals
           , sourcegoalmatch unfulfillable notThisTool fulfilGoal
           , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
-          , getActiveTools getGoals getImplicatedGoals N21 inner
+          , getGoals getImplicatedGoals N21 inner
         .   0:?smell
           & ( makeSmell
             =   A Z o
@@ -8623,7 +8752,6 @@ try {
                               & refold$!nnnpathh
                             )
                           : ?Pipeline
-                        & !Pipeline
                         & 1+!found:?found
                         & !Pipeline+!accPipelines:?accPipelines
                       | 
@@ -8632,25 +8760,6 @@ try {
                 & ( !accPipelines:~0&!accPipelines
                   | !found:~0&0
                   )
-            )
-          & ( getActiveTools
-            =   T F L
-              .   0:?L
-                & readTable$tooladm
-                &   whl
-                  ' ( !arg:(?T.?F)+?arg
-                    & (     !tooladm
-                          :   ?
-                            + ( ? (ToolID.!T) ?
-                              : ? (ServiceURL.~) ?
-                              : ? (Inactive.) ?
-                              )
-                            + ?
-                        & (!T.!F)+!L:?L
-                      | 
-                      )
-                    )
-                & !L
             )
           & ( getGoals
             =     AllFs Inca FS Ios allOs Os O
@@ -8736,47 +8845,51 @@ try {
                       =   feat vals A Z Val
                         .     !arg:(?feat.?vals)
                             & !goal:?A (!feat,?Val) ?Z
-                            & !Val:@
-                            &   map
-                              $ ( ( 
-                                  =   val alts sp
-                                    .   !arg:(?val.?alts)
-                                      & (   !Val:!val^?sp
-                                          &   map
-                                            $ ( ( 
-                                                =   a z
-                                                  .         ( !A
-                                                              ( !feat
-                                                              ,   (   !sp
-                                                                    : 1
-                                                                  |     !arg
-                                                                      :   ?a
-                                                                        * !val
-                                                                        * ?z
-                                                                    &     !a
-                                                                        * !Val
-                                                                        * !z
-                                                                      : ?arg
+                            & (   !Val:@
+                                &   map
+                                  $ ( ( 
+                                      =   val alts sp
+                                        .   !arg:(?val.?alts)
+                                          & (   !Val:!val^?sp
+                                              &   map
+                                                $ ( ( 
+                                                    =   a z
+                                                      .         ( !A
+                                                                  ( !feat
+                                                                  ,   (   !sp
+                                                                        : 1
+                                                                      |     !arg
+                                                                          :   ?a
+                                                                            * !val
+                                                                            * ?z
+                                                                        &     !a
+                                                                            * !Val
+                                                                            * !z
+                                                                          : ?arg
+                                                                      )
+                                                                    & (   !arg
+                                                                        : @
+                                                                      |   N21
+                                                                        $ !arg
+                                                                      )
                                                                   )
-                                                                & (   !arg
-                                                                    : @
-                                                                  | N21$!arg
-                                                                  )
-                                                              )
-                                                              !Z
-                                                            )
-                                                          + !nwg
-                                                        : ?nwg
-                                                      & 
-                                                    | 
-                                                )
-                                              . !alts
-                                              )
-                                        | 
-                                        )
-                                  )
-                                . !vals
-                                )
+                                                                  !Z
+                                                                )
+                                                              + !nwg
+                                                            : ?nwg
+                                                          & 
+                                                        | 
+                                                    )
+                                                  . !alts
+                                                  )
+                                            | 
+                                            )
+                                      )
+                                    . !vals
+                                    )
+                              |   (!A (!feat,N21$!Val) !Z)+!nwg
+                                : ?nwg
+                              )
                           | 
                       )
                     . !SuperSets
@@ -8785,7 +8898,7 @@ try {
             )
           & !arg:(?source.?goal.?restriction.?superset)
           & readTable$toolprop
-          & getActiveTools$!toolprop:?activeTools
+          & getActiveTools$:?activeTools
           & (   !goal:
               &   getImplicatedGoals$(!activeTools.!restriction)
                 : (?goal.?restriction)
@@ -8809,7 +8922,8 @@ try {
           & fulfil$(!activeTools.!source.!goal.0.!restriction)
       )
       ( extractIOfeaturesFromHTTParg
-      =   fs IorO f name short p A v Z feat spec io V
+      =     fs IorO f name short p A v Z
+          , feat spec io V a z
         .   "Collects features of the input(s) or of the output. Each feature
              is mentioned once. If there are more than one input, one feature
              will have more than one value. These values are the factors in a
@@ -8826,26 +8940,48 @@ try {
               &   whl
                 ' ( !arg:?A (!p.?v) ?Z
                   & !A !Z:?arg
-                  & ( !v:%?feat^%?spec
-                    |   !v:@(?:?feat "^" ?spec)
-                      & !feat^!spec:?v
-                    | 
+                  & (   !v:%*%
+                      & :?z
+                      &   whl
+                        ' ( !v:%?a*?v
+                          &     ( !a:%?feat^%?spec
+                                |   !a:@(?:?feat "^" ?spec)
+                                  & !feat^!spec
+                                | !a
+                                )
+                                !z
+                            : ?z
+                          )
+                      & !z:?v
+                    |     vap
+                        $ ( ( 
+                            =   feat spec
+                              .   !arg:%?feat^%?spec
+                                |   !arg:@(?:?feat "^" ?spec)
+                                  & !feat^!spec
+                                | !arg
+                            )
+                          . !v
+                          . "*"
+                          )
+                      : ?v
                     )
                   & ( !v:
-                    |     !io
-                        : ( ?A (!short,?V) ?Z
-                          | ?A (!name,?V) ?Z
-                          )
-                      & ( !V:?*!v*?
-                        |   ( !A (!short,!V*!v) !Z
-                            | !A (!name,!V*!v) !Z
+                    |   ( !io:?a (!short,?V) ?z
+                        |   1:?V
+                          & !io:?z
+                          & :?a
+                        )
+                      &   map
+                        $ ( ( 
+                            =   
+                              .   !V:?*!arg*?
+                                | !arg*!V:?V
                             )
-                          : ?io
-                        )
-                    |   ( (!short,!v) !io
-                        | (!name,!v) !io
-                        )
-                      : ?io
+                          . !v
+                          )
+                      & !a (!short,!V) !z:?io
+                    | (!short,!v) !io:?io
                     )
                   )
               )
@@ -13329,13 +13465,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
             )
           & ( sourcesAndGoals
-            =     f fs picklists name short
+            =     f fs sourcePicklists name short
                 , servicedGoalsTable cmptblWrkflws
                 , servicedSourcesTable namecell
                 , description itms Types linkedWorkflows
                 , table presel L selectServicedValues
                 , preselvalsrows items item spec
-                , goalpicklists preselvals presels
+                , goalPicklists preselvals presels
                 , createArgs featurehelpcell
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
@@ -13835,7 +13971,36 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                       . !preselvalsrows
                       )
-                  : ?picklists
+                  : ?sourcePicklists
+                & getActiveTools$:?activeTools
+                & (   !servicedSuperGoals:
+                    &   constructSuperSets$!activeTools
+                      : ?servicedSuperGoals
+                  | 
+                  )
+                & readTable$features
+                &     map
+                    $ ( ( 
+                        =   featName valueExpandedListPairs
+                          .   !arg:(?featName.?valueExpandedListPairs)
+                            &   !features
+                              :   ?
+                                + ( ? (short.!featName) ?
+                                  : ? (table.?tbl) ?
+                                  )
+                                + ?
+                            & readTable$!tbl:?tbl
+                            & lst$(tbl,path$tbl,APP)
+                            & ( !featName
+                              .   makeOptgroupList
+                                $ (!valueExpandedListPairs,!tbl.)
+                              )
+                        )
+                      . !servicedSuperGoals
+                      )
+                  : ?expandedSelectLists
+                & lst$(servicedGoals,path$servicedGoals,NEW)
+                & lst$(goalPicklists,path$goalPicklists,NEW)
                 &     map
                     $ ( ( 
                         =   
@@ -13872,12 +14037,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                           $ (!servicedGoalsTable.)
                                         )
                                       )
+                                    (     !expandedSelectLists
+                                        : ? (!short.?optgroups) ?
+                                      &   cell
+                                        $ ( makeSelectFormField
+                                          $ ( 
+                                            . str$(O !short)
+                                            . options
+                                            . !optgroups
+                                            )
+                                          )
+                                    | 
+                                    )
                                   )
                             | 
                         )
                       . !preselvalsrows
                       )
-                  : ?goalpicklists
+                  : ?goalPicklists
                 & cmptblWrkflws$(!items.!presels):?items
                 & ( !items
                   .     fieldset
@@ -13956,7 +14133,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       )
                                 | 
                                 )
-                                !picklists
+                                !sourcePicklists
                             )
                         )
                         fieldset
@@ -13983,7 +14160,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         .     Table
                             $ ( id,goal
                               . row$(cell$() cell$() cell$)
-                              . !goalpicklists
+                              . !goalPicklists
                               )
                               makeCheckboxFormField
                             $ (   localized
@@ -14083,6 +14260,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & log$NEW
           & log$CREATELOGJE
+          & log$(arg !arg)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : ( ?errors
               . ?hiddenData
@@ -14392,6 +14570,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & log$WORKFLOWLISTLOGJE
+          & log$(arg !arg)
           & setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
           & :?PIPE
