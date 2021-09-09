@@ -203,6 +203,9 @@ try {
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
+        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is Simple if true */
+        $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
+        $Ofacettoksimple = false;	/* Style of type of content tokens (Tokens) in output is Simple if true */
         $Oformatconllcnl2009 = false;	/* Style of format CoNLL in output is CoNLL 2009 (14 columns)CoNLL 2009 (14 kolonner) if true */
 
         if( hasArgument("base") )
@@ -350,6 +353,21 @@ try {
             $IfacetposUni = existsArgumentWithValue("Ifacetpos", "Uni");
             $echos = $echos . "IfacetposUni=$IfacetposUni ";
             }
+        if( hasArgument("Ifacettok") )
+            {
+            $Ifacettoksimple = existsArgumentWithValue("Ifacettok", "simple");
+            $echos = $echos . "Ifacettoksimple=$Ifacettoksimple ";
+            }
+        if( hasArgument("Ofacetpos") )
+            {
+            $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
+            $echos = $echos . "OfacetposUni=$OfacetposUni ";
+            }
+        if( hasArgument("Ofacettok") )
+            {
+            $Ofacettoksimple = existsArgumentWithValue("Ofacettok", "simple");
+            $echos = $echos . "Ofacettoksimple=$Ofacettoksimple ";
+            }
         if( hasArgument("Oformatconll") )
             {
             $Oformatconllcnl2009 = existsArgumentWithValue("Oformatconll", "cnl2009");
@@ -374,7 +392,7 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
         if($IfacetsegF != '' && $IfacettokF != '' && $IfacetposF != '')
-    	    {
+            {
             logit("NOW conllout");
             $conll = conllout($IfacettokF,$IfacetsegF,$IfacetposF,$IfacetlemF);
             logit("conllout DONE: $conll ");
@@ -382,21 +400,21 @@ try {
 
             $lang = "da";
             $res = "../texton-linguistic-resources";
-	    if($Ilangda)
+
+            if($Ilangda)
                 $lang = "$res/da/BohnetsParser/ddt-universal.parse";
-	    else if($Ilangde)
+            else if($Ilangde)
                 $lang = "$res/de/BohnetsParser/parser-ger-3.6.model";
-	    else if($Ilangen)
+            else if($Ilangen)
                 $lang = "$res/en/BohnetsParser/CoNLL2009-ST-English-ALL.anna-3.3.parser.model";
             else if($Ilanges)
                 $lang = "$res/es/BohnetsParser/CoNLL2009-ST-Spanish-ALL.anna-3.3.parser.model";
-	    else if($Ilangfr)
+            else if($Ilangfr)
                 $lang = "$res/fr/BohnetsParser/ftb6_1.conll09.crossannotated.anna-3.3-d8.jar.parser.model";
-	    else if($Ilangzh)
-                $lang = "$res/zh/BohnetsParser/CoNLL2009-ST-Chinese-ALL.anna-3.3.parser.model";
+
             repeatHttp($conll,$mateParserfile,realpath($lang));
             logit("mateparser DONE: $mateParserfile ");
-    	    }
+            }
         else
             {
             header("HTTP/1.0 404 Input not found (IfacetsegF, IfacettokF and IfacetposF). ");
