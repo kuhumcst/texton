@@ -3689,12 +3689,25 @@ toolsProg=
       )
       ( makeOptgroupList
       =     featTbl aBbR full selected prefix stable
-          , valueExpandedListPairs
+          , valueExpandedListPairs hum
         .     !arg
             : ( ?valueExpandedListPairs,?featTbl
               .   (?selected.?prefix)
                 | ?selected&:?prefix
               )
+          & ( hum
+            =   L a e
+              .   :?L
+                &   whl
+                  ' ( !arg:%?a*?arg
+                    & !a:%@?a^?e
+                    & !tbl:? (?H.!a.?) ?
+                    & (!e:1|)
+                    & !L ", " localized$!H:?L
+                    )
+                & !L:", " ?L
+                & !L
+            )
           &     ( option
                 .   (id.str$(b !tabind)) (value.)
                   , chu$8239
@@ -3710,17 +3723,16 @@ toolsProg=
                             ,   map
                               $ ( ( 
                                   =   
-                                    .   
-                                      &   ( option
-                                          .     (id.xml-id$!arg)
-                                                (value.str$(!prefix !arg))
-                                                (   !selected:!arg
-                                                  & (selected.selected)
-                                                | 
-                                                )
-                                            , str$!arg
-                                          )
-                                          \r\n
+                                    .   ( option
+                                        .     (id.xml-id$!arg)
+                                              (value.str$(!prefix !arg))
+                                              (   !selected:!arg
+                                                & (selected.selected)
+                                              | 
+                                              )
+                                          , str$(hum$!arg)
+                                        )
+                                        \r\n
                                   )
                                 . !exp
                                 )
@@ -3729,7 +3741,6 @@ toolsProg=
                   . !valueExpandedListPairs
                   )
             : ?stable
-          & lst$(stable,path$stable,NEW)
           & !stable
       )
       ( listToThreeColumnTable
@@ -8383,7 +8394,6 @@ try {
                   . !Feats
                   )
               )
-          & lst$(collector,path$collector,NEW)
           & 0:?vs
           & :?SuperSets
           &   whl
@@ -8410,7 +8420,6 @@ try {
                 | 
                 )
               )
-          & lst$(SuperSets,path$SuperSets,NEW)
           & !SuperSets
       )
       ( fp
@@ -14051,7 +14060,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   )
                                 + ?
                             & readTable$!tbl:?tbl
-                            & lst$(tbl,path$tbl,APP)
                             & ( !featName
                               .   makeOptgroupList
                                 $ (!valueExpandedListPairs,!tbl.)
@@ -14060,8 +14068,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !servicedSuperGoals
                       )
                   : ?expandedSelectLists
-                & lst$(servicedGoals,path$servicedGoals,NEW)
-                & lst$(goalPicklists,path$goalPicklists,NEW)
                 &     map
                     $ ( ( 
                         =   
@@ -14091,14 +14097,30 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     $ (!features.!short.goalhelp)
                                     (     !expandedSelectLists
                                         : ? (!short.?optgroups) ?
-                                      &   cell
-                                        $ ( makeSelectFormField
-                                          $ ( 
-                                            . str$(O !short)
-                                            . options
-                                            . !optgroups
+                                      &     cell
+                                          $ ( makeSelectFormField
+                                            $ ( 
+                                              . str$(O !short)
+                                              . options
+                                              . !optgroups
+                                              )
                                             )
-                                          )
+                                            cell
+                                          $ ( makeCheckboxFormField
+                                            $ (   localized
+                                                $ ( "Compute workflows for similar goals"
+                                                    "Beregn arbejdsgange for lignende mål"
+                                                  )
+                                              . superset
+                                              .   (val.on)
+                                                  ( desc
+                                                  .   localized
+                                                    $ ( "Check this box if your requirements are MINIMAL requirements. For example, if your requirement is to have PoS tags, you may also want to see workflows that produce PoS tags AND lemmas, at the same time."
+                                                        "Marker hvis dit mål er minimal, fx hvis du udover PoS tags også godt vil se lemmaer, i kombination med PoS tags."
+                                                      )
+                                                  )
+                                              )
+                                            )
                                     |   cell
                                       $ ( makeSelectFormField
                                         $ ( 
@@ -14217,25 +14239,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             $ ( "You can skip these fields and choose a tool instead, see below. In that case, the tool will be the last in the workflow."
                                 "Du kan lade felterne stå tomme, og i stedet vælge et værktøj i rubrikken forneden. I så fald er værktøjet det sidste i arbejdsgangen."
                               )
-                        .     Table
-                            $ ( id,goal
-                              . row$(cell$() cell$() cell$)
-                              . !goalPicklists
-                              )
-                              makeCheckboxFormField
-                            $ (   localized
-                                $ ( "Compute workflows for similar goals"
-                                    "Beregn arbejdsgange for lignende mål"
-                                  )
-                              . superset
-                              .   (val.on)
-                                  ( desc
-                                  .   localized
-                                    $ ( "Check this box if your requirements are MINIMAL requirements. For example, if your requirement is to have PoS tags, you may also want to see workflows that produce PoS tags AND lemmas, at the same time."
-                                        "Marker hvis dit mål er minimal, fx hvis du udover PoS tags også godt vil se lemmaer, i kombination med PoS tags."
-                                      )
-                                  )
-                              )
+                        .   Table
+                          $ ( id,goal
+                            . row$(cell$() cell$() cell$)
+                            . !goalPicklists
+                            )
                         )
                   . !linkedWorkflows
                   )
