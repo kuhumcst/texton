@@ -7959,12 +7959,12 @@ try {
           &   whl
             ' ( !goaly:(?gfield,?gvaluesAlts) ?ngoal
               & "Each goaly field must be satisfied."
-              & (   ( ~(!toolFeatures:? (!gfield,?) ?)
-                    | !goaly:(sml,nsl)
-                    )
+              & (   ~(!toolFeatures:? (!gfield,?) ?)
                   & "Assume that tool leaves field unchanged: percolate output requirement to input."
                   & !pathfields (!gfield,!gvaluesAlts):?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
+                |   !goaly:(sml,nsl)
+                  & !toolFeatures:? (sml,(?.?toolfeat)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
                   & "toolfeat is a sum of alternative (input.output) specs."
                   & !Ar !Zr:?toolFeatures
@@ -9026,18 +9026,19 @@ try {
                             : ?z
                           )
                       & !z:?v
-                    |     vap
-                        $ ( ( 
-                            =   feat spec
-                              .   !arg:%?feat^%?spec
-                                |   !arg:@(?:?feat "^" ?spec)
-                                  & !feat^!spec
-                                | !arg
+                    |   str$!v:?v
+                      &     vap
+                          $ ( ( 
+                              =   feat spec
+                                .   !arg:%?feat^%?spec
+                                  |   !arg:@(?:?feat "^" ?spec)
+                                    & !feat^!spec
+                                  | !arg
+                              )
+                            . !v
+                            . "*"
                             )
-                          . !v
-                          . "*"
-                          )
-                      : ?v
+                        : ?v
                     )
                   & ( !v:
                     |   ( !io:?a (!short,?V) ?z
@@ -9477,48 +9478,7 @@ try {
           , toMethods fromOutputTowardInput toTool
           , UpdateResultsFromMethods oUts
           , validateInputsForEachTool
-        .   ( UpdateResultsFromMethods
-            =   results methods nres result A method
-              .   !arg:(?results.?methods)
-                & 1:?nres
-                &   whl
-                  ' ( !results:%?result*?results
-                    &     (   !methods:?A*!result*?methods
-                            & !A*!methods:?methods
-                            & !result
-                          |   !methods:%?method*?methods
-                            &   map
-                              $ ( ( 
-                                  =   F v e E nvs vs
-                                    .   !arg:(?F,?vs)
-                                      & 1:?nvs
-                                      &   whl
-                                        ' ( !vs:%@?v^?e*?vs
-                                          &     !nvs
-                                              * (   !e:1
-                                                  &   !v
-                                                    ^ (     !method
-                                                          :   ?
-                                                              (!F,?*!v^?E*?)
-                                                              ?
-                                                        & !E
-                                                      | 1
-                                                      )
-                                                | !v^!e
-                                                )
-                                            : ?nvs
-                                          )
-                                      & (!F,!nvs)
-                                  )
-                                . !result
-                                )
-                          )
-                        * !nres
-                      : ?nres
-                    )
-                & !nres
-            )
-          & ( sig
+        .   ( sig
             =   a
               .     !arg:%?a*?arg
                   &   ( !a:(?a.OnE)&sig$!a
@@ -9566,7 +9526,8 @@ try {
                                    &     map
                                        $ ( ( 
                                            =   
-                                             .   !SM:~(? !arg ?)
+                                             .     !SM:~(? !arg ?)
+                                                 & !arg:~(sml,nsl)
                                                | 
                                            )
                                          . !SR
@@ -10160,8 +10121,7 @@ try {
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
                     & (   ItExplodes$!incarnationpipes
                         & 100000000:?calls
-                      |   
-                        & selectCommonTracks$!incarnationpipes:?As
+                      |   selectCommonTracks$!incarnationpipes:?As
                         & :?pipesN
                         &   whl
                           ' ( !As:%?Ax+?As
@@ -15178,6 +15138,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           . readTable$!metadataType
                           )
                   )
+                & log$(struct !struct)
                 & makejobstack$!struct:?JobStack
                 & ( readTable$jobNr
                   | 0:?jobNr&saveTable$jobNr
