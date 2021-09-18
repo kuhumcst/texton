@@ -258,7 +258,6 @@ Afterwards there will be a subdirectory `dapipe/dapipe`.
 
 UDPipe is at https://github.com/ufal/udpipe
 The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
-Copy the 
 
     $> cd ~
     $> git clone https://github.com/ufal/udpipe.git
