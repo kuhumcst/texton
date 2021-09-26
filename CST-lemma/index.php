@@ -423,12 +423,11 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
 
     if($Ipresnml && !$Opresnml || $ShowTag) 
         {
-        logit("Not normal!");
         if($Opresalf)
             {
             if($Ofacetlem)
-                {
-                if(!Ofacettok && !$ShowTag)
+	        {
+                if(!$Ofacettok && !$ShowTag)
                     {
                     $command =             "-qwft -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
                     }
@@ -454,9 +453,9 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
                 }
             }
         else if($Opresfrq )
-            {
+	    {
             if($Ofacetlem)
-                {
+	        {
                 if(!$Ofacettok && !$ShowTag)
                     {
                     $command =             "-qfwt -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
