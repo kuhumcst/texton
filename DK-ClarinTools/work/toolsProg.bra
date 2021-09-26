@@ -131,6 +131,7 @@ toolsProg=
       (indent=0)
       (logno=0)
       (tabind=0)
+      (memoizedTrees=)
       (globval=)
       (runningThreads=0)
       (maxRunningThreads=0)
@@ -3278,7 +3279,7 @@ toolsProg=
                   ( head
                   .   
                     ,   \r\n
-                        (meta.charset.UTF-8)
+                        (meta.(charset.UTF-8),)
                         \r\n
                         ( link
                         .     (rel.stylesheet)
@@ -7191,7 +7192,16 @@ try {
                 )
             : ?fname
           & str$(!fname !ext):?fname
-          &   (!nr.str$(!item !ext).!fname..) !Uploads
+          &     ( !nr
+                .     !item:text
+                    & !ext:
+                    & !fname
+                  | str$(!item !ext)
+                . !fname
+                . 
+                . 
+                )
+                !Uploads
             : ?Uploads
           & saveTable$Uploads
           & !fname
@@ -7686,7 +7696,9 @@ try {
               & !depends:((?.?.?bignumber),?.)
               & (~|!bignumber:<250000)
               )
-          & !bignumber:~<140000
+          & log$(bignumber !bignumber)
+          & 140000
+          & !bignumber:~<1000000
       )
       ( selectCommonTracks
       =   sum spotSum eliminate OUT WAY TERM result term
@@ -8495,9 +8507,15 @@ try {
           | !table
       )
       ( createGoalPickLists
-      =   preselvalsrows servicedGoals expandedSelectLists
+      =     preselvalsrows
+            servicedGoals
+            expandedSelectLists
+            including
+            OP
         .     !arg
-            : (?preselvalsrows.?servicedGoals.?expandedSelectLists)
+            : (?preselvalsrows.?servicedGoals.?expandedSelectLists.?including)
+          &   (!including:&P|O)
+            : ?OP
           &   map
             $ ( ( 
                 =   short name table servicedGoalsTable servicedGoals
@@ -8524,31 +8542,33 @@ try {
                               &     cell
                                   $ ( makeSelectFormField
                                     $ ( 
-                                      . str$(O !short)
+                                      . str$(!OP !short)
                                       . options
                                       . !optgroups
                                       )
                                     )
-                                    cell
-                                  $ ( makeCheckboxFormField
-                                    $ (   localized
-                                        $ ( "Compute workflows for similar goals"
-                                            "Beregn arbejdsgange for lignende mål"
-                                          )
-                                      . superset
-                                      .   (val.)
-                                          ( desc
-                                          .   localized
-                                            $ ( "Check this box if your requirements are MINIMAL requirements. For example, if your requirement is to have PoS tags, you may also want to see workflows that produce PoS tags AND lemmas, at the same time."
-                                                "Marker hvis dit mål er minimal, fx hvis du udover PoS tags også godt vil se lemmaer, i kombination med PoS tags."
-                                              )
-                                          )
+                                  ( !including:
+                                  |   cell
+                                    $ ( makeCheckboxFormField
+                                      $ (   localized
+                                          $ ( "Compute workflows for similar goals"
+                                              "Beregn arbejdsgange for lignende mål"
+                                            )
+                                        . str$(SuperSet- !short)
+                                        .   (val.)
+                                            ( desc
+                                            .   localized
+                                              $ ( "Check this box if your requirements are MINIMAL requirements. For example, if your requirement is to have PoS tags, you may also want to see workflows that produce PoS tags AND lemmas, at the same time."
+                                                  "Marker hvis dit mål er minimal, fx hvis du udover PoS tags også godt vil se lemmaer, i kombination med PoS tags."
+                                                )
+                                            )
+                                        )
                                       )
-                                    )
+                                  )
                             |   cell
                               $ ( makeSelectFormField
                                 $ ( 
-                                  . str$(O !short)
+                                  . str$(!OP !short)
                                   . options
                                   . makeOptionList$(!servicedGoalsTable.)
                                   )
@@ -10249,11 +10269,10 @@ try {
                     & !arg
                   )
             )
-          & log$prunepipes
           & !arg:(?pipes.?parms.?sources)
           & 0:?calls
           & 0:?newpipes
-          & log$whl
+          & log$(whl calls !calls)
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -10267,6 +10286,7 @@ try {
                 (4) Repeat this for each new workflow.
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
               & (   ItExplodes$!incarnationpipes
+                  & log$ItExplodes
                   & 100000000:?calls
                 |   selectCommonTracks$!incarnationpipes:?As
                   & :?pipesN
@@ -10343,19 +10363,84 @@ try {
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
             )
-          & ( !arg:? (superset.?superset) ?
-            | :?superset
+          & (   ~
+              & ( !arg:? (superset.?superset) ?
+                | :?superset
+                )
+            |     map
+                $ ( ( 
+                    =   
+                      .     !arg:(@(?:SuperSet- ?arg).?)
+                          & !arg
+                        | 
+                    )
+                  . !arg
+                  )
+              : ?superset
             )
           & readTable$features
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
-          & (!i.!o.!restriction.!superset):?userInput
-          & (   ( ~&!recentTasks
+          & extractIOfeaturesFromHTTParg$(!features.P.!arg):?p
+          & "P values come from a subset of select boxes, when the user has
+             asked for assistence to fill out the remaining fields."
+          & !p:?pp
+          &     map
+              $ ( ( 
+                  =   f fv a z
+                    .     !arg:(?f,?)
+                        & !pp:?a ((!f,?):?fv) ?z
+                        & !a !z:?pp
+                        & !fv
+                      | !arg
+                  )
+                . !o
+                )
+            : ?oo
+          & (!i.!oo !pp.!restriction.!superset):?userInput
+          & ( furtherCheck
+            =   pipe npipes uiou pipe wfs output,nwfs wf
+              .   log$furtherCheck
+                & !arg:(?wfs.?uiou)
+                & 0:?nwfs
+                &   whl
+                  ' ( !wfs:((?,(?output.?)):?wf)+?wfs
+                    & (       map
+                            $ ( ( 
+                                =   uf uv wv len
+                                  .     !arg:(?uf,?uv)
+                                      &   !output
+                                        :   ?
+                                            ( !uf
+                                            , (?wv.OnE)|?wv
+                                            )
+                                            ?
+                                      & !uv:?*[?len
+                                      & !wv:?*[!len
+                                      &   whl
+                                        ' ( !uv:%?u*?uv
+                                          & !wv:!u^?*?wv
+                                          )
+                                      & !wv:1
+                                      & !uv:1
+                                      & 
+                                    | !arg
+                                )
+                              . !uiou
+                              )
+                          : 
+                        & !nwfs+!wf:?nwfs
+                      | 
+                      )
+                    )
+                & !nwfs:~0
+            )
+          & (   ( !recentTasks
                 | readTable$recentTasks
                 |   :?recentTasks
                   & saveTable$recentTasks
                 )
-              & log$(look in recentTasks)
+              & log$("look in recentTasks for" !userInput)
               &   !recentTasks
                 :   ?A
                     ( !userInput
@@ -10363,7 +10448,6 @@ try {
                     . ?topologicalOrderedTools
                     )
                     ?Z
-              & log$(Found in recentTasks)
               &     ( !userInput
                     . !reorderedworkflowlist
                     . !topologicalOrderedTools
@@ -10378,11 +10462,158 @@ try {
                 . (!reorderedworkflowlist.!topologicalOrderedTools)
                 . allRight
                 )
-            |   "The next call fails if no workflows found."
-              & log$(Not in recentTasks)
+            |   log$(Not in recentTasks)
+              & "memoizedTrees: global variable"
+              & (!memoizedTrees|:?memoizedTrees)
               & 0:?indent:?calls
-              & fp$!userInput:?FP
-              & log$"Calling fp success"
+              & (   
+                  & log$"Look in meMOizedTrees"
+                  & !userInput:(?uiin.?uiou.?restriction.?superset)
+                  & "o1o The userInput may be more strict than what is found in
+                     memoized trees. So each output feature in a memoized tree
+                     must occur in the userInput's output specs."
+                  &   !memoizedTrees
+                    :   ?
+                        (   (!uiin.?ou.!restriction.!superset)
+                          &     map
+                              $ ( ( 
+                                  =   vs f nvs V v
+                                    .     !uiou:? !arg ?
+                                        & 
+                                      |   !arg:(?f,?vs)
+                                        & !uiou:? (!f,?V) ?
+                                        &   whl
+                                          ' ( !vs:%?v*?nvs
+                                            & !V:?*!v*?
+                                            & !nvs:?vs
+                                            )
+                                        & !vs:1
+                                        & 
+                                      | !arg
+                                  )
+                                . !ou
+                                )
+                            : 
+                        . ?FP
+                        )
+                        ?
+                  & log$MEMOIZED!
+                  & "o2o Now we have a set of memoized trees based on weaker
+                     requirements than the current userInput output specs.
+                     So we have to filter away all memoized trees that conflict
+                     with the current specs."
+                  & 0:?nFP
+                  &   whl
+                    ' ( !FP:(?ou.?wf)+?FP
+                      & "(facet,(lem*par*pos*seg*tok.OnE))"
+                      & !uiou:?uou
+                      & (       map
+                              $ ( ( 
+                                  =     ft vs nvs v Vs A Z a z
+                                      , V
+                                    .   !arg:(?ft,?V)
+                                      & (     !uou
+                                            : ?a (!ft,?vs) ?z
+                                          & !a !z:?uou
+                                          & (   !V:!vs
+                                              &   log
+                                                $ (gevonden !arg in !uiou)
+                                              & 
+                                            |   !V:(?Vs.OnE)
+                                              &   log
+                                                $ ( all
+                                                    !vs
+                                                    in
+                                                    !Vs
+                                                    "?"
+                                                    p
+                                                    !p
+                                                    ft
+                                                    !ft
+                                                  )
+                                              &   whl
+                                                ' ( !vs:%?v*?nvs
+                                                  & !Vs:?a*!v^?*?z
+                                                  & !a*!z:?Vs
+                                                  & !nvs:?vs
+                                                  )
+                                              & !vs:1
+                                              & (   !p
+                                                  : ~(? (!ft,?) ?)
+                                                |   !Vs:1
+                                                  &   !superset
+                                                    : ?A !ft ?Z
+                                                  & !A !Z:?superset
+                                                )
+                                              &   log
+                                                $ (GEVONDEn !arg in !uiou)
+                                              & 
+                                            )
+                                        |     log
+                                            $ (NIETgevonden !arg in !uiou)
+                                          & !arg
+                                        )
+                                  )
+                                . !ou
+                                )
+                            : 
+                          & ( !uou:
+                            | furtherCheck$(!wf.!uou):?wf
+                            )
+                          & !nFP+(!ou !uou.!wf):?nFP
+                        | 
+                        )
+                      )
+                  & !nFP:~0
+                  & log$SUCCESS
+                  & "o3o Probably not all user features ('uiou') where present
+                     in the output specs of the memoized workflows. So we need
+                     to have a closer look at the workflows actually computed
+                     and filter away the workflows that do not comply with the
+                     user requirements formulated in the features that were not
+                     represented in the output specs."
+                  &   log
+                    $ ( MEMOize
+                        i
+                        !i
+                        o
+                        !o
+                        p
+                        !p
+                        restriction
+                        !restriction
+                        superset
+                        !superset
+                      )
+                  &       map
+                        $ ( ( 
+                            =   A Z f v V
+                              .   !arg:(?f,?v)
+                                & ( !f
+                                  ,       !p
+                                        : ?A (!f,~:?V) ?Z
+                                      & !A !Z:?p
+                                      & !V
+                                    | !v
+                                  )
+                            )
+                          . !o
+                          )
+                        !p
+                    : ?o
+                  &     ((!i.!o.!restriction.!superset).!nFP)
+                        !memoizedTrees
+                    : ?memoizedTrees
+                  & !nFP:?FP
+                |   "The next call fails if no workflows found."
+                  & fp$!userInput:?FP
+                  & log$"Calling fp success"
+                  &   (!userInput.!FP) !memoizedTrees
+                    : ?memoizedTrees
+                  & ( !memoizedTrees:?memoizedTrees [100 ?
+                    | 
+                    )
+                )
               & ( !userInput
                 .     !FP:(?,?) ?
                     & ((!FP.).triviallyFulfilled)
@@ -14125,7 +14356,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &   makeExpandedSelectLists$!servicedSuperGoals
                   : ?expandedSelectLists
                 &     createGoalPickLists
-                    $ (!preselvalsrows.!servicedGoals.!expandedSelectLists)
+                    $ ( !preselvalsrows
+                      . !servicedGoals
+                      . !expandedSelectLists
+                      . including
+                      )
                   : ?goalPicklists
                 & cmptblWrkflws$(!items.!presels):?items
                 & ( !items
@@ -14320,6 +14555,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & log$NEW
           & log$CREATELOGJE
+          & lst$(arg,path$CREATEARG,NEW)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : ( ?errors
               . ?hiddenData
@@ -14356,16 +14592,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !hiddenData (batch.!batch):?hiddenData
               & "Does the user want to decide which tool to use or does she want
                    to let the infrastructure work out a way to reach a set goal?"
+              & log$(AAAAarg !arg)
               &     !hiddenData
                     (   !arg:? (desiredtool.?rstr) ?
                       & (desiredtool.!rstr)
                     | 
                     )
-                    (   !arg:? (superset.?rstr) ?
-                      & (superset.!rstr)
-                    | 
-                    )
+                      map
+                    $ ( ( 
+                        =   
+                          .   !arg:(@(?:SuperSet- ?).?)
+                            | 
+                        )
+                      . !arg
+                      )
                 : ?hiddenData
+              & log$(AAAAhiddenData !hiddenData)
               & unpackIOparms$!parms:?parms
               & checkIOparms$!parms
               & readTable$tooladm
@@ -14393,16 +14635,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             | 
             )
           & !hiddenData (batch.!batch):?hiddenData
+          & log$(PPPPPparms !parms)
           &     !hiddenData
                 (   !parms:? (desiredtool.?rstr) ?
                   & (desiredtool.!rstr)
                 | 
                 )
-                (   !parms:? (superset.?rstr) ?
-                  & (superset.!rstr)
-                | 
-                )
+                  map
+                $ ( ( 
+                    =   
+                      .   !arg:(@(?:SuperSet- ?).?)
+                        | 
+                    )
+                  . !parms
+                  )
             : ?hiddenData
+          & log$(PPPPhiddenData !hiddenData)
           & unpackIOparms$!parms:?parms
           & checkIOparms$!parms
           & readTable$tooladm
@@ -14656,6 +14904,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & log$WORKFLOWLISTLOGJE
           & log$(arg !arg)
+          & lst$(arg,path$WORKFLOWLISTARG,NEW)
           & !arg:?orgarg
           & setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
@@ -14899,6 +15148,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     . makeGoals$!nfvs
                                     .   makeExpandedSelectLists
                                       $ (makeSuperGoals$!nfvs)
+                                    . 
                                     )
                                 : ?formFields
                               & "postpone pruning, which is costly. Instead, show input fields again, but with restricted option lists."
@@ -14932,17 +15182,106 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                           )
                                                       )
                                                 )
-                                                  makeHiddenFields
-                                                $ ( map
-                                                  $ ( ( 
-                                                      =   
-                                                        .     !arg
-                                                            : ~(bsubmit.?)
-                                                          | 
-                                                      )
-                                                    . !orgarg
+                                                ( 
+                                                &   !userInput
+                                                  : (?.?.?.?superset)
+                                                &   log
+                                                  $ ( userInput
+                                                      !userInput
+                                                      superset
+                                                      !superset
                                                     )
-                                                  )
+                                                &     makeHiddenFields
+                                                    $ ( map
+                                                      $ ( ( 
+                                                          =   f
+                                                            .     !arg
+                                                                : (~bsubmit.?)
+                                                                : (~method.?)
+                                                                : (~DATE.?)
+                                                              |   !arg
+                                                                : ( @(   ?
+                                                                       :   SuperSet-
+                                                                           ?f
+                                                                     &   log
+                                                                       $ (f? !f)
+                                                                     &   !superset
+                                                                       :   ?
+                                                                           !f
+                                                                           ?
+                                                                     )
+                                                                  . ?
+                                                                  )
+                                                              | 
+                                                          )
+                                                        .   ( 
+                                                            =   a z A Z
+                                                              .     whl
+                                                                  ' (   !arg
+                                                                      :   ?A
+                                                                          ( @( ?
+                                                                             :   P
+                                                                                 ?ft
+                                                                             )
+                                                                          . ?val
+                                                                          )
+                                                                          ?Z
+                                                                    & (   !val
+                                                                        : 
+                                                                      |       !A
+                                                                              !Z
+                                                                          :   ?a
+                                                                              ( @( ?
+                                                                                 :   O
+                                                                                     !ft
+                                                                                 )
+                                                                              . ?
+                                                                              )
+                                                                              ?z
+                                                                        &     !a
+                                                                              (   str
+                                                                                $ ( O
+                                                                                    !ft
+                                                                                  )
+                                                                              . !val
+                                                                              )
+                                                                              !z
+                                                                          : ?arg
+                                                                        &   !arg
+                                                                          :   ?A
+                                                                              ( @( ?
+                                                                                 :   SuperSet-
+                                                                                     !ft
+                                                                                 )
+                                                                              . ?
+                                                                              )
+                                                                              ?Z
+                                                                      )
+                                                                    &   !A !Z
+                                                                      : ?arg
+                                                                    )
+                                                                &   log
+                                                                  $ ( orgarg
+                                                                      !orgarg
+                                                                    )
+                                                                &   log
+                                                                  $ ( NIEWarg
+                                                                      !arg
+                                                                    )
+                                                                & !arg
+                                                            )
+                                                          $ !orgarg
+                                                        )
+                                                      )
+                                                  : ?hids
+                                                &   log
+                                                  $ ( orgarg
+                                                      !orgarg
+                                                      hids
+                                                      !hids
+                                                    )
+                                                & !hids
+                                                )
                                                 !formFields
                                                 submit$"next step"
                                                 (   !nfvs:?*[>1
