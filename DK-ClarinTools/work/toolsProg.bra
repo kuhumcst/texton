@@ -9394,7 +9394,7 @@ try {
                         . !arg
                         )
                   )
-                & !arg:(?results.?methods)
+                & !arg:(?results.?methods:?allMeths)
                 & 1:?nres
                 &   whl
                   ' ( !results:%?result*?results
@@ -9484,6 +9484,8 @@ try {
                                   )
                                 . !result
                                 )
+                          |   log$(GEK !methods allMeths !allMeths)
+                            & !result
                           )
                         * !nres
                       : ?nres
@@ -9586,10 +9588,8 @@ try {
             =   results methods OF NF
               .     !arg:((?results.?methods).?OF)
                   & fromMethods$(!methods.!OF):(?methods.?NF)
-                  & (   UpdateResultsFromMethods$(!results.oUts$!methods)
-                      : ?results
-                    | log$(UpdateResultsFromMethods FAILED)
-                    )
+                  &   UpdateResultsFromMethods$(!results.oUts$!methods)
+                    : ?results
                   & ((!results.!methods).!NF)
                 | Results$!arg
             )
@@ -9667,7 +9667,7 @@ try {
                               * ?a
                             )
                         & ( !a:1
-                          |   
+                          |   ~
                             &   log
                               $ ( "In feature bundle"
                                   !A
@@ -9702,6 +9702,7 @@ try {
                   & ( !pipes:?+!pipe3+?
                     | !pipe3+!pipes:?pipes
                     )
+                | 
                 | log$INVALID
                 )
               )
@@ -10051,14 +10052,17 @@ try {
       ( windFW
       =   nth ZZ pipes pipe
         .   !arg:(?pipes.?nth)
+          & log$(nth !nth)
           & ( !nth:&!pipes
-            |   !pipes:?ZZ
+            |   !pipes:?ZZ+[?np
+              & log$("#pipes" !np)
               & UNKNOWNS!:?pipe
               &   whl
                 ' ( !nth:>0
                   & !ZZ:%?pipe+?ZZ
                   & !nth+-1:?nth
                   )
+              & log$(nthNOW !nth)
               & !pipe
             )
       )
@@ -10084,9 +10088,27 @@ try {
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
           & extractIOfeaturesFromHTTParg$(!features.P.!arg):?p
+          & "If there is a filled Pxyz, remove it from superset. Additional
+             user data is supposed to be exactly what the user wants. (There
+             is no checkbox for the user to allow more complex values.)"
+          &     map
+              $ ( ( 
+                  =   
+                    .   !p:? (!arg,~) ?&
+                      | !arg
+                  )
+                . !superset
+                )
+            : ?superset
+          & ( 
+            | log$(superset !superset usupset !usupset p !p)
+            )
           & "P values come from a subset of select boxes, when the user has
-             asked for assistence to fill out the remaining fields."
+             asked for assistance to fill out the remaining fields."
           & !p:?pp
+          & "Make pp a list of Pxyz features that do not occur as Oxyz. At the
+             same time, make oo a list of Oxyz with elements replaced by Pxyz,
+             if they exist."
           &     map
               $ ( ( 
                   =   f fv a z
@@ -10099,39 +10121,45 @@ try {
                 . !o
                 )
             : ?oo
-          & (!i.!oo !pp.!restriction.!superset):?userInput
+          & (!i.sort$(!oo !pp).!restriction.!superset):?userInput
           & ( furtherCheck
             =   pipe npipes uiou pipe wfs output,nwfs wf
-              .   log$furtherCheck
+              .   log$furtherCheck1
                 & !arg:(?wfs.?uiou)
                 & 0:?nwfs
                 &   whl
                   ' ( !wfs:((?,(?output.?)):?wf)+?wfs
-                    & (       map
-                            $ ( ( 
-                                =   uf uv wv len
-                                  .     !arg:(?uf,?uv)
-                                      &   !output
-                                        :   ?
-                                            ( !uf
-                                            , (?wv.OnE)|?wv
-                                            )
-                                            ?
-                                      & !uv:?*[?len
-                                      & !wv:?*[!len
-                                      &   whl
-                                        ' ( !uv:%?u*?uv
-                                          & !wv:!u^?*?wv
-                                          )
-                                      & !wv:1
-                                      & !uv:1
-                                      & 
-                                    | !arg
-                                )
-                              . !uiou
+                    & (     map
+                          $ ( ( 
+                              =   uf uv wv len
+                                .     !arg:(?uf,?uv)
+                                    &   !output
+                                      :   ?
+                                          (!uf,(?wv.OnE)|?wv)
+                                          ?
+                                    & !uv:?*[?len
+                                    & !wv:?*[!len
+                                    &   whl
+                                      ' ( !uv:%?u*?uv
+                                        & !wv:!u^?*?wv
+                                        )
+                                    & !wv:1
+                                    & !uv:1
+                                    & 
+                                  |   !output:~(? (!uf,?) ?)
+                                    & log$(LACKING !uf)
+                                    & "The feature may be missing when
+                                         looking at unpruned, raw pipes"
+                                    & ( !uf:sml&
+                                      | STOP
+                                      )
+                                  | !arg
                               )
-                          : 
-                        & !nwfs+!wf:?nwfs
+                            . !uiou
+                            )
+                        : ( &!nwfs+!wf:?nwfs
+                          | STOP&0:?wfs:?nwfs
+                          )
                       | 
                       )
                     )
@@ -10157,10 +10185,13 @@ try {
                     !A
                     !Z
                 : ?recentTasks
+              & saveTable$recentTasks
               & log$(windFW !nth)
               &   windFW$(!reorderedworkflowlist.!nth)
                 : ?reorderedworkflowlist
-              & ( !userInput
+              & log$woundFW
+              & ( !parms
+                . !userInput
                 . (!reorderedworkflowlist.!topologicalOrderedTools)
                 . allRight
                 )
@@ -10216,22 +10247,8 @@ try {
                                       & (     !uou
                                             : ?a (!ft,?vs) ?z
                                           & !a !z:?uou
-                                          & (   !V:!vs
-                                              &   log
-                                                $ (gevonden !arg in !uiou)
-                                              & 
+                                          & ( !V:!vs&
                                             |   !V:(?Vs.OnE)
-                                              &   log
-                                                $ ( all
-                                                    !vs
-                                                    in
-                                                    !Vs
-                                                    "?"
-                                                    p
-                                                    !p
-                                                    ft
-                                                    !ft
-                                                  )
                                               &   whl
                                                 ' ( !vs:%?v*?nvs
                                                   & !Vs:?a*!v^?*?z
@@ -10246,13 +10263,9 @@ try {
                                                     : ?A !ft ?Z
                                                   & !A !Z:?superset
                                                 )
-                                              &   log
-                                                $ (GEVONDEn !arg in !uiou)
                                               & 
                                             )
-                                        |     log
-                                            $ (NIETgevonden !arg in !uiou)
-                                          & !arg
+                                        | !arg
                                         )
                                   )
                                 . !ou
@@ -10273,19 +10286,6 @@ try {
                      and filter away the workflows that do not comply with the
                      user requirements formulated in the features that were not
                      represented in the output specs."
-                  &   log
-                    $ ( MEMOize
-                        i
-                        !i
-                        o
-                        !o
-                        p
-                        !p
-                        restriction
-                        !restriction
-                        superset
-                        !superset
-                      )
                   &       map
                         $ ( ( 
                             =   A Z f v V
@@ -10307,6 +10307,12 @@ try {
                     : ?memoizedTrees
                   & !nFP:?FP
                 |   "The next call fails if no workflows found."
+                  & log$(Tryingfp !userInput)
+                  & (     !userInput
+                        : (?A.?B (sml,?) ?Y.?Z)
+                      & (!A.!B !Y.!Z):?userInput
+                    | 
+                    )
                   & fp$!userInput:?FP
                   & log$"Calling fp success"
                   &   (!userInput.!FP) !memoizedTrees
@@ -10315,7 +10321,8 @@ try {
                     | 
                     )
                 )
-              & ( !userInput
+              & ( !parms
+                . !userInput
                 .     !FP:(?,?) ?
                     & ((!FP.).triviallyFulfilled)
                   |   !FP:?+[>1000
@@ -10343,6 +10350,8 @@ try {
                           : ( (?reorderedworkflowlist.?topologicalOrderedTools)
                             . ?returnCode
                             )
+                        & !reorderedworkflowlist:?+[?nr
+                        & log$(UNUSUALsaveTask !userInput length !nr)
                         &   saveTask
                           $ ( !userInput
                             . !reorderedworkflowlist
@@ -14336,7 +14345,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             | 
             )
           & !hiddenData (batch.!batch):?hiddenData
-          & log$(PPPPPparms !parms)
+          & log$PPPPPparms
+          & lst$(parms,path$"log.txt",APP)
           &     !hiddenData
                 (   !parms:? (desiredtool.?rstr) ?
                   & (desiredtool.!rstr)
@@ -14461,13 +14471,54 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       =   FP
         .     log$doSomePruning
             & prunePipes$!arg:?FP
+            & (!FP:0&log$NOFP|)
             & log$CallingmakeWorkflowsSequential
             &   makeWorkflowsSequential$!FP
               : (?reorderedworkflowlist.?topologicalOrderedTools)
+            & (   !reorderedworkflowlist:0
+                & log$NO---reorderedworkflowlist
+              | 
+              )
             & ( (!reorderedworkflowlist.!topologicalOrderedTools)
               . allRight
               )
           | ((!FP.).tooComplex)
+      )
+      ( updateOargFromParg
+      =   a z A Z val ft
+        .     whl
+            ' ( !arg:?A (@(?:P ?ft).?val) ?Z
+              & ( !val:&!A !Z:?arg
+                |   !A !Z:?a (@(?:O !ft).?) ?z
+                  & !a (str$(O !ft).!val) !z:?arg
+                  & (     !arg
+                        : ?A (@(?:SuperSet- !ft).?) ?Z
+                      & !A !Z:?arg
+                    | 
+                    )
+                )
+              )
+          & !arg
+      )
+      ( makeArgsForHiddenFields
+      =   
+        .   map
+          $ ( ( 
+              =   f
+                .       !arg
+                      : (   bsubmit
+                          | method
+                          | DATE
+                          | @( ?:SuperSet- ?f
+                             & !superset:~(? !f ?)
+                             )
+                        . ?
+                        )
+                    & 
+                  | !arg
+              )
+            . !arg
+            )
       )
       "
 /**
@@ -14497,6 +14548,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . ?reorderedworkflowlist
                     . ?topologicalOrderedTools
                     )
+                & log$(ShowAllPipes hiddenData !hiddenData)
                 &   str
                   $ ( 200~~~
                         toML
@@ -14605,7 +14657,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & log$WORKFLOWLISTLOGJE
           & log$(arg !arg)
-          & lst$(arg,path$WORKFLOWLISTARG,NEW)
           & !arg:?orgarg
           & setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
@@ -14681,11 +14732,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 : ?returnCode
               & :?restriction
               & (     Pipelines$(!parms.)
-                    : ( (?sources.?):?userInput
+                    : ( ?
+                      . (?sources.?):?userInput
                       . ?2or3things
                       . ?returnCode
                       )
                   & (   !returnCode:allRight
+                      & log$"returnCode:allRight"
                       &   !2or3things
                         : (?reorderedworkflowlist.?topologicalOrderedTools)
                     | !2or3things:(?pipes.?parms)
@@ -14713,8 +14766,49 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                   & (     !returnCode
                         : (workflowsFound|allRight)
-                      & ( NextStep
-                        =   (   !returnCode:workflowsFound
+                      & ( ShowAllPipesIfNotTooExpensive
+                        =       returnCode
+                                reorderedworkflowlist
+                                userInput
+                                topologicalOrderedTools
+                                hiddenData
+                            , i o r
+                          .       !arg
+                                : ( ?returnCode
+                                  . ?hiddenData
+                                  . ?userInput
+                                  . ?reorderedworkflowlist
+                                  . ?topologicalOrderedTools
+                                  )
+                              & !userInput:(?i.?o.?r.?)
+                              & (!i.!o.!r.):?userInput
+                              & !returnCode:allRight
+                              & !reorderedworkflowlist:?+[?nr
+                              &   saveTask
+                                $ ( !userInput
+                                  . !reorderedworkflowlist
+                                  . !topologicalOrderedTools
+                                  )
+                              & "TODO update hiddenData"
+                              & ( 
+                                &   updateOargFromParg$!orgarg
+                                  : ?updatedArg
+                                &   makeArgsForHiddenFields$!updatedArg
+                                  : ?hiddenData
+                                & !hiddenData
+                                )
+                              &   ShowAllPipes
+                                $ ( !hiddenData
+                                  . !reorderedworkflowlist
+                                  . !topologicalOrderedTools
+                                  )
+                            |   !returnCode:tooComplex
+                              & TooExpensive$
+                        )
+                      & log$(Submit !Submit)
+                      & log$(zubmit localized$!helpmespecifymygoal)
+                      & (   !Submit:"next step"
+                          & (   !returnCode:workflowsFound
                               &   doSomePruning$(!pipes.!parms.!sources)
                                 : ( ( ?reorderedworkflowlist
                                     . ?topologicalOrderedTools
@@ -14723,24 +14817,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   )
                             | 
                             )
-                          & (   !returnCode:allRight
-                              &   saveTask
-                                $ ( !userInput
-                                  . !reorderedworkflowlist
-                                  . !topologicalOrderedTools
-                                  )
-                              &   ShowAllPipes
-                                $ ( !hiddenData
-                                  . !reorderedworkflowlist
-                                  . !topologicalOrderedTools
-                                  )
-                            |   !returnCode:tooComplex
-                              & TooExpensive$
-                            )
-                        )
-                      & log$(Submit !Submit)
-                      & log$(zubmit localized$!helpmespecifymygoal)
-                      & ( !Submit:"next step"&!NextStep
+                          &   ShowAllPipesIfNotTooExpensive
+                            $ ( !returnCode
+                              . !hiddenData
+                              . !userInput
+                              . !reorderedworkflowlist
+                              . !topologicalOrderedTools
+                              )
                         |   localized$!helpmespecifymygoal:!Submit
                           & 1:?fvs
                           & (   !returnCode:workflowsFound
@@ -14766,6 +14849,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   & add$(!output.!fvs):?fvs
                                   )
                             )
+                          & "It is not unimportant how fvs is obtained.
+                             Reorderedworkflowlist outputs can have features
+                             that are not (yet) in the output of pipes."
                           & 1:?nfvs:?fixed
                           &   whl
                             ' ( !fvs:%?f^%?vs*?fvs
@@ -14790,8 +14876,23 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                               )
                           & (   1:!nfvs
-                              & log$NextStep
-                              & !NextStep
+                              & (   !returnCode:workflowsFound
+                                  &     doSomePruning
+                                      $ (!pipes.!parms.!sources)
+                                    : ( ( ?reorderedworkflowlist
+                                        . ?topologicalOrderedTools
+                                        )
+                                      . ?returnCode
+                                      )
+                                | 
+                                )
+                              &   ShowAllPipesIfNotTooExpensive
+                                $ ( !returnCode
+                                  . !hiddenData
+                                  . !userInput
+                                  . !reorderedworkflowlist
+                                  . !topologicalOrderedTools
+                                  )
                             |   ( makeValRows
                                 =     fs name short description table
                                     , hide preselvalsrows
@@ -14886,65 +14987,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                 ( 
                                                 &   !userInput
                                                   : (?.?.?.?superset)
-                                                &   log
-                                                  $ ( userInput
-                                                      !userInput
-                                                      superset
-                                                      !superset
-                                                    )
-                                                &     ( 
-                                                      =   a z A Z
-                                                        .     whl
-                                                            ' (   !arg
-                                                                :   ?A
-                                                                    ( @( ?
-                                                                       : P ?ft
-                                                                       )
-                                                                    . ?val
-                                                                    )
-                                                                    ?Z
-                                                              & (   !val
-                                                                  : 
-                                                                |     !A !Z
-                                                                    :   ?a
-                                                                        ( @( ?
-                                                                           :   O
-                                                                               !ft
-                                                                           )
-                                                                        . ?
-                                                                        )
-                                                                        ?z
-                                                                  &     !a
-                                                                        (   str
-                                                                          $ ( O
-                                                                              !ft
-                                                                            )
-                                                                        . !val
-                                                                        )
-                                                                        !z
-                                                                    : ?arg
-                                                                  &   !arg
-                                                                    :   ?A
-                                                                        ( @( ?
-                                                                           :   SuperSet-
-                                                                               !ft
-                                                                           )
-                                                                        . ?
-                                                                        )
-                                                                        ?Z
-                                                                )
-                                                              &   !A !Z
-                                                                : ?arg
-                                                              )
-                                                          &   log
-                                                            $ (orgarg !orgarg)
-                                                          &   log
-                                                            $ (NIEWarg !arg)
-                                                          & !arg
-                                                      )
+                                                &     updateOargFromParg
                                                     $ !orgarg
                                                   : ?updatedArg
-                                                & log$(fixed !fixed)
                                                 &     ( 
                                                       =     updatedArg
                                                           , fixed ft v
@@ -14980,41 +15025,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                       )
                                                     $ (!updatedArg.!fixed)
                                                   : ?updatedArg
-                                                & log$(updatedArg !arg)
-                                                &     makeHiddenFields
-                                                    $ ( map
-                                                      $ ( ( 
-                                                          =   f
-                                                            .     !arg
-                                                                : (~bsubmit.?)
-                                                                : (~method.?)
-                                                                : (~DATE.?)
-                                                              |   !arg
-                                                                : ( @(   ?
-                                                                       :   SuperSet-
-                                                                           ?f
-                                                                     &   log
-                                                                       $ (f? !f)
-                                                                     &   !superset
-                                                                       :   ?
-                                                                           !f
-                                                                           ?
-                                                                     )
-                                                                  . ?
-                                                                  )
-                                                              | 
-                                                          )
-                                                        . !updatedArg
-                                                        )
-                                                      )
-                                                  : ?hids
-                                                &   log
-                                                  $ ( orgarg
-                                                      !orgarg
-                                                      hids
-                                                      !hids
+                                                &   makeHiddenFields
+                                                  $ ( makeArgsForHiddenFields
+                                                    $ !updatedArg
                                                     )
-                                                & !hids
                                                 )
                                                 !formFields
                                                 submit$"next step"
@@ -15750,7 +15764,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & (   !nth:#
                     & log$(calling Pipelines !nth)
                     &   Pipelines$(!parms.!nth)
-                      : ( (?sources.?goals.?)
+                      : ( ?
+                        . (?sources.?goals.?)
                         . ( (?.?.?.?.?),(?.?struct)
                           . ?topologicalOrderedTools
                           )
@@ -15795,6 +15810,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( !errors:~
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
                 : (?parms.?Submit.?hiddenData.?batch)
+              &   log
+                $ ( "The user has selected a workflow."
+                    parms
+                    !parms
+                    Submit
+                    !Submit
+                    hiddenData
+                    !hiddenData
+                  )
               &   "The user has selected a workflow."
                 $ (!parms.!Submit.!hiddenData.!batch.!Items.!mail2)
             )
