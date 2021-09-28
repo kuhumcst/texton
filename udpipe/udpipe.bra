@@ -4,7 +4,20 @@ Create token annotation from Clarin Base Format file that already has token info
 
 X=
   ( doit
-  =   output tmp1 tmp2 A B C D E F G H xml lang
+  =     output
+        tmp1
+        tmp2
+        A
+        B
+        C
+        D
+        E
+        F
+        G
+        H
+        xml
+        lang
+        period
     .   ( turnCONLLintoTEIP5
         =   s segid sentnr
           .   !arg:(? ("xml:id".?segid) ?,?arg)
@@ -100,13 +113,15 @@ X=
         )
       & ( transform
         =   lang
-          .   !arg:(?lang.?arg)
-            &   (   !lang:da
-                  & "danish-ddt-ud-2.5-191206.udpipe"
-                |   !lang:nl
-                  & "dutch-alpino-ud-2.5-191206.udpipe"
-                )
-              : ?Lingua
+          .   !arg:(?lang.?period.?arg)
+            &   !langtable
+              :   ?
+                  ( !lang
+                  .   ?p
+                    & (!p:|!p:? !period ?)
+                  . ?Lingua
+                  )
+                  ?
             &   map
               $ ( ( 
                   =   e a c
@@ -126,14 +141,15 @@ X=
                             & get$(!tmp2,STR):?c
                             & turnCONLLintoTEIP5$(!a,!c):?c
                             & (!e.!a,!c)
-                          | (!e.!a,transform$!c)
+                          | (!e.!a,transform$(!lang.!period.!c))
                           )
                       | !arg
                   )
                 . !arg
                 )
         )
-      & !arg:(?lang.?arg.?output.?tmp1.?tmp2)
+      & !arg:(?lang.?period.?arg.?output.?tmp1.?tmp2)
+      & get$"langtable.bra":?langtable
       & nestML$(get$(!arg,X ML)):?xml
       &   !xml
         :   ?A
@@ -150,7 +166,9 @@ X=
           : ?B
         | 
         )
-      &   (~&udpipe|transform$(!lang.!body))
+      &   ( ~&udpipe
+          | transform$(!lang.!period.!body)
+          )
         : ?body
       &     !A
             ( TEI
@@ -165,15 +183,16 @@ X=
     .   ~
       |     (   ~
               & ( da
+                . c21
                 . "ParlaMint-DK_20191_M1_2019-10-01.xml"
                 . "ParlaMint-DK_20191_M1_2019-10-01.out.xml"
                 . tmp1
                 . tmp2
                 )
-            | (arg$.arg$.arg$.arg$.arg$)
+            | (arg$.arg$.arg$.arg$.arg$.arg$)
             )
-          : (?lang.?input.?output.?tmp1.?tmp2)
-        & (its.doit)$(!lang.!input.!output.!tmp1.!tmp2)
+          : (?lang.?period.?input.?output.?tmp1.?tmp2)
+        & (its.doit)$(!lang.!period.!input.!output.!tmp1.!tmp2)
   );
 
 r=
