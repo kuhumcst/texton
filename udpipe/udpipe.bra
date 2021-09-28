@@ -4,7 +4,7 @@ Create token annotation from Clarin Base Format file that already has token info
 
 X=
   ( doit
-  =   output tmp1 tmp2 A B C D E F G H xml
+  =   output tmp1 tmp2 A B C D E F G H xml lang
     .   ( turnCONLLintoTEIP5
         =   s segid sentnr
           .   !arg:(? ("xml:id".?segid) ?,?arg)
@@ -63,7 +63,10 @@ X=
                                         ( target
                                         .   str
                                           $ ( "#"
-                                              (!to:0&!sentid|!prefix !to)
+                                              (   !to:0
+                                                & !sentid
+                                              | !prefix !to
+                                              )
                                               " #"
                                               !prefix
                                               !from
@@ -96,32 +99,41 @@ X=
                 )
         )
       & ( transform
-        =   
-          .   map
-            $ ( ( 
-                =   e a c
-                  .     !arg:(?e.?a,?c)
-                      & (   !e:seg
-                          & put$(!c,!tmp1,NEW)
-                          &     str
-                              $ ( "../bin/udpipe --tokenize --tag --parse ./udpipe-ud-2.5-191206/danish-ddt-ud-2.5-191206.udpipe "
-                                  !tmp1
-                                  " > "
-                                  !tmp2
-                                )
-                            : ?command
-                          & sys$!command
-                          & get$(!tmp2,STR):?c
-                          & turnCONLLintoTEIP5$(!a,!c):?c
-                          & (!e.!a,!c)
-                        | (!e.!a,transform$!c)
-                        )
-                    | !arg
+        =   lang
+          .   !arg:(?lang.?arg)
+            &   (   !lang:da
+                  & "danish-ddt-ud-2.5-191206.udpipe"
+                |   !lang:nl
+                  & "dutch-alpino-ud-2.5-191206.udpipe"
                 )
-              . !arg
-              )
+              : ?Lingua
+            &   map
+              $ ( ( 
+                  =   e a c
+                    .     !arg:(?e.?a,?c)
+                        & (   !e:seg
+                            & put$(!c,!tmp1,NEW)
+                            &     str
+                                $ ( "../bin/udpipe --tokenize --tag --parse ./udpipe-ud-2.5-191206/"
+                                    !Lingua
+                                    " "
+                                    !tmp1
+                                    " > "
+                                    !tmp2
+                                  )
+                              : ?command
+                            & sys$!command
+                            & get$(!tmp2,STR):?c
+                            & turnCONLLintoTEIP5$(!a,!c):?c
+                            & (!e.!a,!c)
+                          | (!e.!a,transform$!c)
+                          )
+                      | !arg
+                  )
+                . !arg
+                )
         )
-      & !arg:(?arg.?output.?tmp1.?tmp2)
+      & !arg:(?lang.?arg.?output.?tmp1.?tmp2)
       & nestML$(get$(!arg,X ML)):?xml
       &   !xml
         :   ?A
@@ -138,7 +150,7 @@ X=
           : ?B
         | 
         )
-      &   (~&udpipe|transform$!body)
+      &   (~&udpipe|transform$(!lang.!body))
         : ?body
       &     !A
             ( TEI
@@ -152,15 +164,16 @@ X=
   =   
     .   ~
       |     (   ~
-              & ( "ParlaMint-DK_20191_M1_2019-10-01.xml"
+              & ( da
+                . "ParlaMint-DK_20191_M1_2019-10-01.xml"
                 . "ParlaMint-DK_20191_M1_2019-10-01.out.xml"
                 . tmp1
                 . tmp2
                 )
-            | (arg$.arg$.arg$.arg$)
+            | (arg$.arg$.arg$.arg$.arg$)
             )
-          : (?input.?output.?tmp1.?tmp2)
-        & (its.doit)$(!input.!output.!tmp1.!tmp2)
+          : (?lang.?input.?output.?tmp1.?tmp2)
+        & (its.doit)$(!lang.!input.!output.!tmp1.!tmp2)
   );
 
 r=

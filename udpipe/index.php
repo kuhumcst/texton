@@ -18,11 +18,11 @@ PassWord       :
 Version        : 1.2
 Title          : udpipe
 Path in URL    : udpipe/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
-Publisher      : ITU
-ContentProvider: ITU
-Creator        : ITU
-InfoAbout      : https://github.com/ITUnlp/udpipe
-Description    : UDPipe tools for Danish. udpipe does pos-tagging, lemmatization and syntactic analysis. The syntactic analysis and lemmatization is always based on UDPipe's own pos-tagging. Using udpipe with TEI P5 input is discouraged, unless tokenisation and sentence extraction is done in separate steps, and not by udpipe itself.
+Publisher      : Charles University, Faculty of Mathematics and Physics, Institute of Formal and Applied Linguistics (UFAL)
+ContentProvider: LINDAT / CLARIAH-CZ Data & Tools
+Creator        : Milan Straka & Jana Straková
+InfoAbout      : https://ufal.mff.cuni.cz/udpipe/1
+Description    : Tokenizer, POS Tagger, Lemmatizer and Parser models for 94 treebanks of 61 languages of Universal Depenencies 2.5 Treebanks.
 ExternalURI    : 
 XMLparms       : 
 PostData       : 
@@ -150,14 +150,14 @@ try {
         return "";
         }    
 
-    function udpipe($filename)
+    function udpipe($filename,$lang)
         {
         chdir('udpipe');
         $command = './udpipe ' . $filename;
 
         logit("command: $command");
 
-        $tmpo = tempFileName("DAPIPE");
+        $tmpo = tempFileName("UDPIPE");
 
         logit("$tmpo");
 
@@ -211,6 +211,7 @@ try {
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
+        $Ilangnl = false;	/* Language in input is Dutch (nederlandsk) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
@@ -224,6 +225,7 @@ try {
         $Oformatconll = false;	/* Format in output is CoNLL if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
+        $Olangnl = false;	/* Language in output is Dutch (nederlandsk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
@@ -306,7 +308,8 @@ try {
         if( hasArgument("Ilang") )
             {
             $Ilangda = existsArgumentWithValue("Ilang", "da");
-            $echos = $echos . "Ilangda=$Ilangda ";
+            $Ilangnl = existsArgumentWithValue("Ilang", "nl");
+            $echos = $echos . "Ilangda=$Ilangda " . "Ilangnl=$Ilangnl ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -347,7 +350,8 @@ try {
         if( hasArgument("Olang") )
             {
             $Olangda = existsArgumentWithValue("Olang", "da");
-            $echos = $echos . "Olangda=$Olangda ";
+            $Olangnl = existsArgumentWithValue("Olang", "nl");
+            $echos = $echos . "Olangda=$Olangda " . "Olangnl=$Olangnl ";
             }
         if( hasArgument("Operiod") )
             {
@@ -393,10 +397,12 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         logit("F:" . $F);
+        $lang = getArgument("Olang");
+        logit("Lang: " . $lang);
         if($Iformatflat)
             {
             logit("Flat");
-            $udpipefile = udpipe($F);
+            $udpipefile = udpipe($F,$lang);
             $tmpf = fopen($udpipefile,'r');
 
             if($tmpf)
@@ -429,7 +435,7 @@ try {
                 logit("udpipefile $udpipefile");
                 $tmp1 = tempFileName("udpipe-tmp1");
                 $tmp2 = tempFileName("udpipe-tmp2");
-                $command = "../bin/bracmat \"get'\\\"udpipex.bra\\\"\" $IfacettokF $IfacetsegF $udpipefile $tmp1 $tmp2";
+                $command = "../bin/bracmat \"get'\\\"udpipex.bra\\\"\" $lang $IfacettokF $IfacetsegF $udpipefile $tmp1 $tmp2";
                 $rms = "&& rm $IfacettokF && rm $IfacetsegF ";
                 }
             else
@@ -439,7 +445,7 @@ try {
                 logit("udpipefile $udpipefile");
                 $tmp1 = tempFileName("udpipe-tmp1");
                 $tmp2 = tempFileName("udpipe-tmp2");
-                $command = "../bin/bracmat \"get'\\\"udpipe.bra\\\"\" $F $udpipefile $tmp1 $tmp2";
+                $command = "../bin/bracmat \"get'\\\"udpipe.bra\\\"\" $lang $F $udpipefile $tmp1 $tmp2";
                 $rms = " && rm $F";
                 }
             $command .= " && curl -v -F job=$job -F name=$udpipefile -F data=@$udpipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $udpipefile >> ../log/udpipe.log 2>&1 &";
@@ -449,6 +455,7 @@ try {
             logit('RETURN 202');
             header("HTTP/1.0 202 Accepted");
             }
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $udpipefile
 //*/
         }
     loginit();

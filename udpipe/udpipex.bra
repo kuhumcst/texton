@@ -4,7 +4,8 @@ Create token annotation from Clarin Base Format file that already has token info
 
 X=
   ( doit
-  =   output tmp1 tmp2 A B C D E F G H xmlseg xmltok
+  =     output tmp1 tmp2 A B C D E F G H
+      , xmlseg xmltok lang
     .   ( turnTEIP5intoCONLL
         =   
           .   !arg:(?inputtok.?inputseg)
@@ -162,14 +163,7 @@ X=
                                             , !word
                                           )
                                           ?toks
-                                    & ( !tid
-                                      . !from
-                                      . !lemma
-                                      . !pos
-                                      . !mrf
-                                      . !to
-                                      . !h
-                                      )
+                                    & (!tid.!from.!lemma.!pos.!mrf.!to.!h)
                                 )
                               . !con
                               )
@@ -178,7 +172,14 @@ X=
                             $ ( ( 
                                 =   
                                   .     !arg
-                                      : (?tid.?from.?lemma.?pos.?mrf.?to.?h)
+                                      : ( ?tid
+                                        . ?from
+                                        . ?lemma
+                                        . ?pos
+                                        . ?mrf
+                                        . ?to
+                                        . ?h
+                                        )
                                     & ( !tid
                                       . !lemma
                                       . !pos
@@ -275,27 +276,34 @@ X=
               )
         )
       & ( transform
-        =   conll tmp1 tmp2
-          .   !arg:(?conll.?tmp1.?tmp2)
+        =   conll tmp1 tmp2 lang
+          .   !arg:(?lang.?conll.?tmp1.?tmp2)
             & put$(!conll,!tmp1,NEW)
+            &   (   !lang:da
+                  & "danish-ddt-ud-2.5-191206.udpipe"
+                |   !lang:nl
+                  & "dutch-alpino-ud-2.5-191206.udpipe"
+                )
+              : ?Lingua
             &     str
-                $ ( "../bin/udpipe --tag --parse ./udpipe-ud-2.5-191206/danish-ddt-ud-2.5-191206.udpipe "
+                $ ( "../bin/udpipe --tag --parse ./udpipe-ud-2.5-191206/"
+                    !Lingua
+                    " "
                     !tmp1
                     " > "
                     !tmp2
                   )
               : ?command
-
             & sys$!command
             & get$(!tmp2,STR)
         )
-      & !arg:(?inputtok.?inputseg.?output.?tmp1.?tmp2)
+      & !arg:(?lang.?inputtok.?inputseg.?output.?tmp1.?tmp2)
       &   nestML$(get$(!inputtok,X ML TRM))
         : ? (spanGrp.?,?xmltok) ?
       &   nestML$(get$(!inputseg,X ML TRM))
         : ? (spanGrp.?,?xmlseg) ?
       & str$(turnTEIP5intoCONLL$(!xmltok.!xmlseg)):?conll1
-      & transform$(!conll1.!tmp1.!tmp2):?conll2
+      & transform$(!lang.!conll1.!tmp1.!tmp2):?conll2
       & turnCONLLintoTEIP5$(!conll2.!xmltok.!xmlseg):?annot
       & put$(toML$!annot,!output,NEW)
   )
@@ -303,11 +311,11 @@ X=
   =   
     .   ~
       |     (   ~
-              & (IfacettokF.IfacetsegF."testout.xml".tmp1.tmp2)
-            | (arg$.arg$.arg$.arg$.arg$)
+              & (da.IfacettokF.IfacetsegF."testout.xml".tmp1.tmp2)
+            | (arg$.arg$.arg$.arg$.arg$.arg$)
             )
-          : (?inputtok.?inputseg.?output.?tmp1.?tmp2)
-        & (its.doit)$(!inputtok.!inputseg.!output.!tmp1.!tmp2)
+          : (?lang.?inputtok.?inputseg.?output.?tmp1.?tmp2)
+        & (its.doit)$(!lang.!inputtok.!inputseg.!output.!tmp1.!tmp2)
   );
 
 r=
