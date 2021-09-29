@@ -10070,7 +10070,7 @@ try {
       =     i o restriction FP fP superset userInput
           , calls nth parms
           , A Z reorderedworkflowlist topologicalOrderedTools
-        .   !arg:(?arg.?nth)
+        .   !arg:(?arg:?parms.?nth)
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
             )
@@ -10307,7 +10307,6 @@ try {
                     : ?memoizedTrees
                   & !nFP:?FP
                 |   "The next call fails if no workflows found."
-                  & log$(Tryingfp !userInput)
                   & (     !userInput
                         : (?A.?B (sml,?) ?Y.?Z)
                       & (!A.!B !Y.!Z):?userInput
@@ -10315,6 +10314,9 @@ try {
                     )
                   & fp$!userInput:?FP
                   & log$"Calling fp success"
+                  & "prunePipes fails if tooComplex"
+                  & prunePipes$(!FP.!parms.!i):?FP
+                  & log$"Calling prunePipes success"
                   &   (!userInput.!FP) !memoizedTrees
                     : ?memoizedTrees
                   & ( !memoizedTrees:?memoizedTrees [100 ?
@@ -10346,10 +10348,15 @@ try {
                            recomputed. Instead, it will be found in
                            recentTasks."
                         & log$UNUSUAL!
-                        &   doSomePruning$(!FP.!arg.!i)
-                          : ( (?reorderedworkflowlist.?topologicalOrderedTools)
-                            . ?returnCode
-                            )
+                        & (     makeWorkflowsSequential$!FP
+                              : ( ?reorderedworkflowlist
+                                . ?topologicalOrderedTools
+                                )
+                            & allRight:?returnCode
+                          |   0:?reorderedworkflowlist
+                            & :?topologicalOrderedTools
+                            & tooComplex:?returnCode
+                          )
                         & !reorderedworkflowlist:?+[?nr
                         & log$(UNUSUALsaveTask !userInput length !nr)
                         &   saveTask
@@ -10365,6 +10372,7 @@ try {
                       )
                   | ((!FP.).onlyWithoutRestriction)
                 )
+            | (!parms.!userInput.(0.).tooComplex)
             )
       )
       ( composeValueString
@@ -13444,7 +13452,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                         !Z
                     : ?Uploads
-                  &   !Items (Item.str$(removePercentEncodings$!Name))
+                  &   !Items (Item.str$(removePercentEncodings$!name))
                     : ?Items
                   )
                   ?arg
@@ -13462,6 +13470,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             =   Items item feats n val presels errors
               .   !arg:(?Items.?errors)
                 & :?presels
+                & log$(Items !Items)
                 &   whl
                   ' ( !Items:(Item.%?item ?feats) ?Items
                     & (   !feats:
@@ -14265,7 +14274,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & log$NEW
           & log$CREATELOGJE
-          & lst$(arg,path$CREATEARG,NEW)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : ( ?errors
               . ?hiddenData
@@ -14346,7 +14354,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & !hiddenData (batch.!batch):?hiddenData
           & log$PPPPPparms
-          & lst$(parms,path$"log.txt",APP)
           &     !hiddenData
                 (   !parms:? (desiredtool.?rstr) ?
                   & (desiredtool.!rstr)
@@ -14361,7 +14368,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   . !parms
                   )
             : ?hiddenData
-          & log$(PPPPhiddenData !hiddenData)
           & unpackIOparms$!parms:?parms
           & checkIOparms$!parms
           & readTable$tooladm
@@ -14466,23 +14472,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   (!recentTasks:?recentTasks [30 ?|)
           & !arg !recentTasks:?recentTasks
           & saveTable$recentTasks
-      )
-      ( doSomePruning
-      =   FP
-        .     log$doSomePruning
-            & prunePipes$!arg:?FP
-            & (!FP:0&log$NOFP|)
-            & log$CallingmakeWorkflowsSequential
-            &   makeWorkflowsSequential$!FP
-              : (?reorderedworkflowlist.?topologicalOrderedTools)
-            & (   !reorderedworkflowlist:0
-                & log$NO---reorderedworkflowlist
-              | 
-              )
-            & ( (!reorderedworkflowlist.!topologicalOrderedTools)
-              . allRight
-              )
-          | ((!FP.).tooComplex)
       )
       ( updateOargFromParg
       =   a z A Z val ft
@@ -14766,56 +14755,56 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                   & (     !returnCode
                         : (workflowsFound|allRight)
-                      & ( ShowAllPipesIfNotTooExpensive
-                        =       returnCode
-                                reorderedworkflowlist
-                                userInput
-                                topologicalOrderedTools
-                                hiddenData
-                            , i o r
-                          .       !arg
-                                : ( ?returnCode
-                                  . ?hiddenData
-                                  . ?userInput
-                                  . ?reorderedworkflowlist
-                                  . ?topologicalOrderedTools
-                                  )
-                              & !userInput:(?i.?o.?r.?)
-                              & (!i.!o.!r.):?userInput
-                              & !returnCode:allRight
-                              & !reorderedworkflowlist:?+[?nr
-                              &   saveTask
-                                $ ( !userInput
-                                  . !reorderedworkflowlist
-                                  . !topologicalOrderedTools
-                                  )
-                              & "TODO update hiddenData"
-                              & ( 
-                                &   updateOargFromParg$!orgarg
-                                  : ?updatedArg
-                                &   makeArgsForHiddenFields$!updatedArg
-                                  : ?hiddenData
-                                & !hiddenData
-                                )
-                              &   ShowAllPipes
-                                $ ( !hiddenData
-                                  . !reorderedworkflowlist
-                                  . !topologicalOrderedTools
-                                  )
-                            |   !returnCode:tooComplex
-                              & TooExpensive$
-                        )
                       & log$(Submit !Submit)
                       & log$(zubmit localized$!helpmespecifymygoal)
                       & (   !Submit:"next step"
                           & (   !returnCode:workflowsFound
-                              &   doSomePruning$(!pipes.!parms.!sources)
-                                : ( ( ?reorderedworkflowlist
-                                    . ?topologicalOrderedTools
-                                    )
-                                  . ?returnCode
-                                  )
+                              & (     makeWorkflowsSequential$!pipes
+                                    : ( ?reorderedworkflowlist
+                                      . ?topologicalOrderedTools
+                                      )
+                                  & allRight:?returnCode
+                                |   0:?reorderedworkflowlist
+                                  & :?topologicalOrderedTools
+                                  & tooComplex:?returnCode
+                                )
                             | 
+                            )
+                          & ( ShowAllPipesIfNotTooExpensive
+                            =     returnCode reorderedworkflowlist
+                                , userInput topologicalOrderedTools
+                                , hiddenData i o r
+                              .       !arg
+                                    : ( ?returnCode
+                                      . ?hiddenData
+                                      . ?userInput
+                                      . ?reorderedworkflowlist
+                                      . ?topologicalOrderedTools
+                                      )
+                                  & !userInput:(?i.?o.?r.?)
+                                  & (!i.!o.!r.):?userInput
+                                  & !returnCode:allRight
+                                  & !reorderedworkflowlist:?+[?nr
+                                  &   saveTask
+                                    $ ( !userInput
+                                      . !reorderedworkflowlist
+                                      . !topologicalOrderedTools
+                                      )
+                                  & "TODO update hiddenData"
+                                  & ( 
+                                    &   updateOargFromParg$!orgarg
+                                      : ?updatedArg
+                                    &   makeArgsForHiddenFields$!updatedArg
+                                      : ?hiddenData
+                                    & !hiddenData
+                                    )
+                                  &   ShowAllPipes
+                                    $ ( !hiddenData
+                                      . !reorderedworkflowlist
+                                      . !topologicalOrderedTools
+                                      )
+                                |   !returnCode:tooComplex
+                                  & TooExpensive$
                             )
                           &   ShowAllPipesIfNotTooExpensive
                             $ ( !returnCode
@@ -14877,13 +14866,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                           & (   1:!nfvs
                               & (   !returnCode:workflowsFound
-                                  &     doSomePruning
-                                      $ (!pipes.!parms.!sources)
-                                    : ( ( ?reorderedworkflowlist
-                                        . ?topologicalOrderedTools
-                                        )
-                                      . ?returnCode
-                                      )
+                                  & (     makeWorkflowsSequential$!pipes
+                                        : ( ?reorderedworkflowlist
+                                          . ?topologicalOrderedTools
+                                          )
+                                      & allRight:?returnCode
+                                    |   0:?reorderedworkflowlist
+                                      & :?topologicalOrderedTools
+                                      & tooComplex:?returnCode
+                                    )
                                 | 
                                 )
                               &   ShowAllPipesIfNotTooExpensive
@@ -15053,7 +15044,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     |   !returnCode:triviallyFulfilled
                       & !Submit:"next step"
                       & NothingToDo$!hiddenData
-                    |   !returnCode:tooMany
+                    |     !returnCode
+                        : (tooMany|tooComplex)
                       & TooManyWorkflows$
                     )
                 | NotFulfillable$!returnCode
