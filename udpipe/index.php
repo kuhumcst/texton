@@ -150,35 +150,6 @@ try {
         return "";
         }    
 
-    function udpipe($filename,$lang,$period)
-        {
-        chdir('udpipe');
-        $command = './udpipe ' . $filename;
-
-        logit("command: $command");
-
-        $tmpo = tempFileName("UDPIPE");
-
-        logit("$tmpo");
-
-        $fpo = fopen($tmpo,"w");
-        if(!$fpo)
-            exit(1);
-
-        if(($cmd = popen($command, "r")) == NULL)
-            exit(1);
-
-        while($read = fgets($cmd))
-            {
-            fwrite($fpo, $read);
-            }
-
-        fclose($fpo);
-
-        pclose($cmd);
-        return $tmpo;
-        }
-
     function do_udpipe()
         {
         global $dodelete;
@@ -632,62 +603,32 @@ try {
             $period = "c21";
         logit("Lang: " . $lang);
         logit("Period: " . $period);
-        if($Iformatflat)
+        if($Ifacettok) // and also $Ifacetseg!
             {
-            logit("Flat");
-            $udpipefile = udpipe($F,$lang,$period);
-            $tmpf = fopen($udpipefile,'r');
-
-            if($tmpf)
-                {
-                //logit('output from udpipe:');
-                while($line = fgets($tmpf))
-                    {
-                    //logit($line);
-                    print $line;
-                    }
-                fclose($tmpf);
-                }
-
-            if($dodelete)
-                {
-                foreach ($tobedeleted as $filename => $dot)
-                    {
-                    if($dot)
-                        unlink($filename);
-                    }
-                unset($tobedeleted);
-                }
+            logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
+            $udpipefile = tempFileName("udpipe-results");
+            logit("udpipefile $udpipefile");
+            $tmp1 = tempFileName("udpipe-tmp1");
+            $tmp2 = tempFileName("udpipe-tmp2");
+            $command = "../bin/bracmat \"get'\\\"udpipex.bra\\\"\" $lang $period $IfacettokF $IfacetsegF $udpipefile $tmp1 $tmp2";
+            $rms = "&& rm $IfacettokF && rm $IfacetsegF ";
             }
-        else 
+        else
             {
-            if($Ifacettok) // and also $Ifacetseg!
-                {
-                logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
-                $udpipefile = tempFileName("udpipe-results");
-                logit("udpipefile $udpipefile");
-                $tmp1 = tempFileName("udpipe-tmp1");
-                $tmp2 = tempFileName("udpipe-tmp2");
-                $command = "../bin/bracmat \"get'\\\"udpipex.bra\\\"\" $lang $period $IfacettokF $IfacetsegF $udpipefile $tmp1 $tmp2";
-                $rms = "&& rm $IfacettokF && rm $IfacetsegF ";
-                }
-            else
-                {
-                logit("TEI P5 input");
-                $udpipefile = tempFileName("udpipe-results");
-                logit("udpipefile $udpipefile");
-                $tmp1 = tempFileName("udpipe-tmp1");
-                $tmp2 = tempFileName("udpipe-tmp2");
-                $command = "../bin/bracmat \"get'\\\"udpipe.bra\\\"\" $lang $period $F $udpipefile $tmp1 $tmp2";
-                $rms = " && rm $F";
-                }
-            $command .= " && curl -v -F job=$job -F name=$udpipefile -F data=@$udpipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $udpipefile >> ../log/udpipe.log 2>&1 &";
-            logit($command);
-            exec($command);
-
-            logit('RETURN 202');
-            header("HTTP/1.0 202 Accepted");
+            logit("TEI P5 input");
+            $udpipefile = tempFileName("udpipe-results");
+            logit("udpipefile $udpipefile");
+            $tmp1 = tempFileName("udpipe-tmp1");
+            $tmp2 = tempFileName("udpipe-tmp2");
+            $command = "../bin/bracmat \"get'\\\"udpipe.bra\\\"\" $lang $period $F $udpipefile $tmp1 $tmp2";
+            $rms = " && rm $F";
             }
+        $command .= " && curl -v -F job=$job -F name=$udpipefile -F data=@$udpipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $udpipefile >> ../log/udpipe.log 2>&1 &";
+        logit($command);
+        exec($command);
+
+        logit('RETURN 202');
+        header("HTTP/1.0 202 Accepted");
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $udpipefile
 //*/
         }
