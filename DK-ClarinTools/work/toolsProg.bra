@@ -2077,8 +2077,8 @@ toolsProg=
                           | '(($tool.$feats) ()$pat)
                           )
                       |   '$Wf:(=?Wf %?lhs*%?rhs)
-                        & toolPattern$('$lhs):(=?lpat)
-                        & toolPattern$('$rhs):(=?rpat)
+                        & "*"$('$lhs):(=?lpat)
+                        & "*"$('$rhs):(=?rpat)
                         & (   :!pat
                             & '($lpat*$rpat)
                           | '($lpat*$rpat ()$pat)
@@ -7410,6 +7410,101 @@ try {
           & !bignumber:~<1000000
       )
       ( selectCommonTracks
+      =   sum spotSum spitSum eliminate TERM result term recur
+        .   ( spitSums
+            =   a sum
+              .     !arg:%*%
+                  & whl'(!arg:%?a*?arg&spitSums$!a)
+                |   !arg:(?,(?.?.?.?arg))
+                  & spitSums$!arg
+                |   !arg:%+%
+                  & !arg^Q*!sums:?sums
+                  & whl'(!arg:%?a+?arg&spitSums$!a)
+                | 
+            )
+          & ( spotSums
+            =   a sum
+              .     !arg:%*%
+                  & whl'(!arg:%?a*?arg&spotSums$!a)
+                |   !arg:(?,(?.?.?.?arg))
+                  & spotSums$!arg
+                |   !arg:%+%
+                  & !arg*!sums:?sums
+                  & whl'(!arg:%?t+?arg&spitSums$!t)
+                | 
+            )
+          & (len=.!arg:?+[?arg&!arg)
+          & ( eliminate
+            =   term O R T o i W S J F D s sum
+              .   !arg:(?arg.?sum.?term)
+                & !arg:(?O.?W)
+                & (   !W:%+%
+                    & !W:!sum
+                    & !W:?+!term+?
+                    & (!O.!term)
+                  |   !W:%*%:?S
+                    & 1:?R
+                    & 0:?D
+                    &   whl
+                      ' ( !S:%?s*?S
+                        &     !R
+                            * (   !s:(?T,(?o.?i.?J))
+                                & eliminate$(!J.!sum.!term):?J
+                                & 1:?D
+                                & (!T,(!o.!i.!J))
+                              | !s
+                              )
+                          : ?R
+                        )
+                    & !D:1
+                    & (!O.!R)
+                  |   !W:(?T,(?o.?i.?J))
+                    & !J:(?.?)
+                    & eliminate$(!J.!sum.!term):?J
+                    & (!O.!T,(!o.!i.!J))
+                  )
+            )
+          & ( recur
+            =   OUT WAY sum term result Term T sums isum
+              .   0:?result
+                &   whl
+                  ' ( !arg:#*((?OUT.?WAY):?Traction)+?arg
+                    & (   1:?sums
+                        & spotSums$!WAY
+                        & "Sums that have a Q in the exponent are children of another sum. 
+                           We only want unshielded sums, working out way down."
+                        &   !sums
+                          : ( ?*(%+%:?sum)*?
+                            | ?*(%+%:?sum)^#*?
+                            )
+                        & !sum:?isum
+                        &   whl
+                          ' ( !isum:%?term+?isum
+                            & (       eliminate
+                                    $ ((!OUT.!WAY).!sum.!term)
+                                  : ?Term
+                                & recur$!Term:?Term
+                                & !result+!Term:?result
+                              | !result+!term:?result
+                              )
+                            & len$!result:~>1001
+                            )
+                      | !result+(!OUT.!WAY):?result
+                      )
+                    & len$!result:~>1001
+                    )
+                & !result
+            )
+          & 0:?result
+          &   whl
+            ' ( !arg:%?term+?arg
+              & log$recurring
+              & !result+recur$!term:?result
+              & log$(recurringDONE len$!result)
+              )
+          & !result
+      )
+      ( selectCommonTracksOLD
       =   sum spotSum eliminate OUT WAY TERM result term
         .   ( spotSum
             =   a sum
@@ -7419,9 +7514,9 @@ try {
                     |   !arg:%?a*%?arg
                       & (spotSum$!a|spotSum$!arg)
                     )
-                | !arg:%+%:?sum&!sum
                 |   !arg:(?,(?.?.?.?arg))
                   & spotSum$!arg
+                | !arg:%+%
             )
           & ( eliminate
             =   term O R T o i W S J P F D s
@@ -7482,7 +7577,7 @@ try {
                       &   !TERM+eliminate$((!OUT.!WAY).!term)
                         : ?TERM
                       )
-                  & !TERM+!arg:?arg
+                  & !arg+!TERM:?arg
                 | !result+(!OUT.!WAY):?result
                 )
               )
@@ -8260,8 +8355,8 @@ try {
                                   |   cell
                                     $ ( makeCheckboxFormField
                                       $ (   localized
-                                          $ ( "Compute workflows for similar goals"
-                                              "Beregn arbejdsgange for lignende mål"
+                                          $ ( "Compute workflows for similar goals (= less specific)"
+                                              "Beregn arbejdsgange for lignende mål (= mindre specifikt)"
                                             )
                                         . str$(SuperSet- !short)
                                         .   (val.)
@@ -9371,7 +9466,12 @@ try {
           , toMethods fromOutputTowardInput toTool
           , UpdateResultsFromMethods oUts
           , validateInputsForEachTool
-        .   ( sig
+        .   "TODO sig is not meaningful if we can have multiple OnE complexes
+             (a*b*c.OnE)*d*(a*f*g.OnE)*z
+             One of the problems is 'a' occuring two places.
+             Better to keep OnE!
+            "
+          & ( sig
             =   a
               .     !arg:%?a*?arg
                   &   ( !a:(?a.OnE)&sig$!a
@@ -9399,6 +9499,7 @@ try {
                 &   whl
                   ' ( !results:%?result*?results
                     & Sig$!result:?SR
+                    & "Code below seems to limit 'result' to either be one OnE complex or to have no OnE at all."
                     &     map
                         $ ( ( 
                             =   f v
@@ -9484,7 +9585,9 @@ try {
                                   )
                                 . !result
                                 )
-                          |   log$(GEK !methods allMeths !allMeths)
+                          |   ( 
+                              | log$(GEK !methods allMeths !allMeths)
+                              )
                             & !result
                           )
                         * !nres
@@ -9712,7 +9815,7 @@ try {
       ( prunePipes
       =     As Ax NNN Z ax incarnationpipes parms
           , newpipes pipe pipes pipesN restriction
-          , wantThis unfoldTree sources calls
+          , wantThis unfoldTree sources calls Npipes
         .   ( unfoldTree
             =     tool ou ou2 inputprop childstuff
                 , A Z goal b
@@ -9953,29 +10056,29 @@ try {
                   )
                 & signatures$!arg:?sig
                 & "sig is a product of tool IDs. Each ID has an exponent
-                         that is the sum of all (O.I) specs occuring in the
-                         current computed workflow. Here, O and I are feature
-                         bundles."
+                   that is the sum of all (O.I) specs occuring in the
+                   current computed workflow. Here, O and I are feature
+                   bundles."
                 & (   !sig:?*?^(%+%:clashing$)*?
                     & "Discard solutions that contain steps that are
-                             equal (or at least compatible) at the un-
-                             subspecified level, but clash at the spec level.
-                             Such solutions are not 'wrong', but unlikely what
-                             the user wants."
+                       equal (or at least compatible) at the un-
+                       subspecified level, but clash at the spec level.
+                       Such solutions are not 'wrong', but unlikely what
+                       the user wants."
                     & 0
                   |   unifySignaturesAtSpecLevel$!sig:?nsig
                     & "nsig is a product of maximally compressed
-                             signatures. If two (O.I) feature bundle pairs can
-                             enrich each other without clashing, then those
-                             pairs are merged into one. These enriched (O.I)
-                             pairs do nowhere occur in the current workflow, so
-                             now we substitute the rich O.I pairs for the
-                             original ones."
+                       signatures. If two (O.I) feature bundle pairs can
+                       enrich each other without clashing, then those
+                       pairs are merged into one. These enriched (O.I)
+                       pairs do nowhere occur in the current workflow, so
+                       now we substitute the rich O.I pairs for the
+                       original ones."
                     & Subst$(!arg.!nsig):?arg
                     & "arg has become more complete subspec-wise.
-                             Either each tool is used in exactly one way, or
-                             the different ways ALL differ more than only at
-                             the subspec level."
+                       Either each tool is used in exactly one way, or
+                       the different ways ALL differ more than only at
+                       the subspec level."
                     & !arg
                   )
             )
@@ -9983,6 +10086,7 @@ try {
           & 0:?calls
           & 0:?newpipes
           & log$(whl calls !calls)
+          & 0:?Npipes
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -9995,11 +10099,17 @@ try {
                     term on that term. So if a sum contains the current term, ignore all terms but the current term.
                 (4) Repeat this for each new workflow.
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
-              & (   ItExplodes$!incarnationpipes
+              & log$DoesItExplode?
+              & (   ~
+                  & ItExplodes$!incarnationpipes
                   & log$ItExplodes
                   & 100000000:?calls
-                |   selectCommonTracks$!incarnationpipes:?As
+                |   log$selectCommonTracks
+                  & selectCommonTracks$!incarnationpipes:?As
+                  & !As:?+[?Npipes
+                  & !Npipes:~>1000
                   & :?pipesN
+                  & log$unfoldTree
                   &   whl
                     ' ( !As:%?Ax+?As
                       & unfoldTree$(1.!Ax):?Z
@@ -10008,6 +10118,7 @@ try {
                           & !ax !pipesN:?pipesN
                           )
                       )
+                  & log$sort
                   & sort$!pipesN:?pipesN
                   &     ( 
                         =   L a
@@ -10025,17 +10136,22 @@ try {
                         )
                       $ !pipesN
                     : ?pipesN
+                  & log$gotAsum
                   & "The 1 is the initial stop list, which is formed as a product."
                   & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
                   & !pipesN:?+[?NNN
                   & (     !parms
                         : ? (desiredtool.?restriction) ?
                       & !restriction:~
+                      & log$filter
                       & filter$(!pipesN.!restriction):?pipesN
+                      & log$filterDone
                     | 
                     )
+                  & log$percolateForgottenFeatures
                   & percolateForgottenFeatures$!pipesN:?pipesN
                   & !pipesN:?+[?NNN
+                  & log$wantThis
                   &   whl
                     ' ( !pipesN:%?pipe+?pipesN
                       & wantThis$!pipe:?pipe
@@ -10044,10 +10160,11 @@ try {
                         | !pipe+!newpipes:?newpipes
                         )
                       )
+                  & log$wantThisDone
                 )
               )
-          & !calls:<567890
-          & !newpipes
+          & log$(testing calls !calls)
+          & (!newpipes.!Npipes)
       )
       ( windFW
       =   nth ZZ pipes pipe
@@ -10198,7 +10315,7 @@ try {
             |   log$(Not in recentTasks)
               & "memoizedTrees: global variable"
               & (!memoizedTrees|:?memoizedTrees)
-              & 0:?indent:?calls
+              & 0:?indent:?calls:?Npipes
               & (   log$"Look in meMOizedTrees"
                   & !userInput:(?uiin.?uiou.?restriction.?superset)
                   & "o1o The userInput may be more strict than what is found in
@@ -10315,7 +10432,8 @@ try {
                   & fp$!userInput:?FP
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
-                  & prunePipes$(!FP.!parms.!i):?FP
+                  & prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
+                  & !Npipes:~>1000
                   & log$"Calling prunePipes success"
                   &   (!userInput.!FP) !memoizedTrees
                     : ?memoizedTrees
@@ -10372,7 +10490,9 @@ try {
                       )
                   | ((!FP.).onlyWithoutRestriction)
                 )
-            | (!parms.!userInput.(0.).tooComplex)
+            |   !Npipes:0
+              & (!parms.!userInput.(0.).notFulfillable)
+            | (!parms.!userInput.(0.).tooMany)
             )
       )
       ( composeValueString
@@ -14398,11 +14518,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               $ ( !BodyContainer
                 $ (   paragraph
                     $ ( localized
-                      $ ( "Your goal cannot be fulfilled with the currently integrated tools."
-                          "Dit mål kan ikke opfyldes med de værktøjer der p.t. er integreret i infrastrukturen."
+                      $ ( "Your goal cannot be fulfilled with the currently integrated tools. Try to make your goal less specific."
+                          "Dit mål kan ikke opfyldes med de værktøjer der p.t. er integreret i infrastrukturen. Prøv at lave dit mål mindre specifikt."
                         )
                       )
-                    (p.,!arg)
+                    (p.,str$("(Returncode: " !arg ")"))
                   )
                 )
             )
@@ -14644,6 +14764,54 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                   )
             )
+          & ( add
+            =   fvs
+              .   !arg:(?arg.?fvs)
+                &   map
+                  $ ( ( 
+                      =   f v
+                        .   !arg:(?f,?v)
+                          & (!v:(?v.OnE)|)
+                          & !f^!v*!fvs:?fvs
+                      )
+                    . !arg
+                    )
+                & !fvs
+            )
+          & ( ShowAllPipesIfNotTooExpensive
+            =     returnCode reorderedworkflowlist
+                , userInput topologicalOrderedTools
+                , hiddenData i o r
+              .       !arg
+                    : ( ?returnCode
+                      . ?hiddenData
+                      . ?userInput
+                      . ?reorderedworkflowlist
+                      . ?topologicalOrderedTools
+                      )
+                  & ( 
+                    |   !userInput:(?i.?o.?r.?)
+                      & (!i.!o.!r.):?userInput
+                    )
+                  & !returnCode:allRight
+                  & !reorderedworkflowlist:?+[?nr
+                  &   saveTask
+                    $ ( !userInput
+                      . !reorderedworkflowlist
+                      . !topologicalOrderedTools
+                      )
+                  & "TODO update hiddenData"
+                  & updateOargFromParg$!orgarg:?updatedArg
+                  & makeArgsForHiddenFields$!updatedArg:?hiddenData
+                  & !hiddenData
+                  &   ShowAllPipes
+                    $ ( !hiddenData
+                      . !reorderedworkflowlist
+                      . !topologicalOrderedTools
+                      )
+                |   !returnCode:tooComplex
+                  & TooExpensive$
+            )
           & log$WORKFLOWLISTLOGJE
           & log$(arg !arg)
           & !arg:?orgarg
@@ -14739,20 +14907,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                      tooComplex
                      workflowsFound
                      tooMany"
-                  & ( add
-                    =   fvs
-                      .   !arg:(?arg.?fvs)
-                        &   map
-                          $ ( ( 
-                              =   f v
-                                .   !arg:(?f,?v)
-                                  & (!v:(?v.OnE)|)
-                                  & !f^!v*!fvs:?fvs
-                              )
-                            . !arg
-                            )
-                        & !fvs
-                    )
                   & (     !returnCode
                         : (workflowsFound|allRight)
                       & log$(Submit !Submit)
@@ -14769,42 +14923,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   & tooComplex:?returnCode
                                 )
                             | 
-                            )
-                          & ( ShowAllPipesIfNotTooExpensive
-                            =     returnCode reorderedworkflowlist
-                                , userInput topologicalOrderedTools
-                                , hiddenData i o r
-                              .       !arg
-                                    : ( ?returnCode
-                                      . ?hiddenData
-                                      . ?userInput
-                                      . ?reorderedworkflowlist
-                                      . ?topologicalOrderedTools
-                                      )
-                                  & !userInput:(?i.?o.?r.?)
-                                  & (!i.!o.!r.):?userInput
-                                  & !returnCode:allRight
-                                  & !reorderedworkflowlist:?+[?nr
-                                  &   saveTask
-                                    $ ( !userInput
-                                      . !reorderedworkflowlist
-                                      . !topologicalOrderedTools
-                                      )
-                                  & "TODO update hiddenData"
-                                  & ( 
-                                    &   updateOargFromParg$!orgarg
-                                      : ?updatedArg
-                                    &   makeArgsForHiddenFields$!updatedArg
-                                      : ?hiddenData
-                                    & !hiddenData
-                                    )
-                                  &   ShowAllPipes
-                                    $ ( !hiddenData
-                                      . !reorderedworkflowlist
-                                      . !topologicalOrderedTools
-                                      )
-                                |   !returnCode:tooComplex
-                                  & TooExpensive$
                             )
                           &   ShowAllPipesIfNotTooExpensive
                             $ ( !returnCode
@@ -14866,17 +14984,19 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                           & (   1:!nfvs
                               & (   !returnCode:workflowsFound
-                                  & (     makeWorkflowsSequential$!pipes
-                                        : ( ?reorderedworkflowlist
-                                          . ?topologicalOrderedTools
-                                          )
-                                      & allRight:?returnCode
-                                    |   0:?reorderedworkflowlist
-                                      & :?topologicalOrderedTools
-                                      & tooComplex:?returnCode
-                                    )
+                                  &   (     makeWorkflowsSequential$!pipes
+                                          : ( ?reorderedworkflowlist
+                                            . ?topologicalOrderedTools
+                                            )
+                                        & allRight
+                                      |   0:?reorderedworkflowlist
+                                        & :?topologicalOrderedTools
+                                        & tooComplex
+                                      )
+                                    : ?returnCode
                                 | 
                                 )
+                              & log$(returnCode !returnCode)
                               &   ShowAllPipesIfNotTooExpensive
                                 $ ( !returnCode
                                   . !hiddenData
@@ -15047,6 +15167,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     |     !returnCode
                         : (tooMany|tooComplex)
                       & TooManyWorkflows$
+                    |   !returnCode:notFulfillable
+                      & NotFulfillable$!returnCode
                     )
                 | NotFulfillable$!returnCode
                 )
@@ -15769,6 +15891,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                    |tooComplex
                                    |tooMany
                                    |onlyWithoutRestriction
+                                   |notFulfillable
                                    )"
                     & (   !returnCode:allRight
                         & log$whichButton
