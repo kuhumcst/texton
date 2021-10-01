@@ -8630,14 +8630,17 @@ try {
                                         )
                                     | "Tool's output does not match goal"
                                     )
+                                  & !Calls:>0
                                   )
                               )
+                            & !Calls:>0
                             & (   !pathsonetool:0
                                 &   (notThisTool..insert)
                                   $ (str$!goaly.!tool.!source)
                               | 
                               )
                             )
+                        & !Calls:>0
                         & "forkk will become zero if no tools can fulfil goaly!"
                         & (   !toolspath:0
                             &   (unfulfillable..insert)
@@ -8650,6 +8653,7 @@ try {
                     * !forkk
                   : ?forkk
                 & inner$!forkk:?forkk
+                & !Calls:>0
                 & !forkk
             )
           & ( fulfilGoalProduct
@@ -8659,11 +8663,20 @@ try {
                 & 1:?forkk
                 &   whl
                   ' ( !forkk:~0
+                    & 1+!Calls:?Calls
+                    & (   mod$(!Calls,100):0
+                        & log$!Calls
+                        & clk$+!StartClk:>60
+                        & -1*!Calls:?Calls
+                      | 
+                      )
+                    & !Calls:>0
                     & !goalterm:%?goaly*?goalterm
                     &     fulfilGoal
                         $ (!source.!goaly.!tools.!restriction.!forkk)
                       : ?forkk
                     )
+                & !Calls:>0
                 & 1+!forkk+-1
             )
           & " unfoldGoal:
@@ -8728,7 +8741,7 @@ try {
               .   !arg:(?tools.?source.?goal.?indent.?restriction)
                 & "Restrict path length to max 20"
                 & !indent:<20
-                & 1+!Calls:?Calls
+                & (|1+!Calls:?Calls)
                 & 0:?accPipelines
                 & unfoldGoal$!goal:?goals
                 & 0:?found
@@ -8740,6 +8753,7 @@ try {
                             |       fulfilGoalProduct
                                   $ (!source.!goalterm.!tools.!restriction)
                                 : ?forkk
+                              & !Calls:>0
                               &   (     !forkk
                                       : ( 0
                                         | 1
@@ -8767,7 +8781,9 @@ try {
                         & !Pipeline+!accPipelines:?accPipelines
                       | 
                       )
+                    & !Calls:>0
                     )
+                & !Calls:>0
                 & ( !accPipelines:~0&!accPipelines
                   | !found:~0&0
                   )
@@ -8980,7 +8996,12 @@ try {
           & new$hash:?notThisTool
           & 0:?Calls
           & log$("Calling fulfil" !goal)
-          & fulfil$(!activeTools.!source.!goal.0.!restriction)
+          & (     fulfil$(!activeTools.!source.!goal.0.!restriction)
+                : ?YYX
+              & log$("fulfil Calls" !Calls)
+              & !YYX
+            | !Calls
+            )
       )
       ( extractIOfeaturesFromHTTParg
       =     fs IorO f name short p A v Z
@@ -9191,6 +9212,7 @@ try {
                 )
             |   !short:(?fea,(?val.OnE)) ?short
               & !long:? (!fea,?Val) ?
+              & (!Val:(?Val.OnE)|)
               & 1:?P
               &   whl
                 ' ( !val:%@?v^?e*?nval
@@ -9269,7 +9291,18 @@ try {
                             * ?
                           )
                       & !h*!h1:?h
-                    | !h*(!H1 problem !arg):?h
+                    |       ( 
+                            =   R O
+                              .   1:?R
+                                &   whl
+                                  ' ( !arg:(?,(?O.?))*?arg
+                                    & !O*!R:?R
+                                    )
+                                & !R
+                            )
+                          $ !arg
+                        : ?Os
+                      & !h*(!H1 problem !Os):?h
                     )
                   )
               & (!h:1&HA!|!h.!arg)
@@ -9290,6 +9323,10 @@ try {
                       )
                   * ?
               & Subst$(!sub.!OI):?sub
+              & (   !sub:(0.?OI)
+                  & log$(KATASTROFE !sub)
+                | 
+                )
               & ( !prog
                 , ( !O
                   .   ( 
@@ -9319,7 +9356,7 @@ try {
        feature bundle pairs with the possibly richer (at subspec level) version
        found in the second argument."
       ( Subst
-      =   OI H h h1 H1 O
+      =   OI H h h1 H1 O T
         .   !arg:(?arg.?OI)
           & "arg is a pipe line.
 
@@ -9370,9 +9407,22 @@ try {
                             * ?
                           )
                       & !h*!h1:?h
-                    |   !h*(!H1 substproblem !arg endsubstproblem)
-                      : ?h
+                    |       ( 
+                            =   R O
+                              .   1:?R
+                                &   whl
+                                  ' ( !arg:(?T,(?O.?))*?arg
+                                    & (!T,!O)*!R:?R
+                                    )
+                                & !R
+                            )
+                          $ !arg
+                        : ?Os
+                      &   !h*(!H1 substproblem !Os endsubstproblem)
+                        : ?h
+                      & 0:?h
                     )
+                  & !h:~0
                   )
               & (!h:1&HA!|!h.!arg)
             | !arg
@@ -10074,7 +10124,7 @@ try {
                        pairs do nowhere occur in the current workflow, so
                        now we substitute the rich O.I pairs for the
                        original ones."
-                    & Subst$(!arg.!nsig):?arg
+                    & Subst$(!arg.!nsig):(~0.?):?arg
                     & "arg has become more complete subspec-wise.
                        Either each tool is used in exactly one way, or
                        the different ways ALL differ more than only at
@@ -10184,7 +10234,14 @@ try {
             )
       )
       ( Pipelines
-      =     i o restriction FP fP superset userInput
+      =       i
+              o
+              o-SUpPLEMENT
+              restriction
+              FP
+              fP
+              superset
+              userInput
           , calls nth parms
           , A Z reorderedworkflowlist topologicalOrderedTools
         .   !arg:(?arg:?parms.?nth)
@@ -10204,25 +10261,34 @@ try {
           & readTable$features
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
-          & extractIOfeaturesFromHTTParg$(!features.P.!arg):?p
+          &   extractIOfeaturesFromHTTParg$(!features.P.!arg)
+            : ?o-SUpPLEMENT
           & "If there is a filled Pxyz, remove it from superset. Additional
              user data is supposed to be exactly what the user wants. (There
              is no checkbox for the user to allow more complex values.)"
           &     map
               $ ( ( 
                   =   
-                    .   !p:? (!arg,~) ?&
+                    .     !o-SUpPLEMENT:? (!arg,~) ?
+                        & 
                       | !arg
                   )
                 . !superset
                 )
             : ?superset
           & ( 
-            | log$(superset !superset usupset !usupset p !p)
+            |   log
+              $ ( superset
+                  !superset
+                  usupset
+                  !usupset
+                  o-SUpPLEMENT
+                  !o-SUpPLEMENT
+                )
             )
           & "P values come from a subset of select boxes, when the user has
              asked for assistance to fill out the remaining fields."
-          & !p:?pp
+          & !o-SUpPLEMENT:?pp
           & "Make pp a list of Pxyz features that do not occur as Oxyz. At the
              same time, make oo a list of Oxyz with elements replaced by Pxyz,
              if they exist."
@@ -10321,9 +10387,90 @@ try {
                   & "o1o The userInput may be more strict than what is found in
                      memoized trees. So each output feature in a memoized tree
                      must occur in the userInput's output specs."
+                  & ( o2o
+                    =   FP nFP ou wf uou uiou ZYX
+                      .   !arg:(?FP.?uiou)
+                        & "o-SUpPLEMENT  (facet,lem*mrf*ner*pos*seg*stx*tok)"
+                        & 0:?nFP
+                        &   whl
+                          ' ( !FP:(?ou.?wf)+?FP
+                            & "need  (ambig,una)  (app,nrm)  (facet,                 stx         )  (format,conll    )  (lang,la)               (pres,nml)
+                               have  (ambig,una)  (app,nrm)  (facet,(lem*mrf*pos*seg*stx*tok.OnE))  (format,conll^clU)  (lang,la)  (period,c1)  (pres,nml)  
+
+                               need  (ambig,una)  (app,nrm)  (facet, lem*mrf*ner*pos    *seg*stx*tok)       (format,conll    )  (lang,da)  (period,c21)  (pres,nml)
+                               have  (ambig,una)  (app,nrm)  (facet,(lem*mrf*ner*pos^Uni*seg*stx*tok.OnE))  (format,conll^clU)  (lang,da)  (period,c21)  (pres,nml)
+                               ZYX  (facet,(lem*mrf*ner*pos^Uni*seg*stx*tok.OnE))
+                              "
+                            & !uiou:?uou
+                            & (       map
+                                    $ ( ( 
+                                        =     ft us nus u Vs
+                                            , A Z a z V
+                                          .   !arg:(?ft,?V)
+                                            & (     !uou
+                                                  : ?a (!ft,?us) ?z
+                                                & !a !z:?uou
+                                                & (   !V:!us^?
+                                                    & 
+                                                  |   !V:(?Vs.OnE)
+                                                    &   whl
+                                                      ' ( !us:%?u*?nus
+                                                        &   !Vs
+                                                          : ?a*!u^?*?z
+                                                        & !a*!z:?Vs
+                                                        & !nus:?us
+                                                        )
+                                                    & !us:1
+                                                    & "all user specs were found"
+                                                    & (     !o-SUpPLEMENT
+                                                          : ~( ?
+                                                               (!ft,?)
+                                                               ?
+                                                             )
+                                                        & "User says nothing about feature ft"
+                                                      |   !Vs:1
+                                                        & "Exact match between compound feature values.
+                                                           No need to supplement this feature with a superset.
+                                                          "
+                                                        & (     !superset
+                                                              : ?A !ft ?Z
+                                                            &   !A !Z
+                                                              : ?superset
+                                                          | 
+                                                          )
+                                                      )
+                                                    & 
+                                                  | !arg
+                                                  )
+                                              | 
+                                              )
+                                        )
+                                      . !ou
+                                      )
+                                  : 
+                                & ( !uou:
+                                  | furtherCheck$(!wf.!uou):?wf
+                                  )
+                                & !nFP+(!ou !uou.!wf):?nFP
+                              | 
+                              )
+                            )
+                        & !nFP:~0
+                    )
                   &   !memoizedTrees
                     :   ?
-                        (   (!uiin.?ou.!restriction.!superset)
+                        (   (!uiin.?ou.?restr.?supers)
+                          &   log
+                            $ ( memo
+                                uiin
+                                !uiin
+                                ou
+                                !ou
+                                restr
+                                !restr
+                                supers
+                                !supers
+                              )
                           &     map
                               $ ( ( 
                                   =   vs f nvs V v
@@ -10343,59 +10490,32 @@ try {
                                 . !ou
                                 )
                             : 
-                        . ?FP
+                          & (   (!restr.!supers)
+                              : (!restriction.!superset)
+                            | !superset:
+                            )
+                        .   ?FP
+                          & log$MEMOIZED!
+                          & "o2o Now we have a set of memoized trees based on
+                             weaker requirements than the current userInput
+                             output specs. So we have to filter away all
+                             memoized trees that conflict with the current
+                             specs."
+                          & o2o$(!FP.!uiou):?nFP
+                          &   log
+                            $ ( memo
+                                uiin
+                                !uiin
+                                ou
+                                !ou
+                                restr
+                                !restr
+                                supers
+                                !supers
+                                WINS
+                              )
                         )
                         ?
-                  & log$MEMOIZED!
-                  & "o2o Now we have a set of memoized trees based on weaker
-                     requirements than the current userInput output specs.
-                     So we have to filter away all memoized trees that conflict
-                     with the current specs."
-                  & 0:?nFP
-                  &   whl
-                    ' ( !FP:(?ou.?wf)+?FP
-                      & "(facet,(lem*par*pos*seg*tok.OnE))"
-                      & !uiou:?uou
-                      & (       map
-                              $ ( ( 
-                                  =     ft vs nvs v Vs A Z a z
-                                      , V
-                                    .   !arg:(?ft,?V)
-                                      & (     !uou
-                                            : ?a (!ft,?vs) ?z
-                                          & !a !z:?uou
-                                          & ( !V:!vs&
-                                            |   !V:(?Vs.OnE)
-                                              &   whl
-                                                ' ( !vs:%?v*?nvs
-                                                  & !Vs:?a*!v^?*?z
-                                                  & !a*!z:?Vs
-                                                  & !nvs:?vs
-                                                  )
-                                              & !vs:1
-                                              & (   !p
-                                                  : ~(? (!ft,?) ?)
-                                                |   !Vs:1
-                                                  &   !superset
-                                                    : ?A !ft ?Z
-                                                  & !A !Z:?superset
-                                                )
-                                              & 
-                                            )
-                                        | !arg
-                                        )
-                                  )
-                                . !ou
-                                )
-                            : 
-                          & ( !uou:
-                            | furtherCheck$(!wf.!uou):?wf
-                            )
-                          & !nFP+(!ou !uou.!wf):?nFP
-                        | 
-                        )
-                      )
-                  & !nFP:~0
                   & log$SUCCESS
                   & "o3o Probably not all user features ('uiou') where present
                      in the output specs of the memoized workflows. So we need
@@ -10403,22 +10523,24 @@ try {
                      and filter away the workflows that do not comply with the
                      user requirements formulated in the features that were not
                      represented in the output specs."
+                  & log$(oVOOR !o)
                   &       map
                         $ ( ( 
                             =   A Z f v V
                               .   !arg:(?f,?v)
                                 & ( !f
-                                  ,       !p
+                                  ,       !o-SUpPLEMENT
                                         : ?A (!f,~:?V) ?Z
-                                      & !A !Z:?p
+                                      & !A !Z:?o-SUpPLEMENT
                                       & !V
                                     | !v
                                   )
                             )
                           . !o
                           )
-                        !p
+                        !o-SUpPLEMENT
                     : ?o
+                  & log$(oNANA !o)
                   &     ((!i.!o.!restriction.!superset).!nFP)
                         !memoizedTrees
                     : ?memoizedTrees
@@ -10429,7 +10551,9 @@ try {
                       & (!A.!B !Y.!Z):?userInput
                     | 
                     )
+                  & log$"Call fp"
                   & fp$!userInput:?FP
+                  & !FP:~#
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
                   & prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
@@ -10490,6 +10614,8 @@ try {
                       )
                   | ((!FP.).onlyWithoutRestriction)
                 )
+            |   !FP:#:<0
+              & (!parms.!userInput.(0.).tooMany)
             |   !Npipes:0
               & (!parms.!userInput.(0.).notFulfillable)
             | (!parms.!userInput.(0.).tooMany)
@@ -10876,7 +11002,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 & !inputs
             )
-          & log$(convert2URLs !arg)
+          & log$convert2URLs
           & 0:?maxjobID
           & readTable$features
           & readTable$tooladm
@@ -15601,7 +15727,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           . readTable$!metadataType
                           )
                   )
-                & log$(struct !struct)
                 & makejobstack$!struct:?JobStack
                 & ( readTable$jobNr
                   | 0:?jobNr&saveTable$jobNr
