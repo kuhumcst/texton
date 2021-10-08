@@ -7250,165 +7250,6 @@ try {
               . !all
               )
       )
-      ( ItExplodes
-      =     spotSum OUT WAY M bignumber
-          , seen ID depend getID prun
-          , depends in pruns sums sumsizes
-        .   :?seen
-          & :?sumsizes
-          & -1:?ID
-          & !arg:?in
-          & ( getID
-            =   m l
-              .   !ID+1:?ID
-                & mod$(!ID,26):?m
-                & div$(!ID,26):?l
-                & str$(chr$(!m+asc$a) !l)
-            )
-          & ( spotSum
-            =   a b L M
-              .   !seen:? (!arg.?L) ?&!L
-                |   !arg:%*%
-                  & :?b
-                  &   whl
-                    ' ( !arg:%?a*?arg
-                      & (   !seen:? (!a.?L) ?
-                          & !b !L:?b
-                        |   spotSum$!a:?L
-                          & ( !L:
-                            |   (factor,getID$.!L):?L
-                              & (!a.!L) !seen:?seen
-                              & !b !L:?b
-                            )
-                        )
-                      )
-                  & ( !b:
-                    |   (!arg.prod,getID$.!b):?b
-                      & !b !seen:?seen
-                      & !b:(?.?b)
-                      & !b
-                    )
-                |   !arg:%+%
-                  &   ( !arg
-                      . sum,getID$:?M
-                      .   :?b
-                        &   whl
-                          ' ( !arg:%?a+?arg
-                            & (   !seen:? (!a.?L) ?
-                                & !b !L:?b
-                              |     (term,getID$.spotSum$!a)
-                                  : ?L
-                                & (!a.!L) !seen:?seen
-                                & !b !L:?b
-                              )
-                            )
-                        & !b:? [?L
-                      )
-                    : ?b
-                  & !b !seen:?seen
-                  & (!M.!L) !sumsizes:?sumsizes
-                  & !b:(?.?b)
-                  & !b
-                |   !arg:(?,(?.?.?.?arg))
-                  & spotSum$!arg
-                | 
-            )
-          & ( prun
-            =   a b L
-              .     !arg:(?a,?L.?b) ?arg
-                  & (!a,!L.prun$!b):?b
-                  &   (   !b:(prod,?.?,?.?b)
-                        & !b
-                      |   !b:(factor,?L.term,?.)
-                        & 
-                      |   !b:(factor,?L.term,?.?b)
-                        & (factor,!L.!b)
-                      |   !b:(term,?L.prod,?.)
-                        & (term,!L.)
-                      | !b:(factor,?.)&
-                      |   !b:(term,?L.term,?.)
-                        & (term,!L.)
-                      | !b
-                      )
-                      prun$!arg
-                | !arg
-            )
-          & ( depend
-            =   a b L d M e f s N
-              .     !arg:(?a,?L.?b) ?arg
-                  & (!a,!L.depend$!b):?b
-                  &   (   !b:(prod,?M.?s)
-                        & 1:?e
-                        & 1:?N
-                        &   map
-                          $ ( ( 
-                              =   f n
-                                .       !arg
-                                      : ((?.?f.?n),?.?)
-                                    & ( !e:?*!f*?
-                                      | !N*!n:?N
-                                      )
-                                    & !f*!e:?e
-                                  | 
-                              )
-                            . !s
-                            )
-                        & ((prod.!e.!N),!M.!s)
-                      |     !b
-                          : ( factor,?M
-                            . (sum.?e.?N),?L
-                            . ?f
-                            )
-                        & ( (factor.!L !e.!N),!M
-                          . sum !e,!L
-                          . !f
-                          )
-                      |   !b:(sum,?M.?s)
-                        & 0:?N
-                        & 0:?e
-                        &   map
-                          $ ( ( 
-                              =   f n
-                                .       !arg
-                                      : ((?.?f.?n),?.?)
-                                    & !N+!n:?N
-                                    & ( !f:
-                                      | !f+!e:?e
-                                      )
-                                  | 
-                              )
-                            . !s
-                            )
-                        & (   (sum.!e:~0|.!N)
-                            , !M
-                          . !s
-                          )
-                      |   !b:(?a,?M.)
-                        & ((!a..1),!M.)
-                      |     !b
-                          : (?a,?M.(?s.?e.?N),?f.?d)
-                        & ( (!a.!e.!N),!M
-                          . (!s.!e.!N),!f
-                          . !d
-                          )
-                      | !b
-                      )
-                      depend$!arg
-                | !arg
-            )
-          & 0:?bignumber
-          &   whl
-            ' ( !in:#*(?OUT.?WAY)+?in
-              & spotSum$!WAY:?sums
-              & prun$!sums:?pruns
-              & depend$!pruns:?depends
-              & !depends:((?.?.?bignumber),?.)
-              & !bignumber:<1000000
-              )
-          & log$(bignumber !bignumber)
-          & 140000
-          & !bignumber:~<1000000
-      )
       ( selectCommonTracks
       =   sum spotSum spitSum eliminate TERM result term recur
         .   ( spitSums
@@ -8419,15 +8260,22 @@ try {
           , memos duplic impassages notttcnt getSuperGoals
           , sourcegoalmatch unfulfillable notThisTool fulfilGoal
           , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
-          , getGoals getImplicatedGoals N21 inner
+          , getGoals getImplicatedGoals N21 inner smellCache
         .   0:?smell
+          & :?smellCache
           & ( makeSmell
-            =   A Z o
-              .     !arg:?A (sml,(?o.nsl)) ?Z
-                  &   !A
-                      (sml,(!o.str$(S (1+!smell:?smell))))
-                      !Z
-                | !arg
+            =   A Z o tool sml
+              .   !arg:(?tool.?arg)
+                & (   !arg:?A (sml,(?o.nsl)) ?Z
+                    &   ( !smellCache:? (!tool.?sml) ?
+                        |     (!tool.1+!smell:?smell:?sml)
+                              !smellCache
+                          : ?smellCache
+                        )
+                        ?
+                    & !A (sml,(!o.str$(S !sml))) !Z
+                  | !arg
+                  )
             )
           & ( isfulfilled
             =   source src goal gl tool pipe pipes
@@ -8546,7 +8394,7 @@ try {
                                     :   ?
                                       + (!tool.~:?toolFeatures)
                                       + ?ltools
-                                  &   makeSmell$!toolFeatures
+                                  &   makeSmell$(!tool.!toolFeatures)
                                     : ?toolFeatures
                                   & (       matchGoalWithFeatures
                                           $ (!goaly.!toolFeatures)
@@ -9549,13 +9397,13 @@ try {
                 &   whl
                   ' ( !results:%?result*?results
                     & Sig$!result:?SR
-                    & "Code below seems to limit 'result' to either be one OnE complex or to have no OnE at all."
+                    & "Compound feature values in 'result' are in OnE group."
                     &     map
                         $ ( ( 
                             =   f v
-                              .     !arg
-                                  : (?f,(?v.OnE)|?v)
-                                & (!f,!v)
+                              .     !arg:(?f,(?v.OnE))
+                                  & (!f,!v)
+                                | !arg
                             )
                           . !result
                           )
@@ -9582,56 +9430,45 @@ try {
                             & !A*!methods:?methods
                             &   map
                               $ ( ( 
-                                  =   F v e E nvs vs VS NVS
-                                    .   !arg:(?F,?vs)
-                                      & 1:?nvs
-                                      &   whl
-                                        ' ( !vs:%?v*?vs
-                                          &     !nvs
-                                              * (   !v:(?VS.OnE)
-                                                  & 1:?NVS
-                                                  &   whl
-                                                    ' ( !VS:%@?v^?e*?VS
-                                                      &     !NVS
-                                                          *   !v
-                                                            ^ (   !e:1
-                                                                & (     !method
-                                                                      :   ?
-                                                                          ( !F
-                                                                          ,   ?
-                                                                            *   !v
-                                                                              ^ ?E
-                                                                            * ?
-                                                                          )
-                                                                          ?
-                                                                    & !E
-                                                                  | 1
-                                                                  )
-                                                              | !e
-                                                              )
-                                                        : ?NVS
-                                                      )
-                                                  & (!NVS.OnE)
-                                                |   !v:@?v^?e
-                                                  &   !v
-                                                    ^ (   !e:1
-                                                        & (     !method
-                                                              :   ?
-                                                                  ( !F
-                                                                  ,   ?
-                                                                    * !v^?E
-                                                                    * ?
-                                                                  )
-                                                                  ?
-                                                            & !E
-                                                          | 1
-                                                          )
-                                                      | !e
-                                                      )
+                                  =   F v e E VS NVS
+                                    .   !arg:(?F,?v)
+                                      & ( !F
+                                        ,     !v:(?VS.OnE)
+                                            & 1:?NVS
+                                            &   whl
+                                              ' ( !VS:%@?v^?e*?VS
+                                                &     !NVS
+                                                    *   !v
+                                                      ^ (   !e:1
+                                                          & (     !method
+                                                                :   ?
+                                                                    ( !F
+                                                                    ,   ?
+                                                                      * !v^?E
+                                                                      * ?
+                                                                    )
+                                                                    ?
+                                                              & !E
+                                                            | 1
+                                                            )
+                                                        | !e
+                                                        )
+                                                  : ?NVS
                                                 )
-                                            : ?nvs
-                                          )
-                                      & (!F,!nvs)
+                                            & (!NVS.OnE)
+                                          |   !v:@?v^?e
+                                            &   !v
+                                              ^ (   !e:1
+                                                  & (     !method
+                                                        :   ?
+                                                            (!F,?*!v^?E*?)
+                                                            ?
+                                                      & !E
+                                                    | 1
+                                                    )
+                                                | !e
+                                                )
+                                        )
                                   )
                                 . !result
                                 )
@@ -9861,7 +9698,6 @@ try {
               )
           & !pipes
       )
-      "prunePipes fails if the number of workflows are going to explode. This is decided by the ItExplodes function."
       ( prunePipes
       =     As Ax NNN Z ax incarnationpipes parms
           , newpipes pipe pipes pipesN restriction
@@ -10149,69 +9985,61 @@ try {
                     term on that term. So if a sum contains the current term, ignore all terms but the current term.
                 (4) Repeat this for each new workflow.
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
-              & log$DoesItExplode?
-              & (   ~
-                  & ItExplodes$!incarnationpipes
-                  & log$ItExplodes
-                  & 100000000:?calls
-                |   log$selectCommonTracks
-                  & selectCommonTracks$!incarnationpipes:?As
-                  & !As:?+[?Npipes
-                  & !Npipes:~>1000
-                  & :?pipesN
-                  & log$unfoldTree
+              & log$selectCommonTracks
+              & selectCommonTracks$!incarnationpipes:?As
+              & !As:?+[?Npipes
+              & !Npipes:~>1000
+              & :?pipesN
+              & log$unfoldTree
+              &   whl
+                ' ( !As:%?Ax+?As
+                  & unfoldTree$(1.!Ax):?Z
                   &   whl
-                    ' ( !As:%?Ax+?As
-                      & unfoldTree$(1.!Ax):?Z
-                      &   whl
-                        ' ( !Z:(?.?ax)+?Z
-                          & !ax !pipesN:?pipesN
-                          )
+                    ' ( !Z:(?.?ax)+?Z
+                      & !ax !pipesN:?pipesN
                       )
-                  & log$sort
-                  & sort$!pipesN:?pipesN
-                  &     ( 
-                        =   L a
-                          .   :?L
-                            &   whl
-                              ' ( !arg:%?a ?arg
-                                & !a !L:?L
-                                )
-                            & 0:?arg
-                            &   whl
-                              ' ( !L:%?a ?L
-                                & !a+!arg:?arg
-                                )
-                            & !arg
-                        )
-                      $ !pipesN
-                    : ?pipesN
-                  & log$gotAsum
-                  & "The 1 is the initial stop list, which is formed as a product."
-                  & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
-                  & !pipesN:?+[?NNN
-                  & (     !parms
-                        : ? (desiredtool.?restriction) ?
-                      & !restriction:~
-                      & log$filter
-                      & filter$(!pipesN.!restriction):?pipesN
-                      & log$filterDone
-                    | 
+                  )
+              & log$sort
+              & sort$!pipesN:?pipesN
+              &     ( 
+                    =   L a
+                      .   :?L
+                        &   whl
+                          ' ( !arg:%?a ?arg
+                            & !a !L:?L
+                            )
+                        & 0:?arg
+                        &   whl
+                          ' ( !L:%?a ?L
+                            & !a+!arg:?arg
+                            )
+                        & !arg
                     )
-                  & log$percolateForgottenFeatures
-                  & percolateForgottenFeatures$!pipesN:?pipesN
-                  & !pipesN:?+[?NNN
-                  & log$wantThis
-                  &   whl
-                    ' ( !pipesN:%?pipe+?pipesN
-                      & wantThis$!pipe:?pipe
-                      & ( !pipe:0
-                        | !newpipes:?+!pipe+?
-                        | !pipe+!newpipes:?newpipes
-                        )
-                      )
-                  & log$wantThisDone
+                  $ !pipesN
+                : ?pipesN
+              & log$gotAsum
+              & "The 1 is the initial stop list, which is formed as a product."
+              & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
+              & !pipesN:?+[?NNN
+              & log$(NNN !NNN)
+              & (   !parms:? (desiredtool.?restriction) ?
+                  & !restriction:~
+                  & log$filter
+                  & filter$(!pipesN.!restriction):?pipesN
+                  & log$filterDone
+                | 
                 )
+              & log$percolateForgottenFeatures
+              & percolateForgottenFeatures$!pipesN:?pipesN
+              & !pipesN:?+[?NNN
+              &   whl
+                ' ( !pipesN:%?pipe+?pipesN
+                  & wantThis$!pipe:?pipe
+                  & ( !pipe:0
+                    | !newpipes:?+!pipe+?
+                    | !pipe+!newpipes:?newpipes
+                    )
+                  )
               )
           & log$(testing calls !calls)
           & (!newpipes.!Npipes)
@@ -10234,14 +10062,8 @@ try {
             )
       )
       ( Pipelines
-      =       i
-              o
-              o-SUpPLEMENT
-              restriction
-              FP
-              fP
-              superset
-              userInput
+      =     i o o-SUpPLEMENT restriction FP fP
+          , superset userInput
           , calls nth parms
           , A Z reorderedworkflowlist topologicalOrderedTools
         .   !arg:(?arg:?parms.?nth)
@@ -10263,6 +10085,25 @@ try {
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
           &   extractIOfeaturesFromHTTParg$(!features.P.!arg)
             : ?o-SUpPLEMENT
+          & (   !o-SUpPLEMENT:
+              & "If the user has checked a supplement box, but the feature
+                 value is unspecified, then ignore the supplement mark."
+              &     map
+                  $ ( ( 
+                      =   
+                        .       !o
+                              : ( ~(? (!arg,?) ?)
+                                | ? (!arg,) ?
+                                )
+                            & 
+                          | !arg
+                      )
+                    . !superset
+                    )
+                : ?superset
+              & log$(superset2 !superset)
+            | 
+            )
           & "If there is a filled Pxyz, remove it from superset. Additional
              user data is supposed to be exactly what the user wants. (There
              is no checkbox for the user to allow more complex values.)"
@@ -15014,6 +14855,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   $ ("No workflows found." "Ingen arbejdsgange fundet.")
                 : ?returnCode
               & :?restriction
+              & log$CALL-Pipelines
               & (     Pipelines$(!parms.)
                     : ( ?
                       . (?sources.?):?userInput
@@ -15108,7 +14950,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 | !fixed*!f^!vs:?fixed
                                 )
                               )
-                          & (   1:!nfvs
+                          & (   !nfvs:(1|sml^?)
                               & (   !returnCode:workflowsFound
                                   &   (     makeWorkflowsSequential$!pipes
                                           : ( ?reorderedworkflowlist
