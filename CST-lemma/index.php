@@ -242,7 +242,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
                 $periodsubdir = "/c20n";
                 $flexrules = "flexrules.ods_170412.csv.corrected-lems.txt.ph_12_XC";
                 if($pos == 'n')
-                    $flexrulessubdir = "/1";
+                    $flexrulessubdir = "/0";
                 else
                     {
                     $flexrules = "flexrules";
@@ -255,7 +255,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
                 $periodsubdir = "/c19n";
                 $flexrules = "flexrules.ods_170412.csv.corrected.ph_12_XC";
                 if($pos == 'n')
-                    $flexrulessubdir = "/1";
+                    $flexrulessubdir = "/0";
                 else
                     {
                     $flexrules = "flexrules";
@@ -279,7 +279,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
             {
             $periodsubdir = "/c21";
             if($pos == 'n')
-                $flexrulessubdir = "/1";
+                $flexrulessubdir = "/0";
             else
 		{
                 $flexrulessubdir = "/links";
