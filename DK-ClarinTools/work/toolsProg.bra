@@ -3408,12 +3408,12 @@ toolsProg=
                 | ?selected&:?prefix
               )
           & ( hum
-            =   L a e
+            =   L a e H
               .   :?L
                 &   whl
                   ' ( !arg:%?a*?arg
                     & !a:%@?a^?e
-                    & !tbl:? (?H.!a.?) ?
+                    & !featTbl:? (?H.!a.?) ?
                     & (!e:1|)
                     & !L ", " localized$!H:?L
                     )
@@ -3427,7 +3427,7 @@ toolsProg=
                 \r\n
                   map
                 $ ( ( 
-                    =   f a
+                    =   f a F exp
                       .   !arg:(?F.?exp)
                         & !featTbl:? (?f.!F.?) ?
                         & ( optgroup
@@ -6978,9 +6978,9 @@ try {
             )
       )
       ( unify
-      =     source goal gfield gvalue gopt sopt ss
-          , A Z other gspc sspc gvalues svalues gs
-          , R zgvalue asvalue zsvalue tail U
+      =     source goal gfield ss
+          , A Z other gvalues svalues gs
+          , R tail U
         .   ( U
             =   ss g go gp gs a z sp so tail ngs
               .   !arg:(?ss.?gs)
@@ -7252,9 +7252,10 @@ try {
               )
       )
       ( selectCommonTracks
-      =   sum spotSum spitSum eliminate TERM result term recur
+      =     sum eliminate result term recur
+          , len spitSums spotSums
         .   ( spitSums
-            =   a sum
+            =   a
               .     !arg:%*%
                   & whl'(!arg:%?a*?arg&spitSums$!a)
                 |   !arg:(?,(?.?.?.?arg))
@@ -7265,14 +7266,14 @@ try {
                 | 
             )
           & ( spotSums
-            =   a sum
+            =   a
               .     !arg:%*%
                   & whl'(!arg:%?a*?arg&spotSums$!a)
                 |   !arg:(?,(?.?.?.?arg))
                   & spotSums$!arg
                 |   !arg:%+%
                   & !arg*!sums:?sums
-                  & whl'(!arg:%?t+?arg&spitSums$!t)
+                  & whl'(!arg:%?a+?arg&spitSums$!a)
                 | 
             )
           & (len=.!arg:?+[?arg&!arg)
@@ -7310,7 +7311,7 @@ try {
             =   OUT WAY sum term result Term T sums isum
               .   0:?result
                 &   whl
-                  ' ( !arg:#*((?OUT.?WAY):?Traction)+?arg
+                  ' ( !arg:#*(?OUT.?WAY)+?arg
                     & (   1:?sums
                         & spotSums$!WAY
                         & "Sums that have a Q in the exponent are children of another sum. 
@@ -8025,7 +8026,8 @@ try {
           & !S
       )
       ( makeSuperGoals
-      =   name os Os c o v vs ss s
+      =     name os Os c o v vs ss s
+          , SuperSets collector
         .   "makeSuperGoals only returns value sets for features 
              that have at least one composed feature value."
           & :?SuperSets
@@ -8058,7 +8060,7 @@ try {
           & !SuperSets
       )
       ( makeExpandedSelectLists
-      =   servicedSuperGoals
+      =   servicedSuperGoals tbl
         .   !arg:?servicedSuperGoals
           & readTable$features
           &   map
@@ -8081,7 +8083,7 @@ try {
               )
       )
       ( namecell
-      =   featurs short name table
+      =   featurs short name table description
         .   !arg:(?featurs.?short.?name)
           &   cell
             $ (     !featurs
@@ -8234,7 +8236,7 @@ try {
             ' ( !activeTools:(?.?Feats)+?activeTools
               &   map
                 $ ( ( 
-                    =   ios o os
+                    =   ios o os Os a e m name z
                       .   !arg:(?name,?ios)
                         & 0:?Os
                         &   whl
@@ -8257,7 +8259,7 @@ try {
       )
       ( fp
       =     tool source goal restriction superset makeSmell
-          , fulfil memoizedSteps activeTools Calls smell
+          , fulfil memoizedSteps activeTools Calls smell resembling
           , memos duplic impassages notttcnt getSuperGoals
           , sourcegoalmatch unfulfillable notThisTool fulfilGoal
           , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
@@ -8362,7 +8364,7 @@ try {
                 &   map
                   $ ( ( 
                       =   v w f
-                        .   !arg:(?f,%?v ?vw)
+                        .   !arg:(?f,%?v ?w)
                           & ( !f
                             ,   !v
                                   map
@@ -8742,7 +8744,8 @@ try {
              embed the product of feature values a, b and c in (a*b*c.OnE)."
           & (N21=.!arg:@|(!arg.OnE))
           & ( getSuperGoals
-            =   goal nwg
+            =     goal nwg NVALS VAL VALS Vsp
+                , a agg n21s vsp z
               .   !arg:?goal
                 & 0:?nwg
                 &   map
@@ -9110,7 +9113,7 @@ try {
             )
       )
       ( Tubst
-      =     OI I A o i sub prog
+      =     OI I A o i sub prog Os
           , H h h1 H1 O rpl SAVEIN
         .   ( rpl
             =   vals fea gold A B exp aa zz SAVEARG
@@ -9233,7 +9236,7 @@ try {
        feature bundle pairs with the possibly richer (at subspec level) version
        found in the second argument."
       ( Subst
-      =   OI H h h1 H1 O T
+      =   OI H h h1 H1 O Os
         .   !arg:(?arg.?OI)
           & "arg is a pipe line.
 
@@ -9285,7 +9288,7 @@ try {
                           )
                       & !h*!h1:?h
                     |       ( 
-                            =   R O
+                            =   R O T
                               .   1:?R
                                 &   whl
                                   ' ( !arg:(?T,(?O.?))*?arg
@@ -9392,7 +9395,7 @@ try {
           , fromMethods fromInputTowardOutput fromToolOrSource
           , toMethods fromOutputTowardInput toTool
           , UpdateResultsFromMethods oUts
-          , validateInputsForEachTool
+          , validateInputsForEachTool sig
         .   "TODO sig is not meaningful if we can have multiple OnE complexes
              (a*b*c.OnE)*d*(a*f*g.OnE)*z
              One of the problems is 'a' occuring two places.
@@ -10078,9 +10081,7 @@ try {
         .   !arg:(?pipes.?nth)
           & log$(nth !nth)
           & ( !nth:&!pipes
-            |   !pipes:?ZZ+[?np
-              & log$("#pipes" !np)
-              & UNKNOWNS!:?pipe
+            |   UNKNOWNS!:?pipe
               &   whl
                 ' ( !nth:>0
                   & !ZZ:%?pipe+?ZZ
@@ -10093,8 +10094,10 @@ try {
       ( Pipelines
       =     i o o-SUpPLEMENT restriction FP fP
           , superset userInput
-          , calls nth parms
+          , calls nth parms furtherCheck o2o saveTask
           , A Z reorderedworkflowlist topologicalOrderedTools
+          , B Npipes Y nFP nr oo ou pp
+          , restr returnCode supers uiin uiou usupset
         .   !arg:(?arg:?parms.?nth)
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
@@ -10176,7 +10179,7 @@ try {
             : ?oo
           & (!i.sort$(!oo !pp).!restriction.!superset):?userInput
           & ( furtherCheck
-            =   pipe npipes uiou pipe wfs output,nwfs wf
+            =   uiou wfs output nwfs wf
               .   log$furtherCheck1
                 & !arg:(?wfs.?uiou)
                 & 0:?nwfs
@@ -10184,7 +10187,7 @@ try {
                   ' ( !wfs:((?,(?output.?)):?wf)+?wfs
                     & (     map
                           $ ( ( 
-                              =   uf uv wv len
+                              =   uf uv wv len u
                                 .     !arg:(?uf,?uv)
                                     &   !output
                                       :   ?
@@ -10258,7 +10261,7 @@ try {
                      memoized trees. So each output feature in a memoized tree
                      must occur in the userInput's output specs."
                   & ( o2o
-                    =   FP nFP ou wf uou uiou ZYX
+                    =   FP nFP ou wf uou uiou
                       .   !arg:(?FP.?uiou)
                         & "o-SUpPLEMENT  (facet,lem*mrf*ner*pos*seg*stx*tok)"
                         & 0:?nFP
@@ -13744,7 +13747,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & ( sourcesAndGoals
             =     f fs sourcePicklists name short
-                , servicedGoalsTable cmptblWrkflws
+                , cmptblWrkflws
                 , servicedSourcesTable
                 , description itms Types linkedWorkflows
                 , table presel L
@@ -13754,6 +13757,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
                 , allLinked features links
+                , activeTools expandedSelectLists
               .   ( cmptblWrkflws
                   =   itemGroups presels
                     .   !arg:(?itemGroups.?presels)
@@ -14645,6 +14649,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , PIPE A Z TooManyWorkflows updateUploads
           , ShowAllPipes rstr reorderedworkflowlist orgarg
           , val allpipes batch returnCode restriction sources
+          , ShowAllPipesIfNotTooExpensive add makeGoals makeValRows
+          , 2or3things B M Y f fixed formFields fvs nfvs nvs
+          , output pipe pipes pps rwl superset tool
+          , updatedArg userInput vs
         .   ( ShowAllPipes
             =     hiddenData reorderedworkflowlist
                 , "visualizedWorkFlow(s)" struct
@@ -14790,7 +14798,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       & (!i.!o.!r.):?userInput
                     )
                   & !returnCode:allRight
-                  & !reorderedworkflowlist:?+[?nr
                   &   saveTask
                     $ ( !userInput
                       . !reorderedworkflowlist
