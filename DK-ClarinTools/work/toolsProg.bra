@@ -729,32 +729,6 @@ toolsProg=
           |   !2a
             : ? (?.?,?1a&hasTree$(!1a.!5a)) ?
       )
-      "
-/**
- * Check whether the Tools staging area already has a copy of a given
- * resource. In that case, the slow process of copying the resource from the
- * repo and the analysis of this resource can be skipped.
- * If there is a copy, its time stamp is refreshed so as to extend its right
- * to live.
- * Arguments: item id and current date.
- * Side effect: the table Uploads.table is updated if the resource is found.
- *
- * Called from create.java
- */"
-      ( hasCopy
-      =   item newdate A Z nr file,meta a z feats
-        .     !arg:(?item.?newdate)
-            & (readTable$Uploads|:?Uploads)
-            &   !Uploads
-              : ?A (?nr.!item.?file.?meta.?feats) ?Z
-            & !meta:?a (DATE.?) ?z
-            & !a (DATE.!newdate) !z:?meta
-            &   !A (!nr.!item.!file.!meta.!feats) !Z
-              : ?Uploads
-            & saveTable$Uploads
-            & public
-          | no
-      )
       ( NCNameStartChar
       =   ~<A:~>Z
         | "_"
@@ -1039,20 +1013,6 @@ toolsProg=
                     (cols.60)
                     (!desc:|(title.!desc))
                 , trim$!val
-              )
-              \r\n
-      )
-      ( makeFileFormField
-      =   text parm val
-        .   !arg:(?text.?parm.?val)
-          &   (span.,!text)
-              \r\n
-              ( input
-              .     (type.file)
-                    (name.!parm)
-                    (value.)
-                    (!val:|(accept.trim$!val))
-                , 
               )
               \r\n
       )
@@ -2416,7 +2376,163 @@ toolsProg=
           , toolPlumbing translateManyToHumanLanguage
           , abbR reorderedworkflowlist struct
           , toolsUsed topologicalOrderedTools candidateList
-        .   ( candidateList
+        .   ( translateManyToHumanLanguage
+            =     description seqno struct abbrevs o
+                , describeShort
+              .   ( describeShort
+                  =   describe circle nice arrow
+                    .   ( circle
+                        =   
+                          .   !arg:~#&!arg
+                            | ( strong
+                              .   
+                                ,     !arg:<128
+                                    &   ":"
+                                        (   !arg:~<48
+                                          & !arg+-48
+                                        | chr$!arg
+                                        )
+                                  | chu$!arg
+                              )
+                        )
+                      & ( nice
+                        =   i o
+                          .   !arg:(?i.?o)
+                            & inoutdesc$!i:?i
+                            & inoutdesc$!o:?o
+                            & ( :!i:!o
+                              |   "("
+                                  !i
+                                  ( !i:
+                                  | !o:
+                                  | " ; "
+                                  )
+                                  !o
+                                  ")"
+                              )
+                        )
+                      & ( arrow
+                        =   b i
+                          .   !arg:(?arg.?b)
+                            & !b:(?.?.?i.?) ?
+                            & ( div
+                              .   (class.tooltip)
+                                ,   ( !arg:1&" → "
+                                    | !arg:2&" ⇒ "
+                                    | !arg:3&" ⇛ "
+                                    | " ⭆ "
+                                    )
+                                    ( span
+                                    .   (class.tooltiptext)
+                                      , fullinoutdesc$!i
+                                    )
+                              )
+                        )
+                      & ( describe
+                        =   a b c m n an bn cn h L tit
+                          .   !arg:(?h.?arg)
+                            & (   !arg:(?a,?b)
+                                & describe$(.!a):(?L.?an)
+                                &   whl
+                                  ' ( !b:(?c,?b)
+                                    &     !L
+                                          "+"
+                                          (   describe$(h.!c)
+                                            : (?c.?cn)
+                                          & !c
+                                          )
+                                      : ?L
+                                    & !an+!cn:?an
+                                    )
+                                &     !L
+                                      "+"
+                                      ( describe$(h.!b):(?b.?bn)
+                                      & !b
+                                      )
+                                  : ?L
+                                & !an+!bn:?an
+                                & (!L.!an)
+                              |   !arg:%?a %?b
+                                & describe$(.!a):(?a.?an)
+                                & (       !a
+                                          (   !a:(div.?,∵ ?)
+                                            & 
+                                          | arrow$(!an.!b)
+                                          )
+                                          (   describe$(.!b)
+                                            : (?b.?bn)
+                                          & !b
+                                          )
+                                      : ?c
+                                    & ( !h:&!c
+                                      | "[" !c "]"
+                                      )
+                                  . !bn
+                                  )
+                              |   !arg:(?m.?seqno.?n)
+                                & ( !m::?tit
+                                  |   !tooladm
+                                    :   ?
+                                      + ( ? (ToolID.!m) ?
+                                        : ? (Title.?tit) ?
+                                        )
+                                      + ?
+                                  )
+                                & (   (   !tit:
+                                        & (   !seqno:∵
+                                            & 
+                                          | Circle$!seqno
+                                          )
+                                      | !tit circle$!seqno
+                                      )
+                                      (   !tit:
+                                        & (   !seqno:∵
+                                            & !n:(?.?c)
+                                            & ( !c:
+                                              | ( div
+                                                .   (class.tooltip)
+                                                  ,   ∵
+                                                      ( span
+                                                      .   (class.tooltiptext)
+                                                        , fullinoutdesc$!c
+                                                      )
+                                                )
+                                              )
+                                          | 
+                                          )
+                                      |   !abbrevs:?*(!m.!n)^?n*?
+                                        & nice$!n
+                                      )
+                                  . 1
+                                  )
+                              )
+                        )
+                      & describe$(.!arg):(?arg.?)
+                      & !arg
+                  )
+                & !arg:(?abbrevs.?struct)
+                & SpotInput$!struct:?struct
+                & describeShort$!struct:?description
+                & (   !description:~
+                    & !struct:? (?.?.?.?o)
+                    &   !description
+                        ( div
+                        .   (class.tooltip)
+                          ,   ∴
+                              ( span
+                              . (class.tooltiptextL),inoutdesc$!o
+                              )
+                        )
+                  |   log$"It seems that the input already matches your goal"
+                    & log$(description !description)
+                    & log$(struct !struct)
+                    &   localized
+                      $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
+                          "Det ser ud til at inputtet allerede opfylder dit mål. Eller vi har ikke fundet de nødvendige oplysninger om inputtet. Brug knappen \"Forrige\" for at ændre dine valg."
+                        )
+                  )
+            )
+          & ( candidateList
             =     reorderedworkflowlist nsteps ntools
                 , theUsedTools infoAboutTool toolRows transpose
                 , currNsteps currNtools currToolPlumbing currToolsUsed2
@@ -2747,162 +2863,6 @@ toolsProg=
                     | 
                     )
                     !buttons
-            )
-          & ( translateManyToHumanLanguage
-            =     description seqno struct abbrevs o
-                , describeShort
-              .   ( describeShort
-                  =   describe circle nice arrow
-                    .   ( circle
-                        =   
-                          .   !arg:~#&!arg
-                            | ( strong
-                              .   
-                                ,     !arg:<128
-                                    &   ":"
-                                        (   !arg:~<48
-                                          & !arg+-48
-                                        | chr$!arg
-                                        )
-                                  | chu$!arg
-                              )
-                        )
-                      & ( nice
-                        =   i o
-                          .   !arg:(?i.?o)
-                            & inoutdesc$!i:?i
-                            & inoutdesc$!o:?o
-                            & ( :!i:!o
-                              |   "("
-                                  !i
-                                  ( !i:
-                                  | !o:
-                                  | " ; "
-                                  )
-                                  !o
-                                  ")"
-                              )
-                        )
-                      & ( arrow
-                        =   b i
-                          .   !arg:(?arg.?b)
-                            & !b:(?.?.?i.?) ?
-                            & ( div
-                              .   (class.tooltip)
-                                ,   ( !arg:1&" → "
-                                    | !arg:2&" ⇒ "
-                                    | !arg:3&" ⇛ "
-                                    | " ⭆ "
-                                    )
-                                    ( span
-                                    .   (class.tooltiptext)
-                                      , fullinoutdesc$!i
-                                    )
-                              )
-                        )
-                      & ( describe
-                        =   a b c m n an bn cn h L tit
-                          .   !arg:(?h.?arg)
-                            & (   !arg:(?a,?b)
-                                & describe$(.!a):(?L.?an)
-                                &   whl
-                                  ' ( !b:(?c,?b)
-                                    &     !L
-                                          "+"
-                                          (   describe$(h.!c)
-                                            : (?c.?cn)
-                                          & !c
-                                          )
-                                      : ?L
-                                    & !an+!cn:?an
-                                    )
-                                &     !L
-                                      "+"
-                                      ( describe$(h.!b):(?b.?bn)
-                                      & !b
-                                      )
-                                  : ?L
-                                & !an+!bn:?an
-                                & (!L.!an)
-                              |   !arg:%?a %?b
-                                & describe$(.!a):(?a.?an)
-                                & (       !a
-                                          (   !a:(div.?,∵ ?)
-                                            & 
-                                          | arrow$(!an.!b)
-                                          )
-                                          (   describe$(.!b)
-                                            : (?b.?bn)
-                                          & !b
-                                          )
-                                      : ?c
-                                    & ( !h:&!c
-                                      | "[" !c "]"
-                                      )
-                                  . !bn
-                                  )
-                              |   !arg:(?m.?seqno.?n)
-                                & ( !m::?tit
-                                  |   !tooladm
-                                    :   ?
-                                      + ( ? (ToolID.!m) ?
-                                        : ? (Title.?tit) ?
-                                        )
-                                      + ?
-                                  )
-                                & (   (   !tit:
-                                        & (   !seqno:∵
-                                            & 
-                                          | Circle$!seqno
-                                          )
-                                      | !tit circle$!seqno
-                                      )
-                                      (   !tit:
-                                        & (   !seqno:∵
-                                            & !n:(?.?c)
-                                            & ( !c:
-                                              | ( div
-                                                .   (class.tooltip)
-                                                  ,   ∵
-                                                      ( span
-                                                      .   (class.tooltiptext)
-                                                        , fullinoutdesc$!c
-                                                      )
-                                                )
-                                              )
-                                          | 
-                                          )
-                                      |   !abbrevs:?*(!m.!n)^?n*?
-                                        & nice$!n
-                                      )
-                                  . 1
-                                  )
-                              )
-                        )
-                      & describe$(.!arg):(?arg.?)
-                      & !arg
-                  )
-                & !arg:(?abbrevs.?struct)
-                & SpotInput$!struct:?struct
-                & describeShort$!struct:?description
-                & (   !description:~
-                    & !struct:? (?.?.?.?o)
-                    &   !description
-                        ( div
-                        .   (class.tooltip)
-                          ,   ∴
-                              ( span
-                              . (class.tooltiptextL),inoutdesc$!o
-                              )
-                        )
-                  |   log$"It seems that the input already matches your goal"
-                    & log$(description !description)
-                    & log$(struct !struct)
-                    &   localized
-                      $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
-                          "Det ser ud til at inputtet allerede opfylder dit mål. Eller vi har ikke fundet de nødvendige oplysninger om inputtet. Brug knappen \"Forrige\" for at ændre dine valg."
-                        )
-                  )
             )
           & !arg:(?reorderedworkflowlist.?topologicalOrderedTools)
           &   toolID2title$!topologicalOrderedTools
@@ -3408,12 +3368,12 @@ toolsProg=
                 | ?selected&:?prefix
               )
           & ( hum
-            =   L a e
+            =   L a e H
               .   :?L
                 &   whl
                   ' ( !arg:%?a*?arg
                     & !a:%@?a^?e
-                    & !tbl:? (?H.!a.?) ?
+                    & !featTbl:? (?H.!a.?) ?
                     & (!e:1|)
                     & !L ", " localized$!H:?L
                     )
@@ -3427,7 +3387,7 @@ toolsProg=
                 \r\n
                   map
                 $ ( ( 
-                    =   f a
+                    =   f a F exp
                       .   !arg:(?F.?exp)
                         & !featTbl:? (?f.!F.?) ?
                         & ( optgroup
@@ -3648,86 +3608,6 @@ toolsProg=
       =   feats
         .   !Uploads:? (?.!arg.?.?.?feats) ?
           & !feats
-      )
-      ( pickTool
-      =     toolShort pairs Items fmt spec item formats nitems
-          , sufficient
-          , toolFull
-        .   readTable$toolprop
-          & readTable$tooladm
-          & :?pairs
-          & !arg:(?arg.?Items)
-          & :?formats
-          & 0:?nitems
-          & (   !Items
-              :   ?
-                  ( Item&1+!nitems:?nitems
-                  .   ( ? (format.%?fmt^?spec) ?
-                      |   ?item
-                        &   itemFeats$!item
-                          : ? (format.%?fmt^?spec) ?
-                      )
-                    & ( !formats:? !fmt^!spec ?
-                      | !formats !fmt^!spec:?formats
-                      )
-                    & ~
-                  )
-                  ?
-            | 
-            )
-          & ( sufficient
-            =   max n
-              .     0:?max:?n
-                  &   !sjt
-                    :   ?
-                        ( ?
-                        ,   ?
-                          + (     ?
-                                + (   ?
-                                    * ( (%@|%@^%)
-                                      & 1+!n:?n
-                                      )
-                                    * (1|?&~)
-                                  & ( !n:>!max:?max
-                                    | 
-                                    )
-                                  & 0:?n
-                                  & ~
-                                  )
-                                + ?
-                                ?
-                            . ?
-                            )
-                          + ?
-                        )
-                        ?
-                | !arg:~<!max&?
-            )
-          & (   !toolprop
-              :   ?
-                + ( ( ?toolShort
-                    .   sufficient$!nitems
-                      :   ?
-                          ( format
-                          ,   ?
-                            + ( ?+(!fmt^!spec|!fmt)+? ?
-                              . ?
-                              )
-                            + ?
-                          )
-                          ?
-                    )
-                  & ( !pairs:? (?.!toolShort) ?
-                    |   ToolTitle$!toolShort:?toolFull
-                      & (!toolFull.!toolShort) !pairs:?pairs
-                    )
-                  & ~
-                  )
-                + ?
-            | 
-            )
-          &   makeSelectFormField
-            $ (Tool.TOOL.options.makeOptionList$(!pairs.))
       )
       ( makeHiddenFields
       =   ret par val
@@ -4235,6 +4115,14 @@ catch (SystemExit $e)
                   | 
                   )
             )
+          & ( combineFeats
+            =   A B M Z b c
+              .     whl
+                  ' ( !arg:?A (?B,?b) ?M (!B,?c) ?Z
+                    & !A (!B,!b+!c) !M !Z:?arg
+                    )
+                & !arg
+            )
           & ( combineToolIncarnations
             =   featK toolprop toolid Feats featPair
               .   !arg:(?toolprop.?toolid)
@@ -4248,14 +4136,6 @@ catch (SystemExit $e)
                         )
                     )
                 & combineFeats$!Feats
-            )
-          & ( combineFeats
-            =   A B M Z b c
-              .     whl
-                  ' ( !arg:?A (?B,?b) ?M (!B,?c) ?Z
-                    & !A (!B,!b+!c) !M !Z:?arg
-                    )
-                & !arg
             )
           & combineToolIncarnations$(!toolprop.!toolid):?Features
           & 0:?DATA
@@ -6978,9 +6858,8 @@ try {
             )
       )
       ( unify
-      =     source goal gfield gvalue gopt sopt ss
-          , A Z other gspc sspc gvalues svalues gs
-          , R zgvalue asvalue zsvalue tail U
+      =     source goal gfield ss R tail U
+          , A Z other gvalues svalues gs
         .   ( U
             =   ss g go gp gs a z sp so tail ngs
               .   !arg:(?ss.?gs)
@@ -7252,10 +7131,10 @@ try {
               )
       )
       ( selectCommonTracks
-      =     sum spotSum spitSum eliminate TERM result term recur
+      =     sum eliminate result term recur
           , len spitSums spotSums
         .   ( spitSums
-            =   a sum
+            =   a
               .     !arg:%*%
                   & whl'(!arg:%?a*?arg&spitSums$!a)
                 |   !arg:(?,(?.?.?.?arg))
@@ -7266,19 +7145,19 @@ try {
                 | 
             )
           & ( spotSums
-            =   a sum
+            =   a
               .     !arg:%*%
                   & whl'(!arg:%?a*?arg&spotSums$!a)
                 |   !arg:(?,(?.?.?.?arg))
                   & spotSums$!arg
                 |   !arg:%+%
                   & !arg*!sums:?sums
-                  & whl'(!arg:%?t+?arg&spitSums$!t)
+                  & whl'(!arg:%?a+?arg&spitSums$!a)
                 | 
             )
           & (len=.!arg:?+[?arg&!arg)
           & ( eliminate
-            =   term O R T o i W S J F D s sum
+            =   term O R T o i W S J D s sum
               .   !arg:(?arg.?sum.?term)
                 & !arg:(?O.?W)
                 & (   !W:%+%
@@ -7308,10 +7187,10 @@ try {
                   )
             )
           & ( recur
-            =   OUT WAY sum term result Term T sums isum
+            =   OUT WAY sum term result Term sums isum
               .   0:?result
                 &   whl
-                  ' ( !arg:#*((?OUT.?WAY):?Traction)+?arg
+                  ' ( !arg:#*(?OUT.?WAY)+?arg
                     & (   1:?sums
                         & spotSums$!WAY
                         & "Sums that have a Q in the exponent are children of another sum. 
@@ -7344,85 +7223,6 @@ try {
               & log$recurring
               & !result+recur$!term:?result
               & log$(recurringDONE len$!result)
-              )
-          & !result
-      )
-      ( selectCommonTracksOLD
-      =   sum spotSum eliminate OUT WAY TERM result term
-        .   ( spotSum
-            =   a sum
-              .     !arg:%*%
-                  & (   !arg:?*(?,(?.?.?.%+%:?sum))*?
-                      & !sum
-                    |   !arg:%?a*%?arg
-                      & (spotSum$!a|spotSum$!arg)
-                    )
-                |   !arg:(?,(?.?.?.?arg))
-                  & spotSum$!arg
-                | !arg:%+%
-            )
-          & ( eliminate
-            =   term O R T o i W S J P F D s
-              .   !arg:(?arg.?term)
-                & (   !arg:(?O.?W)
-                    & ( !O
-                      .     !W:%*%:?S
-                          & 1:?R
-                          &   whl
-                            ' ( !S:%?s*?S
-                              &     !R
-                                  * (   !s:(?T,(?o.?i.?J))
-                                      & (!T,(!o.!i.eliminate$(!J.!term)))
-                                    | !s
-                                    )
-                                : ?R
-                              )
-                          & !R
-                        |   !W:%+%
-                          & ( !W:?+!term+?&!term
-                            |   !W:?S
-                              & 0:?R
-                              &   whl
-                                ' ( !S:%?P+?S
-                                  & 1:?D
-                                  &   whl
-                                    ' ( !P:%?F*?P
-                                      &     !D
-                                          * (   !F:(?T,(?o.?i.?J))
-                                              & ( !T
-                                                , ( !o
-                                                  . !i
-                                                  . eliminate$(!J.!term)
-                                                  )
-                                                )
-                                            | !F
-                                            )
-                                        : ?D
-                                      )
-                                  & !R+!D:?R
-                                  )
-                              & !R
-                            )
-                        |   !W:(?T,(?o.?i.?J))
-                          & (!T,(!o.!i.eliminate$(!J.!term)))
-                        | !W
-                      )
-                  | !arg
-                  )
-            )
-          & 0:?result
-          &   whl
-            ' ( !arg:#*(?OUT.?WAY)+?arg
-              & (   spotSum$!WAY:?sum
-                  & 0:?TERM
-                  &   whl
-                    ' ( !sum:%?term+?sum
-                      &   !TERM+eliminate$((!OUT.!WAY).!term)
-                        : ?TERM
-                      )
-                  & !arg+!TERM:?arg
-                | !result+(!OUT.!WAY):?result
-                )
               )
           & !result
       )
@@ -8026,7 +7826,7 @@ try {
           & !S
       )
       ( makeSuperGoals
-      =   name os Os c o v vs ss s
+      =   name os Os c o v vs ss s collector
         .   "makeSuperGoals only returns value sets for features 
              that have at least one composed feature value."
           & :?SuperSets
@@ -8064,7 +7864,7 @@ try {
           & readTable$features
           &   map
             $ ( ( 
-                =   featName valueExpandedListPairs
+                =   featName valueExpandedListPairs tbl
                   .   !arg:(?featName.?valueExpandedListPairs)
                     &   !features
                       :   ?
@@ -8154,18 +7954,14 @@ try {
           | !table
       )
       ( createGoalPickLists
-      =     preselvalsrows
-            servicedGoals
-            expandedSelectLists
-            including
-            OP
-        .     !arg
-            : (?preselvalsrows.?servicedGoals.?expandedSelectLists.?including)
+      =   preselvalsrows,expandedSelectLists including OP
+        .   !arg:(?preselvalsrows.?expandedSelectLists.?including)
           &   (!including:&P|O)
             : ?OP
           &   map
             $ ( ( 
-                =   short name table servicedGoalsTable servicedGoals
+                =     short name table servicedGoalsTable
+                    , servicedGoals optgroups
                   .     !arg:(?short.?name.?table.?.)
                       & (   !servicedGoals
                           : ? (!short.?servicedGoalsTable) ?
@@ -8235,7 +8031,7 @@ try {
             ' ( !activeTools:(?.?Feats)+?activeTools
               &   map
                 $ ( ( 
-                    =   ios o os
+                    =   ios o os Os a e m name z
                       .   !arg:(?name,?ios)
                         & 0:?Os
                         &   whl
@@ -8363,7 +8159,7 @@ try {
                 &   map
                   $ ( ( 
                       =   v w f
-                        .   !arg:(?f,%?v ?vw)
+                        .   !arg:(?f,%?v ?w)
                           & ( !f
                             ,   !v
                                   map
@@ -8748,7 +8544,9 @@ try {
                 & 0:?nwg
                 &   map
                   $ ( ( 
-                      =   feat vals A Z Val
+                      =     feat vals A Z Val
+                          , NVALS VAL VALS Vsp
+                          , a agg n21s vsp z
                         .     !arg:(?feat.?vals)
                             & !goal:?A (!feat,?Val) ?Z
                             & (   !Val:@^?
@@ -8874,10 +8672,7 @@ try {
           & new$hash:?notThisTool
           & 0:?Calls
           & log$("Calling fulfil" !goal)
-          & (     fulfil$(!activeTools.!source.!goal.0.!restriction)
-                : ?YYX
-              & log$("fulfil Calls" !Calls)
-              & !YYX
+          & ( fulfil$(!activeTools.!source.!goal.0.!restriction)
             | !Calls
             )
       )
@@ -9111,7 +8906,7 @@ try {
             )
       )
       ( Tubst
-      =     OI I A o i sub prog
+      =     OI I A o i sub prog Os
           , H h h1 H1 O rpl SAVEIN
         .   ( rpl
             =   vals fea gold A B exp aa zz SAVEARG
@@ -9234,7 +9029,7 @@ try {
        feature bundle pairs with the possibly richer (at subspec level) version
        found in the second argument."
       ( Subst
-      =   OI H h h1 H1 O T
+      =   OI H h h1 H1 O Os
         .   !arg:(?arg.?OI)
           & "arg is a pipe line.
 
@@ -9286,7 +9081,7 @@ try {
                           )
                       & !h*!h1:?h
                     |       ( 
-                            =   R O
+                            =   R O T
                               .   1:?R
                                 &   whl
                                   ' ( !arg:(?T,(?O.?))*?arg
@@ -9422,7 +9217,7 @@ try {
                         . !arg
                         )
                   )
-                & !arg:(?results.?methods:?allMeths)
+                & !arg:(?results.?methods)
                 & 1:?nres
                 &   whl
                   ' ( !results:%?result*?results
@@ -9502,10 +9297,7 @@ try {
                                   )
                                 . !result
                                 )
-                          |   ( 
-                              | log$(GEK !methods allMeths !allMeths)
-                              )
-                            & !result
+                          | !result
                           )
                         * !nres
                       : ?nres
@@ -10079,8 +9871,7 @@ try {
         .   !arg:(?pipes.?nth)
           & log$(nth !nth)
           & ( !nth:&!pipes
-            |   !pipes:?ZZ+[?np
-              & log$("#pipes" !np)
+            |   !pipes:?ZZ
               & UNKNOWNS!:?pipe
               &   whl
                 ' ( !nth:>0
@@ -10094,8 +9885,10 @@ try {
       ( Pipelines
       =     i o o-SUpPLEMENT restriction FP fP
           , superset userInput
-          , calls nth parms furtherCheck o2o saveTask
+          , calls nth parms furtherCheck o2o
           , A Z reorderedworkflowlist topologicalOrderedTools
+          , B Npipes Y features nFP nr oo ou pp
+          , restr returnCode supers uiin uiou usupset
         .   !arg:(?arg:?parms.?nth)
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
@@ -10177,7 +9970,7 @@ try {
             : ?oo
           & (!i.sort$(!oo !pp).!restriction.!superset):?userInput
           & ( furtherCheck
-            =   pipe npipes uiou pipe wfs output,nwfs wf
+            =   uiou wfs output nwfs wf
               .   log$furtherCheck1
                 & !arg:(?wfs.?uiou)
                 & 0:?nwfs
@@ -10185,7 +9978,7 @@ try {
                   ' ( !wfs:((?,(?output.?)):?wf)+?wfs
                     & (     map
                           $ ( ( 
-                              =   uf uv wv len
+                              =   uf uv wv len u
                                 .     !arg:(?uf,?uv)
                                     &   !output
                                       :   ?
@@ -10259,7 +10052,7 @@ try {
                      memoized trees. So each output feature in a memoized tree
                      must occur in the userInput's output specs."
                   & ( o2o
-                    =   FP nFP ou wf uou uiou ZYX
+                    =   FP nFP ou wf uou uiou
                       .   !arg:(?FP.?uiou)
                         & "o-SUpPLEMENT  (facet,lem*mrf*ner*pos*seg*stx*tok)"
                         & 0:?nFP
@@ -10721,7 +10514,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & !arg:(?in.?nfiles.?requestString.?newJobs)
                 &     map
                     $ ( ( 
-                        =     feat vals Val spec file
+                        =     feat vals Val spec file specs
                             , val dep FiLfeats fileitem
                           .   !arg:(?feat,?vals)
                             & :?dep
@@ -14192,11 +13985,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &   makeExpandedSelectLists$!servicedSuperGoals
                   : ?expandedSelectLists
                 &     createGoalPickLists
-                    $ ( !preselvalsrows
-                      . !servicedGoals
-                      . !expandedSelectLists
-                      . including
-                      )
+                    $ (!preselvalsrows.!expandedSelectLists.including)
                   : ?goalPicklists
                 & cmptblWrkflws$(!items.!presels):?items
                 & ( !items
@@ -14607,24 +14396,25 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !arg
       )
       ( makeArgsForHiddenFields
-      =   
-        .   map
-          $ ( ( 
-              =   f
-                .       !arg
-                      : (   bsubmit
-                          | method
-                          | DATE
-                          | @( ?:SuperSet- ?f
-                             & !superset:~(? !f ?)
-                             )
-                        . ?
-                        )
-                    & 
-                  | !arg
+      =   superset
+        .   !arg:(?arg.?superset)
+          &   map
+            $ ( ( 
+                =   f
+                  .       !arg
+                        : (   bsubmit
+                            | method
+                            | DATE
+                            | @( ?:SuperSet- ?f
+                               & !superset:~(? !f ?)
+                               )
+                          . ?
+                          )
+                      & 
+                    | !arg
+                )
+              . !arg
               )
-            . !arg
-            )
       )
       "
 /**
@@ -14643,10 +14433,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( showworkflows
       =     Tool parms Items NothingToDo Submit
           , presels errors BodyContainer topologicalOrderedTools
-          , PIPE A Z TooManyWorkflows updateUploads
-          , ShowAllPipes rstr reorderedworkflowlist orgarg
+          , PIPE A Z TooManyWorkflows updateUploads 2or3things
+          , ShowAllPipes rstr reorderedworkflowlist orgarg pipe
           , val allpipes batch returnCode restriction sources
           , ShowAllPipesIfNotTooExpensive add makeGoals makeValRows
+          , B M Y f fixed formFields fvs nfvs nvs output
+          , pipes pps rwl superset tool updatedArg userInput vs
         .   ( ShowAllPipes
             =     hiddenData reorderedworkflowlist
                 , "visualizedWorkFlow(s)" struct
@@ -14779,20 +14571,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( ShowAllPipesIfNotTooExpensive
             =     returnCode reorderedworkflowlist
                 , userInput topologicalOrderedTools
-                , hiddenData i o r
+                , hiddenData i o r superset
               .       !arg
                     : ( ?returnCode
                       . ?hiddenData
-                      . ?userInput
+                      . ?userInput:(?.?.?.?superset)
                       . ?reorderedworkflowlist
                       . ?topologicalOrderedTools
                       )
-                  & ( 
-                    |   !userInput:(?i.?o.?r.?)
-                      & (!i.!o.!r.):?userInput
-                    )
                   & !returnCode:allRight
-                  & !reorderedworkflowlist:?+[?nr
                   &   saveTask
                     $ ( !userInput
                       . !reorderedworkflowlist
@@ -14800,7 +14587,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                   & "TODO update hiddenData"
                   & updateOargFromParg$!orgarg:?updatedArg
-                  & makeArgsForHiddenFields$!updatedArg:?hiddenData
+                  &   makeArgsForHiddenFields$(!updatedArg.!superset)
+                    : ?hiddenData
                   & !hiddenData
                   &   ShowAllPipes
                     $ ( !hiddenData
@@ -15057,7 +14845,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                               &     createGoalPickLists
                                   $ ( makeValRows$!nfvs
-                                    . makeGoals$!nfvs
                                     .   makeExpandedSelectLists
                                       $ (makeSuperGoals$!nfvs)
                                     . 
@@ -15137,7 +14924,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                   : ?updatedArg
                                                 &   makeHiddenFields
                                                   $ ( makeArgsForHiddenFields
-                                                    $ !updatedArg
+                                                    $ (!updatedArg.!superset)
                                                     )
                                                 )
                                                 !formFields
@@ -15197,23 +14984,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , errorInMetadata
           , MetadataInParms
           , rememberMetadata
-        .   ( lookForLanguage
-            =   knownInputFeats AA ZZ LocalFileName language
-              .   !arg:(?LocalFileName.?arg)
-                & (   !arg:?AA (language.?language) ?ZZ
-                    & readTable$linguae
-                    & !linguae:? (?.!language.?) ?
-                    & (!language.!AA !ZZ)
-                  |     !Uploads
-                      :   ?
-                          (?.?.!LocalFileName.?.?knownInputFeats)
-                          ?
-                    & !knownInputFeats:? (lang.?language) ?
-                    & (!language.!arg)
-                  | (.!arg)
-                  )
-            )
-          & ( ShowOnlyTheCurrentPipe
+        .   ( ShowOnlyTheCurrentPipe
             =   formFields struct nth bm
               .   !arg:(?struct.?nth.?bm.?err)
                 & makeWorkflowVisualisation$!struct:?formFields
@@ -16154,7 +15925,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$toolprop
           & readTable$features
           & ( toolsSorted
-            =   tool sorted tools L Title sort
+            =   tool sorted tools L Title sortje
               .   0:?sorted
                 &   whl
                   ' (   !tooladm
@@ -16168,13 +15939,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 & :?tools
                 &   whl
-                  ' ( !sorted:(?L.%?sort)+?sorted
-                    & (!L.!sort) !tools:?tools
+                  ' ( !sorted:(?L.%?sortje)+?sorted
+                    & (!L.!sortje) !tools:?tools
                     )
                 & :?sorted
                 &   whl
-                  ' ( !tools:%?sort ?tools
-                    & !sort !sorted:?sorted
+                  ' ( !tools:%?sortje ?tools
+                    & !sortje !sorted:?sorted
                     )
                 & !sorted
             )
