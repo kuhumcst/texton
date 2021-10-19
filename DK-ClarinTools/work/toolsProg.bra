@@ -8814,9 +8814,20 @@ try {
               & containedBy$(!short.!long):?rem
               & (!fea,(!P.OnE)) !rem
             |   !short:(?fea,%*%:?val) ?short
-              & !long:? (!fea,!val) ?
+              & !long:? (!fea,?Val) ?
+              & 1:?P
+              &   whl
+                ' ( !val:%@?v^?e*?nval
+                  & !Val:!v^?E*?nVal
+                  & (   !e:(1|!E)
+                      & !P*!v^!E:?P
+                    | !E:1&!P*!v^!e:?P
+                    )
+                  & (!nval.!nVal):(?val.?Val)
+                  )
+              & 1:!val:!Val
               & containedBy$(!short.!long):?rem
-              & (!fea,!val) !rem
+              & (!fea,!P) !rem
             )
       )
       ( Tubst
@@ -8956,21 +8967,29 @@ try {
               
                     (ambig,una)
                     (app,nrm)
-                    (facet,lem*mrf*pos^Uni*stx)
+                    (facet,(lem*mrf*pos^Uni*stx.OnE))
                     (format,txtann)
                     (lang,da)
                     (period,c21)
                     (pres,nml)
-                .   dapipe
-                  , (   (ambig,una)
-                        (app,nrm)
-                        (facet,lem*mrf*pos^Uni*stx)
-                        (format,txtann)
-                        (lang,da)   
-              
-                  [...]
 
-
+                  Multiple input e.g.
+                    ( (ambig,una)
+                      (app,nrm)
+                      (facet,sent)
+                      (format,txtann)
+                      (lang,da)
+                      (period,c21)
+                      (pres,nml)
+                    )
+                  * ( (ambig,una)
+                      (app,nrm)
+                      (facet,tok^simple)
+                      (format,txtann)
+                      (lang,da)
+                      (period,c21)
+                      (pres,nml)
+                    )
                   "
               & Tubst$(!arg.!OI):?arg
               & 1:?h
@@ -9005,6 +9024,8 @@ try {
                             )
                           $ !arg
                         : ?Os
+                      &   log
+                        $ (substproblem H1 !H1 Os !Os endsubstproblem)
                       &   !h*(!H1 substproblem !Os endsubstproblem)
                         : ?h
                       & 0:?h
@@ -9696,12 +9717,16 @@ try {
                        pairs do nowhere occur in the current workflow, so
                        now we substitute the rich O.I pairs for the
                        original ones."
-                    & Subst$(!arg.!nsig):(~0.?):?arg
-                    & "arg has become more complete subspec-wise.
+                    & (   Subst$(!arg.!nsig):(~0.?):?arg
+                        & "arg has become more complete subspec-wise.
                        Either each tool is used in exactly one way, or
                        the different ways ALL differ more than only at
                        the subspec level."
-                    & !arg
+                        & !arg
+                      |   log$(nsig !nsig)
+                        & log$(Substarg !arg)
+                        & !arg
+                      )
                   )
             )
           & !arg:(?pipes.?parms.?sources)
