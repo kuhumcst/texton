@@ -3162,6 +3162,71 @@ toolsProg=
               )
               \r\n
       )
+      ( XHTML-SVG-bodyContainer
+      =   
+        .   "iso-8859-1 and not utf-8, because of problematic handling of UTF-8 by JNI
+             (Or rather Java, which uses UTF-16 and converts surrogate pairs to 6 bytes of UTF-8 !)"
+          &   ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
+              \r\n
+              ( "!DOCTYPE"
+              . " html PUBLIC \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\" \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\""
+              )
+              \r\n
+              ( html
+              .     (xmlns."http://www.w3.org/1999/xhtml")
+                    ("xmlns:svg"."http://www.w3.org/2000/svg")
+                    ("xml:lang".da)
+                    (lang.da)
+                ,   \r\n
+                    ( head
+                    .   
+                      ,   \r\n
+                          (title.,!headerTitle)
+                          \r\n
+                          ( meta
+                          .     (http-equiv.content-type)
+                                (content."text/html; charset=UTF-8")
+                            , 
+                          )
+                          \r\n
+                          !Style
+                    )
+                    \r\n
+                    (body.(class.bodycanvas),!arg)
+              )
+              \r\n
+      )
+      ( HTML-SVG-bodyContainer
+      =   tit bod
+        .     log$(HTML-SVG-bodyContainer !arg)
+            & !arg
+            & log$(arg !arg)
+            & !arg:(?.?)
+            & log$(argk2 !arg)
+            & !arg:(?tit.?bod)
+            & log$(argk3 !arg)
+            & log$(tit !tit)
+            & log$(bod !bod)
+            &   ("!DOCTYPE"." html")
+                ( html
+                .   
+                  ,   ( head
+                      .   
+                        ,   (title.,!tit)
+                            ( meta
+                            .     (http-equiv.content-type)
+                                  (content."text/html; charset=UTF-8")
+                              , 
+                            )
+                            ( style
+                            .   (type.text/css)
+                              , " .illustration {border: none;text-align: right;margin-left: 0;margin-right: auto;border-spacing: 0pt;font-size: 80%;font-family: Verdana, sans-serif;} .illustration td {margin-left: 0%;margin-right: 0%;border: 0px;padding: 0em;width: 3em;text-align: center;} caption {font-style: italic;} "
+                            )
+                      )
+                      (body.,!bod)
+                )
+          | AAP
+      )
       ( refreshingXHTMLbodyContainer
       =   seconds body URL
         .   !arg:(%?seconds ?URL.?body)
@@ -15869,6 +15934,790 @@ the Items list as input. Step descriptions in the JobStack can look like this:
 /**
  * help
  */"
+      ( illustration
+      =   
+        . div
+        .   
+          , ( table
+            .   (class.illustration)
+              ,   ( caption
+                  .   
+                    ,   (a.(id.Fig2),"Figure 2")
+                        ". Populations on spheres
+                in one or more dimensions.
+                If the populations can spread out in more than two dimensions,
+                all points are projected in a way that suggests how the number of visitable persons grows
+                with growing separation from your \"home\" at the \"north pole\",
+                the orange coloured dot in the middle of the northern polar cap. For each person, only persons with
+                the other colour are visitable.
+            "
+                  )
+                  ( tbody
+                  .   
+                    , ( tr
+                      .   
+                        , ( td
+                          .   
+                            ,   ( svg
+                                .     (id.svgwortel)
+                                      (width.1000)
+                                      (height.400)
+                                      (viewBox."0 0 1000 400")
+                                      (onload."main(evt)")
+                                  ,   ( rect
+                                      .     (class.Border)
+                                            (x.1)
+                                            (y.1)
+                                            (width.798)
+                                            (height.498)
+                                            (fill.lightgray)
+                                        , 
+                                      )
+                                      ( g
+                                      .     (id.ip2)
+                                            (transform."rotate(0)")
+                                        , 
+                                      )
+                                      ( text
+                                      .     (id.dimens)
+                                            (x.360)
+                                            (y.300)
+                                        , "1 dimension"
+                                      )
+                                )
+                                ( script
+                                .   
+                                  , "
+var svgns = \"http://www.w3.org/2000/svg\";
+
+var points = [];
+//var rot = [];
+var DIMENSIONS = 0;
+
+var theTop = 500;
+var theSecond = 0;
+var theThird = 0;
+var theLast = 0;
+
+var Bryiks = [-1, -1];
+var Heolaam = [-1, -1];
+var plnt = [Bryiks, Heolaam];
+
+function Atan(X, Z) {
+    var phi;
+    if (Z != 0) {
+        phi = Math.atan(X / Z);
+        if (Z < 0) {
+            if (X < 0)
+                phi -= Math.PI;
+            else
+                phi += Math.PI;
+        }
+    }
+    else
+        phi = X > 0 ? 0.5 * Math.PI : -0.5 * Math.PI;
+    return phi;
+}
+
+//http://www.filosophy.org/post/35/normaldistributed_random_values_in_javascript_using_the_ziggurat_algorithm/
+function Ziggurat() {
+
+    var jsr = 123456789;
+
+    var wn = Array(128);
+    var fn = Array(128);
+    var kn = Array(128);
+
+    function RNOR() {
+        var hz = SHR3();
+        var iz = hz & 127;
+        return (Math.abs(hz) < kn[iz]) ? hz * wn[iz] : nfix(hz, iz);
+    }
+
+    this.nextGaussian = function () {
+        return RNOR();
+    }
+
+    function nfix(hz, iz) {
+        var r = 3.442619855899;
+        var r1 = 1.0 / r;
+        var x;
+        var y;
+        while (true) {
+            x = hz * wn[iz];
+            if (iz == 0) {
+                x = (-Math.log(UNI()) * r1);
+                y = -Math.log(UNI());
+                while (y + y < x * x) {
+                    x = (-Math.log(UNI()) * r1);
+                    y = -Math.log(UNI());
+                }
+                return (hz > 0) ? r + x : -r - x;
+            }
+
+            if (fn[iz] + UNI() * (fn[iz - 1] - fn[iz]) < Math.exp(-0.5 * x * x)) {
+                return x;
+            }
+            hz = SHR3();
+            iz = hz & 127;
+
+            if (Math.abs(hz) < kn[iz]) {
+                return (hz * wn[iz]);
+            }
+        }
+    }
+
+    function SHR3() {
+        var jz = jsr;
+        var jzr = jsr;
+        jzr ^= (jzr << 13);
+        jzr ^= (jzr >>> 17);
+        jzr ^= (jzr << 5);
+        jsr = jzr;
+        return (jz + jzr) | 0;
+    }
+
+    function UNI() {
+        return 0.5 * (1 + SHR3() / -Math.pow(2, 31));
+    }
+
+    function zigset() {
+        // seed generator based on current time
+        jsr ^= new Date().getTime();
+
+        var m1 = 2147483648.0;
+        var dn = 3.442619855899;
+        var tn = dn;
+        var vn = 9.91256303526217e-3;
+
+        var q = vn / Math.exp(-0.5 * dn * dn);
+        kn[0] = Math.floor((dn / q) * m1);
+        kn[1] = 0;
+
+        wn[0] = q / m1;
+        wn[127] = dn / m1;
+
+        fn[0] = 1.0;
+        fn[127] = Math.exp(-0.5 * dn * dn);
+
+        for (var i = 126; i >= 1; i--) {
+            dn = Math.sqrt(-2.0 * Math.log(vn / dn + Math.exp(-0.5 * dn * dn)));
+            kn[i + 1] = Math.floor((dn / tn) * m1);
+            tn = dn;
+            fn[i] = Math.exp(-0.5 * dn * dn);
+            wn[i] = dn / m1;
+        }
+    }
+    zigset();
+}
+
+
+var z = new Ziggurat();
+
+function initRandomUnitVector(dim, oldvector, olddim) {
+    var sum2 = 0.0;
+    var e;
+    if (olddim == 0)
+        e = [];
+    else
+        e = oldvector;
+    var k;
+    for (k = olddim; k < dim; ++k) {
+        /*
+        var d = Math.pow(2, -32);
+        var U = Math.random()+d;
+        var V = Math.random()+d;
+
+        var root = Math.sqrt(-2.0 * Math.log(U));
+        var XXd = root * Math.cos(2.0*Math.PI*V);
+        e[k] = XXd;
+        */
+        e[k] = z.nextGaussian();
+    }
+    if (olddim == 0) {
+        var a = 0.8 * e[0] - 0.6 * e[1];
+        var b = 0.6 * e[0] + 0.8 * e[1];
+        e[0] = a;
+        e[1] = b;
+    }
+    return e;
+}
+
+function normalised(e, dim) {
+    var sum2 = 0.0;
+    var k;
+    var ret = [];
+    for (k = 0; k < dim; ++k) {
+        var X = e[k];
+        sum2 += X * X;
+    }
+    var f = Math.sqrt(sum2);
+    if (f > 0.0) {
+        for (k = 0; k < dim; ++k) {
+            ret[k] = e[k] / f;
+        }
+    }
+    return ret;
+}
+
+function planetNo(p) {
+    return p - 2 * Math.floor(p / 2);
+}
+
+function Accent(p) {
+    var planet = planetNo(p);
+    var plan = plnt[planet];
+    return (plan[0] == p || plan[1] == p) ? 1 : 0;
+}
+
+var steps = [{\"create\":\"rect\",\"attributes\":[{\"x\":300},{\"y\":200},{\"width\":39},{\"height\":39},{\"fill\":\"red\"}]}]; 
+
+function ei(dim, cx, cy, r) {
+    this.dim = dim;
+    var svg = this;
+    var g = document.createElementNS(svgns, \"g\");
+    var homenode = document.createElementNS(svgns, \"circle\");
+    this.homenode = homenode;
+    homenode.setAttribute(\"cx\", 850);
+    homenode.setAttribute(\"cy\", 100);
+    homenode.setAttribute(\"r\", 8);
+    homenode.setAttribute(\"fill\", \"red\");
+    g.appendChild(homenode);
+    var connection1 = document.createElementNS(svgns, \"line\");
+    this.connection1 = connection1;
+    connection1.setAttribute(\"x1\", 410);
+    connection1.setAttribute(\"y1\", 160);
+    connection1.setAttribute(\"x2\", 400);
+    connection1.setAttribute(\"y2\", 250);
+    connection1.setAttribute(\"stroke-width\",\"5\");
+    connection1.setAttribute(\"stroke\",\"yellow\");
+    g.appendChild(connection1);
+    var moredimensions = document.createElementNS(svgns, \"rect\");
+    this.moredimensions = moredimensions;
+    moredimensions.setAttribute(\"x\", 400);
+    moredimensions.setAttribute(\"y\", 150);
+    moredimensions.setAttribute(\"width\", 20);
+    moredimensions.setAttribute(\"height\", 20);
+    moredimensions.setAttribute(\"fill\", \"red\");
+    g.appendChild(moredimensions);
+    var fewerdimensions = document.createElementNS(svgns, \"circle\");
+    this.fewerdimensions = fewerdimensions;
+    fewerdimensions.setAttribute(\"cx\", 400);
+    fewerdimensions.setAttribute(\"cy\", 250);
+    fewerdimensions.setAttribute(\"r\", 20);
+    fewerdimensions.setAttribute(\"fill\", \"blue\");
+    g.appendChild(fewerdimensions);
+    this.svg = g;
+    this.globes = null;
+    this.root2 = document.getElementById(\"svgwortel\");
+
+    this.egg = function (r, x, y, angle, Z, stroke, fill) {
+        var R = Math.sqrt(1.0 - Z * Z); // circle diameter (long axis of ellipse when circle is projected)
+        var rx = Math.floor(r * R);
+        var ry = Math.floor(r * R * Math.sin(angle));
+        var cx = Math.floor(x);
+        var cy = Math.floor(y - r * Z * Math.cos(angle));
+        var ellipse = document.createElementNS(svgns, \"ellipse\");
+        ellipse.setAttribute(\"cx\", cx);
+        ellipse.setAttribute(\"cy\", cy);
+        ellipse.setAttribute(\"rx\", rx);
+        ellipse.setAttribute(\"ry\", ry);
+        var hstroke = (\"000000\" + Math.floor(stroke).toString(16)).substr(-6);
+        var hfill = (\"000000\" + Math.floor(fill).toString(16)).substr(-6);
+        ellipse.setAttribute(\"style\", \"stroke:#\" + hstroke + \"; fill:#\" + hfill);
+        this.globes.appendChild(ellipse);
+        this.ellipse = ellipse;
+    }
+
+    this.spot = function (r, x, y, theta, phi, R, stroke, fill, p, rl) {
+        // theta == 0.0 : top
+        // theta == pi  : bodem
+        // phi   == 0.0 : midden
+        // phi   <  0.0 : links
+        // phi   >  0.0 : rechts
+        /*
+        A/a
+        (elliptical arc)
+        rx, ry
+        x-axis-rotation
+        large-arc-flag
+        sweep-flag
+        x, y
+
+        Draws an elliptical arc from the current point to (x, y).
+        The size and orientation of the ellipse are defined by two radii (rx, ry) and
+        an x-axis-rotation, which indicates how the ellipse as a whole is rotated
+        relative to the current coordinate system. The center (cx, cy) of the ellipse
+        is calculated automatically to satisfy the constraints imposed by the other
+        parameters. Large-arc-flag and sweep-flag contribute to the automatic
+        calculations and help determine how the arc is drawn.
+
+        the arc starts at the current point
+        the arc ends at point (x, y)
+        the ellipse has the two radii (rx, ry)
+        the x-axis of the ellipse is rotated by x-axis-rotation relative to the x-axis
+        of the current coordinate system.
+        */
+        var X, Y, RX, RY;
+        var large_arc_flag = 1;
+        var sweep_flag = 1;
+        var dx = r * Math.sin(theta) * Math.sin(phi);
+        var dy = -r * Math.cos(theta);
+        var cx = x + dx;
+        var cy = y + dy;
+        var R2 = dx * dx + dy * dy;
+        var R1 = Math.sqrt(R2);
+        var x_axis_rotation = 180.0 / Math.PI * Math.asin(dx / R1); // positief: draaiing met de klok mee
+        var flat = Math.sqrt(r * r - R2) / r;// cosine of angle away from direction out of the screen.
+        if (Math.cos(theta) < 0)
+            x_axis_rotation = -x_axis_rotation;
+        X = Math.floor(cx - (flat * Math.abs(dx) - dy) * R / R1);
+        Y = Math.floor(cy);
+        RX = Math.floor(R);
+        RY = Math.round(R * flat);
+        var path = document.createElementNS(svgns, \"path\");
+        //--X;
+        path.setAttribute(\"d\", \"M\" + X
+            + \",\" + Y
+            + \" A\" + RX
+            + \",\" + RY
+            + \" \" + Math.floor(x_axis_rotation)
+            + \" \" + large_arc_flag
+            + \" \" + sweep_flag
+            + \",\" + X
+            + \",\" + (Y + 1)
+        );
+
+        var tjek = path.getAttribute(\"d\");
+        var hstroke = (\"000000\" + Math.floor(stroke).toString(16)).substr(-6);
+        var hfill = (\"000000\" + Math.floor(fill).toString(16)).substr(-6);
+
+        path.setAttribute(\"style\", \"stroke:#\" + hstroke + \"; fill:#\" + hfill);
+        path.setAttribute(\"id\", p + \".\" + rl);
+        this.globes.appendChild(path);
+    }
+
+    this.slice = function (r, x, y, Zd, Zu, stroke, fill) {
+        var Rd = Math.sqrt(1.0 - Zd * Zd);
+        var xdL = Math.floor(x - r * Rd);
+        var ydL = Math.floor(y - r * Zd);
+        var xdR = Math.floor(x + r * Rd);
+        var ydR = Math.floor(y - r * Zd);
+        var R = Math.floor(r);
+        var path = document.createElementNS(svgns, \"path\");
+        if (Zu <= 1.0) {
+            var Ru = Math.sqrt(1.0 - Zu * Zu);
+            var xuL = Math.floor(x - r * Ru);
+            var yuL = Math.floor(y - r * Zu);
+
+            var xuR = Math.floor(x + r * Ru);
+            var yuR = Math.floor(y - r * Zu);
+            path.setAttribute(\"d\", \"M\" + xdL + \",\" + ydL
+                + \" A\" + R + \",\" + R + \" 0 0,1 \" + xuL + \",\" + yuL
+                + \" H\" + xuR
+                + \" A\" + R + \",\" + R + \" 0 0,1 \" + xdR + \",\" + ydR
+                + \" H\" + xdL
+            );
+        }
+        else {
+            path.setAttribute(\"d\", \"M\" + xdL + \",\" + ydL
+                + \" A\" + R + \",\" + R + \" 0 0,1 \" + xdR + \",\" + ydR
+                + \" H\" + xdL
+            );
+        }
+        var tjek = path.getAttribute(\"d\");
+
+        var hstroke = (\"000000\" + Math.floor(stroke).toString(16)).substr(-6);
+        var hfill = (\"000000\" + Math.floor(fill).toString(16)).substr(-6);
+
+        path.setAttribute(\"style\", \"stroke:#\" + hstroke + \"; fill:#\" + hfill);
+        this.globes.appendChild(path);
+    }
+
+    this.integral = function (x, n) {
+        if (n > 1)
+            return -1.0 / n * Math.pow(Math.sin(x), n - 1) * Math.cos(x) + (n - 1) / n * this.integral(x, n - 2);
+        else if (n == 1)
+            return 1 - Math.cos(x);
+        else
+            return x;
+    }
+
+    this.setMinMaxIntegral = function (dimensions) {
+        this.maxintegral = this.integral(Math.PI, dimensions - 2);
+        this.minintegral = this.integral(0.0, dimensions - 2);
+    }
+
+    this.expectationValueA = function (angle, dimensions) {
+        var ret;
+        if (dimensions == 3)
+            ret = Math.cos(angle)/*inp*/;
+        else if (dimensions == 2) {
+            ret = 1.0 - (angle / Math.PI * 0.5);
+        }
+        else {
+            var inp = this.integral(angle, dimensions - 2);
+            ret = 1.0 - 2.0 * (inp - this.minintegral) / (this.maxintegral - this.minintegral);
+        }
+        return ret;
+    }
+
+    this.expectationValue = function (p1, p2, dimensions) {
+        console.log('p1:' + p1);
+        console.log('p2:' + p2);
+        var A = points[p1];
+        var B = points[p2];
+        console.log('A:' + A);
+        console.log('B:' + B);
+        var inner = 0;
+        var normA2 = 0;
+        var normB2 = 0;
+        console.log('dimensions:' + dimensions);
+        for (i = 0; i < this.dim; ++i) {
+            normA2 += A[i] * A[i];
+            normB2 += B[i] * B[i];
+            inner += A[i] * B[i];
+        }
+        inner /= Math.sqrt(normA2 * normB2);
+        console.log('inner:' + inner);
+        var angle = Math.acos(inner);
+        console.log('angle:' + angle);
+        exp = this.expectationValueA(angle, dimensions);
+        console.log('exp:' + exp);
+        return exp;
+    }
+
+    this.angle = function (expectectationvalue) {
+        var mina = 0.0;
+        var maxa = Math.PI;
+        var mine = this.expectationValueA(mina, this.dim);
+        var maxe = this.expectationValueA(maxa, this.dim);
+        if (expectectationvalue == mine)
+            return mina;
+        else if (expectectationvalue == maxe)
+            return maxa;
+        else {
+            var h = 0.0;
+            var i;
+            for (i = 0; i < 100 && maxa - mina > 0.0000000001; ++i) {
+                h = (mina + maxa) / 2.0;
+                var e = this.expectationValueA(h, this.dim);
+                if (e > expectectationvalue) {
+                    mine = e;
+                    mina = h;
+                }
+                else if (e < expectectationvalue) {
+                    maxe = e;
+                    maxa = h;
+                }
+                else
+                    break;
+            }
+            return h;
+        }
+    }
+
+
+    this.fz = function (Z) {
+        var ret;
+        if (Z <= -0.999) {
+            return -1;
+        }
+        if (Z >= 0.999) {
+            return 1;
+        }
+        switch (this.dim) {
+            case 2:
+                ret = Math.cos((1.0 - Z) * Math.PI * 0.5);
+                break;
+            default:
+                var a = this.angle(Z);
+                ret = Math.cos(a);
+        }
+        return ret;
+    }
+
+    this.density = function (Z) {
+        var FZ = this.fz(Z)
+        if (FZ != 0)
+            return Z / FZ;
+        else
+            return 1;
+    }
+
+    this.col = function (Z, maxdensity, mindensity) {
+        var dens;
+        if (maxdensity > mindensity)
+            dens = (this.density(Z) - mindensity) / (maxdensity - mindensity);
+        else
+            dens = 0.5;
+        var allbits = 0xffffff;
+        var idens = ((1.0 - (dens)) * 255.0);
+        return (idens << 16) + (idens << 8) + idens;
+    }
+
+    this.setDim = function (dim) {
+        this.setMinMaxIntegral(dim);
+        this.dim = dim;
+        var p;
+        for (p = 0; p < 1000; ++p) {
+            var e = initRandomUnitVector(this.dim, points[p], DIMENSIONS);
+            points[p] = e;
+        }
+    }
+
+    this.setTop = function (top) {
+        console.log(\"setTop:\" + top);
+        var planet = planetNo(top);
+        console.log(\"planet:\" + planet);
+        var plan = plnt[planet];
+        if (plan[0] != top) {
+            plan[1] = plan[0];
+            plan[0] = top;
+            console.log(\"planN:\" + plan[0] + \" \" + plan[1]);
+            plnt[planet] = plan;
+        }
+        /*
+        for(p = 0;p < 1000;++p)
+            {
+            rot[p] = points[p];
+            }
+        */
+        var d;
+        for (d = this.dim - 1; d > 0; --d) {
+            ptop = points[top];
+            var a = ptop[0];
+            var b = ptop[d];
+            var Determinant_ = Math.sqrt(1.0 / (a * a + b * b));
+            for (p = 0; p < 1000; ++p) {
+                var e = points[p];
+                var X = Determinant_ * (a * e[0] + b * e[d]);
+                var Y = Determinant_ * (-b * e[0] + a * e[d]);
+                e[0] = X;
+                e[d] = Y;
+                points[p] = e;
+            }
+        }
+        var pl, pt;
+        for (pl = 0; pl < 2; ++pl)
+            for (pt = 0; pt < 2; ++pt) {
+                if (plnt[pl][pt] == -1)
+                    return;
+            }
+        var separations = [];
+        var sumseparations = 0;
+        var biggestseparation = 0;
+        var dBiggest;
+        for (d = 0; d < 4; ++d) {
+            separations[d] = 1 - this.expectationValue(plnt[0][parseInt(d / 2)], plnt[1][parseInt(d % 2)], this.dim);
+            console.log('d:' + d + ' : ' + separations[d]);
+            sumseparations += separations[d];
+        }
+        var minchsh = sumseparations - 2 * separations[0];
+        var maxchsh = minchsh;
+        var mind = 0;
+        var maxd = 0;
+        for (d = 0; d < 4; ++d) {
+            var chsh = sumseparations - 2 * separations[d];
+            if (chsh < minchsh) {
+                minchsh = chsh;
+                mind = d;
+            }
+            if (chsh > maxchsh) {
+                maxchsh = chsh;
+                maxd = d;
+            }
+        }
+        console.log('chsh: ' + minchsh + '  ' + maxchsh);
+        var difmin = -minchsh;
+        var difmax = maxchsh - 4;
+        dBiggest = difmin > difmax ? mind : maxd;
+        var iA = parseInt(dBiggest / 2);
+        var iB = parseInt(dBiggest % 2);
+        var A = plnt[0][iA];
+        var B = plnt[1][1 - iB];
+        var C = plnt[0][1 - iA];
+        var D = plnt[1][iB];
+        console.log('AB:' + separations[2 * iA + 1 - iB]);
+        console.log('CB:' + separations[2 * (1 - iA) + 1 - iB]);
+        console.log('CD:' + separations[2 * (1 - iA) + iB]);
+        console.log('AD:' + separations[2 * iA + iB]);
+    }
+
+    this.Egg = function () {
+        if (this.globes != null) {
+            var y = this.root2.getElementById(\"globes\");
+            y.parentNode.removeChild(y);
+        }
+
+        var globes = document.createElementNS(svgns, \"g\")
+        globes.setAttribute(\"id\", \"globes\")
+        this.globes = globes;
+        this.svg.appendChild(this.globes)
+        var yy = this.root2.getElementById(\"globes\");
+        var desc;
+        switch (this.dim) {
+            case 2:
+                desc = \"Circle mapped onto 3-D sphere\";
+                break;
+            case 3:
+                desc = \"Normal 3-D sphere\";
+                break;
+            default:
+                desc = \"Higher dimensional sphere mapped onto 3-D sphere\";
+        }
+        var Z = 0.0;
+        var inc = 0.04;
+        var maxdensity = 0.0;
+        var mindensity = 1.79769e+308;
+        var rings = 0;
+        for (Z = -1.0; Z < 1.0; Z += inc) {
+            var temp = this.density(Z + 0.5 * inc);
+            if (temp > maxdensity)
+                maxdensity = temp;
+            if (temp < mindensity)
+                mindensity = temp;
+        }
+        if (maxdensity < 1.001 * mindensity)
+            maxdensity = mindensity;
+        var tilt = 1.0;
+        for (Z = -1.0; Z <= 1.0; Z += inc) {
+            //  bin[Slice++] = 0;
+            this.egg(160.0, 200.0, 200.0, tilt, this.fz(Z), 0, this.col(Z + 0.5 * inc, maxdensity, mindensity));
+        }
+        /*
+        var MaxSlice = Slice;
+        */
+        for (Z = -1.0; Z < 1.0; Z += inc) {
+            ++rings;
+            this.slice(160.0, 600.0, 200.0, this.fz(Z), this.fz(Z + inc), 0, this.col(Z + 0.5 * inc, maxdensity, mindensity));
+        }
+        var sintilt = Math.sin(tilt);
+        var costilt = Math.cos(tilt);
+        var colours = [0xff8000, 0x00ff00];
+
+
+        for (p = 0; p < 1000; ++p) {
+            //            var e = points[p];
+            planet = planetNo(p);
+            var e = points[p];
+            var n = normalised(e, this.dim);
+            // Normalized in dim dimensions! Not in three!
+            var Y = n[0];
+            var Z = n[1];
+            var X = 0;
+            /*
+            var Slice = 0;
+            var ZZ = -1.0;
+            while(Slice < MaxSlice) {
+                if(this.fz(ZZ) >= Y)
+                    {
+                    bin[Slice - 1] += 1;
+                    break;
+                    }
+                ++Slice;
+                ZZ += inc;
+            }
+            */
+            var theta = Math.acos(Y); //This ensures that the apparent
+            // angle from a pole to another point is the true angle.
+            // All other angles are distorted!
+            // So we take the Y from the n-dimensional sphere as the Y
+            // of the three-dimensional sphere.
+            var phi;
+            if (this.dim > 2) {
+                X = n[2];
+                phi = Atan(X, Z);
+            }
+            else if (Z > 0)
+                phi = -0.5;
+            else
+                phi = Math.PI - 0.5;
+            if (Z > 0) {
+                this.spot(160.0, 600.0, 200.0, theta, phi, 4 * (1 + Accent(p)), 2, colours[planet], p, 0);
+            }
+            else if (Accent(p) == 1) {
+                this.spot(160.0, 600.0, 200.0, theta, phi, 4 * (1 + Accent(p)), 2, (colours[planet] | 0xaaaaaa), p, 0);
+            }
+
+            var sintheta = Math.sin(theta);
+            var X1 = Math.sin(phi) * sintheta; // NOT the same as X!
+            var Z1 = Math.cos(phi) * sintheta; // NOT the same as Z!
+            var Y2 = costilt * Y - sintilt * Z1;
+            var Z2 = sintilt * Y + costilt * Z1;
+            if (Z2 > 0) {
+                var thetatilt = Math.acos(Y2);
+                var phitilt = Atan(X1, Z2);
+                this.spot(160.0, 200.0, 200.0, thetatilt, phitilt, 4 * (1 + Accent(p)), 0, colours[planet], p, 1);
+            }
+            else if (Accent(p) == 1) {
+                this.spot(160.0, 200.0, 200.0, thetatilt, phitilt, 4 * (1 + Accent(p)), 0, (colours[planet] | 0xaaaaaa), p, 1);
+            }
+        }
+        //        this.spot(160.0, 600.0, 200.0, 0, 0, 4.0, 0, 0xff8000,0,2);
+        //        this.spot(160.0, 200.0, 200.0, tilt, 0, 4.0, 0, 0xff8000,0,3);
+        DIMENSIONS = this.dim;
+        return 0;
+    }
+
+
+    homenode.addEventListener(\"click\", clickhome, false);
+    moredimensions.addEventListener(\"click\", clickmore, false);
+    fewerdimensions.addEventListener(\"click\", clickfewer, false);
+    this.setDim(this.dim);
+    this.setTop(theTop);
+    this.Egg();
+    var ip2 = document.getElementById(\"ip2\");
+    ip2.appendChild(this.svg);
+    document.querySelector('#svgwortel').addEventListener('click', function (event) {
+        if (event.target.tagName.toLowerCase() === 'path') {
+            console.log(\"klik:\" + event.target.id.split('.')[0]);
+            var the = parseInt(event.target.id.split('.')[0]);
+            if (!isNaN(the)) {
+                theTop = the;
+                Ei.setTop(theTop);
+                Ei.Egg();
+            }
+        }
+    });
+};
+
+var Ei;
+var dim = 2;
+
+function clickhome(evt) {
+    Ei.setTop(theTop + 1);
+    Ei.Egg();
+}
+
+function clickmore(evt) {
+    document.getElementById(\"dimens\").firstChild.nodeValue = dim + ' dimension' + ((dim > 1) ? 's' : '');
+    dim += 1;
+    Ei.setDim(dim);
+    Ei.setTop(theTop);
+    Ei.Egg();
+}
+
+function clickfewer(evt) {
+    if (dim > 2) {
+        dim -= 1;
+        Ei.setDim(dim);
+        Ei.setTop(theTop);
+        Ei.Egg();
+    }
+    document.getElementById(\"dimens\").firstChild.nodeValue = (dim - 1) + ' dimension' + ((dim > 2) ? 's' : '');
+}
+
+function main(evt) {
+    Ei = new ei(dim, 100, 100, 45);
+}
+"
+                                )
+                          )
+                      )
+                  )
+            )
+      )
       ( help
       =     tools langlist toolsSorted Title toolNr ToolID
           , features feats cumfeat usedonly usedFeatures
@@ -15991,234 +16840,391 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?cumfeat
           & 0:?toolNr
           &   toML
-            $ ( !HTMLbodyContainer
-              $ ( (h1.,"Text Tonsorium")
-                  ( h1
-                  .   
-                    ,   "(This page is still "
-                        (i.,"Work in progress")
-                        ")"
-                  )
-                  ( p
-                  .   
-                    ,   localized
-                      $ ( "The Text Tonsorium is a workflow management system that not only executes workflows, but also composes workflows from building blocks. Each building block encapsulates a Natural Language Processing tool."
-                          "Text Tonsorium er et workflow management system som ikke kun fører data gennem workflows, men også designer workflows ved hjælp af 'byggeklodser'. Hver byggeklods indeholder et sprogteknologisk værktøj."
-                        )
-                  )
-                  ( p
-                  .   
-                    ,   localized
-                      $ ( "The Text Tonsorium may compose many workflows that all lead to your goal. It will then ask you to choose one of the proposed workflows. In general, the more detail you add to your goal, the fewer solutions the Text Tonsorium will find, even zero. "
-                          "Ofte beregner Text Tonsorium mange workflows, som alle fører til dit mål, og så skal du vælge en af disse. Som tommelfingerregel gælder det at hvis du udtrykker dit mål i flere detaljer, vil der være færre forslag til workflows, og måske endda ingen."
-                        )
-                  )
-                  ( p
-                  .   
-                    ,   localized
-                      $ ( "In contrast to other workflow management systems, the Text Tonsorium focuses on results rather than on tools, so a general understanding of how the desired result is described is useful. Still, you may like to also know which tools currently are integrated in the Text Tonsorium. This page gives you information about both."
-                          "Når du arbejder med Text Tonsorium, skal dit fokus være på det resultat som du vil opnå, og ikke på de værktøjer der er i værktøjskassen. Derfor er det nyttigt at vide hvordan det ønskede resultat bedst kan beskrives. Du vil måske alligevel også vide hvilke værktøjer er integreret i Text Tonsorium. Denne side giver dig information om begge dele."
-                        )
-                  )
-                  (h3.,localized$(Overview Overblik))
-                  ( dl
-                  .   
-                    ,   (dt.,Data)
-                        (dd.,Input)
-                        (dd.,localized$(Goal Mål))
-                        (dt.,localized$(Features Træk))
-                        ( dd
-                        .   
-                          , ( dl
-                            .   
-                              ,   map
-                                $ ( ( 
-                                    =   n d t
-                                      .     !arg
-                                          : ( 
-                                            .   ? (name.?n) ?
-                                              : ? (description.?d) ?
-                                              : ? (table.?t) ?
-                                            )
-                                        &   ( dt
-                                            .   
-                                              , ( a
-                                                .   (href.str$("#" !t))
-                                                  , localized$!n
-                                                )
-                                            )
-                                            (dd.,localized$!d)
-                                    )
-                                  . !feats
-                                  )
-                            )
-                        )
-                        (dt.,Tools)
-                        ( dd
-                        .   
-                          , ( table
-                            .   
-                              ,   ( thead
-                                  .   
-                                    ,   (th.,"#")
-                                        (th.,"Name of the tool")
-                                        (th.,"Supported languages")
-                                  )
-                                  ( tbody
-                                  .   
-                                    ,   map
-                                      $ ( ( 
-                                          =   Title
-                                            .     !arg
-                                                : ( ?
-                                                  .     ?
-                                                        (Title.?Title)
-                                                        ?
-                                                    :   ?
-                                                        (ToolID.?ToolID)
-                                                        ?
-                                                  )
-                                              & ( tr
-                                                .   
-                                                  ,   ( td
-                                                      .   
-                                                        ,   !toolNr+1
-                                                          : ?toolNr
-                                                      )
-                                                      ( td
-                                                      .   
-                                                        , ( a
-                                                          .   ( href
-                                                              .   str
-                                                                $ ("#" !ToolID)
-                                                              )
-                                                            , !Title
-                                                          )
-                                                      )
-                                                      ( td
-                                                      . ,langlist$!ToolID
-                                                      )
-                                                )
-                                          )
-                                        . !tools
-                                        )
-                                  )
-                            )
-                        )
-                  )
-                    map
-                  $ ( ( 
-                      =   Description ToolID Title
-                        .       !arg
-                              : ( ?
-                                .   ? (ToolID.?ToolID) ?
-                                  : ? (Title.?Title) ?
-                                  : ? (Description.?Description) ?
-                                )
-                            &   ( a
-                                .   (id.!ToolID) (name.!ToolID)
-                                  , (h2.,!Title)
-                                )
-                                (p.,!Description)
-                          | 
-                      )
-                    . !tools
+            $ ( HTML-SVG-bodyContainer
+              $ ( help
+                .   (h1.,"Text Tonsorium")
+                    ( h4
+                    .   
+                      ,   "(This page is still "
+                          (i.,"Work in progress")
+                          ")"
                     )
-                    map
-                  $ ( ( 
-                      =   n t s sT description
-                        .     !arg
-                            : ( 
-                              .   ? (name.?n) ?
-                                : ? (table.?t) ?
-                                : ? (short.?s) ?
-                                : ( ? (specificationTable.?sT) ?
-                                  | ?&:?sT
+                    (p.,illustration$)
+                    ( p
+                    .   
+                      ,   localized
+                        $ ( "The Text Tonsorium is a workflow management system that not only executes workflows, but also composes workflows from building blocks. Each building block encapsulates a Natural Language Processing tool."
+                            "Text Tonsorium er et workflow management system som ikke kun fører data gennem workflows, men også designer workflows ved hjælp af 'byggeklodser'. Hver byggeklods indeholder et sprogteknologisk værktøj."
+                          )
+                    )
+                    (|(p.,illustration$))
+                    ( p
+                    .   
+                      ,   localized
+                        $ ( "In contrast to other workflow management systems, the Text Tonsorium focuses on results rather than on tools, so a general understanding of how the desired result is described is useful. Still, you may like to also know which tools currently are integrated in the Text Tonsorium. This page gives you information about both."
+                            "Når du arbejder med Text Tonsorium, skal dit fokus være på det resultat som du vil opnå, og ikke på de værktøjer der er i værktøjskassen. Derfor er det nyttigt at vide hvordan det ønskede resultat bedst kan beskrives. Du vil måske alligevel også vide hvilke værktøjer er integreret i Text Tonsorium. Denne side giver dig information om begge dele."
+                          )
+                    )
+                    (h2.,localized$(Overview Overblik))
+                    ( dl
+                    .   
+                      ,   ( dt
+                          .   
+                            , ( a
+                              .   (href."#working")
+                                ,     localized
+                                    $ ( "How does the Text Tonsorium compute workflows?"
+                                        "Hvordan bliver arbejdsgange beregnet?"
+                                      )
+                                  : ?workingTitle
+                              )
+                          )
+                          ( dt
+                          .   
+                            , ( a
+                              .   (href."#UIflow")
+                                ,     localized
+                                    $ ( "Working with the Text Tonsorium"
+                                        "At arbejde med Text Tonsorium"
+                                      )
+                                  : ?UIflowTitle
+                              )
+                          )
+                          ( dt
+                          .   
+                            , ( a
+                              .   (href."#features")
+                                ,   localized$(Features Træk)
+                                  : ?featuresTitle
+                              )
+                          )
+                          ( dt
+                          .   
+                            , ( a
+                              .   (href."#tools")
+                                ,   localized$(Tools Værktøjer)
+                                  : ?toolsTitle
+                              )
+                          )
+                    )
+                    ( h2
+                    .   
+                      , ( a
+                        .   (id.working) (name.working)
+                          , !workingTitle
+                        )
+                    )
+                    ( p
+                    .   
+                      ,     localized
+                          $ ( "The Text Tonsorium computes workflows by considering the goal and working its way backward to the source, the user's input. 
+                  Initially, the user's specifications of the desired output constitute the goal. 
+                  If the goal matches the specifications of the input, then a path from input to goal is found.
+                  Otherwise, if the goal matches the output specifications of a tool, 
+                  then the input specifications of that tool constitute the new goal, and the procedure is repeated.
+                  The Text Tonsorium finds all workflows by trying out all tools and all tool parameter combinations."
+                              "Text Tonsorium beregner arbejdsgange ved at kigge på målet og finde en vej tilbage til \"kilden\", brugerens input.
+                          Til at begynde med er målet lig med brugerens ønsker i forhold til outputtet.
+                          Hvis målet passer med inputtets specifikationer, er der fundet en sti fra input til mål.
+                          Hvis det ikke er tilfældet, men der er et værktøj med outputspecifikationer der passer til målet,
+                          så bliver inputspecifikationerne af dette værktøj det nye mål, og proceduren gentager sig.
+                          Text Tonsorium finder alle arbejdsgange ved at afprøve alle værktøjer og alle værktøjsindstillinger."
+                            )
+                          (br.,)
+                            localized
+                          $ ( "The full set of workflows is not presented to the user in its entierity.
+                         In general, there will be workflows that do not make much sens for a user.
+                         Many workflows will be pruned away:"
+                              "Brugeren bliver ikke præsenteret for den fulde samling af arbejdsgange.
+                            Der vil næsten altid være arbejdsgange som ikke giver så meget mening for en bruger.
+                            Derfor finder der en kraftig beskæring sted som fjerner:"
+                            )
+                    )
+                    ( h2
+                    .   
+                      , ( a
+                        .   (id.UIflow) (name.UIflow)
+                          , !UIflowTitle
+                        )
+                    )
+                    ( p
+                    .   
+                      ,   localized
+                        $ ( "The Text Tonsorium may compose many workflows that all lead to your goal. It will then ask you to choose one of the proposed workflows. In general, the more detail you add to your goal, the fewer solutions the Text Tonsorium will find, even zero. "
+                            "Ofte beregner Text Tonsorium mange workflows, som alle fører til dit mål, og så skal du vælge en af disse. Som tommelfingerregel gælder det at hvis du udtrykker dit mål i flere detaljer, vil der være færre forslag til workflows, og måske endda ingen."
+                          )
+                    )
+                    ( dl
+                    .   
+                      ,   (dt.,"1: " localized$Upload)
+                          ( dd
+                          .   
+                            ,     localized
+                                $ ( "You can upload your input in three ways:"
+                                    "Du kan uploade din tekst på tre måder:"
                                   )
-                                : ? (description.?description) ?
-                              )
-                          & readTable$!t
-                          &   ( a
-                              .   (id.!t) (name.!t)
-                                , (h2.,localized$!n)
-                              )
-                              (p.,localized$!description)
-                              ( dl
-                              .   
-                                ,   map
-                                  $ ( ( 
-                                      =   n d a p f
-                                        .   !arg:(?n.?a.?d)
-                                          & (     !cumfeat
-                                                : ( 
-                                                  | ?+!s\L(?*!a^?p*?)+?
-                                                  )
-                                              &   (dt.,localized$!n)
-                                                  ( !d:
-                                                  | (dd.,localized$!d)
-                                                  )
-                                                  (     !sT
-                                                      :   ?
-                                                          (? !a ?.?f)
-                                                          ?
-                                                    & readTable$!f
-                                                    & ( dd
-                                                      .   
-                                                        , ( dl
-                                                          .   
-                                                            ,   map
-                                                              $ ( ( 
-                                                                  =     full
-                                                                        short
-                                                                        dsc
-                                                                    .       !arg
-                                                                          : ( ?full
-                                                                            . ?short
-                                                                            . ?dsc
-                                                                            )
-                                                                        &   !cumfeat
-                                                                          : ( 
-                                                                            |   ?
-                                                                              +   !s
-                                                                                \L ( ?
-                                                                                  *   !a
-                                                                                    ^ ( ?
-                                                                                      +   ?
-                                                                                        * !short
-                                                                                        * ?
-                                                                                      + ?
-                                                                                      )
-                                                                                  * ?
-                                                                                  )
-                                                                              + ?
-                                                                            )
-                                                                        &   ( dt
-                                                                            .   
-                                                                              ,   localized
-                                                                                $ !full
-                                                                            )
-                                                                            ( dd
-                                                                            .   
-                                                                              ,   localized
-                                                                                $ !dsc
-                                                                            )
-                                                                      | 
-                                                                  )
-                                                                . !!f
-                                                                )
-                                                          )
-                                                      )
-                                                  | 
-                                                  )
-                                            | 
+                                ( dl
+                                .   
+                                  ,   ( dt
+                                      .   
+                                        ,   localized
+                                          $ ("file upload" "fil upload")
+                                      )
+                                      ( dd
+                                      .   
+                                        ,     localized
+                                            $ ( "Text Tonsorium can handle many different input formats."
+                                                "Text Tonsorium kan håndtere mange forskellige inputformater."
+                                              )
+                                            (br.,)
+                                              localized
+                                            $ ( "You are not limited to uploading a single file. We have done batches of over 100 files."
+                                                "Du er ikke begrænset til upload af en enkel fil. Vi har gode erfaringer med grupper med over 100 filer."
+                                              )
+                                      )
+                                      (dt.,localized$("via URL" "via URL"))
+                                      ( dd
+                                      .   
+                                        ,   localized
+                                          $ ( "You can enter a list of URLs. Notice that some web pages require JavaScript to be active in the browser. Such webpages cannot be fetched successfully."
+                                              "Du kan give en liste af URLer. Bemærk at nogle websider kræver at JavaScript er aktiveret i din browser. Sådanne sider kan ikke hentes af Text Tonsorium."
                                             )
                                       )
-                                    . !!t
-                                    )
-                              )
-                      )
-                    . !feats
+                                      ( dt
+                                      .   
+                                        , localized$("direct typing" skrive)
+                                      )
+                                      ( dd
+                                      .   
+                                        ,   localized
+                                          $ ( "You can type in a text"
+                                              "Du kan skrive en tekst."
+                                            )
+                                      )
+                                )
+                          )
+                          ( dt
+                          .   
+                            ,   "2: "
+                                  localized
+                                $ ("Specify what you want" "Fortæl hvad du vil")
+                          )
+                          (dd.,Input)
+                          (dd.,localized$(Goal Mål))
+                          ( dt
+                          .   
+                            ,   "3: "
+                                  localized
+                                $ ("Select a workflow" "Vælg en arbejdsgang")
+                          )
+                          ( dt
+                          .   
+                            ,   "4: "
+                                  localized
+                                $ ( "Launch the selected workflow"
+                                    "Start den valgte arbejdsgang"
+                                  )
+                          )
+                          ( dt
+                          .   
+                            ,   "5: "
+                                  localized
+                                $ ( "Inspect/download results"
+                                    "Inspicer/Hent resultater"
+                                  )
+                          )
                     )
+                    ( h2
+                    .   
+                      , ( a
+                        .   (id.features) (name.features)
+                          , !featuresTitle
+                        )
+                    )
+                    (p.,blbla)
+                    ( dl
+                    .   
+                      ,   map
+                        $ ( ( 
+                            =   n d t
+                              .     !arg
+                                  : ( 
+                                    .   ? (name.?n) ?
+                                      : ? (description.?d) ?
+                                      : ? (table.?t) ?
+                                    )
+                                &   ( dt
+                                    .   
+                                      , ( a
+                                        .   (href.str$("#" !t))
+                                          , localized$!n
+                                        )
+                                    )
+                                    (dd.,localized$!d)
+                            )
+                          . !feats
+                          )
+                    )
+                      map
+                    $ ( ( 
+                        =   n t s sT description
+                          .     !arg
+                              : ( 
+                                .   ? (name.?n) ?
+                                  : ? (table.?t) ?
+                                  : ? (short.?s) ?
+                                  : ( ? (specificationTable.?sT) ?
+                                    | ?&:?sT
+                                    )
+                                  : ? (description.?description) ?
+                                )
+                            & readTable$!t
+                            &   ( a
+                                .   (id.!t) (name.!t)
+                                  , (h3.,localized$!n)
+                                )
+                                (p.,localized$!description)
+                                ( dl
+                                .   
+                                  ,   map
+                                    $ ( ( 
+                                        =   n d a p f
+                                          .   !arg:(?n.?a.?d)
+                                            & (     !cumfeat
+                                                  : ( 
+                                                    | ?+!s\L(?*!a^?p*?)+?
+                                                    )
+                                                &   (dt.,localized$!n)
+                                                    ( !d:
+                                                    | (dd.,localized$!d)
+                                                    )
+                                                    (     !sT
+                                                        :   ?
+                                                            (? !a ?.?f)
+                                                            ?
+                                                      & readTable$!f
+                                                      & ( dd
+                                                        .   
+                                                          , ( dl
+                                                            .   
+                                                              ,   map
+                                                                $ ( ( 
+                                                                    =     full
+                                                                          short
+                                                                          dsc
+                                                                      .       !arg
+                                                                            : ( ?full
+                                                                              . ?short
+                                                                              . ?dsc
+                                                                              )
+                                                                          &   !cumfeat
+                                                                            : ( 
+                                                                              |   ?
+                                                                                +   !s
+                                                                                  \L ( ?
+                                                                                    *   !a
+                                                                                      ^ ( ?
+                                                                                        +   ?
+                                                                                          * !short
+                                                                                          * ?
+                                                                                        + ?
+                                                                                        )
+                                                                                    * ?
+                                                                                    )
+                                                                                + ?
+                                                                              )
+                                                                          &   ( dt
+                                                                              .   
+                                                                                ,   localized
+                                                                                  $ !full
+                                                                              )
+                                                                              ( dd
+                                                                              .   
+                                                                                ,   localized
+                                                                                  $ !dsc
+                                                                              )
+                                                                        | 
+                                                                    )
+                                                                  . !!f
+                                                                  )
+                                                            )
+                                                        )
+                                                    | 
+                                                    )
+                                              | 
+                                              )
+                                        )
+                                      . !!t
+                                      )
+                                )
+                        )
+                      . !feats
+                      )
+                    ( h2
+                    .   
+                      , ( a
+                        .   (id.tools) (name.tools)
+                          , !toolsTitle
+                        )
+                    )
+                    (p.,blbla)
+                    ( table
+                    .   
+                      ,   ( thead
+                          .   
+                            ,   (th.,"#")
+                                (th.,"Name of the tool")
+                                (th.,"Supported languages")
+                          )
+                          ( tbody
+                          .   
+                            ,   map
+                              $ ( ( 
+                                  =   Title
+                                    .     !arg
+                                        : ( ?
+                                          .   ? (Title.?Title) ?
+                                            : ? (ToolID.?ToolID) ?
+                                          )
+                                      & ( tr
+                                        .   
+                                          ,   ( td
+                                              . ,!toolNr+1:?toolNr
+                                              )
+                                              ( td
+                                              .   
+                                                , ( a
+                                                  .   ( href
+                                                      . str$("#" !ToolID)
+                                                      )
+                                                    , !Title
+                                                  )
+                                              )
+                                              (td.,langlist$!ToolID)
+                                        )
+                                  )
+                                . !tools
+                                )
+                          )
+                    )
+                      map
+                    $ ( ( 
+                        =   Description ToolID Title
+                          .       !arg
+                                : ( ?
+                                  .   ? (ToolID.?ToolID) ?
+                                    : ? (Title.?Title) ?
+                                    : ? (Description.?Description) ?
+                                  )
+                              &   ( a
+                                  .   (id.!ToolID) (name.!ToolID)
+                                    , (h3.,!Title)
+                                  )
+                                  (p.,!Description)
+                            | 
+                        )
+                      . !tools
+                      )
                 )
               )
       )
