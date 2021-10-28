@@ -686,9 +686,9 @@ try {
         $period = "";
         if($Iperiodc20 || $Operiodc20)
             {
-            if($Iappnrm)
+            /*if($Iappnrm)
                 $period = "c20"; // Early 20th century
-            else
+            else*/
                 $period = "c19"; // Late modern, but not following official orthografic rules. 19th century.
             }
         else if($Iperiodc13 || $Operiodc13) // medieval
