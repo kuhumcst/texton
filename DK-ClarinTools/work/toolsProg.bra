@@ -16082,7 +16082,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
                 )
             : ?shapes
-          & (600.700):(?canvasX.?canvasY)
+          & (600.600):(?canvasX.?canvasY)
           &     map
               $ ( ( 
                   =   step type offset
@@ -16204,6 +16204,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 + (stroke-width.4)
                               , 
                             )
+                          + (from.!from)
+                          + (to.!to)
                         , 
                         )
                   )
@@ -16261,6 +16263,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     .   
                                       ,   "
 var svgns = \"http://www.w3.org/2000/svg\";
+var g;
 var steps = "
                                           !stappen
                                           ";
@@ -16276,13 +16279,36 @@ function ei(dim, cx, cy, r) {
         attrbutes = thing[\"attributes\"];
         console.log('attrbutes:' + JSON.stringify(attrbutes, null, 4));
         var keys = Object.keys(attrbutes);
-        console.log('keys:' + keys);
+        console.log('attributes-keys:' + keys);
         var j;
         for(j = 0;j < keys.length;++j){
             thng.setAttribute(keys[j],attrbutes[keys[j]]);
         }
+    
+        keys = Object.keys(thing);
+        console.log('thing-keys:' + keys);
+        var Here = -1;
+        var From = -1;
+        var To = -1;
+        for (i = 0; i < keys.length; i++) {
+            if (keys[i] == \"step\") {
+                Here = thing[\"step\"];
+                name = \"step\"+Here;
+                break;
+            }
+            else if (keys[i] == \"from\")  {
+                From = thing[\"from\"];
+                To = thing[\"to\"];
+                name = \"from\" + From + \"to\"+To;
+                break;
+            }
+        }
+        console.log('Here:'+Here+' From:'+From+' To:'+To);
+        console.log(\"Cname:\" + name);
+        thng.setAttribute(\"id\",name);
         g.appendChild(thng);
     }
+
     
     this.dim = dim;
     var svg = this;
@@ -16325,26 +16351,86 @@ function ei(dim, cx, cy, r) {
     fewerdimensions.addEventListener(\"click\", clickfewer, false);
     var ip2 = document.getElementById(\"ip2\");
     ip2.appendChild(this.svg);
+    return g;
 };
 
 var Ei;
-var dim = 2;
+var dim = 5;
+    
+function updateVis(dim) {
+
+    function updateThing(thing) {
+        console.log('thing:' + JSON.stringify(thing, null, 4));
+        var create = thing[\"Create\"];
+        console.log('create:' + JSON.stringify(create, null, 4));
+        var thng = document.createElementNS(svgns, thing[\"Create\"]);
+        attrbutes = thing[\"attributes\"];
+        console.log('attrbutes:' + JSON.stringify(attrbutes, null, 4));
+        var keys = Object.keys(attrbutes);
+        console.log('keys:' + keys);
+        var j;
+        for(j = 0;j < keys.length;++j){
+            thng.setAttribute(keys[j],attrbutes[keys[j]]);
+        }
+    
+        keys = Object.keys(thing);
+        console.log('thing-keys:' + keys);
+        var Here = -1;
+        var From = -1;
+        var To = -1;
+        for (i = 0; i < keys.length; i++) {
+            if (keys[i] == \"step\") {
+                Here = thing[\"step\"];
+                name = \"step\"+Here;
+                break;
+            }
+            else if (keys[i] == \"from\")  {
+                From = thing[\"from\"];
+                To = thing[\"to\"];
+                name = \"from\" + From + \"to\"+To;
+                break;
+            }
+        }
+        console.log('Here:'+Here+' From:'+From+' To:'+To);
+        console.log(\"Uname:\" + name);
+
+        thenums = name.match(/\\d+/g);
+        console.log('thenums:'+thenums);
+        console.log('NUMBERS');
+        visibility = 'visible';
+        thenums.forEach(function(thenum) {
+            console.log(thenum);
+            if(thenum > dim)
+                visibility = 'hidden';
+        });
+
+        thng = document.getElementById(name);
+        console.log('thng:' + JSON.stringify(thng, null, 4));
+
+        thng.setAttribute(\"visibility\",visibility);
+    }
+    console.log('updateVis:'+dim);
+    steps.forEach(updateThing);
+}
 
 function clickhome(evt) {
-    dim = 1;
-    document.getElementById(\"dimens\").firstChild.nodeValue = dim + ' dimension' + ((dim > 1) ? 's' : '');
+    dim = 0;
+    document.getElementById(\"dimens\").firstChild.nodeValue = dim + ' dimension' + ((dim != 1) ? 's' : '');
+    updateVis(dim);
 }
 
 function clickmore(evt) {
-    document.getElementById(\"dimens\").firstChild.nodeValue = dim + ' dimension' + ((dim > 1) ? 's' : '');
     dim += 1;
+    document.getElementById(\"dimens\").firstChild.nodeValue = dim + ' dimension' + ((dim != 1) ? 's' : '');
+    updateVis(dim);
 }
 
 function clickfewer(evt) {
-    if (dim > 2) {
+    if (dim > 0) {
         dim -= 1;
     }
-    document.getElementById(\"dimens\").firstChild.nodeValue = (dim - 1) + ' dimension' + ((dim > 2) ? 's' : '');
+    document.getElementById(\"dimens\").firstChild.nodeValue = (dim - 1) + ' dimension' + ((dim != 1) ? 's' : '');
+    updateVis(dim);
 }
 
 function main(evt) {
@@ -16863,7 +16949,7 @@ function main(evt) {
                         )
                       . !tools
                       )
-                    (p.,illustration$)
+                    illustration$
                 )
               )
       )
