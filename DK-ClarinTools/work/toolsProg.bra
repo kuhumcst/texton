@@ -16491,35 +16491,41 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         (transform."rotate(0)")
                                     , 
                                   )
-                                  ( text
-                                  .     (id.composition)
-                                        (x.div$(!canvasX*1/20+-14.1))
-                                        (y.!canvasY+-150)
-                                    ,   localized
-                                      $ ( "Workflow composition"
-                                          "Beregning af arbejdsgang"
-                                        )
+                                  ( 
+                                  | ( text
+                                    .     (id.composition)
+                                          (x.div$(!canvasX*1/20+-14.1))
+                                          (y.!canvasY+-150)
+                                      ,   localized
+                                        $ ( "Workflow composition and enactment"
+                                            "Beregning og eksekvering af arbejdsgang"
+                                          )
+                                    )
                                   )
-                                  ( text
-                                  .     (id.edges)
-                                        (x.div$(!canvasX*1/20.1)+100)
-                                        (y.!canvasY+-127)
-                                    , "0 edges"
+                                  ( 
+                                  | ( text
+                                    .     (id.edges)
+                                          (x.div$(!canvasX*1/20.1)+100)
+                                          (y.!canvasY+-127)
+                                      , "0 edges"
+                                    )
                                   )
-                                  ( text
-                                  .     (id.composition)
-                                        (x.div$(!canvasX*1/20.1)+-14)
-                                        (y.!canvasY+-55)
-                                    ,   localized
-                                      $ ( "Workflow enactment"
-                                          "Kørsel af arbejdsgang"
-                                        )
-                                  )
-                                  ( text
-                                  .     (id.trin)
-                                        (x.div$(!canvasX*1/20.1)+100)
-                                        (y.!canvasY+-32)
-                                    , "0 steps"
+                                  ( 
+                                  |   ( text
+                                      .     (id.composition)
+                                            (x.div$(!canvasX*1/20.1)+-14)
+                                            (y.!canvasY+-55)
+                                        ,   localized
+                                          $ ( "Workflow enactment"
+                                              "Kørsel af arbejdsgang"
+                                            )
+                                      )
+                                      ( text
+                                      .     (id.trin)
+                                            (x.div$(!canvasX*1/20.1)+100)
+                                            (y.!canvasY+-32)
+                                        , "0 steps"
+                                      )
                                   )
                                   ( text
                                   .     (id.input)
@@ -16641,26 +16647,26 @@ function ei(chrono, trin, cx, cy, r) {
 
     
     this.homenode = homenode = navigationShape("
-                                  div$(!canvasX*1/20.1)
+                                  div$(!canvasX*3/4.1)
                                   ","
-                                  !canvasY+-130
+                                  53
                                   ",-2);
     this.fewerdimensions = fewerdimensions = navigationShape("
-                                  div$(!canvasX*1/20.1)+30
+                                  div$(!canvasX*3/4.1)+30
                                   ","
-                                  !canvasY+-130
+                                  53
                                   ",-1);
     this.moredimensions = moredimensions = navigationShape("
-                                  div$(!canvasX*1/20.1)+60
+                                  div$(!canvasX*3/4.1)+60
                                   ","
-                                  !canvasY+-130
+                                  53
                                   ",1);
     this.endnode = endnode = navigationShape("
-                                  div$(!canvasX*1/20.1)+90
+                                  div$(!canvasX*3/4.1)+90
                                   ","
-                                  !canvasY+-130
+                                  53
                                   ",2);
-
+    /*
     this.startnode = startnode = navigationShape("
                                   div$(!canvasX*1/20.1)
                                   ","
@@ -16681,7 +16687,7 @@ function ei(chrono, trin, cx, cy, r) {
                                   ","
                                   !canvasY+-35
                                   ",2);
-
+    */
     steps.forEach(plotThing);
 
     this.svg = g;
@@ -16692,12 +16698,12 @@ function ei(chrono, trin, cx, cy, r) {
     fewerdimensions.addEventListener(\"click\", clickfewer, false);
     moredimensions.addEventListener(\"click\", clickmore, false);
     endnode.addEventListener(\"click\", clickend, false);
-
+    /*
     startnode.addEventListener(\"click\", clickstart, false);
     previousstep.addEventListener(\"click\", clickprevious, false);
     nextstep.addEventListener(\"click\", clicknext, false);
     finishnode.addEventListener(\"click\", clickfinish, false);
-
+    */
     var ip2 = document.getElementById(\"ip2\");
     ip2.appendChild(this.svg);
 
@@ -16881,31 +16887,52 @@ function updateVis3(chrono) {
 
 function clickhome(evt) {
     chrono = 0;
-    document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
+    trin = 0;
+//    document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
     updateVis3(chrono);
 }
 
 function clickfewer(evt) {
     if (chrono > 0) {
         chrono -= 1;
+        if(chrono <= 23)
+            {
+//            document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
+            updateVis3(chrono);
+            }
+        else
+            {
+            trin = chrono - 24;
+            //document.getElementById(\"trin\").firstChild.nodeValue = trin + ' step' + ((trin != 1) ? 's' : '');
+            updateVis2(trin);
+            }
     }
-    document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
-    updateVis3(chrono);
 }
 
 function clickmore(evt) {
-    if(chrono < 23)
+    if(chrono < (23+12+1)) {
         chrono += 1;
-    document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
-    updateVis3(chrono);
+        if(chrono <= 23)
+            {
+//            document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
+            updateVis3(chrono);
+            }
+        else
+            {
+            trin = chrono - 24;
+            //document.getElementById(\"trin\").firstChild.nodeValue = trin + ' step' + ((trin != 1) ? 's' : '');
+            updateVis2(trin);
+            }
+    }
 }
 
 function clickend(evt) {
     chrono = 23;
-    document.getElementById(\"edges\").firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
+    trin = 12;
+//    document.getElementById('edges').firstChild.nodeValue = chrono + ' edge' + ((chrono != 1) ? 's' : '');
     updateVis3(chrono);
 }
-
+/*
 function clickstart(evt) {
     trin = 0;
     document.getElementById(\"trin\").firstChild.nodeValue = trin + ' step' + ((trin != 1) ? 's' : '');
@@ -16928,11 +16955,12 @@ function clicknext(evt) {
 }
 
 function clickfinish(evt) {
+    chrono = 23;
     trin = 12;
     document.getElementById(\"trin\").firstChild.nodeValue = trin + ' step' + ((trin != 1) ? 's' : '');
     updateVis2(trin);
 }
-
+*/
 function main(evt) {
     Ei = new ei(chrono, trin, 100, 100, 45);
 }
