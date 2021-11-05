@@ -171,7 +171,9 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iformatpdf = false;	/* Format in input is PDF if true */
+        $Oappprtty = false;	/* Appearance in output is pretty printed (nydelig opsætning) if true */
         $Oformathtml = false;	/* Format in output is HTML if true */
         $Oformathtmlpedantic = false;	/* Style of format HTML in output is Exact layoutlayoutbevarende if true */
 
@@ -206,10 +208,20 @@ try {
 /************************
 * input/output features *
 ************************/
+        if( hasArgument("Iapp") )
+            {
+            $Iappnrm = existsArgumentWithValue("Iapp", "nrm");
+            $echos = $echos . "Iappnrm=$Iappnrm ";
+            }
         if( hasArgument("Iformat") )
             {
             $Iformatpdf = existsArgumentWithValue("Iformat", "pdf");
             $echos = $echos . "Iformatpdf=$Iformatpdf ";
+            }
+        if( hasArgument("Oapp") )
+            {
+            $Oappprtty = existsArgumentWithValue("Oapp", "prtty");
+            $echos = $echos . "Oappprtty=$Oappprtty ";
             }
         if( hasArgument("Oformat") )
             {
