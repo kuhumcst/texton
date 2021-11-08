@@ -8792,14 +8792,14 @@ try {
                )
             )
       )
-      "supplement: NF and OF can be very different features bundles.
-       If OF has a feature that NF hasn't, then it is added to NF.
-       If OF has a feature element with the same unsubspecified value as a feature element of NF, 
-       then the NF feature element inherits the subspecifications of the OF feature.
+      "supplement: tgt and src can be very different features bundles.
+       If src has a feature that tgt hasn't, then it is added to tgt.
+       If src has a feature element with the same unsubspecified value as a feature element of tgt, 
+       then the tgt feature element inherits the subspecifications of the src feature.
        A feature (F,a*b*c) has elements a, b and c.
       "
       ( supplement
-      =   f v NF OF A Z updateWithSubSpec
+      =   f v tgt src A Z updateWithSubSpec
         .   ( updateWithSubSpec
             =   vn v e nv nvs ve w0 ws a OnE
               .   !arg:(?vn.?ve:@?v^%?e)
@@ -8821,35 +8821,35 @@ try {
                     )
                 & !nv
             )
-          & !arg:(?NF.?OF)
+          & !arg:(?tgt.?src)
           &   map
             $ ( ( 
-                =   f vO vN vn v A Z ve vs
-                  .   !arg:(?f,?vO)
-                    & (   !NF:?A (!f,?vN:?vn) ?Z
+                =   f vsc vN vtg nv A Z ve vs vN
+                  .   !arg:(?f,?vsc)
+                    & (   !tgt:?A (!f,?vN:?vtg) ?Z
                         &   whl
-                          ' ( !vO:%?v*?vO
-                            & (   !v:(?vs.OnE)
+                          ' ( !vsc:%?nv*?vsc
+                            & (   !nv:(?vs.OnE)
                                 &   whl
                                   ' ( !vs:?*(%^%:?ve)*?vs
-                                    &   updateWithSubSpec$(!vn.!ve)
-                                      : ?vn
+                                    &   updateWithSubSpec$(!vtg.!ve)
+                                      : ?vtg
                                     )
-                              |   !v:%^%
-                                & updateWithSubSpec$(!vn.!v):?vn
+                              |   !nv:%^%
+                                & updateWithSubSpec$(!vtg.!nv):?vtg
                               | 
                               )
                             )
-                        & ( !vn:!vN
-                          | !A (!f,!vn) !Z:?NF
+                        & ( !vtg:!vN
+                          | !A (!f,!vtg) !Z:?tgt
                           )
-                      | !arg !NF:?NF
+                      | !arg !tgt:?tgt
                       )
                     & 
                 )
-              . !OF
+              . !src
               )
-          & sort$!NF
+          & sort$!tgt
       )
       "containedBy takes two feature bundles, 'short' and 'long'.
        It tries to prove that the short bundle is compatible with the long one.
@@ -9315,48 +9315,48 @@ try {
                 & !nres
             )
           & "updateOFwithNF: let OF inherit subspecs from NF if OF and NF have same feature value, but OF is not subspecified. 
-             If a feature has different values in OF and NF, replace OF's value with NF's
+             If a feature has different values in OF and NF, replace OF's value with NF's (In this, updateOFwithNF$ is different from supplement$)
              Add any features in NF that OF does not have."
           & ( updateOFwithNF
-            =   OF NF
-              .   !arg:(?OF.?NF)
+            =   tgt src
+              .   !arg:(?tgt.?src)
                 &   map
                   $ ( ( 
-                      =   f nvs ovs v e E A Z a z nsg nv
-                        .   !arg:(?f,?nvs)
-                          & sig$!nvs:?nsg
-                          & (   !OF:?A (!f,?ovs) ?Z
-                              & (   sig$!ovs:!nsg
+                      =     f vsc vtg v e E A
+                          , Z a z nsg nv vs
+                        .   !arg:(?f,?vsc)
+                          & sig$!vsc:?nsg
+                          & (     !tgt
+                                : ?A (!f,?vN:?vtg) ?Z
+                              & (   sig$!vtg:!nsg
                                   &   whl
-                                    ' ( !nvs:%?nv*?nvs
+                                    ' ( !vsc:%?nv*?vsc
                                       & (   !nv:(?nv.OnE)
                                           &   whl
-                                            ' ( !nv:?*%@?v^%?e*?nv
-                                              & !ovs:?a*!v^?E*?z
-                                              & ( ( !e:!E
-                                                  | !E:~1
-                                                  )
-                                                | !a*!v^!e*!z:?ovs
+                                            ' ( !vs:?*%@?v^%?e*?vs
+                                              & !vtg:?a*!v^?E*?z
+                                              & ( !e:!E
+                                                | !a*!v^!e*!z:?vtg
                                                 )
                                               )
                                         |   !nv:@?v^%?e
-                                          & !ovs:?a*!v^?E*?z
-                                          & ( ( !e:!E
-                                              | !E:~1
-                                              )
-                                            | !a*!v^!e*!z:?ovs
+                                          & !vtg:?a*!v^?E*?z
+                                          & ( !e:!E
+                                            | !a*!v^!e*!z:?vtg
                                             )
                                         )
                                       )
-                                  & !A (!f,!ovs) !Z:?OF
-                                | !A (!f,!nvs) !Z:?OF
+                                  & ( !vtg:!vN
+                                    | !A (!f,!vtg) !Z:?tgt
+                                    )
+                                | !A (!f,!vsc) !Z:?tgt
                                 )
-                            | !arg !OF:?OF
+                            | !arg !tgt:?tgt
                             )
                       )
-                    . !NF
+                    . !src
                     )
-                & sort$!OF
+                & sort$!tgt
             )
           & ( harmonizeSubspecsOnSimilarFeatures
             =   OF NF
@@ -9516,6 +9516,7 @@ try {
           & 0:?NN
           &   whl
             ' ( !arg:%?pipe1+?arg
+              & lst$(pipe1,path$pipe1,APP)
               & 1+!NN:?NN
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
@@ -9798,7 +9799,7 @@ try {
                        the different ways ALL differ more than only at
                        the subspec level."
                         & !arg
-                      |   log$(nsig !nsig)
+                      |   log$(sig !sig nsig !nsig)
                         & log$(Substarg !arg)
                         & !arg
                       )
@@ -9809,6 +9810,14 @@ try {
           & 0:?newpipes
           & log$(whl calls !calls)
           & 0:?Npipes
+          &   ( put$(,path$pipesN1,NEW)
+              & put$(,path$pipesN2,NEW)
+              & put$(,path$pipesN3,NEW)
+              & put$(,path$pipe1,NEW)
+              & put$(,path$pipe2,NEW)
+              & put$(,path$pipe3,NEW)
+              )
+              lst$(pipes,pipes,NEW)
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -9853,6 +9862,7 @@ try {
                     )
                   $ !pipesN
                 : ?pipesN
+              & lst$(pipesN,path$pipesN1,APP)
               & log$gotAsum
               & "The 1 is the initial stop list, which is formed as a product."
               & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
@@ -9865,8 +9875,10 @@ try {
                   & log$filterDone
                 | 
                 )
+              & lst$(pipesN,path$pipesN2,APP)
               & log$percolateForgottenFeatures
               & percolateForgottenFeatures$!pipesN:?pipesN
+              & lst$(pipesN,path$pipesN3,APP)
               & !pipesN:?+[?NNN
               &   whl
                 ' ( !pipesN:%?pipe+?pipesN
