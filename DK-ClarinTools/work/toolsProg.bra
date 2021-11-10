@@ -9516,7 +9516,6 @@ try {
           & 0:?NN
           &   whl
             ' ( !arg:%?pipe1+?arg
-              & lst$(pipe1,path$pipe1,APP)
               & 1+!NN:?NN
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
               & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
@@ -9810,14 +9809,6 @@ try {
           & 0:?newpipes
           & log$(whl calls !calls)
           & 0:?Npipes
-          &   ( put$(,path$pipesN1,NEW)
-              & put$(,path$pipesN2,NEW)
-              & put$(,path$pipesN3,NEW)
-              & put$(,path$pipe1,NEW)
-              & put$(,path$pipe2,NEW)
-              & put$(,path$pipe3,NEW)
-              )
-              lst$(pipes,pipes,NEW)
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -9844,7 +9835,6 @@ try {
                       & !ax !pipesN:?pipesN
                       )
                   )
-              & log$sort
               & sort$!pipesN:?pipesN
               &     ( 
                     =   L a
@@ -9862,8 +9852,6 @@ try {
                     )
                   $ !pipesN
                 : ?pipesN
-              & lst$(pipesN,path$pipesN1,APP)
-              & log$gotAsum
               & "The 1 is the initial stop list, which is formed as a product."
               & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
               & !pipesN:?+[?NNN
@@ -9875,10 +9863,7 @@ try {
                   & log$filterDone
                 | 
                 )
-              & lst$(pipesN,path$pipesN2,APP)
-              & log$percolateForgottenFeatures
               & percolateForgottenFeatures$!pipesN:?pipesN
-              & lst$(pipesN,path$pipesN3,APP)
               & !pipesN:?+[?NNN
               &   whl
                 ' ( !pipesN:%?pipe+?pipesN
@@ -17025,10 +17010,9 @@ function yolk(cx, cy, r) {
             }
         }
         thng.setAttribute('id',name);
-        //if(Here == 0 || Here == 12)
-            thng.setAttribute('opacity',1);
-        /*else
-            thng.setAttribute('opacity',0.15);*/
+        thng.setAttribute('opacity',1);
+        if(From == 3 || From == 8)
+            thng.setAttribute('stroke-dasharray','20,10');
         g.appendChild(thng);
     }
     
@@ -17060,10 +17044,10 @@ function yolk(cx, cy, r) {
     this.svg2 = g;
     //this.root2 = document.getElementById('svgwortel');
 
-    this.startstate.addEventListener('click', clickhome2, false);
-    this.previousstate.addEventListener('click', clickfewer2, false);
-    this.nextstate.addEventListener('click', clickmore2, false);
-    this.endstate.addEventListener('click', clickend2, false);
+    this.startstate.addEventListener('click', clickStartState, false);
+    this.previousstate.addEventListener('click', clickPreviousState, false);
+    this.nextstate.addEventListener('click', clickNextState, false);
+    this.endstate.addEventListener('click', clickEndState, false);
 
     var ip3 = document.getElementById('ip3');
     ip3.appendChild(this.svg2);
@@ -17161,8 +17145,18 @@ function updateVis4(state) {
         }
 
         thng = document.getElementById(name);
-        if(thng)
+        if(thng) {
             thng.setAttribute('opacity',opacity);
+            if(From == 8 || From == 3) {
+                if(state == 1) {
+                    thng.setAttribute('stroke-dasharray','20,10');
+                }
+                else {
+                    thng.setAttribute('stroke-dasharray','');
+                }
+            }
+        }
+           
     }
     steps2.forEach(updateThing);
     for (text = 0;text < 23;++text) {
@@ -17179,26 +17173,26 @@ function updateVis4(state) {
     }
 }
 
-function clickhome2(evt) {
+function clickStartState(evt) {
     state = 1;
     updateVis4(state);
 }
 
-function clickfewer2(evt) {
+function clickPreviousState(evt) {
     if (state > 1) {
         state -= 1;
         updateVis4(state);
     }
 }
 
-function clickmore2(evt) {
+function clickNextState(evt) {
     if(state < 9) {
         state += 1;
         updateVis4(state);
     }
 }
 
-function clickend2(evt) {
+function clickEndState(evt) {
     state = 9;
     updateVis4(state);
 }
@@ -17402,8 +17396,8 @@ function main2(evt) {
                     ( p
                     .   
                       ,     localized
-                          $ ( "A workflow design consists of one or more tools connected by data streams. We depict tools as shapes (squares, circles, stars, etc.) and data streams as edges between the shapes. "
-                              "En arbejdsgang består af et eller flere værktøjer forbundet ved datastrømme. Vi afbilder værktøjer som figurer (firkanter, cirkler, stjerne, o.s.v.) og datastrømme som linjer mellem dem. "
+                          $ ( "A workflow design consists of one or more tools connected by data streams, see Figure 1. In this diagra, we depict tools as shapes (squares, circles, stars, etc.) and data streams as edges between the shapes. "
+                              "En arbejdsgang består af et eller flere værktøjer forbundet ved datastrømme, se Figur 1. I diagrammet afbildes værktøjer som figurer (firkanter, cirkler, stjerne, o.s.v.) og datastrømme som linjer imellem dem. "
                             )
                           (br.,)
                             localized
@@ -17620,8 +17614,8 @@ function main2(evt) {
                     ( p
                     .   
                       ,   localized
-                        $ ( "The full set of workflows is not presented to the user in its entirety. In general, there will be workflows that do not make much sense to a user. Many workflows will be pruned away."
-                            "Brugeren bliver ikke præsenteret for den fulde samling af arbejdsgange. Der vil næsten altid være arbejdsgange som ikke giver så meget mening for en bruger. Derfor finder der en kraftig beskæring sted som fjerner mange arbejdsgange."
+                        $ ( "The full set of workflows found by the Text Tonsorium is not presented to the user in its entirety. In general, there will be workflows that do not make much sense to a user. Many workflows will be pruned away."
+                            "Brugeren bliver ikke præsenteret for den fulde samling af de arbejdsgange som Text Tonsorium har fundet. Der vil næsten altid være arbejdsgange som ikke giver så meget mening for en bruger. Derfor finder der en kraftig beskæring sted som fjerner mange arbejdsgange."
                           )
                     )
                     ( h4
@@ -17748,7 +17742,11 @@ function main2(evt) {
                           )
                     )
                     ( h4
-                    . ,localized$("'Smelly' tools" "'Lugtende' værktøjer")
+                    .   
+                      ,   localized
+                        $ ( "Tools repelling another tool by 'smell'"
+                            "Værktøjer som frastøder et andet værktøj med 'lugtmarkering'"
+                          )
                     )
                     ( p
                     .   
