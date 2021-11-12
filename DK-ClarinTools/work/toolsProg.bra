@@ -11097,6 +11097,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 ". "
                 !Description
             : ?appdesc
+          & log$(ToolID !ToolID)
           &     ("?"."xml version='1.0' encoding='UTF-8'")
                 \n
                 ( TEI
@@ -11653,8 +11654,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( doneJob
       =     A Z JobNr jobID ZZ jobid2 a z files facet S
           , prevTitle findOLACTITLEinPreviousSteps
-          , ctb ctbid CTBID filename
-          , toolURL parms file TITLE DATE
+          , ctb ctbid CTBID filename status
+          , toolURL parms file TITLE DATE SPANGRPS
           , OLACTITLE DATE EMAIL TBA AVAILABILITY
           , SPANGRP SPANGRPfil SPANGRPfilWithMetadata
           , OUTPUTFACET XMLID ITEMS ZZ LANGUAGE identifier
@@ -11783,77 +11784,104 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                   & (!prevTitle.!OLACTITLE)
               )
-            &   whl
-              ' (   !jobs
-                  :   ?A
-                      ( !JobNr
-                      .   !jobID
-                          (|starting|waiting)
-                      . ?ZZ:?files
-                      . ?toolURL
-                      . ?parms
-                      . ?filename
-                      )
-                      ?Z
-                &     !A
-                      ( !JobNr
-                      . !jobID done
-                      . !files
-                      . !toolURL
-                      . !parms
-                      . !filename
-                      )
-                      !Z
-                  : ?jobs
-                & ( !CTBs:? (!JobNr.!jobID.!EMAIL.!CTBID) ?
-                  |     (!CTBs|)
-                        (!JobNr.!jobID.!EMAIL.!CTBID)
-                    : ?CTBs
-                  )
-                & :?prevTitle
-                &   whl
-                  ' ( !files:%?file ?files
-                    &     findOLACTITLEinPreviousSteps
-                        $ ( !jobs
-                          . !Uploads
-                          . !JobNr
-                          . !file
-                          . !prevTitle
-                          . !OLACTITLE
+            & :?toolURL
+            &     map
+                $ ( ( 
+                    =   
+                      .     !arg
+                          : ( !JobNr
+                            .   !jobID
+                                ( ( 
+                                  | starting
+                                  | waiting
+                                  | done
+                                  )
+                                : ?status
+                                )
+                            . ?files
+                            . ?toolURL
+                            . ?parms
+                            . ?filename
+                            )
+                        & ( !status:done
+                          |   ( !JobNr
+                              . !jobID done
+                              . !files
+                              . !toolURL
+                              . !parms
+                              . !filename
+                              )
+                            : ?arg
                           )
-                      : (?prevTitle.?OLACTITLE)
-                    & (     !CTBs
-                          : ? (!JobNr.!file.?ctb.?ctbid) ?
-                        & ( NORELATIONSFILES
-                          |   ensureRelation
-                            $ (!JobNr.!jobID.isDependentOf.!ctb.!ctbid)
+                        & (   !CTBs
+                            : ? (!JobNr.!jobID.!EMAIL.!CTBID) ?
+                          |     (!CTBs|)
+                                (!JobNr.!jobID.!EMAIL.!CTBID)
+                            : ?CTBs
                           )
-                        & ( !ITEMS:? !ctb "::" !ctbid ?
-                          |     !ITEMS
-                                (!ITEMS:|" ")
-                                !ctb
-                                "::"
-                                !ctbid
-                            : ?ITEMS
+                        & :?prevTitle
+                        &   whl
+                          ' ( !files:%?file ?files
+                            &     findOLACTITLEinPreviousSteps
+                                $ ( !jobs
+                                  . !Uploads
+                                  . !JobNr
+                                  . !file
+                                  . !prevTitle
+                                  . !OLACTITLE
+                                  )
+                              : (?prevTitle.?OLACTITLE)
+                            & (     !CTBs
+                                  : ? (!JobNr.!file.?ctb.?ctbid) ?
+                                & ( NORELATIONSFILES
+                                  |   ensureRelation
+                                    $ ( !JobNr
+                                      . !jobID
+                                      . isDependentOf
+                                      . !ctb
+                                      . !ctbid
+                                      )
+                                  )
+                                & ( !ITEMS:? !ctb "::" !ctbid ?
+                                  |     !ITEMS
+                                        (!ITEMS:|" ")
+                                        !ctb
+                                        "::"
+                                        !ctbid
+                                    : ?ITEMS
+                                  )
+                              | 
+                              )
+                            )
+                        & (     !parms
+                              : ?+(O.?+(facet.?facet.?)+?)+?
+                            & (   readTable$subtype2facet
+                                &   !subtype2facet
+                                  : ? (?OUTPUTFACET.!facet) ?
+                              |   readTable$type2facet
+                                &   !type2facet
+                                  : ? (?OUTPUTFACET.!facet) ?
+                              |   !facets
+                                : ? (?OUTPUTFACET.!facet.?) ?
+                              )
+                          | 
                           )
-                      | 
-                      )
+                        & (   !parms
+                            : ?+(O.?+(lang.?LANGUAGE.?)+?)+?
+                          | 
+                          )
+                        & !arg
                     )
-                & (   !parms:?+(O.?+(facet.?facet.?)+?)+?
-                    & (   readTable$subtype2facet
-                        &   !subtype2facet
-                          : ? (?OUTPUTFACET.!facet) ?
-                      |   readTable$type2facet
-                        &   !type2facet
-                          : ? (?OUTPUTFACET.!facet) ?
-                      | !facets:? (?OUTPUTFACET.!facet.?) ?
-                      )
-                  | 
+                  . !jobs
                   )
-                & ( !parms:?+(O.?+(lang.?LANGUAGE.?)+?)+?
-                  | 
-                  )
-                )
+              : ?jobs
+            & (   !toolURL:
+                &   !jobs
+                  :   ?
+                      (!JobNr.!jobID done.?.?toolURL.?.?)
+                      ?
+              | 
+              )
             &   whl
               ' (   !jobs
                   :   ?A
@@ -11871,7 +11899,23 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             & saveTable$CTBs
             & saveTable$jobs
             & (NOPPPES|saveTable$relations)
-            & ( !SPANGRP:? (TEI.?) ?&
+            & (     !SPANGRP
+                  :   ?
+                      ( TEI
+                      .   ?
+                        ,   ?
+                            (teiHeader.,)
+                            ?
+                            (text.,?SPANGRPS)
+                            ?
+                      )
+                      ?
+                & "If a tool produces more than 1 spanGrp, it is obliged to wrap the spanGrps in another element. 
+                   If the TEI doc has an empty teiHeader, it has the function of a wrapper."
+              | :?SPANGRPS
+              )
+            & (   !SPANGRP:? (TEI.?) ?
+                & !SPANGRPS:
               |   Filename$!SPANGRPfil:?SPANGRPfilWithMetadata
                 &     tekstXML
                     $ ( !OLACTITLE|
@@ -11884,7 +11928,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . XMLID
                       . str$!ITEMS
                       . !toolURL
-                      . !SPANGRP|
+                      .   !SPANGRPS:~
+                        | !SPANGRP
+                        | 
                       . !toolURL
                       . !LANGUAGE
                       )
@@ -12566,9 +12612,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     )
                                     ( dd
                                     .   
-                                      ,   (   @(!O:? TEI ?)
-                                            & ( 
-                                              | !format:~teip5
+                                      ,   (   ( @(!O:? TEI ?)
+                                              | !Href2:~
                                               )
                                             & (     !format
                                                   : ( txtbasis
@@ -14340,7 +14385,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             | 
             )
           & !hiddenData (batch.!batch):?hiddenData
-          & log$PPPPPparms
           &     !hiddenData
                 (   !parms:? (desiredtool.?rstr) ?
                   & (desiredtool.!rstr)
