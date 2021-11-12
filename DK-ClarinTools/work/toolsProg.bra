@@ -373,7 +373,7 @@ toolsProg=
           jobAbout
           jobNr
           jobs
-          relations
+          (|NORELATIONSFILES|relations)
           Uploads
           zippedresults
           tooladm
@@ -1422,6 +1422,26 @@ toolsProg=
                   )
             )
       )
+      ( sort
+      =   S L e f
+        .   :?L
+          &   whl
+            ' ( !arg:%?e ?arg
+              & (!e.) !L:?L
+              )
+          &   whl
+            ' ( :?S
+              &   whl
+                ' (!L:%?e %?f ?L&!e+!f !S:?S)
+              & !L !S:?S
+              & !S:% %:?L
+              )
+          & :?L
+          & whl'(!S:#*(?e.)+?S&!e !L:?L)
+          & :?S
+          & whl'(!L:%?e ?L&!e !S:?S)
+          & !S
+      )
       ( reorder
       =     reorderedworkflowlist nr groupIfSameTools
           , workflow weighted presentable
@@ -2362,6 +2382,17 @@ toolsProg=
                   )
             )
           & spotInput$!arg
+      )
+      ( sum2list
+      =   L E
+        .   :?L
+          &   whl
+            ' ( !arg:%?E+?arg
+              & (.!E) !L:?L
+              )
+          & :?arg
+          & whl'(!L:%?E ?L&!E !arg:?arg)
+          & !arg
       )
       ( makeWorkflowRadioButtons
       =     i Nsteps Ntools n o
@@ -3798,26 +3829,6 @@ toolsProg=
               & !A+!M+!Z:?arg
               )
           & !arg
-      )
-      ( sort
-      =   S L e f
-        .   :?L
-          &   whl
-            ' ( !arg:%?e ?arg
-              & (!e.) !L:?L
-              )
-          &   whl
-            ' ( :?S
-              &   whl
-                ' (!L:%?e %?f ?L&!e+!f !S:?S)
-              & !L !S:?S
-              & !S:% %:?L
-              )
-          & :?L
-          & whl'(!S:#*(?e.)+?S&!e !L:?L)
-          & :?S
-          & whl'(!L:%?e ?L&!e !S:?S)
-          & !S
       )
       "
 /*
@@ -9877,6 +9888,12 @@ try {
           & log$(testing calls !calls)
           & (!newpipes.!Npipes)
       )
+      ( saveTask
+      =   
+        .   (!recentTasks:?recentTasks [30 ?|)
+          & !arg !recentTasks:?recentTasks
+          & saveTable$recentTasks
+      )
       ( windFW
       =   nth ZZ pipes pipe
         .   !arg:(?pipes.?nth)
@@ -11298,35 +11315,38 @@ the Items list as input. Step descriptions in the JobStack can look like this:
  *
  * Called from workflow.java
  */"
-      ( relationFile
-      =     A Z JobNr jobID
-          , ContentProvider CTBID ctb ctbid rel reltype
-        .     !arg:(@(?:? #?JobNr).?jobID)
-            & readTable$relations
-            & readTable$CTBs
-            &   !CTBs
-              : ? (!JobNr.!jobID.?ContentProvider.?CTBID) ?
-            & :?rel
-            &   whl
-              ' (   !relations
-                  : ?A (!JobNr.!jobID.?reltype.?ctb.?ctbid) ?Z
-                & !A !Z:?relations
-                &     !rel
-                      !reltype
-                      ";"
-                      !ContentProvider
-                      ";"
-                      !CTBID
-                      ";"
-                      !ctb
-                      ";"
-                      !ctbid
-                      ";;\n"
-                  : ?rel
-                )
-            & (|saveTable$relations)
-            & str$!rel
-          | 
+      ( 
+      | NORELATIONSFILES
+      | ( relationFile
+        =     A Z JobNr jobID
+            , ContentProvider CTBID ctb ctbid rel reltype
+          .     !arg:(@(?:? #?JobNr).?jobID)
+              & readTable$relations
+              & readTable$CTBs
+              &   !CTBs
+                : ? (!JobNr.!jobID.?ContentProvider.?CTBID) ?
+              & :?rel
+              &   whl
+                ' (   !relations
+                    : ?A (!JobNr.!jobID.?reltype.?ctb.?ctbid) ?Z
+                  & !A !Z:?relations
+                  &     !rel
+                        !reltype
+                        ";"
+                        !ContentProvider
+                        ";"
+                        !CTBID
+                        ";"
+                        !ctb
+                        ";"
+                        !ctbid
+                        ";;\n"
+                    : ?rel
+                  )
+              & (|saveTable$relations)
+              & str$!rel
+            | 
+        )
       )
       ( isTEIoutput
       =   format JobNr jobID
@@ -11609,7 +11629,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               ".withmetadata.xml"
             )
       )
-      (RelationsFile=.str$(!arg ".relations.csv"))
+      ( 
+      | NORELATIONSFILES
+      | (RelationsFile=.str$(!arg ".relations.csv"))
+      )
       "
 /**
  * doneJob
@@ -11698,11 +11721,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               )
             & readTable$Uploads
             & readTable$facets
-            & (readTable$relations|:?relations)
-            & ( ensureRelation
-              =   
-                .   !relations:? !arg ?
-                  | !relations !arg:?relations
+            & ( NORELATIONSFILES
+              |   (readTable$relations|:?relations)
+                & ( ensureRelation
+                  =   
+                    .   !relations:? !arg ?
+                      | !relations !arg:?relations
+                  )
               )
             & ( updateOLACTITLE
               =   ELTIT TIT sam TITLE prevTitle OLACTITLE
@@ -11799,8 +11824,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       : (?prevTitle.?OLACTITLE)
                     & (     !CTBs
                           : ? (!JobNr.!file.?ctb.?ctbid) ?
-                        &   ensureRelation
-                          $ (!JobNr.!jobID.isDependentOf.!ctb.!ctbid)
+                        & ( NORELATIONSFILES
+                          |   ensureRelation
+                            $ (!JobNr.!jobID.isDependentOf.!ctb.!ctbid)
+                          )
                         & ( !ITEMS:? !ctb "::" !ctbid ?
                           |     !ITEMS
                                 (!ITEMS:|" ")
@@ -11843,7 +11870,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 )
             & saveTable$CTBs
             & saveTable$jobs
-            & saveTable$relations
+            & (NOPPPES|saveTable$relations)
             & ( !SPANGRP:? (TEI.?) ?&
               |   Filename$!SPANGRPfil:?SPANGRPfilWithMetadata
                 &     tekstXML
@@ -12035,15 +12062,17 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                      . $CTBs
                      )
                  : ?CTBs
-               &     map
-                   $ ( ( 
-                       =   
-                         .   !arg:($jobNr.$jobID.?)
-                           | 
+               & ( NORELATIONSFILES
+                 |     map
+                     $ ( ( 
+                         =   
+                           .   !arg:($jobNr.$jobID.?)
+                             | 
+                         )
+                       . $relations
                        )
-                     . $relations
-                     )
-                 : ?relations
+                   : ?relations
+                 )
                &     map
                    $ ( ( 
                        = .!arg:($jobNr.?)|
@@ -12133,16 +12162,19 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         . !arg
                         )
                   )
-                & :?HTML
-                &   whl
-                  ' (   !Metadata
-                      : ? (?Heading,?Fields) ?Metadata
-                    &     !HTML
-                          (h2.,localized$!Heading)
-                          (dl.,listOfFields$!Fields)
-                      : ?HTML
-                    )
-                & (!HTML.!type)
+                & (   map
+                    $ ( ( 
+                        =   Heading Fields L
+                          .     !arg:(?Heading,?Fields)
+                              & listOfFields$!Fields:~:?L
+                              &   (h2.,localized$!Heading)
+                                  (dl.,!L)
+                            | 
+                        )
+                      . !Metadata
+                      )
+                  . !type
+                  )
               | (.)
               )
           | (.)
@@ -12275,7 +12307,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & log$("doneAllJobSub " !arg)
           & @(!arg:? #?JobNr)
           & readTable$CTBs
-          & readTable$relations
+          & (NORELATIONSFILES|readTable$relations)
           & readTable$jobAbout
           &     map
               $ ( ( 
@@ -12290,11 +12322,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?jobs
           & saveTable$jobs
           & saveTable$CTBs
-          & saveTable$relations
+          & (NORELATIONSFILES|saveTable$relations)
           & saveTable$jobAbout
       )
       (FilenameNoMetadata=.!arg)
-      (FilenameRelations=.str$(!arg ".relations.csv"))
+      ( NORELATIONSFILES
+      | (FilenameRelations=.str$(!arg ".relations.csv"))
+      )
       ( readme
       =     jobNr date yyyy mm dd letter File Files
           , inputs results
@@ -12507,10 +12541,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   : ?Href2
                                 &   FilenameNoMetadata$!filename
                                   : ?Href2nometa
-                                &   FilenameRelations$!filename
-                                  : ?Href2relations
-                                &   RelationsFile$!filename
-                                  : ?relationsfil
+                                & ( NORELATIONSFILES
+                                  |     FilenameRelations$!filename
+                                      : ?Href2relations
+                                    &   RelationsFile$!filename
+                                      : ?relationsfil
+                                  )
                                 &   ( dt
                                     .   
                                       , ( strong
@@ -12541,17 +12577,25 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                 & !type:TEI
                                                 &     !files
                                                       "file:"
-                                                      !Href2relations
-                                                      ";file:"
+                                                      ( 
+                                                      | NORELATIONSFILES
+                                                      |   !Href2relations
+                                                          ";file:"
+                                                      )
                                                       !Href2nometa
                                                       ";"
                                                   : ?files
                                                 &   str$(!tool ": ")
-                                                    ( a
-                                                    .   (href.!Href2relations)
-                                                      , !relationsfil
+                                                    ( 
+                                                    | NORELATIONSFILES
+                                                    |   ( a
+                                                        .   ( href
+                                                            . !Href2relations
+                                                            )
+                                                          , !relationsfil
+                                                        )
+                                                        ", "
                                                     )
-                                                    ", "
                                                     ( a
                                                     .   (href.!Href2nometa)
                                                       ,   localized
@@ -12569,8 +12613,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                       ( !Href2:
                                                       | !Href2 ";file:"
                                                       )
-                                                      !Href2relations
-                                                      ";file:"
+                                                      ( 
+                                                      | NORELATIONSFILES
+                                                      |   !Href2relations
+                                                          ";file:"
+                                                      )
                                                       !Href2nometa
                                                       ";"
                                                   : ?files
@@ -12585,11 +12632,16 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                         )
                                                         ","
                                                     )
-                                                    ( a
-                                                    .   (href.!Href2relations)
-                                                      , !relationsfil
+                                                    ( 
+                                                    | NORELATIONSFILES
+                                                    |   ( a
+                                                        .   ( href
+                                                            . !Href2relations
+                                                            )
+                                                          , !relationsfil
+                                                        )
+                                                        ", "
                                                     )
-                                                    ", "
                                                     ( a
                                                     .   (href.!Href2nometa)
                                                       ,   localized
@@ -14402,12 +14454,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           |   !arg:?a_?b
             & (canConsumeMetadata$!a|canConsumeMetadata$!b)
       )
-      ( saveTask
-      =   
-        .   (!recentTasks:?recentTasks [30 ?|)
-          & !arg !recentTasks:?recentTasks
-          & saveTable$recentTasks
-      )
       ( updateOargFromParg
       =   a z A Z val ft
         .     whl
@@ -15792,7 +15838,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   readTable$jobs
           & readTable$Uploads
           & readTable$CTBs
-          & readTable$relations
+          & (NORELATIONSFILES|readTable$relations)
           & readTable$jobAbout
           & readTable$ItemGroupsCache
       )
@@ -15801,7 +15847,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   saveTable$jobs
           & saveTable$Uploads
           & saveTable$CTBs
-          & saveTable$relations
+          & (NORELATIONSFILES|saveTable$relations)
           & saveTable$jobAbout
           & saveTable$ItemGroupsCache
       )
@@ -15819,7 +15865,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (@(!stagingName:? "/" ?stagingName)|)
           & (   (   @(!stagingName:?stem ".withmetadata.xml")
                   & str$(!stem ".xml")
-                |   @(!stagingName:?stem ".relations.csv")
+                |   ~
+                  & NORELATIONSFILES
+                  & @(!stagingName:?stem ".relations.csv")
                   & !stem
                 )
               : ?stagingName
@@ -15926,23 +15974,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             | yes
             )
       )
-      ( sum2list
-      =   L E
-        .   :?L
-          &   whl
-            ' ( !arg:%?E+?arg
-              & (.!E) !L:?L
-              )
-          & :?arg
-          & whl'(!L:%?E ?L&!E !arg:?arg)
-          & !arg
-      )
       "
 /**
  * help
  */"
       ( illustration
-      =   stappen steps connections
+      =   stappen steps connections centr polygonPoints
         .   ( polygonPoints
             =   points x y
               .   !arg:((?x.?y).?points)
@@ -16430,7 +16467,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               )
           &     map
               $ ( ( 
-                  =   chrono step type offset ill
+                  =   chrono step type offset ill fnc
                     .   !arg:(?step.?chrono.?ill.?type.?offset)
                       & !Shapes:? (!type.(=?fnc)) ?
                       & fnc$(!step.!chrono.!ill.!offset)
@@ -18146,7 +18183,7 @@ function main2(evt) {
           & readTable$Uploads
           & readTable$jobs
           & readTable$CTBs
-          & readTable$relations
+          & (NORELATIONSFILES|readTable$relations)
           & readTable$jobAbout
           & !arg:?existingFiles
           &   ( 
@@ -18260,15 +18297,19 @@ function main2(evt) {
                     ?z
               & !a !z:?CTBs
               )
-          &   whl
-            ' (   !relations
-                :   ?a
-                    ( (?jobNr.?jobID.?)
-                    & ~(!jobs:? (!jobNr.!jobID ?.?) ?)
-                    )
-                    ?z
-              & !a !z:?relations
-              )
+          & ( NORELATIONSFILES
+            |   whl
+              ' (   !relations
+                  :   ?a
+                      ( (?jobNr.?jobID.?)
+                      & ~( !jobs
+                         : ? (!jobNr.!jobID ?.?) ?
+                         )
+                      )
+                      ?z
+                & !a !z:?relations
+                )
+            )
           &   whl
             ' (   !jobAbout
                 :   ?a
@@ -18281,7 +18322,7 @@ function main2(evt) {
           & saveTable$Uploads
           & saveTable$jobs
           & saveTable$CTBs
-          & saveTable$relations
+          & (NORELATIONSFILES|saveTable$relations)
           & saveTable$jobAbout
           & saveTable$ItemGroupsCache
       )
