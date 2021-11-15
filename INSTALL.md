@@ -351,6 +351,10 @@ In addition
     $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
     $> sudo apt install graphviz
 
+## pdf2htmlEX
+
+    $> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
+
 ## Install linguistic resources
 
     $> cd /opt
