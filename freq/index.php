@@ -175,9 +175,11 @@ try {
         $Iformat2col = false;	/* Format in input is two-column list, tab separated (to kolonner, tab separeret) if true */
         $Iformat3col = false;	/* Format in input is three-column list, tab separated (tre kolonner, tab separeret) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oformat2col = false;	/* Format in output is two-column list, tab separated (to kolonner, tab separeret) if true */
         $Oformat3col = false;	/* Format in output is three-column list, tab separated (tre kolonner, tab separeret) if true */
         $Oformat4col = false;	/* Format in output is four-column list, tab separated (fire kolonner, tab separeret) if true */
+        $Opresfrq = false;	/* Assemblage in output is frequency list (frekvensliste) if true */
 
         if( hasArgument("base") )
             {
@@ -217,12 +219,22 @@ try {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
             $echos = $echos . "Iformat2col=$Iformat2col " . "Iformat3col=$Iformat3col " . "Iformatflat=$Iformatflat ";
             }
+        if( hasArgument("Ipres") )
+            {
+            $Ipresnml = existsArgumentWithValue("Ipres", "nml");
+            $echos = $echos . "Ipresnml=$Ipresnml ";
+            }
         if( hasArgument("Oformat") )
             {
             $Oformat2col = existsArgumentWithValue("Oformat", "2col");
             $Oformat3col = existsArgumentWithValue("Oformat", "3col");
             $Oformat4col = existsArgumentWithValue("Oformat", "4col");
             $echos = $echos . "Oformat2col=$Oformat2col " . "Oformat3col=$Oformat3col " . "Oformat4col=$Oformat4col ";
+            }
+        if( hasArgument("Opres") )
+            {
+            $Opresfrq = existsArgumentWithValue("Opres", "frq");
+            $echos = $echos . "Opresfrq=$Opresfrq ";
             }
 
 /*******************************
