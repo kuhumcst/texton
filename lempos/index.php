@@ -577,7 +577,7 @@ try {
                 {
                 $lang = "fo";
                 $flexrules = "$res/fo/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "$res/fo/lemmatiser/training/edfm2-100.tab-521-step2.3cole";
+                $traindata = "$res/fo/lemmatiser/training/edfm.ph";
                 $TorC = "C";
                 }
             else if($Ilanghr)

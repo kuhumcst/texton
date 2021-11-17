@@ -320,6 +320,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
     else if($language == 'fo')
         {
         $flexrulessubdir = "/1";
+        $flexrules = "flexrules.edfm2-100.tab-521-step2.3cole_XC";
         }
     else if($language == 'fr')
         {
