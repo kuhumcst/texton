@@ -3659,6 +3659,32 @@ toolsProg=
               )
             )
       )
+      ( changeloglink
+      =   usedonly linktext offset title
+        .   ( !arg:? (linktext.?linktext) ?
+            | changelog ændringer:?linktext
+            )
+          & ( !arg:? (offset.?offset) ?
+            | :?offset
+            )
+          & ( !arg:? (title.?title) ?
+            | :?title
+            )
+          & ( a
+            .     ( href
+                  .   str
+                    $ ( "changelog?UIlanguage="
+                        !LaNg
+                        "&TyPeFaCe="
+                          queryEncode
+                        $ (!TyPeFaCe|"Comic Sans MS")
+                        (!offset:|"#" !offset)
+                      )
+                  )
+                  (!title:|(title.!title))
+              , localized$!linktext
+            )
+      )
       ( helplink
       =   usedonly linktext offset title
         .   ( !arg:? (usedonly.?usedonly) ?
@@ -17004,6 +17030,40 @@ function main(evt) {
                     )
               )
       )
+      ( ChangeLog
+      =     tools langlist toolsSorted Title toolNr ToolID
+          , features feats cumfeat usedonly usedFeatures
+        .   log$CHANGELOG
+          & setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
+          & log$(ChangeLog !arg)
+          & readTable$changelog:?changelog
+          &   toML
+            $ ( HTML-SVG-bodyContainer
+              $ ( ChangeLog
+                .   (h1.,"Text Tonsorium - Change log")
+                    ( dl
+                    .   
+                      ,   map
+                        $ ( ( 
+                            =   n d t
+                              .     !arg
+                                  : ( @(?.(% % % %:?yyyy) (% %:?mm) (% %:?dd))
+                                    . ?futureuse
+                                    .   ?change
+                                    )
+                                &   ( dt
+                                    .   
+                                      , !yyyy "-" !mm "-" !dd
+                                    )
+                                    (dd.,localized$!change)
+                            )
+                          . !changelog
+                          )
+                    )
+                )
+              )
+      )
       ( help
       =     tools langlist toolsSorted Title toolNr ToolID
           , features feats cumfeat usedonly usedFeatures
@@ -17994,6 +18054,8 @@ function main(evt) {
                                         , ( p
                                           .   
                                             ,   helplink$()
+                                                " "
+                                                changeloglink$()
                                                 " "
                                                 ( a
                                                 .   ( href
