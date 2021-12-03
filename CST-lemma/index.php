@@ -281,10 +281,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
             if($pos == 'n')
                 $flexrulessubdir = "/0";
             else
-		{
+                {
                 $flexrulessubdir = "/links";
-		$x = "-x'$toolres/da/lemmatiser/tags/c21/translationTable'";
-	        }
+                $x = "-x'$toolres/da/lemmatiser/tags/c21/translationTable'";
+                }
             }
         }
     else if($language == 'de')
@@ -297,9 +297,9 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         }
     else if($language == 'en')
         {
-	if($pos=='n')
+        if($pos=='n')
             $flexrulessubdir = "/2";
-	else
+        else
             $flexrulessubdir = "/links";
         $flexrules = "flexrules";
         if($toptarg == '')
@@ -375,7 +375,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
     else if($language == 'ru')
         {
         $flexrulessubdir = "/1";
-	$flexrules = "flexrules.ru-lemma.tabru-msd-ru-lemma-cleaned.ph_XC";
+        $flexrules = "flexrules.ru-lemma.tabru-msd-ru-lemma-cleaned.ph_XC";
         }
     else if($language == 'sk')
         {
@@ -407,10 +407,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         }
    
     if($toptarg == '')
-	// input is tagged
+        // input is tagged
         {
         $Iflat = ''; // Important! '$w/$t\\s' does not find last occurrence of slash
-		// Default is that slash separates word from tag. This uses different code.
+                // Default is that slash separates word from tag. This uses different code.
         }
     else
         // input is not tagged
@@ -431,7 +431,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         if($Opresalf)
             {
             if($Ofacetlem)
-	        {
+                {
                 if(!$Ofacettok && !$ShowTag)
                     {
                     $command =             "-qwft -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
@@ -458,9 +458,9 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
                 }
             }
         else if($Opresfrq )
-	    {
+            {
             if($Ofacetlem)
-	        {
+                {
                 if(!$Ofacettok && !$ShowTag)
                     {
                     $command =             "-qfwt -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
@@ -538,12 +538,12 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
             }
 
     if($x != "")
-	$command = $command . " " . $x;
+        $command = $command . " " . $x;
 
     $command = $command . $sep;
  
     logit($command);
-    logit(getcwd());	
+    logit(getcwd());
     if(($cmd = popen($command, "r")) == NULL)
         {
         throw new SystemExit(); // instead of exit()
