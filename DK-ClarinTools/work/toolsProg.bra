@@ -3237,15 +3237,7 @@ toolsProg=
       )
       ( HTML-SVG-bodyContainer
       =   tit bod
-        .     log$(HTML-SVG-bodyContainer !arg)
-            & !arg
-            & log$(arg !arg)
-            & !arg:(?.?)
-            & log$(argk2 !arg)
-            & !arg:(?tit.?bod)
-            & log$(argk3 !arg)
-            & log$(tit !tit)
-            & log$(bod !bod)
+        .     !arg:(?tit.?bod)
             &   ("!DOCTYPE"." html")
                 ( html
                 .   
@@ -6741,44 +6733,40 @@ try {
       =   nr item fname visibility date enam txe ext
         .   1:?nr
           &   !arg
-            : ( ?arg
+            : ( ?item
               .   (?date.?visibility)
                 | ?date&:?visibility
               )
-          & (   @(!arg:?item "/components/component/" ?)
-              & :?ext
-            |   !arg:?item
-              & (   @(rev$!item:?txe "." ?enam)
-                  & (   @( !txe
-                         :   ?
-                             ( "/"
-                             | "\\"
-                             | ":"
-                             | " "
-                             | "?"
-                             | "*"
-                             | "["
-                             | "]"
-                             | ";"
-                             | "|"
-                             | "="
-                             | ","
-                             )
-                             ?
+          & str$(removePercentEncodings$!item):?item
+          & (   @(rev$!item:?txe "." ?enam)
+              & (   @( !txe
+                     :   ?
+                         ( "/"
+                         | "\\"
+                         | ":"
+                         | " "
+                         | "?"
+                         | "*"
+                         | "["
+                         | "]"
+                         | ";"
+                         | "|"
+                         | "="
+                         | ","
                          )
-                      & :?ext
-                    |   rev$!enam:?item
-                      & str$("." rev$!txe):?ext
-                    )
-                | :?ext
+                         ?
+                     )
+                  & :?ext
+                |   rev$!enam:?item
+                  & str$("." rev$!txe):?ext
                 )
+            | :?ext
             )
           & (readTable$Uploads|:?Uploads)
           & (   !Uploads:(?nr.?) ?
               & !nr+1:?nr
             | :?Uploads
             )
-          & str$(removePercentEncodings$!item):?item
           & str$(!item "-" !nr):?fname
           &     str
               $ ( vap
@@ -10029,6 +10017,7 @@ try {
                 )
             : ?oo
           & (!i.sort$(!oo !pp).!restriction.!superset):?userInput
+          & log$(Pipelines/userInput !userInput)
           & ( furtherCheck
             =   uiou wfs output nwfs wf
               .   log$furtherCheck1
@@ -13121,7 +13110,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               =   item
                 .     !arg:(item|Item.?item)
                     & (@(!item:\" ?item \")|)
-                    & (Item.!item)
+                    & (Item.get$(!item,X ML,MEM))
                   | 
               )
             . !arg
@@ -13513,7 +13502,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             =   Items item feats n val presels errors
               .   !arg:(?Items.?errors)
                 & :?presels
-                & log$(Items !Items)
                 &   whl
                   ' ( !Items:(Item.%?item ?feats) ?Items
                     & (   !feats:
@@ -14349,7 +14337,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !hiddenData (batch.!batch):?hiddenData
               & "Does the user want to decide which tool to use or does she want
                    to let the infrastructure work out a way to reach a set goal?"
-              & log$(AAAAarg !arg)
               &     !hiddenData
                     (   !arg:? (desiredtool.?rstr) ?
                       & (desiredtool.!rstr)
@@ -14364,7 +14351,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !arg
                       )
                 : ?hiddenData
-              & log$(AAAAhiddenData !hiddenData)
               & unpackIOparms$!parms:?parms
               & checkIOparms$!parms
               & readTable$tooladm
@@ -14725,7 +14711,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   & TooExpensive$
             )
           & log$WORKFLOWLISTLOGJE
-          & log$(arg !arg)
           & !arg:?orgarg
           & setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
