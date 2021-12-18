@@ -472,7 +472,7 @@ try {
         var_dump($_REQUEST);
         $dump = ob_get_clean();
         logit($dump);
-        $res = "../texton-linguistic-resources";
+        $res = "../lempos_prulepo_resources";
        // if($F != '')
             {
             logit("NOW lempos");
