@@ -399,8 +399,8 @@ try {
 
     function http($input,$output,$lang)
         {
-	//curl_setopt($curl_handle, CURLOPT_POST, 1);
-	$CF = curl_file_create($input, 'text/plain', $input);
+        //curl_setopt($curl_handle, CURLOPT_POST, 1);
+        $CF = curl_file_create($input, 'text/plain', $input);
 	
         #$CF = new CURLFile($input);
         $CF->setPostFilename("openNLPposTaggerInput");
@@ -416,8 +416,8 @@ try {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         $fp = fopen($output, "w");
         curl_setopt($ch, CURLOPT_FILE, $fp);
-	curl_setopt($ch, CURLOPT_HEADER, 0);
-	$r = curl_exec($ch);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        $r = curl_exec($ch);
         curl_close($ch);
         fclose($fp);
         }
