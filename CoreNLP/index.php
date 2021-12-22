@@ -255,14 +255,14 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        $lang = "da";
-
-        if($Ilangda)
-            $lang = "da";
-        else if($Ilangen)
+// Start CoreNLP server with:
+// $ cd stanford-corenlp-4.3.2
+// $ java -mx6g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -timeout 5000 --add-modules java.se.ee
+        $lang = "en";
+        if($Ilangen)
             $lang = "en";
-            
-        $opennlpPOStaggerfile = http($F,$opennlpPOStaggerfile,$lang);
+        $CoreNLPfile = tempFileName("CoreNLP");
+        http($F,$CoreNLPfile,$lang);
 
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CoreNLPfile
 //*/
@@ -293,9 +293,14 @@ try {
 //    require_once 'RESTclient.php';
 
     function http($text,$output,$lang)
+        {
         // create a shell command
         //$command = 'curl --data "'.$text.'" "'.CURLURL.'"?properties={"'.CURLPROPERTIES.'"}';
-        $command = 'curl --output '.$output.' --data "'.$text.'" "http://localhost:9000/"?properties={"annotators":"sentiment,lemma","tokenize.whitespace:true"}';
+        //$command = 'curl --output '.$output.' --data "'.$text.'" "http://localhost:9000/"?properties={"annotators":"sentiment,lemma","tokenize.whitespace:true"}';
+
+        // curl (or GET?) gives problems with input file. The newlines seem to be invisible for CoreNLP.
+        $command = 'wget --post-file '.$text.' \'localhost:9000/?properties={"annotators":"tokenize,ssplit,pos,lemma,ner,sentiment","outputFormat":"json","tokenize.whitespace":"true","ssplit.newlineIsSentenceBreak":"always","outputFormat":"json"}\' -O '.$output.' -';
+
         logit("Command:".$command);
         try {
                 // do the shell command
