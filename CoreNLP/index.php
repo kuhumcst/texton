@@ -176,6 +176,8 @@ try {
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
+        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
@@ -184,6 +186,8 @@ try {
         $Ofacetsnt = false;	/* Type of content in output is sentiment if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
+        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
         $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is Penn Treebank if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
 
@@ -249,6 +253,16 @@ try {
             $Ilangen = existsArgumentWithValue("Ilang", "en");
             $echos = $echos . "Ilangen=$Ilangen ";
             }
+        if( hasArgument("Iperiod") )
+            {
+            $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
+            $echos = $echos . "Iperiodc21=$Iperiodc21 ";
+            }
+        if( hasArgument("Ipres") )
+            {
+            $Ipresnml = existsArgumentWithValue("Ipres", "nml");
+            $echos = $echos . "Ipresnml=$Ipresnml ";
+            }
         if( hasArgument("Oambig") )
             {
             $Oambiguna = existsArgumentWithValue("Oambig", "una");
@@ -272,6 +286,16 @@ try {
             {
             $Olangen = existsArgumentWithValue("Olang", "en");
             $echos = $echos . "Olangen=$Olangen ";
+            }
+        if( hasArgument("Operiod") )
+            {
+            $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
+            $echos = $echos . "Operiodc21=$Operiodc21 ";
+            }
+        if( hasArgument("Opres") )
+            {
+            $Opresnml = existsArgumentWithValue("Opres", "nml");
+            $echos = $echos . "Opresnml=$Opresnml ";
             }
 
 /*******************************
