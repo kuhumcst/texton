@@ -332,20 +332,11 @@ try {
             $tmp1 = tempFileName("corenlp-tmp1");
             $tmp2 = tempFileName("corenlp-tmp2");
             $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $lang $period $IfacettokF $IfacetsegF $corenlpfile $tmp1 $tmp2";
-            $rms = "&& rm $IfacettokF && rm $IfacetsegF ";
+            $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
             }
-            /*
-        else
-            {
-            logit("TEI P5 input");
-            $corenlpfile = tempFileName("corenlp-results");
-            logit("corenlpfile $corenlpfile");
-            $tmp1 = tempFileName("corenlp-tmp1");
-            $tmp2 = tempFileName("corenlp-tmp2");
-            $command = "../bin/bracmat \"get'\\\"corenlp.bra\\\"\" $lang $period $F $corenlpfile $tmp1 $tmp2";
-            $rms = " && rm $F";
-            }*/
-        $command .= " && curl -v -F job=$job -F name=$corenlpfile -F data=@$corenlpfile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $corenlpfile >> ../log/corenlp.log 2>&1 &";
+        $rms1 =  "&& rm $tmp1 && rm $tmp2 ";
+        $rms3 = "&& rm $corenlpfile ";
+        $command .= " && curl -v -F job=$job -F name=$corenlpfile -F data=@$corenlpfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
         logit($command);
         exec($command);
 
