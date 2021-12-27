@@ -15,7 +15,7 @@ header('Content-type:text/plain; charset=UTF-8');
 /*
 ToolID         : CoreNLP
 PassWord       : 
-Version        : 3.9.1
+Version        : 4.3.2
 Title          : Stanford CoreNLP
 Path in URL    : CoreNLP	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : Stanford NLP Group
@@ -170,11 +170,24 @@ try {
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
+        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
+        $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
+        $Ofacetner = false;	/* Type of content in output is name entities (Navne) if true */
+        $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetsnt = false;	/* Type of content in output is sentiment if true */
+        $Oformatjson = false;	/* Format in output is JSON if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
+        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
         $Ifacet_seg_tok__tok_PT = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the tokens (Tokens) component if true */
+        $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
 
         if( hasArgument("base") )
             {
@@ -207,25 +220,69 @@ try {
 /************************
 * input/output features *
 ************************/
+        if( hasArgument("Iambig") )
+            {
+            $Iambiguna = existsArgumentWithValue("Iambig", "una");
+            $echos = $echos . "Iambiguna=$Iambiguna ";
+            }
         if( hasArgument("Ifacet") )
             {
             $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok ";
+            }
+        if( hasArgument("Iformat") )
+            {
+            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
+            $echos = $echos . "Iformattxtann=$Iformattxtann ";
             }
         if( hasArgument("Ilang") )
             {
             $Ilangen = existsArgumentWithValue("Ilang", "en");
             $echos = $echos . "Ilangen=$Ilangen ";
             }
+        if( hasArgument("Iperiod") )
+            {
+            $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
+            $echos = $echos . "Iperiodc21=$Iperiodc21 ";
+            }
+        if( hasArgument("Ipres") )
+            {
+            $Ipresnml = existsArgumentWithValue("Ipres", "nml");
+            $echos = $echos . "Ipresnml=$Ipresnml ";
+            }
+        if( hasArgument("Oambig") )
+            {
+            $Oambiguna = existsArgumentWithValue("Oambig", "una");
+            $echos = $echos . "Oambiguna=$Oambiguna ";
+            }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
+            $Ofacetmrf = existsArgumentWithValue("Ofacet", "mrf");
+            $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
+            $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetsnt = existsArgumentWithValue("Ofacet", "snt");
-            $echos = $echos . "Ofacetsnt=$Ofacetsnt ";
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetsnt=$Ofacetsnt ";
+            }
+        if( hasArgument("Oformat") )
+            {
+            $Oformatjson = existsArgumentWithValue("Oformat", "json");
+            $echos = $echos . "Oformatjson=$Oformatjson ";
             }
         if( hasArgument("Olang") )
             {
             $Olangen = existsArgumentWithValue("Olang", "en");
             $echos = $echos . "Olangen=$Olangen ";
+            }
+        if( hasArgument("Operiod") )
+            {
+            $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
+            $echos = $echos . "Operiodc21=$Operiodc21 ";
+            }
+        if( hasArgument("Opres") )
+            {
+            $Opresnml = existsArgumentWithValue("Opres", "nml");
+            $echos = $echos . "Opresnml=$Opresnml ";
             }
 
 /*******************************
@@ -235,6 +292,11 @@ try {
             {
             $Ifacet_seg_tok__tok_PT = existsArgumentWithValue("Ifacet_seg_tok", "__tok_PT");
             $echos = $echos . "Ifacet_seg_tok__tok_PT=$Ifacet_seg_tok__tok_PT ";
+            }
+        if( hasArgument("Ofacetpos") )
+            {
+            $OfacetposPT = existsArgumentWithValue("Ofacetpos", "PT");
+            $echos = $echos . "OfacetposPT=$OfacetposPT ";
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
