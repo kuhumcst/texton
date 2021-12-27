@@ -320,11 +320,51 @@ try {
 // Start CoreNLP server with:
 // $ cd stanford-corenlp-4.3.2
 // $ java -mx6g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -timeout 5000 --add-modules java.se.ee
+/*
         $lang = "en";
         if($Ilangen)
             $lang = "en";
         $CoreNLPfile = tempFileName("CoreNLP");
         http($F,$CoreNLPfile,$lang);
+*/
+        logit("F:" . $F);
+        $lang = getArgument("Olang");
+        if( hasArgument("Operiod") )
+            $period = getArgument("Operiod");
+        else
+            $period = "c21";
+        logit("Lang: " . $lang);
+        logit("Period: " . $period);
+        //if($Ifacettok) // and also $Ifacetseg!
+            {
+            logit("segments and tokens input, PoS,morphology,Lemmas,syntax output");
+            $corenlpfile = tempFileName("corenlp-results");
+            logit("corenlpfile $corenlpfile");
+            $tmp1 = tempFileName("corenlp-tmp1");
+            $tmp2 = tempFileName("corenlp-tmp2");
+            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $lang $period $IfacettokF $IfacetsegF $corenlpfile $tmp1 $tmp2";
+            $rms = "&& rm $IfacettokF && rm $IfacetsegF ";
+            }
+            /*
+        else
+            {
+            logit("TEI P5 input");
+            $corenlpfile = tempFileName("corenlp-results");
+            logit("corenlpfile $corenlpfile");
+            $tmp1 = tempFileName("corenlp-tmp1");
+            $tmp2 = tempFileName("corenlp-tmp2");
+            $command = "../bin/bracmat \"get'\\\"corenlp.bra\\\"\" $lang $period $F $corenlpfile $tmp1 $tmp2";
+            $rms = " && rm $F";
+            }*/
+        $command .= " && curl -v -F job=$job -F name=$corenlpfile -F data=@$corenlpfile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $corenlpfile >> ../log/corenlp.log 2>&1 &";
+        logit($command);
+        exec($command);
+
+        logit('RETURN 202');
+        header("HTTP/1.0 202 Accepted");
+
+
+
 
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CoreNLPfile
 //*/
