@@ -169,13 +169,13 @@ try {
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $IfacetsegF = "";	/* Input with type of content segments (Sætningssegmenter) */
+        $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
-        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
@@ -184,9 +184,7 @@ try {
         $Ofacetsnt = false;	/* Type of content in output is sentiment if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
-        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacet_seg_tok__tok_PT = false;	/* Style of type of content segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the tokens (Tokens) component if true */
+        $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is Penn Treebank if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
 
         if( hasArgument("base") )
@@ -206,15 +204,25 @@ try {
 /*********
 * input  *
 *********/
-        if( hasArgument("F") )
+        if( hasArgument("IfacetsegF") )
             {        
-            $F = requestFile("F");
-            if($F == '')
+            $IfacetsegF = requestFile("IfacetsegF");
+            if($IfacetsegF == '')
                 {
-                header("HTTP/1.0 404 Input not found (F parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (Sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
-            $echos = $echos . "F=$F ";
+            $echos = $echos . "IfacetsegF=$IfacetsegF ";
+            }
+        if( hasArgument("IfacettokF") )
+            {        
+            $IfacettokF = requestFile("IfacettokF");
+            if($IfacettokF == '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacettokF=$IfacettokF ";
             }
 
 /************************
@@ -227,8 +235,9 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
-            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok ";
+            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             }
         if( hasArgument("Iformat") )
             {
@@ -239,16 +248,6 @@ try {
             {
             $Ilangen = existsArgumentWithValue("Ilang", "en");
             $echos = $echos . "Ilangen=$Ilangen ";
-            }
-        if( hasArgument("Iperiod") )
-            {
-            $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
-            $echos = $echos . "Iperiodc21=$Iperiodc21 ";
-            }
-        if( hasArgument("Ipres") )
-            {
-            $Ipresnml = existsArgumentWithValue("Ipres", "nml");
-            $echos = $echos . "Ipresnml=$Ipresnml ";
             }
         if( hasArgument("Oambig") )
             {
@@ -274,24 +273,14 @@ try {
             $Olangen = existsArgumentWithValue("Olang", "en");
             $echos = $echos . "Olangen=$Olangen ";
             }
-        if( hasArgument("Operiod") )
-            {
-            $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
-            $echos = $echos . "Operiodc21=$Operiodc21 ";
-            }
-        if( hasArgument("Opres") )
-            {
-            $Opresnml = existsArgumentWithValue("Opres", "nml");
-            $echos = $echos . "Opresnml=$Opresnml ";
-            }
 
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacet_seg_tok") )
+        if( hasArgument("Ifacettok") )
             {
-            $Ifacet_seg_tok__tok_PT = existsArgumentWithValue("Ifacet_seg_tok", "__tok_PT");
-            $echos = $echos . "Ifacet_seg_tok__tok_PT=$Ifacet_seg_tok__tok_PT ";
+            $IfacettokPT = existsArgumentWithValue("Ifacettok", "PT");
+            $echos = $echos . "IfacettokPT=$IfacettokPT ";
             }
         if( hasArgument("Ofacetpos") )
             {
