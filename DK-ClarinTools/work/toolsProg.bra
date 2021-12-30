@@ -8828,6 +8828,28 @@ try {
                )
             )
       )
+      ( noValueSpecConflict
+      =   A B f e g s t
+        .   !arg:(?A.?B)
+          & ( !A:!B
+            | ~( !A
+               :   ?
+                   ( ?f&!B:? (!f,?g) ?
+                   ,   ?
+                     * ( %@?e^?s
+                       & ~( !g:?*%@!e^?t*?
+                          & ( !s:!t
+                            | !s:1
+                            | !t:1
+                            )
+                          )
+                       )
+                     * ?
+                   )
+                   ?
+               )
+            )
+      )
       "supplement: tgt and src can be very different features bundles.
        If src has a feature that tgt hasn't, then it is added to tgt.
        If src has a feature element with the same unsubspecified value as a feature element of tgt, 
@@ -8946,140 +8968,99 @@ try {
               & (!fea,!P) !rem
             )
       )
-      ( Tubst
-      =     OI I A o i sub prog Os
-          , H h h1 H1 O rpl SAVEIN
-        .   ( rpl
-            =   vals fea gold A B exp aa zz SAVEARG
-              .   !arg:(?vals.?fea.?gold):?SAVEARG
-                & (   !vals:%?A*%?B
-                    & rpl$(!A.!fea.!gold):?A
-                    & rpl$(!B.!fea.!gold):?B
-                    & !A*!B
-                  |   !vals:%?A %?B
-                    & rpl$(!A.!fea.!gold):?A
-                    & (rpl$(!B.!fea.!gold):?B|)
-                    & !A !B
-                  |   !vals:@?A^?B
-                    & (   !gold:?*(? (!fea,!vals) ?)*?
-                        & !vals
-                      |     !gold
-                          : ?*(? (!fea,?aa*!A^?exp*?zz) ?)*?
-                        &   ( !B:!exp
-                            | !exp:1&!B
-                            | !B:1&!exp
-                            )
-                          : ?B
-                        & !A^!B
-                      | !A^!B
+      ( rpl
+      =   vals fea gold A B exp aa zz SAVEARG
+        .   !arg:(?vals.?fea.?gold):?SAVEARG
+          & (   !vals:%?A*%?B
+              & rpl$(!A.!fea.!gold):?A
+              & rpl$(!B.!fea.!gold):?B
+              & !A*!B
+            |   !vals:%?A %?B
+              & rpl$(!A.!fea.!gold):?A
+              & (rpl$(!B.!fea.!gold):?B|)
+              & !A !B
+            |   !vals:@?A^?B
+              & (   !gold:?*(? (!fea,!vals) ?)*?
+                  & !vals
+                |     !gold
+                    : ?*(? (!fea,?aa*!A^?exp*?zz) ?)*?
+                  &   ( !B:!exp
+                      | !exp:1&!B
+                      | !B:1&!exp
                       )
-                  |   !vals:(?.OnE)
-                    & "Instead of prepending with %, we group the product and mark it with OnE."
-                    & (     !gold
-                          : ?*(? (!fea,?*!vals*?:?B) ?)*?
-                        & !B
-                      | !vals
-                      )
-                  )
-            )
-          & !arg:(?arg.?OI):?SAVEIN
-          & (   !arg:(((?,?) ?)*?:?H.?arg)
-              & Tubst$(!arg.!OI):?arg
-              & 1:?h
-              &   whl
-                ' ( !H:%?H1*?H
-                  & (     !arg
-                        : (   ?
-                            * ( ?
-                              , (   ?O
-                                  & containedBy$(!H1.!O):?h1
-                                . ?
-                                )
-                              )
-                            * ?
-                          |   ?
-                            * ( `%?O
-                              & ~(!O:(?,(?.?)))
-                              & containedBy$(!H1.!O):?h1
-                              )
-                            * ?
-                          )
-                      & !h*!h1:?h
-                    |       ( 
-                            =   R O
-                              .   1:?R
-                                &   whl
-                                  ' ( !arg:(?,(?O.?))*?arg
-                                    & !O*!R:?R
-                                    )
-                                & !R
-                            )
-                          $ !arg
-                        : ?Os
-                      & !h*(!H1 problem !Os):?h
-                    )
-                  )
-              & (!h:1&HA!|!h.!arg)
-            |   !arg:%?A*%?arg
-              & Tubst$(!A.!OI)*Tubst$(!arg.!OI)
-            |   !arg:(%@?prog,(?o.?i.?sub))
-              &   !OI
-                :   ?
-                  *   !prog
-                    ^ ( ?
-                      +   #
-                        * ( ?O
-                          .   ?I
-                            & noValueConflict$(!O.!o)
-                            & noValueConflict$(!I.!i)
-                          )
-                      + ?
-                      )
-                  * ?
-              & Subst$(!sub.!OI):?sub
-              & (   !sub:(0.?OI)
-                  & log$(KATASTROFE !sub)
-                | 
+                    : ?B
+                  & !A^!B
+                | !A^!B
                 )
-              & ( !prog
-                , ( !O
-                  .   ( 
-                      =   I subs gold
-                        .   !arg:(?I.?subs)
-                          & (     !subs
-                                : (((?,?) ?)*?:?gold.?)
-                              &   map
-                                $ ( ( 
-                                    =   fea vals
-                                      .   !arg:(?fea,?vals)
-                                        & (!fea,rpl$(!vals.!fea.!gold))
-                                    )
-                                  . !I
-                                  )
-                            | !I
-                            )
-                      )
-                    $ (!I.!sub)
-                  . !sub
-                  )
+            |   !vals:(?.OnE)
+              & "Instead of prepending with %, we group the product and mark it with OnE."
+              & (     !gold
+                    : ?*(? (!fea,?*!vals*?:?B) ?)*?
+                  & !B
+                | !vals
                 )
-            | !arg
             )
       )
-      "Subst: In a given workflow, replace all occurrences of (Output.Input)
+      ( walkTreeSubspecHarmonize
+      =     toolSignatures I aSource o i sub prog Os nsub
+          , H h h1 H1 O SAVEIN Sources gold
+        .   !arg:(?Sources.?toolSignatures):?SAVEIN
+          & (   !Sources:%?aSource*%?Sources
+              &   walkTreeSubspecHarmonize$(!aSource.!toolSignatures)
+                : ?H
+              & ( !H:0
+                | !H*walkTreeSubspecHarmonize$(!Sources.!toolSignatures)
+                )
+            |   !Sources:(%@?prog,(?o.?i.?sub))
+              & (     !toolSignatures
+                    :   ?
+                      * ( !prog
+                        . ?O
+                        .   ?I
+                          & noValueSpecConflict$(!O.!o)
+                          & noValueSpecConflict$(!I.!i)
+                        )
+                      * ?
+                  & SubspecHarmonize$(!sub.!toolSignatures):?nsub
+                  & ( !nsub:(0.?)&0y
+                    | ( !prog
+                      , ( !O
+                        .       !nsub
+                              : (((?,?) ?)*?:?gold.?)
+                            &   map
+                              $ ( ( 
+                                  =   fea vals
+                                    .   !arg:(?fea,?vals)
+                                      & (!fea,rpl$(!vals.!fea.!gold))
+                                  )
+                                . !I
+                                )
+                          | !I
+                        . !nsub
+                        )
+                      )
+                    )
+                | 0
+                )
+            | "Input Resource"&!Sources
+            )
+      )
+      "SubspecHarmonize: In a given workflow, replace all occurrences of (Output.Input)
        feature bundle pairs with the possibly richer (at subspec level) version
        found in the second argument."
-      ( Subst
-      =   OI H h h1 H1 O Os
-        .   !arg:(?arg.?OI)
-          & "arg is a pipe line.
+      ( SubspecHarmonize
+      =     toolSignatures Requireds h h1 aRequired O Os
+          , savearg nSources pipe Sources
+        .   !arg:(?pipe.?toolSignatures):?savearg
+          & "pipe is a pipe line.
 
-             OI is a product of tool names with exponents. 
+             toolSignatures is a product of tool names with exponents. 
              Each exponent is a term or sum of terms. 
              A term is a dotted pair (output features.input features).
              A term can have a numeral factor."
-          & (   !arg:(((?,?) ?)*?:?H.?arg)
-              & "If single input, H is e.g 
+          & (     !pipe
+                : (((?,?) ?)*?:?Requireds.?Sources)
+              & "If single input, Requireds is e.g 
               
                     (ambig,una)
                     (app,nrm)
@@ -9107,49 +9088,41 @@ try {
                       (pres,nml)
                     )
                   "
-              & Tubst$(!arg.!OI):?arg
-              & 1:?h
-              &   whl
-                ' ( !H:%?H1*?H
-                  & "H1 is input expected to come from one tool"
-                  & (     !arg
-                        : (   ?
-                            * ( ?
-                              , (   ?O
-                                  & containedBy$(!H1.!O):?h1
-                                . ?
-                                )
-                              )
-                            * ?
-                          |   ?
-                            * ( `%?O
-                              & ~(!O:(?,(?.?)))
-                              & containedBy$(!H1.!O):?h1
-                              )
-                            * ?
-                          )
-                      & !h*!h1:?h
-                    |       ( 
-                            =   R O T
-                              .   1:?R
-                                &   whl
-                                  ' ( !arg:(?T,(?O.?))*?arg
-                                    & (!T,!O)*!R:?R
+              &   walkTreeSubspecHarmonize$(!Sources.!toolSignatures)
+                : ?nSources
+              & ( !nSources:0&(0.0)
+                |   1:?h
+                  & "Check that the updated outputs from the tools still match the requirements.
+                     If they do, also update the requirements.
+                     Otherwise, return 0."
+                  &   whl
+                    ' ( !Requireds:%?aRequired*?Requireds
+                      & "aRequired is input expected to come from one tool (or one input resource)."
+                      & (     !nSources
+                            : (   ?
+                                * ( ?
+                                  , (   ?O
+                                      &   containedBy$(!aRequired.!O)
+                                        : ?h1
+                                    . ?
                                     )
-                                & !R
-                            )
-                          $ !arg
-                        : ?Os
-                      &   log
-                        $ (substproblem H1 !H1 Os !Os endsubstproblem)
-                      &   !h*(!H1 substproblem !Os endsubstproblem)
-                        : ?h
-                      & 0:?h
-                    )
-                  & !h:~0
-                  )
-              & (!h:1&HA!|!h.!arg)
-            | !arg
+                                  )
+                                * ?
+                              |   ?
+                                * ( `%?O
+                                  & ~(!O:(?,(?.?)))
+                                  & containedBy$(!aRequired.!O):?h1
+                                  )
+                                * ?
+                              )
+                          & !h*!h1:?h
+                        | 0:?h
+                        )
+                      & !h:~@
+                      )
+                  & (!h.!nSources)
+                )
+            | "input resource"&!pipe
             )
       )
       ( Intersection
@@ -9739,11 +9712,12 @@ try {
                         & !prog^(!o.!i)*signatures$!sub
                       | 1
                   )
+                & "NoValueConflicts IGNORES subspecs"
                 & ( NoValueConflicts
                   =   i I o O
                     .   !arg:((?o.?i),(?O.?I))
-                      & noValueConflict$(!i.!I)
-                      & noValueConflict$(!o.!O)
+                      & noValueSpecConflict$(!i.!I)
+                      & noValueSpecConflict$(!o.!O)
                   )
                 & ( copySpecs
                   =   Ao Ai Bo Bi
@@ -9814,6 +9788,7 @@ try {
                           + ?
                   )
                 & signatures$!arg:?sig
+                & put$("\nsig=" !sig \n,path$pijpen,APP)
                 & "sig is a product of tool IDs. Each ID has an exponent
                    that is the sum of all (O.I) specs occuring in the
                    current computed workflow. Here, O and I are feature
@@ -9824,8 +9799,10 @@ try {
                        subspecified level, but clash at the spec level.
                        Such solutions are not 'wrong', but unlikely what
                        the user wants."
+                    & put$(\nclashing\n,path$pijpen,APP)
                     & 0
                   |   unifySignaturesAtSpecLevel$!sig:?nsig
+                    & put$("\nnsig=" !nsig \n,path$pijpen,APP)
                     & "nsig is a product of maximally compressed
                        signatures. If two (O.I) feature bundle pairs can
                        enrich each other without clashing, then those
@@ -9833,13 +9810,68 @@ try {
                        pairs do nowhere occur in the current workflow, so
                        now we substitute the rich O.I pairs for the
                        original ones."
-                    & (   Subst$(!arg.!nsig):(~0.?):?arg
+                    & ( unspec
+                      =   A B
+                        .   !arg:%@?A^%&!A
+                          |   !arg:?A_?B
+                            & (unspec$!A)_(unspec$!B)
+                          | !arg
+                      )
+                    & ( separate
+                      =   A a B sims nonsims
+                        .   !arg:#*((?.?):%?A)+?arg
+                          & unspec$!A:?a
+                          & !A:?sims
+                          & 0:?nonsims
+                          &   whl
+                            ' ( !arg:#*((?.?):%?B)+?arg
+                              & (   unspec$!B:!a
+                                  & !sims !B:?sims
+                                | !nonsims+!B:?nonsims
+                                )
+                              )
+                          & !sims+separate$!nonsims
+                      )
+                    & ( signatureDotSep
+                      =   tool V L v
+                        .   1:?L
+                          &   whl
+                            ' ( !arg:%@?tool^?V*?arg
+                              & separate$!V:?V
+                              &   whl
+                                ' ( !V:%?v+?V
+                                  & !L*(!tool.!v):?L
+                                  )
+                              )
+                          & !L
+                      )
+                    & signatureDotSep$!nsig:?Nsig
+                    & ( trySignatures
+                      =   Feats tool f pAth nsig pipes R
+                        .   !arg:(?pAth.?nsig.?pipes)
+                          & (   !nsig:(%?tool.%?Feats)*?nsig
+                              &   whl
+                                ' ( !Feats:%?f ?Feats
+                                  &   trySignatures
+                                    $ (!pAth*(!tool.!f).!nsig.!pipes)
+                                  )
+                            |     SubspecHarmonize$(!pipes.!pAth)
+                                : (~0.?)
+                                : ?R
+                              & !pIJpen+!R:?pIJpen
+                            | 
+                            )
+                      )
+                    & (   0:?pIJpen
+                        & trySignatures$(1.!Nsig.!arg)
+                        & !pIJpen:~0
                         & "arg has become more complete subspec-wise.
                        Either each tool is used in exactly one way, or
                        the different ways ALL differ more than only at
                        the subspec level."
+                        & put$(AAA,path$pijpen,APP)
                         & !arg
-                      | !arg
+                      | put$(BBB,path$pijpen,APP)&0
                       )
                   )
             )
@@ -9848,6 +9880,7 @@ try {
           & 0:?newpipes
           & log$(whl calls !calls)
           & 0:?Npipes
+          & put$(pijpen\n\n,path$pijpen,NEW)
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -9904,7 +9937,19 @@ try {
               & !pipesN:?+[?NNN
               &   whl
                 ' ( !pipesN:%?pipe+?pipesN
+                  & put$("
+
+wantThis
+
+",path$pijpen,APP)
+                  & lst$(pipe,path$pijpen,APP,RAW)
                   & wantThis$!pipe:?pipe
+                  & put$("
+
+wantThisDONE
+
+",path$pijpen,APP)
+                  & lst$(pipe,path$pijpen,APP,RAW)
                   & ( !pipe:0
                     | !newpipes:?+!pipe+?
                     | !pipe+!newpipes:?newpipes
@@ -10249,6 +10294,7 @@ try {
                   & fp$!userInput:?FP
                   & !FP:~#
                   & log$"Calling fp success"
+                  & lst$(FP,path$FP,NEW)
                   & "prunePipes fails if tooComplex"
                   & prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
                   & !Npipes:~>1000
