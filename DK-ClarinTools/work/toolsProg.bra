@@ -12855,12 +12855,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?JobNr.?jobs)
                 & log$steplinks
                 & log$(JobNr !JobNr)
-                &   !jobs
-                  :   ?
-                      (   (!JobNr.step1 ?.?file.?.?.?outp)
-                          ?
-                      : ?jobs
-                      )
+                & !( 
+                   ' ( $jobs
+                     :   ?
+                         (   ($JobNr.step1 ?.?file.?.?.?outp)
+                             ?
+                         : ?jobs
+                         )
+                     )
+                   )
                 & :?seenInputs
                 &     map
                     $ ( ( 
@@ -12870,8 +12873,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               &   map
                                 $ ( ( 
                                     =   
-                                      .       !Uploads
-                                            : ? (?.?.!arg.?) ?
+                                      .     !( 
+                                             ' ( $Uploads
+                                               : ? (?.?.$arg.?) ?
+                                               )
+                                             )
                                           & log$(FOUNDinUploads !arg)
                                           & (   !seenInputs:? !arg ?
                                               & log$seen
