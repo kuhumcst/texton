@@ -12846,13 +12846,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & str$(!files !html)
       )
       ( poll
-      =     jobs n step secs steplinks links
-          , serviceurl title tooladm DOWNLOAD
+      =     n step secs steplinks links
+          , serviceurl title DOWNLOAD
           , runningParagraphs JobNr hours minutes
         .   ( steplinks
             =     links jobs file step outp ServiceURL JobNr
                 , seenInputs Title
               .   !arg:(?JobNr.?jobs)
+                & log$steplinks
+                & log$(JobNr !JobNr)
                 &   !jobs
                   :   ?
                       (   (!JobNr.step1 ?.?file.?.?.?outp)
@@ -12862,17 +12864,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & :?seenInputs
                 &     map
                     $ ( ( 
-                        =   files
-                          .     !arg:(!JobNr.?.?files.?.?.?)
+                        =   files status
+                          .     !arg:(!JobNr.?status.?files.?.?.?)
+                              & log$(status !status files !files)
                               &   map
                                 $ ( ( 
                                     =   
                                       .       !Uploads
                                             : ? (?.?.!arg.?) ?
+                                          & log$(FOUNDinUploads !arg)
                                           & (   !seenInputs:? !arg ?
+                                              & log$seen
                                               & 
                                             |     !arg !seenInputs
                                                 : ?seenInputs
+                                              &   log
+                                                $ (seenInputs !seenInputs)
                                               &   paragraph
                                                 $ ( "input:"
                                                     ( a
@@ -12887,7 +12894,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                     )
                                                   )
                                             )
-                                        | 
+                                        |   log$(NOTfoundInUploads !arg)
+                                          & 
                                     )
                                   . !files
                                   )
@@ -12941,9 +12949,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( !arg:(?JobNr.?secs)
             | @(!arg:? #?JobNr)&5:?secs
             )
-          & readTable$jobs
-          & readTable$tooladm
-          & readTable$Uploads
+          & ( 
+            |   readTable$jobs
+              & readTable$tooladm
+              & readTable$Uploads
+            )
           &   div$(!deleteAfterMillisec*86400000^-1*24*60.1)
             : ?minutes
           &   toML
