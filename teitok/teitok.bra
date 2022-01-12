@@ -6,11 +6,13 @@ X=
   ( teitok
   =   input abbreviations style language,SentenceEndingAbbrSeen
     .   !arg:(?input.?style.?abbreviations.?language)
+      & out$A
       & :?SentenceEndingAbbrSeen
       & new$hash:?Mabbr
       & new$hash:?Eabbr
       & (Mabbr..ISO)$
       & (Eabbr..ISO)$
+      & out$B
       &   map
         $ ( ( 
             =   
@@ -22,7 +24,9 @@ X=
             )
           . !abbreviations
           )
+      & out$C
       & nestML$(get$(!input,X ML)):?xml
+      & out$D
       &   !xml
         :   ?XXX
             (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD)
@@ -163,7 +167,9 @@ X=
             & fnd$!arg
             & !IDs
         )
+      & out$E
       & findIDs$!text:?IDs
+      & out$F
       & 0:?ID
       & ( IDgen
         =   id
@@ -967,86 +973,110 @@ X=
             | 
         )
       & ( trav
-        =   A e a S B aS abb før
-          .   !arg:(?arg.?abb.?før)
-            & (   !arg:?A (?e.?aS) ?B
-                &   Tx$(!A.!abb.!før,!e)
-                    ( (   !e:w
-                        & !aS:(?a,?S)
-                        &   ecaps$(!A.!før)
-                            ( w
-                            .     !a
-                                  (S.Sen$)
-                                  (T.1+!tok:?tok)
-                              , trim$!S
-                            )
-                            space$!B
-                      |   !e:c
-                        & !aS:(?a,?S)
-                        &   ( c
-                            .     !a
-                                  (S.Sen$)
-                                  (T.1+!tok:?tok)
-                              , !S
-                            )
-                            (   !a:? (type.s) ?
-                              & 
-                            | space$!B
-                            )
-                      |   !e:(add|ex)
-                        &   ecaps$(!A.!før)
-                            ( !e
-                            .     !aS:(?a,?S)
-                                & (!a,trav$(!S.!abb.))
-                              | !aS
-                            )
-                            space$!B
-                      |   !e:del
-                        & ecaps$(!A.!før) (!e.!aS) space$!B
-                      |     !e
-                          : (rdg|lem|app)
-                        & (!e.!aS)
-                      | (   !e
-                          : (   ( p
-                                | u
-                                | s
-                                | seg
-                                | head
-                                | note
-                                | back
-                                | front
-                                | div
-                                | argument
-                                | byline
-                                | closer
-                                | dateline
-                                | docAuthor
-                                | docDate
-                                | epigraph
-                                | floatingText
-                                | opener
-                                | postscript
-                                | salute
-                                | signed
-                                | trailer
+        =   A e a S B aS abb før LIST
+          .     !arg:(?arg.?abb.?før)
+              & :?LIST
+              &   whl
+                ' ( !arg:?A (?e.?aS) ?B
+                  &     ( 
+                        .   Tx$(!A.!abb.!før,!e)
+                            ( (   !e:w
+                                & !aS:(?a,?S)
+                                &   ecaps$(!A.!før)
+                                    ( w
+                                    .     !a
+                                          (S.Sen$)
+                                          (T.1+!tok:?tok)
+                                      , trim$!S
+                                    )
+                                    space$!B
+                              |   !e:c
+                                & !aS:(?a,?S)
+                                &   ( c
+                                    .     !a
+                                          (S.Sen$)
+                                          (T.1+!tok:?tok)
+                                      , !S
+                                    )
+                                    (   !a:? (type.s) ?
+                                      & 
+                                    | space$!B
+                                    )
+                              |   !e:(add|ex)
+                                &   ecaps$(!A.!før)
+                                    ( !e
+                                    .     !aS:(?a,?S)
+                                        & (!a,trav$(!S.!abb.))
+                                      | !aS
+                                    )
+                                    space$!B
+                              |   !e:del
+                                &   ecaps$(!A.!før)
+                                    (!e.!aS)
+                                    space$!B
+                              |     !e
+                                  : ( rdg
+                                    | lem
+                                    | app
+                                    | linkGrp
+                                    )
+                                & (!e.!aS)
+                              | (   !e
+                                  : (   ( p
+                                        | u
+                                        | s
+                                        | seg
+                                        | head
+                                        | note
+                                        | back
+                                        | front
+                                        | div
+                                        | argument
+                                        | byline
+                                        | closer
+                                        | dateline
+                                        | docAuthor
+                                        | docDate
+                                        | epigraph
+                                        | floatingText
+                                        | opener
+                                        | postscript
+                                        | salute
+                                        | signed
+                                        | trailer
+                                        )
+                                      & 1:?IS
+                                      & 0:?tok
+                                    | ?
+                                    )
+                                .     !aS:(?a,?S)
+                                    & ( !a
+                                      ,   trav
+                                        $ ( !S
+                                          .   !e:abbr
+                                            | !abb
+                                          . 
+                                          )
+                                      )
+                                  | !aS
                                 )
-                              & 1:?IS
-                              & 0:?tok
-                            | ?
-                            )
-                        .     !aS:(?a,?S)
-                            & ( !a
-                              ,   trav
-                                $ (!S.!e:abbr|!abb.)
                               )
-                          | !aS
+                            : ? (?før.?)
+                            )
                         )
-                      )
-                    : ? (?før.?)
-                    )
-                    trav$(!B.!abb.!før)
-              | Tx$(!arg.!abb.!før,!e)
-              )
+                        !LIST
+                    : ?LIST
+                  & !B:?arg
+                  )
+              & !arg:~(? (?.?) ?)
+              & (.Tx$(!arg.!abb.!før,)) !LIST:?LIST
+              & :?B
+              &   whl
+                ' ( !LIST:(.?A) ?LIST
+                  & !A !B:?B
+                  )
+              & !B
+            | 
         )
       & ( contractwadddel
         =   content
@@ -1084,14 +1114,19 @@ X=
               )
             & trq$!arg
         )
+      & out$G
       & trav$(!text..):?nbody
+      & out$H
       & contractwadddel$!nbody:?nbody2
       &   ( !style:PT&rcontr$!nbody2
           | !nbody2
           )
         : ?nmbody2
+      & out$I
       & assignIDs$!nmbody2:?nnbody
+      & out$J
       & renumber$!nnbody:?nrbody
+      & out$K
       &   !XXX
           (TEI.!teiatt,!AAA (text.!textatt,!nrbody) !DDD)
           !YYY
