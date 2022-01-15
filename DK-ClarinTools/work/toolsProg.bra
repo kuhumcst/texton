@@ -152,7 +152,6 @@ toolsProg=
       )
       (servicedSources=)
       (servicedGoals=)
-      (sourcePicklists=)
       (goalPicklists=)
       (servicedSuperGoals=)
       ( helpmespecifymygoal
@@ -276,10 +275,36 @@ toolsProg=
       )
       ( localized
       =   
-        .   ( !LaNg:da&!arg:%@ %@?arg
+        .   ( !lANgs:% !LaNg&!arg:% %?arg
             | !arg:%?arg ?
             )
           & !arg
+      )
+      ( dezilacol
+      =   A B G R
+        .   !lANgs:?G:%?A ?B
+          & !B !A:?lANgs
+          & localized$!arg:?R
+          & !G:?lANgs
+          & !R
+      )
+      ( UILangNames
+      =   G R
+        .   readTable$linguae
+          & !LaNg:?G
+          &     map
+              $ ( ( 
+                  =   L
+                    .     setLang$!arg
+                        & !linguae:? (?L.!arg.?) ?
+                        & localized$!L
+                      | 
+                  )
+                . !arg
+                )
+            : ?R
+          & setLang$!G
+          & !R
       )
       "Reusable patterns in errorInMetadata function"
       ( ISO639
@@ -647,11 +672,14 @@ toolsProg=
       )
       ( setLang
       =   full A Z
-        .       (   @(low$!arg:d (a|k) ?)
-                  & da
-                | en
-                )
-              : ?LaNg
+        .     low$!arg:?arg
+            & ( !lANgs:? !arg ?
+              |   @(!arg:d (a|k) ?)
+                & !lANgs:% ?arg
+                & !arg:~
+              | !lANgs:%?arg ?
+              )
+            & !arg:?LaNg
             & readTable$linguae
             & !linguae:? (?full.!LaNg.?) ?
             & localized$!full
@@ -3192,8 +3220,8 @@ toolsProg=
               \r\n
               ( html
               .     (xmlns."http://www.w3.org/1999/xhtml")
-                    ("xml:lang".da)
-                    (lang.da)
+                    ("xml:lang".!LaNg)
+                    (lang.!LaNg)
                 ,   \r\n
                     ( head
                     . ,\r\n (title.,!headerTitle) \r\n !Style
@@ -3216,8 +3244,8 @@ toolsProg=
               ( html
               .     (xmlns."http://www.w3.org/1999/xhtml")
                     ("xmlns:svg"."http://www.w3.org/2000/svg")
-                    ("xml:lang".da)
-                    (lang.da)
+                    ("xml:lang".!LaNg)
+                    (lang.!LaNg)
                 ,   \r\n
                     ( head
                     .   
@@ -3273,8 +3301,8 @@ toolsProg=
               \r\n
               ( html
               .     (xmlns."http://www.w3.org/1999/xhtml")
-                    ("xml:lang".da)
-                    (lang.da)
+                    ("xml:lang".!LaNg)
+                    (lang.!LaNg)
                 ,   \r\n
                     ( head
                     .   
@@ -6310,7 +6338,6 @@ try {
             : ?servicedSources
             : ?servicedGoals
             : ?servicedSuperGoals
-            : ?sourcePicklists
             : ?goalPicklists
           &   localized$("Save metadata" "Gem oplysninger")
             : ?storeToolButton
@@ -7991,7 +8018,7 @@ try {
             $ ( ( 
                 =     short name table servicedGoalsTable
                     , servicedGoals optgroups
-                  .     !arg:(?short.?name.?table.?.)
+                  .     !arg:(?.?short.?name.?table.)
                       & (   !servicedGoals
                           : ? (!short.?servicedGoalsTable) ?
                         |       selectServicedValues
@@ -8007,7 +8034,7 @@ try {
                             : ?servicedGoals
                         )
                       &   row
-                        $ ( namecell$(!features.!short.!name)
+                        $ ( namecell$(!features.!short.localized$!name)
                             featurehelpcell$(!features.!short.goalhelp)
                             (     !expandedSelectLists
                                 : ? (!short.?optgroups) ?
@@ -11193,7 +11220,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         , ( monogr
                                           .   
                                             ,   ( title
-                                                .   ("xml:lang".da)
+                                                .   ("xml:lang".!LaNg)
                                                   , monogr
                                                 )
                                                 ( imprint
@@ -13720,7 +13747,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , table presel L
                 , preselvalsrows items item spec
                 , preselvals presels
-                , createArgs
+                , createArgs G sourcePicklists
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
                 , allLinked features links
@@ -13948,18 +13975,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | :?hide
                       )
                     & readTable$!table
-                    & :?preselvals
-                    & !presels:?L
-                    &   whl
-                      ' ( !L:? (!short.?presel.?item) ?L
-                        & ( !items:? !item ?
-                          | !items !item:?items
+                    &     map
+                        $ ( ( 
+                            =   
+                              .     !arg:(!short.?presel.?item)
+                                  & ( !items:? !item ?
+                                    | !items !item:?items
+                                    )
+                                  & !item^!presel*!prod:?prod
+                                  & (!presel.!item)
+                                | 
+                            )
+                          . !presels
                           )
-                        & !preselvals (!presel.!item):?preselvals
-                        & !item^!presel*!prod:?prod
-                        )
+                      : ?preselvals
                     &     !preselvalsrows
-                          (!short.localized$!name.!!table.!preselvals.!hide)
+                          (!preselvals.!short.!name.!!table.!hide)
                       : ?preselvalsrows
                     )
                 &   whl
@@ -13993,10 +14024,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         =   seen a b c d e
                           .   !arg:(?a.?b.?c.?d.?e)
                             & 0:?seen
-                            & ( !a
-                              . !b
-                              . !c
-                              .   map
+                            & (   map
                                 $ ( ( 
                                     =   presel item comb
                                       .     !arg:(?presel.?item)
@@ -14011,8 +14039,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                             )
                                         | !arg
                                     )
-                                  . !d
+                                  . !a
                                   )
+                              . !b
+                              . !c
+                              . !d
                               . !e
                               )
                         )
@@ -14020,142 +14051,126 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       )
                   : ?preselvalsrows
                 & "Notice: this function does not have local variable 'abbr' !"
-                & (   !sourcePicklists:
-                    &     map
-                        $ ( ( 
-                            =   exr
-                              .       !arg
-                                    : (?short.?name.?table.?preselvals.)
-                                  & (   !servicedSources
-                                      :   ?
-                                          (!short.?servicedSourcesTable)
-                                          ?
-                                    |       selectServicedValues
-                                          $ ( !short
-                                            . !table
-                                            . ( 
-                                              =   
-                                                ' ( ?
-                                                  + (     ?
-                                                        +   ?
-                                                          * ( $abbr^?
-                                                            | (   ?
-                                                                * $abbr^?
-                                                                * ?
-                                                              . OnE
-                                                              )
-                                                            )
-                                                          * ?
-                                                        + ?
-                                                        ?
-                                                    . ?
-                                                    )
-                                                  + ?
-                                                  )
-                                              )
-                                            )
-                                        : ?servicedSourcesTable
-                                      &     (!short.!servicedSourcesTable)
-                                            !servicedSources
-                                        : ?servicedSources
-                                    )
-                                  & (   !items:% %
-                                      & (exr=";" !nt)
-                                    | :?exr
-                                    )
-                                  &   row
-                                    $ ( namecell$(!features.!short.!name)
-                                          featurehelpcell
-                                        $ (!features.!short.sourcehelp)
-                                          map
-                                        $ ( ( 
-                                            =   
-                                              .   !arg:(?nt.?arg)
-                                                &   cell
-                                                  $ (     !preselvals
-                                                        :   ?
-                                                            ( %?presel^?spec
-                                                            . !arg
-                                                            )
-                                                            ?
-                                                      & (   !spec:1
-                                                          &   makeSelectFormField
-                                                            $ ( 
-                                                              .   str
-                                                                $ ( I
-                                                                    !short
-                                                                    !exr
-                                                                  )
-                                                              . options
-                                                              .   makeOptionList
-                                                                $ ( !servicedSourcesTable
-                                                                  . !presel
-                                                                  )
-                                                              )
-                                                        |   makeSelectFormField
-                                                          $ ( 
-                                                            .   str
-                                                              $ ( I
-                                                                  !short
-                                                                  !exr
-                                                                )
-                                                            . options
-                                                            .     !features
-                                                                :   ?
-                                                                  + (   ?
-                                                                        ( short
-                                                                        . !short
-                                                                        )
-                                                                        ?
-                                                                    :   ?
-                                                                        ( specificationTable
-                                                                        .   ?
-                                                                            (   ?
-                                                                                ( %@
-                                                                                : !presel
-                                                                                )
-                                                                                ?
-                                                                            . ?Types
-                                                                            )
-                                                                            ?
-                                                                        )
-                                                                        ?
-                                                                    )
-                                                                  + ?
-                                                              &   readTable
-                                                                $ !Types
-                                                              &   makeOptionList
-                                                                $ ( !!Types
-                                                                  . !spec
-                                                                  .   str
-                                                                    $ ( !presel
-                                                                        "^"
-                                                                      )
-                                                                  )
-                                                            )
+                &     map
+                    $ ( ( 
+                        =   exr
+                          .       !arg
+                                : (?preselvals.?short.?name.?table.)
+                              & (   !servicedSources
+                                  :   ?
+                                      (!short.?servicedSourcesTable)
+                                      ?
+                                |       selectServicedValues
+                                      $ ( !short
+                                        . !table
+                                        . ( 
+                                          =   
+                                            ' ( ?
+                                              + (     ?
+                                                    +   ?
+                                                      * ( $abbr^?
+                                                        | ( ?*$abbr^?*?
+                                                          . OnE
+                                                          )
                                                         )
+                                                      * ?
+                                                    + ?
+                                                    ?
+                                                . ?
+                                                )
+                                              + ?
+                                              )
+                                          )
+                                        )
+                                    : ?servicedSourcesTable
+                                  &     (!short.!servicedSourcesTable)
+                                        !servicedSources
+                                    : ?servicedSources
+                                )
+                              & (   !items:% %
+                                  & (exr=";" !nt)
+                                | :?exr
+                                )
+                              &   row
+                                $ (   namecell
+                                    $ (!features.!short.localized$!name)
+                                      featurehelpcell
+                                    $ (!features.!short.sourcehelp)
+                                      map
+                                    $ ( ( 
+                                        =   
+                                          .   !arg:(?nt.?arg)
+                                            &   cell
+                                              $ (     !preselvals
+                                                    :   ?
+                                                        (%?presel^?spec.!arg)
+                                                        ?
+                                                  & (   !spec:1
+                                                      &   makeSelectFormField
+                                                        $ ( 
+                                                          .   str
+                                                            $ (I !short !exr)
+                                                          . options
+                                                          .   makeOptionList
+                                                            $ ( !servicedSourcesTable
+                                                              . !presel
+                                                              )
+                                                          )
                                                     |   makeSelectFormField
                                                       $ ( 
                                                         .   str
                                                           $ (I !short !exr)
                                                         . options
-                                                        .   makeOptionList
-                                                          $ ( !servicedSourcesTable
-                                                            . 
-                                                            )
+                                                        .     !features
+                                                            :   ?
+                                                              + (   ?
+                                                                    ( short
+                                                                    . !short
+                                                                    )
+                                                                    ?
+                                                                :   ?
+                                                                    ( specificationTable
+                                                                    .   ?
+                                                                        (   ?
+                                                                            ( %@
+                                                                            : !presel
+                                                                            )
+                                                                            ?
+                                                                        . ?Types
+                                                                        )
+                                                                        ?
+                                                                    )
+                                                                    ?
+                                                                )
+                                                              + ?
+                                                          & readTable$!Types
+                                                          &   makeOptionList
+                                                            $ ( !!Types
+                                                              . !spec
+                                                              .   str
+                                                                $ (!presel "^")
+                                                              )
                                                         )
                                                     )
-                                            )
-                                          . !items
-                                          )
+                                                |   makeSelectFormField
+                                                  $ ( 
+                                                    . str$(I !short !exr)
+                                                    . options
+                                                    .   makeOptionList
+                                                      $ ( !servicedSourcesTable
+                                                        . 
+                                                        )
+                                                    )
+                                                )
+                                        )
+                                      . !items
                                       )
-                                | 
-                            )
-                          . !preselvalsrows
-                          )
-                      : ?sourcePicklists
-                  | 
-                  )
+                                  )
+                            | 
+                        )
+                      . !preselvalsrows
+                      )
+                  : ?sourcePicklists
                 & getActiveTools$:?activeTools
                 & (   !servicedSuperGoals:
                     &     makeSuperGoals
@@ -14166,12 +14181,27 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   | 
                   )
                 & readTable$features
-                &   makeExpandedSelectLists$!servicedSuperGoals
-                  : ?expandedSelectLists
                 & (   !goalPicklists:
-                    &     createGoalPickLists
-                        $ (!preselvalsrows.!expandedSelectLists.including)
+                    & !LaNg:?G
+                    &     map
+                        $ ( ( 
+                            =   expandedSelectLists
+                              .   setLang$!arg
+                                &     makeExpandedSelectLists
+                                    $ !servicedSuperGoals
+                                  : ?expandedSelectLists
+                                & ( !arg
+                                  .   createGoalPickLists
+                                    $ ( !preselvalsrows
+                                      . !expandedSelectLists
+                                      . including
+                                      )
+                                  )
+                            )
+                          . !lANgs
+                          )
                       : ?goalPicklists
+                    & !G:?LaNg
                   | 
                   )
                 & cmptblWrkflws$(!items.!presels):?items
@@ -14279,7 +14309,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         .   Table
                           $ ( id,goal
                             . row$(cell$() cell$() cell$)
-                            . !goalPicklists
+                            .   ( 
+                                =   R
+                                  .   !arg:? (!LaNg.?R) ?
+                                    & !R
+                                )
+                              $ !goalPicklists
                             )
                         )
                   . !linkedWorkflows
@@ -18671,13 +18706,13 @@ function main2(evt) {
           & !cnt
       )
       ( entry
-      =   
+      =   X Y
         .   setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
           &   toML
             $ ( ("!DOCTYPE"." html")
                 ( html
-                .   (lang.en)
+                .   (lang.!LaNg)
                   ,   ( head
                       .   
                         ,   ( meta
@@ -18722,8 +18757,7 @@ function main2(evt) {
                                                 .   ( href
                                                     .   str
                                                       $ ( "/texton/?UIlanguage="
-                                                            localized
-                                                          $ (da en)
+                                                          dezilacol$!lANgs
                                                           "&TyPeFaCe="
                                                             queryEncode
                                                           $ ( !TyPeFaCe
@@ -18732,7 +18766,9 @@ function main2(evt) {
                                                         )
                                                     )
                                                   ,   localized
-                                                    $ (dansk English)
+                                                    $ ( UILangNames
+                                                      $ (dezilacol$!lANgs)
+                                                      )
                                                 )
                                           )
                                       )
@@ -18891,7 +18927,7 @@ function main2(evt) {
                                                 .     (type.hidden)
                                                       (name.UIlanguage)
                                                       ( value
-                                                      . localized$(en da)
+                                                      . localized$!lANgs
                                                       )
                                                   , 
                                                 )
@@ -18986,6 +19022,7 @@ function main2(evt) {
       )
       (Uploads=)
       (LaNg=)
+      (lANgs=en da)
   : ?Globals
 & (setLang$da|);
 
