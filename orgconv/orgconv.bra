@@ -95,11 +95,17 @@ X=
         : ?normOrFacs
       & (   !pos:!lem
           &   readOrg3colFilePos$!pos
-            : (?.?pos:(?.?hp) ?):?AA
+            : (?.?pos:(?.?hp) ?)
+            : ?AA
           &   readOrg3colFileLem$!lem
-            : (?.?lem:(?.?hl) ?):?BB
-        |   readOrg2colFile$!pos:(?.?pos:(?.?hp) ?):?CC
-          & readOrg2colFile$!lem:(?.?lem:(?.?hl) ?):?DD
+            : (?.?lem:(?.?hl) ?)
+            : ?BB
+        |     readOrg2colFile$!pos
+            : (?.?pos:(?.?hp) ?)
+            : ?CC
+          &   readOrg2colFile$!lem
+            : (?.?lem:(?.?hl) ?)
+            : ?DD
         )
       & spaces$!hp:?hp
       & spaces$!hl:?hl
@@ -180,7 +186,7 @@ X=
       & (|put$(OO,OO,NEW))
       &     vap
           $ ( ( 
-              =   w full short
+              =   w full short D E
                 .     @( !arg
                        : ? "|" ? "|" ? "|" ? "|" ?
                        : ( !pat
@@ -191,9 +197,15 @@ X=
                            & !w:!pat
                          )
                        )
-                    & (|put$(normOrFacs !normOrFacs !!normOrFacs facs !facs,OO,APP))
-                    & trim$(str$getFull$!!normOrFacs):?K
-                    & (|put$(str$("K[" !K "]"),OO,APP))
+                    & ( 
+                      |   put
+                        $ ( normOrFacs !normOrFacs !!normOrFacs facs !facs
+                          , OO
+                          , APP
+                          )
+                      )
+                    & trim$(str$(getFull$!!normOrFacs)):?K
+                    & (|put$(str$(K[ !K "]"),OO,APP))
                     &   ( !K:&(!hl.!hp)
                         |   !pos:(?tokp.?POS) ?posn
                           & !lem:(?tokl.?LEM) ?lemn
@@ -214,7 +226,9 @@ X=
                           & (!LEM.!POS)
                         | (!hl.!hp)
                         )
-                      : (?d.?e)
+                      : (?D.?E)
+                    & (trim$!D:|!D:?d)
+                    & (trim$!E:|!E:?e)
                     &   str
                       $ ( !a
                           "|"
@@ -298,4 +312,3 @@ The lemma and Pos input must also be in org-mode format.
 & ;
 
 new'X;
-
