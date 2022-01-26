@@ -1309,15 +1309,17 @@ basistextStyles=
   ("xml:id=\"...#\"".nor.)
   ("no xml:id".raw.);
 changelog=
+  ( 20220126
+  . tool
+  .   "The Latin texts in the 'Skrift og tekst i tid og rum' project are now annotated with morphological features in addition to Part of Speech and lemmas."
+      "De latinske tekster i 'Skrift og tekst i tid og rum'-projektet bliver nu også annoteret med morfologiske træk."
+  )
   ( 20220114
   . workflow computation
   .   "The drop down lists on the source/goal specification page are cached and not recomputed if present in cache."
       "Valglisterne på input/mål specifikationssiden bliver midlertidigt gemt i stedet for genberegnet."
   )
-  ( 20220112
-  . infrastructure
-  . "log4j 2.16.0 -> 2.17.1"
-  )
+  (20220112.infrastructure."log4j 2.16.0 -> 2.17.1")
   ( 20211230b
   . workflow computation
   .   "Fixed a bug in memoizing workflows characterized by the last tool instead of the desired output."
@@ -1375,7 +1377,11 @@ features=
         "Subtype af resource, fx basistekst, tokens, alfabetisk liste."
     )
     (table.facets)
-    (specificationTable.(pos.tagSets) (tok.tokenisationStyles))
+    ( specificationTable
+    .   (pos.tagSets)
+        (mrf.morfSets)
+        (tok.tokenisationStyles)
+    )
     ( sourcehelp
     .   "The default type of content of the input is \"text\". Change it if necessary."
         "Normalt antager Text Tonsorium at inputtet ikke er annoteret. Ændr til en anden værdi om nødvendigt."
@@ -1796,6 +1802,8 @@ linguae=
   (Zeneize limburgisk.li.)
   (Zhuang zhuang.za.)
   (Zulu zulu.zu.);
+morfSets=
+("Universal Part-of-Speech Tagset".Uni.) (Menota.Menota.);
 periods=
   (classical antikken.c1.)
   (medieval middelalderen.c13.)
@@ -3818,7 +3826,10 @@ toolprop=
       (sml,(sml.nsl))
   )
 + ( anasplit
-  .   (facet,((lem*mrf*pos*stx.OnE).lem+mrf+pos+stx))
+  .   ( facet
+      ,   ((lem*mrf*pos*stx.OnE).lem+mrf+pos+stx)
+        + ((mrf*pos.OnE).mrf+pos)
+      )
       (format,(txtann.txtann))
   )
 + ( cluster
@@ -4168,10 +4179,17 @@ toolprop=
   .   (ambig,(amb.amb)+(pru.pru)+(una.una))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      , (   tok*(lem*tok.OnE)*(pos^Menota*tok.OnE)
-          + tok*(lem*pos^Menota*tok.OnE)
-        . lem*pos^Menota*seg*tok
-        )
+      ,   (     tok
+              * (lem*tok.OnE)
+              * (mrf^Menota*tok.OnE)
+              * (pos^Menota*tok.OnE)
+            + tok*(lem*mrf^Menota*pos^Menota*tok.OnE)
+          . lem*mrf^Menota*pos^Menota*seg*tok
+          )
+        + (   tok*(lem*tok.OnE)*(pos^Menota*tok.OnE)
+            + tok*(lem*pos^Menota*tok.OnE)
+          . lem*pos^Menota*seg*tok
+          )
       )
       (format,(dipl.dipl))
       (pres,(nml.nml))
@@ -4219,7 +4237,7 @@ toolprop=
       (pres,(nml.nml))
   )
 + ( tagtrans
-  .   (facet,(lem*pos^Uni.pos^Menota))
+  .   (facet,(lem*mrf^Uni*pos^Uni.mrf^Menota*pos^Menota))
       (format,(json.json)+(txtann.txtann))
       (lang,(la.la))
       (period,(c13.c13))
@@ -4246,7 +4264,9 @@ toolprop=
   )
 + ( teianno2orgmode
   .   ( facet
-      , (lem*tok.lem*tok)+(pos^Menota*tok.pos^Menota*tok)
+      ,   (lem*tok.lem*tok)
+        + (mrf^Menota*tok.mrf^Menota*tok)
+        + (pos^Menota*tok.pos^Menota*tok)
       )
       (format,(txtann.dipl))
   )
@@ -4373,7 +4393,7 @@ toolprop=
 + ( udpipe
   .   (ambig,(una.una))
       (app,(nrm.nrm))
-      (facet,(seg*tok.lem*mrf*pos^Uni*stx))
+      (facet,(seg*tok.lem*mrf^Uni*pos^Uni*stx))
       (format,(txtann.txtann))
       ( lang
       ,   (af.af)
@@ -4439,7 +4459,7 @@ toolprop=
 + ( udpipe
   .   (ambig,(una.una))
       (app,(nrm.nrm))
-      (facet,(seg*tok.lem*mrf*pos^Uni*stx))
+      (facet,(seg*tok.lem*mrf^Uni*pos^Uni*stx))
       (format,(txtann.txtann))
       (lang,(cu.cu)+(fr.fr)+(la.la)+(ru.ru)+(zh.zh))
       (period,(c13.c13))
@@ -4448,7 +4468,7 @@ toolprop=
 + ( udpipe
   .   (ambig,(una.una))
       (app,(nrm.nrm))
-      (facet,(seg*tok.lem*mrf*pos^Uni*stx))
+      (facet,(seg*tok.lem*mrf^Uni*pos^Uni*stx))
       (format,(txtann.txtann))
       (lang,(el.el)+(la.la))
       (period,(c1.c1))
@@ -4535,6 +4555,7 @@ where=
       htmlStyles
       imageStyles
       jsonStyles
+      morfSets
       sndStyles
       tagSets
       tokenisationStyles

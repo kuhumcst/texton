@@ -26,7 +26,7 @@ X=
                       .   @(!arg:"|" ?token "|" ?anno "|")
                         & (trim$!token.!anno)
                     )
-                  . out$(file !arg)&get$(!arg,STR)
+                  . get$(!arg,STR)
                   . \n
                   )
               : (?H1.?H2) (?.?) ?table
@@ -40,7 +40,7 @@ X=
                       .   @(!arg:"|" ?token "|" ?lemma "|" ? "|")
                         & (trim$!token.!lemma)
                     )
-                  . out$(file !arg)&get$(!arg,STR)
+                  . get$(!arg,STR)
                   . \n
                   )
               : (?H1.?H2) (?.?) ?table
@@ -54,7 +54,7 @@ X=
                       .   @(!arg:"|" ?token "|" ? "|" ?pos "|")
                         & (trim$!token.!pos)
                     )
-                  . out$(file !arg)&get$(!arg,STR)
+                  . get$(!arg,STR)
                   . \n
                   )
               : (?H1.?H3) (?.?) ?table
@@ -90,25 +90,32 @@ X=
               ' (!arg:?A ¦ ?Z&!A !Z:?arg)
             & !arg
         )
-      & !arg:(?outp.?txt.?pos.?lem.?Iappnrm)
+      & !arg:(?Iappnrm.?outp.?txt.?pos.?lem.?mrf)
       &   (!Iappnrm:1&norm|facs)
         : ?normOrFacs
-      & (   !pos:!lem
+      & :?hm
+      & (   !pos:!lem:!mrf
+          &   readOrg4colFilePos$!pos
+            : (?.?pos:(?.?hp) ?)
+          &   readOrg4colFileLem$!lem
+            : (?.?lem:(?.?hl) ?)
+          &   readOrg4colFileMrf$!mrf
+            : (?.?morf:(?.?hm) ?)
+        |   !pos:!lem
           &   readOrg3colFilePos$!pos
             : (?.?pos:(?.?hp) ?)
-            : ?AA
           &   readOrg3colFileLem$!lem
             : (?.?lem:(?.?hl) ?)
-            : ?BB
-        |     readOrg2colFile$!pos
-            : (?.?pos:(?.?hp) ?)
-            : ?CC
-          &   readOrg2colFile$!lem
-            : (?.?lem:(?.?hl) ?)
-            : ?DD
+        |   readOrg2colFile$!pos:(?.?pos:(?.?hp) ?)
+          & readOrg2colFile$!lem:(?.?lem:(?.?hl) ?)
+          & ( !mrf:
+            |   readOrg2colFile$!mrf
+              : (?.?mrf:(?.?hm) ?)
+            )
         )
       & spaces$!hp:?hp
       & spaces$!hl:?hl
+      & spaces$!hm:?hm
       &   ( 
           =   ?a
               "|"
@@ -183,7 +190,6 @@ X=
               ?p
           )
         : ?shortpat
-      & (|put$(OO,OO,NEW))
       &     vap
           $ ( ( 
               =   w full short D E
@@ -191,29 +197,27 @@ X=
                        : ? "|" ? "|" ? "|" ? "|" ?
                        : ( !pat
                          |   ?w
-                           & (|put$(shortpat,OO,APP))
                            & !shortpat:(=?pat)
                            & " ":?c
                            & !w:!pat
                          )
                        )
-                    & ( 
-                      |   put
-                        $ ( normOrFacs !normOrFacs !!normOrFacs facs !facs
-                          , OO
-                          , APP
-                          )
-                      )
                     & trim$(str$(getFull$!!normOrFacs)):?K
-                    & (|put$(str$(K[ !K "]"),OO,APP))
-                    &   ( !K:&(!hl.!hp)
+                    &   ( !K:&(!hl.!hp.!hm)
                         |   !pos:(?tokp.?POS) ?posn
                           & !lem:(?tokl.?LEM) ?lemn
+                          & ( !mrf:(?tokm.?MRF) ?mrfn
+                            | :?MRF:?mrfn
+                            )
                           & (   sim$(!tokp.!K):>3/5
                               & !posn:?pos
                               & !lemn:?lem
+                              & !mrfn:?mrf
                             |   !posn:(?tokp2.?POS2) ?posn2
                               & !lemn:(?tokl2.?LEM2) ?lemn2
+                              & ( !mrfn:(?tokm2.?MRF2) ?mrfn2
+                                | :?MRF2:?mrfn2
+                                )
                               & sim$(str$(!tokp !tokp2).!K):>3/5
                               &     pad
                                   $ ( str$(" " trim$!LEM trim$!LEM2)
@@ -222,13 +226,15 @@ X=
                                 : ?LEM
                               & !posn2:?pos
                               & !lemn2:?lem
+                              & !mrfn2:?mrf
                             )
-                          & (!LEM.!POS)
-                        | (!hl.!hp)
+                          & (!LEM.!POS.!MRF)
+                        | (!hl.!hp.!hm)
                         )
-                      : (?D.?E)
+                      : (?D.?E.?E2)
                     & (trim$!D:|!D:?d)
-                    & (trim$!E:|!E:?e)
+                    & trim$!E:?e
+                    & (trim$!E2:|!E2:?e2)
                     &   str
                       $ ( !a
                           "|"
@@ -238,7 +244,7 @@ X=
                           "|"
                           !d
                           "|"
-                          !e
+                          (!e:|!e !e2)
                           "|"
                           !f
                           "|"
@@ -269,8 +275,7 @@ X=
                         )
                   | str$(!arg \n)
               )
-            .   out$(file !arg)
-              & :?lang
+            .   :?lang
               & !longpat:(=?pat)
               & get$(!txt,STR)
             . \n
@@ -281,12 +286,22 @@ X=
   ( new
   =   
     .   ~
-      |   arg$:?outp
+      |   ~
+        &   (its.doit)
+          $ ( 1
+            . results
+            . IfacettokF
+            . "Ifacet_pos_tokF"
+            . "Ifacet_lem_tokF"
+            . "Ifacet_mrf_tokF"
+            )
+      |   arg$:?Iappnrm
+        & arg$:?outp
         & arg$:?txt
         & arg$:?pos
         & arg$:?lem
-        & arg$:?Iappnrm
-        & (its.doit)$(!outp.!txt.!pos.!lem.!Iappnrm)
+        & (arg$:?mrf|:?mrf)
+        & (its.doit)$(!Iappnrm.!outp.!txt.!pos.!lem.!mrf)
   );
 
 r=
