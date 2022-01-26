@@ -675,7 +675,7 @@ try {
             $language = "da";
         $ancestor = "spanGrp";
         $element = "span";
-        $annotation = "POStags";
+        $annotation = "pos";
         $idprefix = "P";
         $toolbin = '../bin/';
         $toolres = '../texton-linguistic-resources/';
