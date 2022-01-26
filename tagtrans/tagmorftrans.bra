@@ -1,0 +1,298 @@
+{tagmorftrans.bra
+
+Translate tags in TEI P5 DK Clarin annotation file.}
+
+X=
+  ( doit
+  =   in ou od nw A att posspans Z lem
+    .   !arg:(?in.?lem.?mrf.?ou.?la.?od.?od2.?nw.?nw2)
+      & (morf=.)
+      & ( !la:la
+        & ( pos
+          =   a e d cond
+            .   !arg:(?a.?e:?d)
+              & (     (NOUN.xNC.(=))
+                      (ADP.xIM.(=lemma$(at.!a)))
+                      (ADP.xAP.(=))
+                      (INTJ.xIT.(=))
+                      (ADJ.xAJ.(=))
+                      (VERB.xVB.(=))
+                      (AUX.xVB.(=))
+                      (ADV.xRP.(=lemma$(sum.!a)))
+                      (PART.xRP.(=))
+                      (ADV.xAV.(=))
+                      ( CCONJ
+                      . xCC
+                      . (=lemma$(ok æller mæthen.!a))
+                      )
+                      (SCONJ.xCS.(=))
+                      (DET.xDD.(=))
+                      ( NUM
+                      . xNO
+                      . ( 
+                        = lemma$(anner thrithje tolfte.!a)
+                        )
+                      )
+                      (NUM.xNA.(=))
+                      (PRON.xDD.(=lemma$(thænne.!a)))
+                      (PRON.xDP.(=lemma$(sin var.!a)))
+                      (PRON.xPD.(=))
+                      (PROPN.xNP.(=))
+                      (PRON."xPD eE".(=))
+                      (PUNCT.xUA.(=))
+                      (SYM.xUA.(=))
+                      (X.xUA.(=))
+                  :   ?
+                      (!e.?d.(=?cond)&!cond)
+                      ?
+                | 
+                )
+              & !d
+          )
+        & ( morf
+          =   from pos mo k v
+            .   !arg:(? (from.?from) ?.?pos)
+              &   !mrfspans
+                :   ?
+                    (span.? (from.!from) ?,?mo)
+                    ?mrfspans
+              &   vap
+                $ ( ( 
+                    =   
+                      .   @(!arg:?k "=" ?v)&(!k.!v)
+                        | 
+                    )
+                  . !mo
+                  . "|"
+                  )
+          )
+        )
+      &   nestML$(get$(!in,X ML))
+        : ?A (spanGrp.?attag,?posspans) ?Z
+      &   nestML$(get$(!lem,X ML))
+        : ?A (spanGrp.?atlem,?lems) ?Z
+      &   nestML$(get$(!mrf,X ML))
+        : ?A (spanGrp.?atmrf,?mrfspans) ?Z
+      & ( lemma
+        =   A B F
+          .   !arg:(?A.? (from.?F) ?)
+            &   !lems
+              : ? (span.? (from.!F) ?,?B) ?lems
+            & !A:? !B ?
+        )
+      &     (Abbr.Yes..)
+            (AdpType.Prep..xAP)
+            (Aspect.(Imp.tIP.) (Perf.tPF.))
+            ( Case
+            .   (Abl.cB.)
+                (Acc.cA.)
+                (Dat.cD.)
+                (Gen.cG.)
+                (Loc..)
+                (Nom.cN.)
+            )
+            ( Degree
+            . (Abs.rS.) (Cmp.rC.) (Pos.rP.)
+            )
+            ( Gender
+            . (Fem.gF.) (Masc.gM.) (Neut.gN.)
+            )
+            ( Mood
+            . (Imp.mIP.) (Ind.mIN.) (Sub.mSU.)
+            )
+            (NumForm.Digit..)
+            ( NumType
+            . (Card.xNA.) (Dist..) (Ord.xNO.)
+            )
+            (Number.(Plur.nP.) (Sing.nS.))
+            (Person.(1.p1.) (2.p2.) (3.p3.))
+            (Poss.Yes..xDP)
+            ( PronType
+            .   (Art..xAT)
+                (Dem..xDD)
+                (Dem,Prs..xDDxPE)
+                (Ind..xPI)
+                (Ind,Int..xPIxPQ)
+                (Ind,Rel..xPIxRP)
+                (Prs..xPE)
+                (Rel..xRP)
+            )
+            (Reflex.Yes.vR.)
+            ( Tense
+            .   (Fut.tFS.)
+                (Imp.tPT.)
+                (Past.tPT.)
+                (Pres.tPS.)
+            )
+            ( VerbForm
+            .   (Fin.fF.)
+                (Gdv..)
+                (Ger..)
+                (Inf.fI.)
+                (Part.fP.)
+            )
+            ( VerbType
+            .   (Mod..)
+                (Voice.(Act.vA.) (Pass.vP.))
+            )
+        : ?tab
+      &     map
+          $ ( ( 
+              =   a e d mms
+                .   !arg:(span.?a,?pos)
+                  & morf$(!a.!e):?mrf
+                  & :?pp
+                  & 0:?mms
+                  & (     map
+                        $ ( ( 
+                            =   k v M P s C
+                              .     !arg:(?k.?v)
+                                  &   !tab
+                                    :   ?
+                                        ( !k
+                                        .   ?
+                                            (!v.@(?:%@?s ?C).?P)
+                                            ?
+                                        )
+                                        ?
+                                  & (!P:|!P:?pp)
+                                  & !s\L!C+!mms:?mms
+                                  & 
+                                | 
+                            )
+                          . !mrf
+                          )
+                      & :?mm
+                      &   whl
+                        ' ( !mms:?s\L?Cs+?mms
+                          & :?cs
+                          &   whl
+                            ' ( !Cs:%@?C^?*?Cs
+                              & !cs !C:?cs
+                              )
+                          & !mm " " str$(!s !cs):?mm
+                          )
+                      & !mm:" " ?mm
+                    | :?mm
+                    )
+                  & (   !pp:
+                      &     (ADJ.xAJ)
+                            (ADP.xAP)
+                            (ADV.xAV)
+                            (AUX.xVB)
+                            (CCONJ.xCC)
+                            (DET.xDD)
+                            (INTJ.xIT)
+                            (NOUN.xNC)
+                            (NUM.xNA)
+                            (PART.xRP)
+                            (PRON.xPD)
+                            (PROPN.xNP)
+                            (PUNCT.xUA)
+                            (SCONJ.xCS)
+                            (SYM.xUA)
+                            (VERB.xVB)
+                            (X.xUA)
+                        : ? (!pos.?pp) ?
+                      & ( !pp:&xUA:?pp
+                        | 
+                        )
+                    | 
+                    )
+                  & (!a.!pp.!mm)
+              )
+            . !posspans
+            )
+        : ?posmorfs
+      &   ( TEI
+          .   (xmlns."http://www.tei-c.org/ns/1.0")
+            ,   (teiHeader.,)
+                ( text
+                .   
+                  ,   !A
+                      ( spanGrp
+                      .   !attag
+                        ,   map
+                          $ ( ( 
+                              =   
+                                .   !arg:(?a.?arg.?)
+                                  & (span.!a,!arg)
+                              )
+                            . !posmorfs
+                            )
+                      )
+                      ( spanGrp
+                      .   !atmrf
+                        ,   map
+                          $ ( ( 
+                              =   
+                                .   !arg:(?a.?.?arg)
+                                  & (span.!a,!arg)
+                              )
+                            . !posmorfs
+                            )
+                      )
+                      !Z
+                )
+          )
+        : ?tei
+      & put$(toML$!tei,!ou,NEW)
+  )
+  ( new
+  =   
+    .   ~
+      |   ~
+        &   (its.doit)
+          $ ( "470-5.org-4262-step7.json"
+            . "470-5.org-4262-step7.json"
+            . uit
+            . da
+            . DSL
+            . Menotas
+            )
+      |   ~
+        &   (its.doit)
+          $ ( IfacetposF
+            . IfacetlemF
+            . IfacetmrfF
+            . tagtrans-results
+            . la
+            . Uni
+            . Uni
+            . Menota
+            . Menota
+            )
+      |   (its.doit)
+        $ ( arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          )
+  );
+
+r=
+  get'("tagmorftrans.bra",TXT)
+& rmv$(str$(tagmorftrans ".bak"))
+& ren$("tagmorftrans.bra".str$(tagmorftrans ".bak"))
+&   put
+  $ ( "{tagmorftrans.bra
+
+Translate tags in TEI P5 DK Clarin annotation file.}
+
+"
+    , "tagmorftrans.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"tagmorftrans.bra",APP)
+& put'(\n,"tagmorftrans.bra",APP,BIN)
+& lst'(r,"tagmorftrans.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"tagmorftrans.bra",APP,BIN)
+& ;
+
+new'X;
