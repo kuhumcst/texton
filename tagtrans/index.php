@@ -417,9 +417,9 @@ try {
                 $command = "../bin/bracmat 'get\$\"tagmorftrans.bra\"' '$F' '$F' '$F' '$tagtransfile' '$lang' $intag $inmrf $outtag $outmrf";
             else
                 {
-                copy($IfacetposF,"IfacetposF");
+                /*copy($IfacetposF,"IfacetposF");
                 copy($IfacetlemF,"IfacetlemF");
-                copy($IfacetmrfF,"IfacetmrfF");
+                copy($IfacetmrfF,"IfacetmrfF");*/
                 $command = "../bin/bracmat 'get\$\"tagmorftrans.bra\"' '$IfacetposF' '$IfacetlemF' '$IfacetmrfF' '$tagtransfile' '$lang' $intag $outtag";
                 }
             }
