@@ -805,83 +805,12 @@ toolsProg=
               )
           & !abbrs
       )
-      ( lexan
-      =   T A B op ops
-        .   !arg:(?ops.?arg)
-          & "safe alternative for get$(!arg,MEM). Ignores JBoss-life-threatening (closing) parentheses."
-          & (   !arg:?A_?B
-              & (lexan$(!ops.!A))_(lexan$(!ops.!B))
-            |   !ops:%?op ?ops
-              & (   @(!arg:?A !op ?B)
-                  &   !op
-                    : (   " "
-                        &   lexan$(!ops.!A) lexan$(!op !ops.!B)
-                          : ?T
-                      |   "+"
-                        &   lexan$(!ops.!A)+lexan$(!op !ops.!B)
-                          : ?T
-                      |   "*"
-                        &   lexan$(!ops.!A)*lexan$(!op !ops.!B)
-                          : ?T
-                      |   "^"
-                        &   lexan$(!ops.!A)^lexan$(!op !ops.!B)
-                          : ?T
-                      )
-                  & !T
-                | lexan$(!ops.!arg)
-                )
-            | !arg
-            )
-      )
-      ( unpackIOparm
-      =   A parms parm nparms val
-        .   !arg:(?parms.?parm)
-          & :?nparms
-          &   whl
-            ' ( !parms:?A (!parm.?val) ?parms
-              & ( lexan$(" " "+" "*" "^".!val):?val
-                | 
-                )
-              & !nparms !A (!parm.!val):?nparms
-              )
-          & !nparms !parms
-      )
-      ( unpackIOparms
-      =   f fs short p
-        .   readTable$features
-          & !features:?fs
-          &   whl
-            ' ( !fs:%?f+?fs
-              & !f:? (short.?short) ?
-              & str$(I !short):?p
-              & (unpackIOparm$(!arg.!p):?arg|)
-              & str$(O !short):?p
-              & (unpackIOparm$(!arg.!p):?arg|)
-              )
-          & !arg
-      )
       ( checkParmsSimple
       =   parms parm aBbr
         .   !arg:(?parms.?parm)
           & !parms:? (!parm.%?aBbr) ?
           & !hiddenData (!parm.!aBbr):?hiddenData
           & !aBbr
-      )
-      ( checkIOparms
-      =   f fs short table p
-        .   readTable$features
-          & !features:?fs
-          &   whl
-            ' ( !fs:%?f+?fs
-              &   !f
-                : ? (short.?short) ?
-                : ? (table.?table) ?
-              & readTable$!table
-              & str$(I !short):?p
-              & (checkParms$(!arg.!p.!!table)|)
-              & str$(O !short):?p
-              & (checkParms$(!arg.!p.!!table)|)
-              )
       )
       ( heading
       =   n
@@ -10765,6 +10694,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$Uploads
           & :?newJobs
           & (readTable$jobs|:?jobs)
+          & "Note: this whl'() loop cannot be rewritten as a map$-ping,
+             since the constructed list (newJobs) is consulted."
           &   whl
             ' ( !JobStack:(?jobID.?Tool.?ou.?in) ?JobStack
               & OffSet$!jobID:?jobID
@@ -13615,19 +13546,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         & ( !nt:!itms&(!a.!v)
                           | 
                           )
-                      |   !arg:(Item|itms.?)
-                        & !arg !hiddenData:?hiddenData
+                      |       ( !arg:(Item|itms.?)
+                              |   !arg:(CLOCK.?CLOCK)
+                                &   !ItemGroupsCache
+                                  :   ?
+                                      ( !CLOCK
+                                      . ? (!itms.?items.?wfs) ?
+                                      )
+                                      ?
+                                &   map$((=.Item.!arg).!items)
+                                  : ?Items
+                                & !arg
+                              | 
+                              )
+                              !hiddenData
+                          : ?hiddenData
                         & !arg
-                      |   !arg:(CLOCK.?CLOCK)
-                        &   !ItemGroupsCache
-                          :   ?
-                              (!CLOCK.? (!itms.?items.?wfs) ?)
-                              ?
-                        &   map$((=.Item.!arg).!items)
-                          : ?Items
-                        & !arg !hiddenData:?hiddenData
-                        & !arg
-                      | !arg
                   )
                 . !parms
                 )
@@ -13645,6 +13579,125 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             . !parms
             . !BodyContainer
             )
+      )
+      ( getBatchHandleDesiredtoolSuperset
+      =     parms handle rstr hiddenData lexan
+          , unpackIOparm unpackIOparms checkIOparms
+        .   ( lexan
+            =   T A B op ops
+              .   !arg:(?ops.?arg)
+                & "safe alternative for get$(!arg,MEM). Ignores JBoss-life-threatening (closing) parentheses."
+                & (   !arg:?A_?B
+                    & (lexan$(!ops.!A))_(lexan$(!ops.!B))
+                  |   !ops:%?op ?ops
+                    & (   @(!arg:?A !op ?B)
+                        &   !op
+                          : (   " "
+                              &     lexan$(!ops.!A)
+                                    lexan$(!op !ops.!B)
+                                : ?T
+                            |   "+"
+                              &     lexan$(!ops.!A)
+                                  + lexan$(!op !ops.!B)
+                                : ?T
+                            |   "*"
+                              &     lexan$(!ops.!A)
+                                  * lexan$(!op !ops.!B)
+                                : ?T
+                            |   "^"
+                              &     lexan$(!ops.!A)
+                                  ^ lexan$(!op !ops.!B)
+                                : ?T
+                            )
+                        & !T
+                      | lexan$(!ops.!arg)
+                      )
+                  | !arg
+                  )
+            )
+          & ( unpackIOparm
+            =   A parms parm nparms val
+              .   !arg:(?parms.?parm)
+                & :?nparms
+                &   whl
+                  ' ( !parms:?A (!parm.?val) ?parms
+                    & ( lexan$(" " "+" "*" "^".!val):?val
+                      | 
+                      )
+                    & !nparms !A (!parm.!val):?nparms
+                    )
+                & !nparms !parms
+            )
+          & ( unpackIOparms
+            =   f fs short p
+              .   readTable$features
+                & !features:?fs
+                &   whl
+                  ' ( !fs:%?f+?fs
+                    & !f:? (short.?short) ?
+                    & str$(I !short):?p
+                    & (unpackIOparm$(!arg.!p):?arg|)
+                    & str$(O !short):?p
+                    & (unpackIOparm$(!arg.!p):?arg|)
+                    )
+                & !arg
+            )
+          & ( checkIOparms
+            =   f fs short table p
+              .   readTable$features
+                & !features:?fs
+                &   whl
+                  ' ( !fs:%?f+?fs
+                    &   !f
+                      : ? (short.?short) ?
+                      : ? (table.?table) ?
+                    & readTable$!table
+                    & str$(I !short):?p
+                    & (checkParms$(!arg.!p.!!table)|)
+                    & str$(O !short):?p
+                    & (checkParms$(!arg.!p.!!table)|)
+                    )
+            )
+          & !arg:(?parms.?hiddenData)
+          &     ( 
+                | "Shall we treat all resources in one job (non-batch) or shall we
+               send each input through a different (though similar) job?"
+                )
+                ( batch
+                .       !parms
+                      : ( ? (action.batch) ?
+                        | ? (batch.on) ?
+                        |   ~(? (action.?) ?)
+                          & ~(? (batch.?) ?)
+                        )
+                    & on
+                  | off
+                )
+                (   !parms:? (handle.?handle) ?
+                  & (handle.!handle)
+                | 
+                )
+                ( 
+                | "Does the user want to decide which tool to use or does she want
+                 to let the infrastructure work out a way to reach a set goal?"
+                )
+                (   !parms:? (desiredtool.?rstr) ?
+                  & (desiredtool.!rstr)
+                | 
+                )
+                  map
+                $ ( ( 
+                    =   
+                      .   !arg:(@(?:SuperSet- ?).?)
+                        | 
+                    )
+                  . !parms
+                  )
+                !hiddenData
+            : ?hiddenData
+          & unpackIOparms$!parms:?parms
+          & checkIOparms$!parms
+          & (!parms.!hiddenData.!batch)
       )
       "
 /**
@@ -14403,41 +14456,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &   analyzeInput$(!parms.!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
-            |   "Shall we treat all resources in one job (non-batch) or shall we
-               send each input through a different (though similar) job?"
-              &   (     !parms
-                      : ( ? (action.batch) ?
-                        | ? (batch.on) ?
-                        |   ~(? (action.?) ?)
-                          & ~(? (batch.?) ?)
-                        )
-                    & on
-                  | off
-                  )
-                : ?batch
-              & (   !arg:? (handle.?handle) ?
-                  & (handle.!handle) !hiddenData:?hiddenData
-                | 
-                )
-              & !hiddenData (batch.!batch):?hiddenData
-              & "Does the user want to decide which tool to use or does she want
-                   to let the infrastructure work out a way to reach a set goal?"
-              &     !hiddenData
-                    (   !arg:? (desiredtool.?rstr) ?
-                      & (desiredtool.!rstr)
-                    | 
-                    )
-                      map
-                    $ ( ( 
-                        =   
-                          .   !arg:(@(?:SuperSet- ?).?)
-                            | 
-                        )
-                      . !arg
-                      )
-                : ?hiddenData
-              & unpackIOparms$!parms:?parms
-              & checkIOparms$!parms
+            |     getBatchHandleDesiredtoolSuperset$(!parms.!hiddenData)
+                : (?parms.?hiddenData.?batch)
               & readTable$tooladm
               &   "We are at the start. Show an input form."
                 $ (!presels.!hiddenData.!Items)
@@ -14445,58 +14465,26 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( supplementParmsAndHiddenData
       =   Submit batch,handle parms rstr nth
-        .   "Shall we treat all resources in one job (non-batch) or shall
-             we send each input through a different (though similar) job?"
-          & !arg:(?parms.?hiddenData)
-          &   (     !parms
-                  : ( ? (action.batch) ?
-                    | ? (batch.on) ?
-                    |   ~(? (action.?) ?)
-                      & ~(? (batch.?) ?)
-                    )
-                & on
-              | off
-              )
-            : ?batch
-          & (   !parms:? (handle.?handle) ?
-              & (handle.!handle) !hiddenData:?hiddenData
-            | 
-            )
-          & !hiddenData (batch.!batch):?hiddenData
-          &     !hiddenData
-                (   !parms:? (desiredtool.?rstr) ?
-                  & (desiredtool.!rstr)
-                | 
-                )
-                  map
-                $ ( ( 
-                    =   
-                      .   !arg:(@(?:SuperSet- ?).?)
-                        | 
-                    )
-                  . !parms
-                  )
-            : ?hiddenData
-          & unpackIOparms$!parms:?parms
-          & checkIOparms$!parms
+        .     getBatchHandleDesiredtoolSuperset$!arg
+            : (?parms.?hiddenData.?batch)
           & readTable$tooladm
-          & (   !parms:? (bsubmit.?Submit) ?
-              & (!parms.!Submit.!hiddenData.!batch)
-            |   !parms:? (@(?:bview- ?nth).?) ?
-              &   localized$(localized$("View details" "Se detaljer"))
-                : ?Submit
-              & ( (nth.!nth) !parms
-                . !Submit
-                . !hiddenData
-                . !batch
+          & (   (   !parms:? (bsubmit.?Submit) ?
+                  & 
+                |     (     !parms
+                          : ? (@(?:bview- ?nth).?) ?
+                        &   localized
+                          $ (localized$("View details" "Se detaljer"))
+                      |     !parms
+                          : ? (@(?:bsubmit- ?nth).?) ?
+                        & Submit
+                      )
+                    : ?Submit
+                  & (nth.!nth)
                 )
-            |   !parms:? (@(?:bsubmit- ?nth).?) ?
-              & Submit:?Submit
-              & ( (nth.!nth) !parms
-                . !Submit
-                . !hiddenData
-                . !batch
-                )
+                !parms
+            . !Submit
+            . !hiddenData
+            . !batch
             )
       )
       ( NotFulfillable
