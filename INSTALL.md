@@ -26,7 +26,7 @@ Installation requires
    Interpreters are installed in two locations:  
    as a JNI (Java Native Interface) inside Tomcat  
    and as a command line tool in `/opt/texton/bin/`
-  * DK-ClarinTools
+  * BASE
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * Many tools wrapped in web services in `/opt/texton/`
@@ -164,19 +164,19 @@ Installing:
 
 See https://github.com/kuhumcst/texton-bin.
 
-## DK-ClarinTools
+## BASE
 
-The repo https://github.com/kuhumcst/DK-ClarinTools contains the Java code of the central hub.
+The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
 The Bracmat code of the central hub is in this (https://github.com/kuhumcst/texton) repo.
    
 You can clone whereever you want. The Text Tonsorium only needs the .war file that is the result
 of compiling the java source.
    
-The installation instructions in https://github.com/kuhumcst/DK-ClarinTools are not up-to-data as of 2020.08.17
+The installation instructions in https://github.com/kuhumcst/texton-Java are not up-to-data as of 2020.08.17
 Just do:
 
-    $> git clone https://github.com/kuhumcst/DK-ClarinTools.git
-    $> cd DK-ClarinTools/
+    $> git clone https://github.com/kuhumcst/texton-Java.git
+    $> cd texton-Java/
     $> sudo chmod ugo+x compileTomcat.sh
     $> sudo ./compileTomcat.sh
     $> sudo /opt/tomcat/latest/bin/startup.sh
@@ -188,7 +188,7 @@ you defined in tomcat-users.xml. Then, in the "Path" column, click "/texton". Th
 
 Before proceeding, we need to install the metadata table that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
-    $> cd /opt/texton/DK-ClarinTools/work/
+    $> cd /opt/texton/BASE/
     $> ls -lrt alltables*
 
 Copy the file name of the most recent "alltables..." file to the clipboard. Now bavigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
@@ -404,7 +404,7 @@ Add:
 ## create cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
 
-    0  *  * * * /usr/bin/find /opt/texton/DK-ClarinTools/work/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+    0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
     0  *  * * * /usr/bin/find /var/log/tomcat9/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
     0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
 
