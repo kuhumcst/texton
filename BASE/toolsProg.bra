@@ -154,10 +154,15 @@ toolsProg=
       (goalPicklists=)
       (servicedSuperGoals=)
       ( helpmespecifymygoal
-      =   "No wait! ... I want to specify my goal in more detail."
-          "Nej vent! ... Jeg vil specificere outputtet yderligere."
+      = "Next: zoom in on goal." "Zoom ind med flere detaljer"
       )
-      ("next step"="Show available workflows." "Vis mulige arbejdsgange.")
+      ( "show workflows"
+      = "Show available workflows" "Vis mulige arbejdsgange"
+      )
+      ( "skip zoom"
+      =   "Show available workflows  (Not recommended in this phase)"
+          "Vis mulige arbejdsgange  (Kan ikke anbefales i dette stadie)"
+      )
       (StartClk=)
       (startclock=.-1*clk$:?StartClk)
       ( clock
@@ -13780,14 +13785,16 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                send each input through a different (though similar) job?"
                 )
                 ( batch
-                .       !parms
-                      : ( ? (action.batch) ?
-                        | ? (batch.on) ?
-                        |   ~(? (action.?) ?)
-                          & ~(? (batch.?) ?)
-                        )
-                    & on
-                  | off
+                .   (     !parms
+                        : ( ? (action.batch) ?
+                          | ? (batch.on) ?
+                          |   ~(? (action.?) ?)
+                            & ~(? (batch.?) ?)
+                          )
+                      & on
+                    | off
+                    )
+                  : ?batch
                 )
                 (   !parms:? (handle.?handle) ?
                   & (handle.!handle)
@@ -14517,9 +14524,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   $ ( showworkflows
                                     .   makeHiddenFields$!hiddenData
                                         !formFields
-                                        submit$(localized$!"next step")
                                           submit
                                         $ (localized$!helpmespecifymygoal)
+                                        submit$(localized$!"skip zoom")
                                         helplink$
                                     )
                                   (br.,)
@@ -14998,7 +15005,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         : (workflowsFound|allRight)
                       & log$(Submit !Submit)
                       & log$(zubmit localized$!helpmespecifymygoal)
-                      & (   localized$!"next step":!Submit
+                      & (   ( localized$!"show workflows":!Submit
+                            | localized$!"skip zoom":!Submit
+                            )
                           & (   !returnCode:workflowsFound
                               & (     makeWorkflowsSequential$!pipes
                                     : ( ?reorderedworkflowlist
@@ -15238,15 +15247,19 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                 )
                                                 ( div
                                                 .   (class.topmargin)
-                                                  ,     submit
-                                                      $ (localized$!"next step")
-                                                      (   !nfvs:?*[>1
-                                                        &   submit
+                                                  ,     !nfvs:?*[>1
+                                                      &     submit
                                                           $ ( localized
                                                             $ !helpmespecifymygoal
                                                             )
-                                                      | 
-                                                      )
+                                                            submit
+                                                          $ ( localized
+                                                            $ !"skip zoom"
+                                                            )
+                                                    |   submit
+                                                      $ ( localized
+                                                        $ !"show workflows"
+                                                        )
                                                 )
                                                 (paragraph.,helplink$)
                                           )
