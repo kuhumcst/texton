@@ -168,7 +168,7 @@ try {
         return $lemfile;
         }
 
-function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,$toptarg,$foptarg,$filename,$pos,$posattribute,$emptyattribute,$XMLinput,$Iperiodc13,$Iperiodc20)
+function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,$toptarg,$foptarg,$filename,$pos,$posattribute,$emptyattribute,$XMLinput,$Iperiodc13,$Iperiodc20)
     {
     $tmpno = tempFileName("lemma-results");
     $dict = "/dict";
@@ -178,7 +178,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
     //$c = "\$b1[[\$b~1]?\$B]";
     //$c = "\$b[[\$b0]?(\$B)]";
     $cx = "\$b1[[\$b?]~1\$B]";
-    if($Oformatflat)
+    if($Oformat == "flat" || $Oformat == "3cole")
         $sep = " -s'|' ";
     else
         $sep = " -s'\\011' ";
@@ -190,7 +190,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
     if($Ofacetlem && !$Ofacetpos && !$Ofacettok)
         $wt = ""; 
 
-    $eind = "\$s\\n";
+    if($Oformat == "flat")
+        $eind = "\$s";
+    else
+        $eind = "\$s\\n";
     /* $Ofacetlem */
     if($Ofacetlem && !$Ofacetseg) 
         $eind = "\\n";
@@ -543,6 +546,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
     $command = $command . $sep;
  
     logit($command);
+    // ../bin/cstlemma -L -eU -p -t- -U- -u- -H1 -l- -f'../texton-linguistic-resources/da/lemmatiser/notags/c21/0/flexrules' -d'../texton-linguistic-resources/da/lemmatiser/notags/c21/dict' -i /tmp/CSTLem_F_7338gJ -o /tmp/lemma-results3OobbI -qfwt -B'$f\t$w\t$W\n' -b'$f\t$w\t$W\n' -W'$f\t$w'       -I'$w\s' -s'|'
     logit(getcwd());
     if(($cmd = popen($command, "r")) == NULL)
         {
@@ -644,10 +648,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacet_par_pos_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacet_pos_seg_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_par_pos_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and segments (SÃ¦tningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_pos_seg_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (SÃ¦tningssegmenter) and tokens (Tokens) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -657,12 +661,12 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Ilangcs = false;	/* Language in input is Czech (tjekkisk) if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
-        $Ilangel = false;	/* Language in input is Greek (græsk) if true */
+        $Ilangel = false;	/* Language in input is Greek (grÃ¦sk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ilanges = false;	/* Language in input is Spanish (spansk) if true */
         $Ilanget = false;	/* Language in input is Estonian (estisk) if true */
         $Ilangfa = false;	/* Language in input is Persian (persisk) if true */
-        $Ilangfo = false;	/* Language in input is Faroese (færøsk) if true */
+        $Ilangfo = false;	/* Language in input is Faroese (fÃ¦rÃ¸sk) if true */
         $Ilangfr = false;	/* Language in input is French (fransk) if true */
         $Ilanghr = false;	/* Language in input is Croatian (kroatisk) if true */
         $Ilanghu = false;	/* Language in input is Hungarian (ungarsk) if true */
@@ -674,7 +678,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Ilangno = false;	/* Language in input is Norwegian (norsk) if true */
         $Ilangpl = false;	/* Language in input is Polish (polsk) if true */
         $Ilangpt = false;	/* Language in input is Portuguese (portugisisk) if true */
-        $Ilangro = false;	/* Language in input is Romanian (rumænsk) if true */
+        $Ilangro = false;	/* Language in input is Romanian (rumÃ¦nsk) if true */
         $Ilangru = false;	/* Language in input is Russian (russisk) if true */
         $Ilangsk = false;	/* Language in input is Slovak (slovakisk) if true */
         $Ilangsl = false;	/* Language in input is Slovene (slovensk) if true */
@@ -692,8 +696,9 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
         $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
-        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (SÃ¦tningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
+        $Oformatcols = false;	/* Format in output is columns, tab separated fields (kolonner, tab separeret) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangaf = false;	/* Language in output is Afrikaans (afrikaans) if true */
@@ -701,12 +706,12 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Olangcs = false;	/* Language in output is Czech (tjekkisk) if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
-        $Olangel = false;	/* Language in output is Greek (græsk) if true */
+        $Olangel = false;	/* Language in output is Greek (grÃ¦sk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Olanges = false;	/* Language in output is Spanish (spansk) if true */
         $Olanget = false;	/* Language in output is Estonian (estisk) if true */
         $Olangfa = false;	/* Language in output is Persian (persisk) if true */
-        $Olangfo = false;	/* Language in output is Faroese (færøsk) if true */
+        $Olangfo = false;	/* Language in output is Faroese (fÃ¦rÃ¸sk) if true */
         $Olangfr = false;	/* Language in output is French (fransk) if true */
         $Olanghr = false;	/* Language in output is Croatian (kroatisk) if true */
         $Olanghu = false;	/* Language in output is Hungarian (ungarsk) if true */
@@ -718,7 +723,7 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Olangno = false;	/* Language in output is Norwegian (norsk) if true */
         $Olangpl = false;	/* Language in output is Polish (polsk) if true */
         $Olangpt = false;	/* Language in output is Portuguese (portugisisk) if true */
-        $Olangro = false;	/* Language in output is Romanian (rumænsk) if true */
+        $Olangro = false;	/* Language in output is Romanian (rumÃ¦nsk) if true */
         $Olangru = false;	/* Language in output is Russian (russisk) if true */
         $Olangsk = false;	/* Language in output is Slovak (slovakisk) if true */
         $Olangsl = false;	/* Language in output is Slovene (slovensk) if true */
@@ -731,14 +736,14 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         $Opresalf = false;	/* Assemblage in output is alphabetic list (alfabetisk liste) if true */
         $Opresfrq = false;	/* Assemblage in output is frequency list (frekvensliste) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_par_pos_seg_tok__pos_Uni = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_DSL = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_PT = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_Par = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_Uni = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_Uni = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_DSL = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_PT = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_Par = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_Uni = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (SÃ¦tningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
         $IfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in input is DSL-tagset if true */
         $IfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Penn Treebank if true */
         $IfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in input is CST-tagset if true */
@@ -895,9 +900,10 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
             }
         if( hasArgument("Oformat") )
             {
+            $Oformatcols = existsArgumentWithValue("Oformat", "cols");
             $Oformatflat = existsArgumentWithValue("Oformat", "flat");
             $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformatflat=$Oformatflat " . "Oformattxtann=$Oformattxtann ";
+            $echos = $echos . "Oformatcols=$Oformatcols " . "Oformatflat=$Oformatflat " . "Oformattxtann=$Oformattxtann ";
             }
         if( hasArgument("Olang") )
             {
@@ -1017,6 +1023,13 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
         else 
             $language = "";
 
+        if(hasArgument("Oformat"))
+            {
+            $Oformat = getArgument("Oformat");
+            }
+        else
+            $Oformat = "flat";
+            
         if(   $language == "" 
           || (  $language != "af" 
              && $language != "bg" 
@@ -1097,19 +1110,19 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
                 $uploadfileAnnotation = $IfacetposF;
                 $lemmainputfile = merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma');
                 logit("lemmatise with pos in stand off annotation.");
-                $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
+                $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
                 }
             else
                 {
                 if($Iformatflat)
                     {
                     logit('lemmatise flat text that has pos tags embedded');
-                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
                     }
                 else
                     {
                     logit('lemmatise TEI-P5 (not an annotation file)');
-                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
                     }
                 }
             }
@@ -1124,25 +1137,25 @@ function lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$Sh
                 
                 logit('lemmatise without pos, stand off tokens');
 
-                $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20);
+                $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20);
                 }
             else
                 {
                 if($Iformatflat)
                     {
                     logit('lemmatise flat text');
-                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
                     }
                 else
                     {
                     logit('lemmatise TEI-P5 (not an annotation file)');
-                    $CSTLemfile = lemmatiser($Oformatflat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
                     }
                 }
             }
 
         logit("CSTLemfile $CSTLemfile");    
-        if($Oformattxtann)
+        if($Oformat == "txtann")
             {
             $CSTLemfile = splits($toolbin,$CSTLemfile,'lemma',$annotation,$idprefix,$ancestor,$element);
             }
