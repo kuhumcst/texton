@@ -13,7 +13,7 @@ header('Content-type:text/plain; charset=UTF-8');
  * Places in this script that require your attention are marked 'TODO'.
  */
 /*
-ToolID         : CST-RTFread
+ToolID         : RTFread
 PassWord       : 
 Version        : 0.1
 Title          : RTFreader
@@ -32,7 +32,7 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/CSTRTFread.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/RTFread.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
                 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
@@ -125,7 +125,7 @@ try {
                 }
             else
                 {
-                $tempfilename = tempFileName("CSTRTFread_{$requestParm}_");
+                $tempfilename = tempFileName("RTFread_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
                     {
@@ -229,7 +229,7 @@ try {
         }
  */
 
-    function do_CSTRTFread()
+    function do_RTFread()
         {
         global $dodelete;
         global $tobedeleted;
@@ -254,26 +254,26 @@ try {
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappocr = false;	/* Appearance in input is OCR if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (Sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
-        $Ifacettxt = false;	/* Type of content in input is text (Ingen annotation) if true */
+        $Ifacetexc = false;	/* Type of content in input is text excerpts (Tekststumper) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
+        $Ifacettxt = false;	/* Type of content in input is text (ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformatrtf = false;	/* Format in input is RTF if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
-        $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
-        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
-        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
+        $Ofacetpar = false;	/* Type of content in output is paragraphs (paragrafsegmenter) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $OformatplainD = false;	/* Format in output is plain text with ASCII 127 characters (flad tekst with ASCII 127 tegn) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $IfacettokPT = false;	/* Style of type of content tokens (Tokens) in input is Penn Treebank if true */
-        $Ifacettoksimple = false;	/* Style of type of content tokens (Tokens) in input is Simple if true */
-        $OfacettokPT = false;	/* Style of type of content tokens (Tokens) in output is Penn Treebank if true */
-        $Ofacettoksimple = false;	/* Style of type of content tokens (Tokens) in output is Simple if true */
+        $IfacettokPT = false;	/* Style of type of content tokens (tokens) in input is Penn Treebank if true */
+        $Ifacettoksimple = false;	/* Style of type of content tokens (tokens) in input is Simple if true */
+        $OfacettokPT = false;	/* Style of type of content tokens (tokens) in output is Penn Treebank if true */
+        $Ofacettoksimple = false;	/* Style of type of content tokens (tokens) in output is Simple if true */
 
         if( hasArgument("base") )
             {
@@ -315,10 +315,10 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacetexc = existsArgumentWithValue("Ifacet", "exc");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
             $Ifacettxt = existsArgumentWithValue("Ifacet", "txt");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
+            $echos = $echos . "Ifacetexc=$Ifacetexc " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
             }
         if( hasArgument("Iformat") )
             {
@@ -383,8 +383,8 @@ try {
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
-        $CSTRTFreadfile = tempFileName("CSTRTFread-results");
-        $command = "echo $echos >> $CSTRTFreadfile";
+        $RTFreadfile = tempFileName("RTFread-results");
+        $command = "echo $echos >> $RTFreadfile";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
@@ -410,9 +410,9 @@ try {
         $dump = ob_get_clean();
         logit($dump);
  */
-        $CSTRTFreadfile = tempFileName("CSTRTFread-results");
+        $RTFreadfile = tempFileName("RTFread-results");
 
-        $command = "echo $echos >> $CSTRTFreadfile";
+        $command = "echo $echos >> $RTFreadfile";
         logit($command);
 
         $tool = "../bin/rtfreader";
@@ -485,15 +485,15 @@ try {
                 $DEL = "-D ";
             }
 
-        if($Ifacetseg)
+        if($Ifacetexc)
             {
-            $spacedfile = tempFileName("CSTRTFread-spaced");
-            $tokenisedfile = tempFileName("CSTRTFread-tokenised");
+            $spacedfile = tempFileName("RTFread-spaced");
+            $tokenisedfile = tempFileName("RTFread-tokenised");
             $command = "sed -e 'G;G;G;' $F > $spacedfile";
-            $command .= " && $tool -s $nopt -EUTF8 $tokentype -i $spacedfile $abbr -t $CSTRTFreadfile $DEL";
+            $command .= " && $tool -s $nopt -EUTF8 $tokentype -i $spacedfile $abbr -t $RTFreadfile $DEL";
 
             $command .= " && $tool $abbr -s -p $nopt -EUTF8 $tokentype -i $spacedfile -t $tokenisedfile $DEL";
-            $command .= " && sed ':a;N;/\\n$/!s/\\n//;ta;P;d' $tokenisedfile > $CSTRTFreadfile";
+            $command .= " && sed ':a;N;/\\n$/!s/\\n//;ta;P;d' $tokenisedfile > $RTFreadfile";
 
             /*
             if($Ofacetpar)
@@ -501,30 +501,30 @@ try {
                 $command .= " -p";
                 }
             */
-            $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
+            $command .= " && curl -v -F job=$job -F name=$RTFreadfile -F data=@$RTFreadfile $post2  && rm $RTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
             }
         else
             {
-            $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t $CSTRTFreadfile $DEL";
+            $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t $RTFreadfile $DEL";
 
             if($Ofacetpar)
                 {
                 $command .= " -p";
                 }
 
-            $command .= " && curl -v -F job=$job -F name=$CSTRTFreadfile -F data=@$CSTRTFreadfile $post2  && rm $CSTRTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
+            $command .= " && curl -v -F job=$job -F name=$RTFreadfile -F data=@$RTFreadfile $post2  && rm $RTFreadfile && rm $F > ../log/rtfreader.log 2>&1 &";
             }
         logit($command);
 
         exec($command);
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRTFreadfile
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $RTFreadfile
 //*/
 /*
-        $tmpf = fopen($CSTRTFreadfile,'r');
+        $tmpf = fopen($RTFreadfile,'r');
 
         if($tmpf)
             {
-            //logit('output from CSTRTFread:');
+            //logit('output from RTFread:');
             while($line = fgets($tmpf))
                 {
                 //logit($line);
@@ -547,7 +547,7 @@ try {
         header("HTTP/1.0 202 Accepted");
         }
     loginit();
-    do_CSTRTFread();
+    do_RTFread();
     }
 catch (SystemExit $e) 
     { 
