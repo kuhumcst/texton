@@ -182,14 +182,14 @@ try {
         $command = trim($command);
 
         logit("$command");
-	if(($cmd = popen($command, "r")) == NULL)
-	    {
-	    throw new SystemExit(); // instead of exit()
-	    }
+	    if(($cmd = popen($command, "r")) == NULL)
+	        {
+	        throw new SystemExit(); // instead of exit()
+	        }
 
-	while($read = fgets($cmd))
-	    {
-	    }
+	    while($read = fgets($cmd))
+	        {
+	        }
         pclose($cmd);
 //        system($command);
         return $outp;
