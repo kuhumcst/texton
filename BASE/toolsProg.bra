@@ -153,6 +153,7 @@ toolsProg=
       (servicedGoals=)
       (goalPicklists=)
       (servicedSuperGoals=)
+      (updateAvailableWorkflows=update opdater)
       ( helpmespecifymygoal
       = "Next: zoom in on goal." "Zoom ind med flere detaljer"
       )
@@ -795,12 +796,16 @@ toolsProg=
       = |allowedChar$('$NCNameChar) !NCName
       )
       ( checkParms
-      =   parms parm table val abBr abbrs spec
+      =   parms parm table val abBr abbrs spec A Z
         .   !arg:(?parms.?parm.?table)
           & :?abbrs
           &   whl
             ' ( !parms:? (!parm.?val) ?parms
-              & !hiddenData (!parm.!val):?hiddenData
+              &   (   !hiddenData:?A (!parm.?) ?Z
+                    & !A (!parm.!val) !Z
+                  | !hiddenData (!parm.!val)
+                  )
+                : ?hiddenData
               &   whl
                 ' ( !val:%?abBr^?spec+?val
                   & !table:? (?.!abBr.?) ?
@@ -862,9 +867,10 @@ toolsProg=
             )
       )
       ( makeCheckboxFormField
-      =   text parm desc state disabled
+      =   text parm desc state disabled LR
         .     !arg
-            : ( ?text
+            : (   ((L|R):?LR,?text)
+                | ?text&L:?LR
               . ?parm
               .   ( ? (val.?state) ?
                   | ?&:?state
@@ -876,8 +882,9 @@ toolsProg=
                   | ?&:?desc
                   )
               )
-          &   (span.,!text)
-              \r\n
+          &   ( !LR:L&(span.,!text) \r\n
+              | 
+              )
               ( input
               .     (type.checkbox)
                     (tabindex.1+!tabind:?tabind)
@@ -893,6 +900,9 @@ toolsProg=
                 , 
               )
               \r\n
+              ( !LR:L&
+              | (span.,!text) \r\n
+              )
       )
       ( makeStaticTextFormField
       =   text val
@@ -3090,7 +3100,7 @@ toolsProg=
                 \r\n
                 ".formRounded input[type='submit'] {color:#FFFFFF; background-color:#5d9cec; border-color:#68A9fb; text-align:center; vertical-align:middle; cursor:pointer; border:1px solid black; padding:6px 6px; font-size:14px; border-radius:4px; }"
                 \r\n
-                "input[type="submit"].notRecommended {background-color:#a8c6ed; font-size:10px; }"
+                "input[type=submit].notRecommended {background-color:#a8c6ed; font-size:10px; }"
                 \r\n
                 "fieldset {padding: 10px;border-style: solid;border-radius: 5px;}"
                 \r\n
@@ -3708,11 +3718,6 @@ toolsProg=
               & !ABBR
             | !full
             )
-      )
-      ( itemFeats
-      =   feats
-        .   !Uploads:? (?.!arg.?.?.?feats) ?
-          & !feats
       )
       ( makeHiddenFields
       =   ret par val
@@ -8112,12 +8117,13 @@ try {
                                   ( !including:
                                   |   cell
                                     $ ( makeCheckboxFormField
-                                      $ (   localized
-                                          $ ( "Compute workflows for similar goals (= less specific)"
-                                              "Beregn arbejdsgange for lignende mål (= mindre specifikt)"
-                                            )
+                                      $ (   R
+                                          ,   localized
+                                            $ ( "Combination with other values allowed (= less specific)"
+                                                "Evt. i kombination med andre værdier (= mindre specifikt)"
+                                              )
                                         . str$(SuperSet- !short)
-                                        .   (val.)
+                                        .   (val.on)
                                             ( desc
                                             .   localized
                                               $ ( "Check this box if your requirements are MINIMAL requirements. For example, if your requirement is to have PoS tags, you may also want to see workflows that produce PoS tags AND lemmas, at the same time."
@@ -13627,9 +13633,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( analyzeInput
       =     item feats Items item
-          , parms presels n val
+          , presels n val
           , retrieveFeatures errors
-        .   !arg:(?parms.?Items.?errors)
+        .   !arg:(?Items.?errors)
           & readTable$features
           & ( retrieveFeatures
             =   Items item feats n val presels errors
@@ -13638,7 +13644,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &   whl
                   ' ( !Items:(Item.%?item ?feats) ?Items
                     & (   !feats:
-                        & itemFeats$!item:?feats
+                        &   !Uploads
+                          : ? (?.!item.?.?.?feats) ?
                       |   !errors:
                         &     str
                             $ ( 404~~~
@@ -13797,7 +13804,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !arg:(?parms.?hiddenData)
           &     ( 
                 | "Shall we treat all resources in one job (non-batch) or shall we
-               send each input through a different (though similar) job?"
+                   send each input through a different (though similar) job?"
                 )
                 ( batch
                 .   (     !parms
@@ -13864,7 +13871,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( specifyGoal
       =     Tool item parms Items items presels
           , errors batch desiredTools sourcesAndGoals BodyContainer
-          , handle A itms rstr
+          , handle A itms rstr orgarg
           , "We are at the start. Show an input form."
         .   ( desiredTools
             =   L ToolID Title S
@@ -13922,10 +13929,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , table presel L
                 , preselvalsrows items item spec
                 , preselvals presels
-                , createArgs G sourcePicklists
+                , G sourcePicklists
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
-                , allLinked features links
+                , features links
               .   ( cmptblWrkflws
                   =   itemGroups presels
                     .   !arg:(?itemGroups.?presels)
@@ -13958,15 +13965,21 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                             .       !arg
                                                                   : (?a.?b)
                                                                 &   !i
-                                                                  :   ?
-                                                                      (!a,!b)
-                                                                      ?
+                                                                  : (   ?
+                                                                        (!a,!b)
+                                                                        ?
+                                                                    | ~( ?
+                                                                         (!a,?)
+                                                                         ?
+                                                                       )
+                                                                    )
                                                                 & !arg
                                                               | 
                                                           )
                                                         . !knownInputFeatures
                                                         )
                                                     : !knownInputFeatures
+                                                  & log$OK
                                                   & !name
                                                 | 
                                                 )
@@ -14055,88 +14068,73 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                   )
                 & ( mentionBookmarkedWorkflows
-                  =   items allLinked
+                  =   items
                     .   !arg:?items
-                      & :?allLinked
-                      & ( ( tr
-                          .   (class.specialrow)
-                            ,     cell
-                                $ ( localized
-                                  $ ( "Bookmarked workflows"
-                                      "Markerede arbejdsgange"
-                                    )
+                      & ( tr
+                        .   (class.specialrow)
+                          ,     cell
+                              $ ( localized$("Bookmarked:" "Markeret:")
+                                  (br.,)
+                                    submit
+                                  $ (localized$!updateAvailableWorkflows)
+                                )
+                                cell
+                              $ ( ( div
+                                  .   (class.tooltip)
+                                    ,   (small.,(small.,chu$10068))
+                                        ( span
+                                        .   (class.tooltiptext)
+                                          ,   localized
+                                            $ ( "You can ignore all form fields below if you choose a bookmarked workflow."
+                                                "Du kan ignorere alle formularfelter hernede hvis du vælger en markeret workflow."
+                                              )
+                                        )
                                   )
-                                  cell
-                                $ ( ( div
-                                    .   (class.tooltip)
-                                      ,   (small.,(small.,chu$10068))
-                                          ( span
-                                          .   (class.tooltiptext)
-                                            ,   localized
-                                              $ ( "You can ignore all form fields below if you choose a bookmarked workflow."
-                                                  "Du kan ignorere alle formularfelter hernede hvis du vælger en markeret workflow."
+                                | 
+                                )
+                                map
+                              $ ( ( 
+                                  =     nt wrkfls exr stable
+                                      , links linked
+                                    .   !arg:(?nt.?arg.?wrkfls)
+                                      & (   !items:% %
+                                          & (exr=";" !nt)
+                                        | :?exr
+                                        )
+                                      &   cell
+                                        $ ( !wrkfls:
+                                          |       listToThreeColumnTable
+                                                $ !wrkfls
+                                              : ?stable
+                                            & (       linksAndLinked
+                                                    $ (!stable.!exr)
+                                                  : (?links.?linked)
+                                                &     !linkedWorkflows
+                                                      (!nt.!linked)
+                                                  : ?linkedWorkflows
+                                                & !links
+                                              | ( select
+                                                .     ( tabindex
+                                                      .   1+!tabind
+                                                        : ?tabind
+                                                      )
+                                                      ( name
+                                                      . str$(workflow !exr)
+                                                      )
+                                                  ,   makeOptionListSimple
+                                                    $ (!stable.bookmarked-)
                                                 )
+                                              )
                                           )
-                                    )
-                                  | 
                                   )
-                                  map
-                                $ ( ( 
-                                    =     nt wrkfls exr stable
-                                        , links linked
-                                      .   !arg:(?nt.?arg.?wrkfls)
-                                        & (   !items:% %
-                                            & (exr=";" !nt)
-                                          | :?exr
-                                          )
-                                        &   cell
-                                          $ ( !wrkfls:
-                                            |       listToThreeColumnTable
-                                                  $ !wrkfls
-                                                : ?stable
-                                              & (       linksAndLinked
-                                                      $ (!stable.!exr)
-                                                    : (?links.?linked)
-                                                  &     !linkedWorkflows
-                                                        (!nt.!linked)
-                                                    : ?linkedWorkflows
-                                                  & !links
-                                                | ( select
-                                                  .     ( tabindex
-                                                        .   1+!tabind
-                                                          : ?tabind
-                                                        )
-                                                        ( name
-                                                        .   str
-                                                          $ (workflow !exr)
-                                                        )
-                                                    ,   makeOptionListSimple
-                                                      $ (!stable.bookmarked-)
-                                                  )
-                                                )
-                                            )
-                                    )
-                                  . !items
-                                  )
-                          )
-                        . !allLinked
+                                . !items
+                                )
                         )
                   )
-                & !arg:(?presels.?createArgs)
+                & !arg:(?presels.?items)
                 & :?linkedWorkflows
                 & readTable$features
                 & !features:?fs
-                &     map
-                    $ ( ( 
-                        =   
-                          .       !arg
-                                : (FieldName,?.Name,?arg.?)
-                              & !arg
-                            | 
-                        )
-                      . !createArgs
-                      )
-                  : ?items
                 & 1:?prod
                 & :?preselvalsrows
                 &   whl
@@ -14379,7 +14377,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & setLang$!G
                   | 
                   )
+                & log$(cmptblWrkflwsA !items presels !presels)
                 & cmptblWrkflws$(!items.!presels):?items
+                & log$(cmptblWrkflwsB !items)
                 & ( !items
                   .     fieldset
                       $ (     !items:? (?.?.% ?) ?
@@ -14417,13 +14417,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     . !items
                                     )
                                 )
-                            .   (   !items:? (?.?.% ?) ?
-                                  &   mentionBookmarkedWorkflows$!items
-                                    : (?links.?allLinked)
-                                  & !links
-                                | :?allLinked
-                                )
-                                (   !items:% %
+                            .   (   !items:% %
                                   & 0:?nt
                                   &   row
                                     $ (   cell
@@ -14458,6 +14452,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 | 
                                 )
                                 !sourcePicklists
+                                (   ( 
+                                    | !items:? (?.?.% ?) ?
+                                    )
+                                  & mentionBookmarkedWorkflows$!items
+                                | 
+                                )
                             )
                         )
                         fieldset
@@ -14498,7 +14498,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
                 , itemGroupsExt linkedWorkflows
-                , hiddenData Items
+                , hiddenData Items A Z
               .   !arg:(?presels.?hiddenData.?Items)
                 & (   !Items:
                     &   str
@@ -14514,7 +14514,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             )
                         )
-                  |     sourcesAndGoals$(!presels.!arg)
+                  |       sourcesAndGoals
+                        $ ( !presels
+                          .   map
+                            $ ( ( 
+                                =   
+                                  .       !arg
+                                        : ( FieldName,?
+                                          . Name,?arg
+                                          . ?
+                                          )
+                                      & !arg
+                                    | 
+                                )
+                              . !arg
+                              )
+                          )
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
                     &   (   !itemGroupsExt:(@.@.?)
                           & !Items !hiddenData
@@ -14526,8 +14541,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 : ?ItemGroupsCache
                               & saveTable$ItemGroupsCache
                             )
-                          & (CLOCK.!CLOCK) !hiddenData
+                          & (   !hiddenData:?A (CLOCK.?) ?Z
+                              & !A (CLOCK.!CLOCK) !Z
+                            | (CLOCK.!CLOCK) !hiddenData
+                            )
                         )
+                      : ?hiddenData
+                    &     map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : ( @(?:(I|O) ~tem)
+                                      . ?
+                                      )
+                                  & 
+                                | !arg
+                            )
+                          . !hiddenData
+                          )
                       : ?hiddenData
                     & !sourceAndGoal desiredTools$:?formFields
                     &   str
@@ -14575,8 +14606,63 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                   )
             )
+          & ( updatePreselsWithUserAmendments
+            =   presels inputs Ifields ninp inp Items
+              .   !arg:(?presels.?arg.?Items)
+                &     map
+                    $ ( ( 
+                        =   f v
+                          .       !arg
+                                : (~Item:@(?:I ?f).?v)
+                              & (!f.!v)
+                            | 
+                        )
+                      . !arg
+                      )
+                  : ?Ifields
+                & ( !Ifields:
+                  |   0:?inputs
+                    &   map
+                      $ ( ( 
+                          =   
+                            .     !arg:(?.?.?arg)
+                                & !inputs+!arg:?inputs
+                              | 
+                          )
+                        . !presels
+                        )
+                    & (   !inputs:0
+                        & !arg:? (Item.?inputs) ?
+                        & (Item.!inputs) Items:?Items
+                      |   :?ninp
+                        &   whl
+                          ' ( !inputs:#*%@?inp+?inputs
+                            & !inp !ninp:?ninp
+                            )
+                        & :?inputs
+                        &   whl
+                          ' ( !ninp:%?inp ?ninp
+                            & !inp !inputs:?inputs
+                            )
+                      )
+                    &     map
+                        $ ( ( 
+                            =   f v
+                              .   !arg:(?f.?v)
+                                & ( !v:
+                                  |   map
+                                    $ ((=.!f.!v.!arg).!inputs)
+                                  )
+                            )
+                          . !Ifields
+                          )
+                      : ?presels
+                  )
+                & (!presels.!Items)
+            )
           & log$NEW
           & log$CREATELOGJE
+          & !arg:?orgarg
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : ( ?errors
               . ?hiddenData
@@ -14591,11 +14677,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & buildItemListFromForeignData$!parms:?Items
             | 
             )
-          &   analyzeInput$(!parms.!Items.!errors)
+          &   analyzeInput$(!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
             |     getBatchHandleDesiredtoolSuperset$(!parms.!hiddenData)
                 : (?parms.?hiddenData.?batch)
+              &   updatePreselsWithUserAmendments$(!presels.!arg.!Items)
+                : (?presels.?Items)
               & readTable$tooladm
               &   "We are at the start. Show an input form."
                 $ (!presels.!hiddenData.!Items)
@@ -14739,6 +14827,30 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               . !arg
               )
       )
+      ( BookMark
+      =   bm err
+        .   !arg:(?bm.?err)
+          &   submit$Bookmark
+                makeTextFormField
+              $ (   localized
+                  $ ("Name for this workflow" "Navn for denne arbejdsgang")
+                . bm
+                .   (val.!bm)
+                    ( desc
+                    .   localized
+                      $ ( "A unique name that tells you and other users what the workflow is about."
+                          "Et unikt navn som giver mening for dig og for andre brugere."
+                        )
+                    )
+                    (size.40)
+                    (required.span.(class.requiblue),"*")
+                )
+              ( !bm:
+              |   !err:
+                & "(" localized$(saved gemt) ")"
+              | localized$("Already in use!" "Allerede brugt!")
+              )
+      )
       "
 /**
  * showworkflows
@@ -14818,6 +14930,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   form
                                 $ ( chosenworkflow
                                   .   submit$Submit
+                                      (br.,)
+                                      (br.,)
+                                      BookMark$(.)
                                       helplink$()
                                       (br.,)
                                       makeHiddenFields$!hiddenData
@@ -14937,7 +15052,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               )
           & "First build a list of items."
           & buildItemList$!parms:?Items
-          &   analyzeInput$(!parms.!Items.!errors)
+          &   analyzeInput$(!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
@@ -14990,124 +15105,53 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                     & saveTable$Uploads
                 )
-              & updateUploads$!parms
-              & 0:?allpipes
-              &     localized
-                  $ ("No workflows found." "Ingen arbejdsgange fundet.")
-                : ?returnCode
-              & :?restriction
-              & log$CALL-Pipelines
-              & (     Pipelines$(!parms.)
-                    : ( ?
-                      . (?sources.?):?userInput
-                      . ?2or3things
-                      . ?returnCode
-                      )
-                  & (   !returnCode:allRight
-                      & log$"returnCode:allRight"
-                      &   !2or3things
-                        : (?reorderedworkflowlist.?topologicalOrderedTools)
-                    | !2or3things:(?pipes.?parms)
-                    )
-                  & log$("back from Pipelines" !returnCode)
-                  & "allRight
+              & (   localized$!updateAvailableWorkflows:!Submit
+                  & specifyGoal$!parms
+                |   updateUploads$!parms
+                  & 0:?allpipes
+                  &     localized
+                      $ ("No workflows found." "Ingen arbejdsgange fundet.")
+                    : ?returnCode
+                  & :?restriction
+                  & log$CALL-Pipelines
+                  & (     Pipelines$(!parms.)
+                        : ( ?
+                          . (?sources.?):?userInput
+                          . ?2or3things
+                          . ?returnCode
+                          )
+                      & (   !returnCode:allRight
+                          & log$"returnCode:allRight"
+                          &   !2or3things
+                            : (?reorderedworkflowlist.?topologicalOrderedTools)
+                        | !2or3things:(?pipes.?parms)
+                        )
+                      & log$("back from Pipelines" !returnCode)
+                      & "allRight
                      onlyWithoutRestriction
                      triviallyFulfilled
                      tooComplex
                      workflowsFound
                      tooMany"
-                  & (     !returnCode
-                        : (workflowsFound|allRight)
-                      & log$(Submit !Submit)
-                      & log$(zubmit localized$!helpmespecifymygoal)
-                      & (   ( localized$!"show workflows":!Submit
-                            | localized$!"skip zoom":!Submit
-                            )
-                          & (   !returnCode:workflowsFound
-                              & (     makeWorkflowsSequential$!pipes
-                                    : ( ?reorderedworkflowlist
-                                      . ?topologicalOrderedTools
-                                      )
-                                  & allRight:?returnCode
-                                |   0:?reorderedworkflowlist
-                                  & :?topologicalOrderedTools
-                                  & tooComplex:?returnCode
+                      & (     !returnCode
+                            : (workflowsFound|allRight)
+                          & log$(Submit !Submit)
+                          & log$(zubmit localized$!helpmespecifymygoal)
+                          & (   ( localized$!"show workflows":!Submit
+                                | localized$!"skip zoom":!Submit
                                 )
-                            | 
-                            )
-                          &   ShowAllPipesIfNotTooExpensive
-                            $ ( !returnCode
-                              . !hiddenData
-                              . !userInput
-                              . !reorderedworkflowlist
-                              . !topologicalOrderedTools
-                              )
-                        |   localized$!helpmespecifymygoal:!Submit
-                          & 1:?fvs
-                          & (   !returnCode:workflowsFound
-                              & !pipes:?pps
-                              &   whl
-                                ' ( !pps:%?pipe+?pps
-                                  &   ( 
-                                      =   userspec wfs tool output
-                                        .   !arg:(?userspec.?wfs)
-                                          &   whl
-                                            ' (   !wfs
-                                                : (?tool,(?output.?))+?wfs
-                                              &   add$(!output.!fvs)
-                                                : ?fvs
-                                              )
-                                      )
-                                    $ !pipe
-                                  )
-                            |   !reorderedworkflowlist:?rwl
-                              &   whl
-                                ' (   !rwl
-                                    : (?,(?.? (?tool.?.?.?output)))+?rwl
-                                  & add$(!output.!fvs):?fvs
-                                  )
-                            )
-                          & "It is not unimportant how fvs is obtained.
-                             Reorderedworkflowlist outputs can have features
-                             that are not (yet) in the output of pipes."
-                          & 1:?nfvs:?fixed
-                          &   whl
-                            ' ( !fvs:%?f^%?vs*?fvs
-                              & (   !vs:%+%
-                                  & 0:?nvs
-                                  &   whl
-                                    ' ( !vs:%?A+?vs
-                                      &   whl
-                                        ' ( !A:?B*%?M^%*?Y
-                                          & !B*!M*!Y:?A
-                                          )
-                                      & !nvs+!A:?nvs
-                                      )
-                                  & !nvs:%+%
-                                  &   whl
-                                    ' ( !nvs:%?A+?nvs
-                                      & (!A:#%*?A|)
-                                      & !vs+!A:?vs
-                                      )
-                                  & !f^!vs*!nfvs:?nfvs
-                                | !fixed*!f^!vs:?fixed
-                                )
-                              )
-                          & (   !nfvs:(1|sml^?)
                               & (   !returnCode:workflowsFound
-                                  &   (     makeWorkflowsSequential$!pipes
-                                          : ( ?reorderedworkflowlist
-                                            . ?topologicalOrderedTools
-                                            )
-                                        & allRight
-                                      |   0:?reorderedworkflowlist
-                                        & :?topologicalOrderedTools
-                                        & tooComplex
-                                      )
-                                    : ?returnCode
+                                  & (     makeWorkflowsSequential$!pipes
+                                        : ( ?reorderedworkflowlist
+                                          . ?topologicalOrderedTools
+                                          )
+                                      & allRight:?returnCode
+                                    |   0:?reorderedworkflowlist
+                                      & :?topologicalOrderedTools
+                                      & tooComplex:?returnCode
+                                    )
                                 | 
                                 )
-                              & log$(returnCode !returnCode)
                               &   ShowAllPipesIfNotTooExpensive
                                 $ ( !returnCode
                                   . !hiddenData
@@ -15115,188 +15159,278 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   . !reorderedworkflowlist
                                   . !topologicalOrderedTools
                                   )
-                            |   ( makeValRows
-                                =     fs name short description table
-                                    , hide preselvalsrows
-                                  .   readTable$features
-                                    & !features:?fs
-                                    & :?preselvalsrows
-                                    &   whl
-                                      ' ( !fs:%?f+?fs
-                                        &   !f
-                                          : ? (name.?name) ?
-                                          : ? (short.?short) ?
-                                          :   ?
-                                              (description.?description)
-                                              ?
-                                          : ? (table.?table) ?
-                                        & (   !f
-                                            : ? (hide.?hide) ?
-                                          | :?hide
-                                          )
-                                        & (   !arg:?*!short^?vs*?
-                                            & !hide:
-                                            & readTable$!table
-                                            &     !preselvalsrows
-                                                  ( ?
-                                                  . !short
-                                                  . localized$!name
-                                                  .   map
-                                                    $ ( ( 
-                                                        =   
-                                                          .     !arg
-                                                              : ( ?
-                                                                . [%( !vs
-                                                                    :   ?
-                                                                      +   ?
-                                                                        * !sjt
-                                                                        * ?
-                                                                      + ?
-                                                                    )
-                                                                . ?
-                                                                )
-                                                            | 
-                                                        )
-                                                      . !!table
-                                                      )
-                                                  . 
+                            |     localized$!helpmespecifymygoal
+                                : !Submit
+                              & 1:?fvs
+                              & (   !returnCode:workflowsFound
+                                  & !pipes:?pps
+                                  &   whl
+                                    ' ( !pps:%?pipe+?pps
+                                      &   ( 
+                                          =   userspec wfs tool output
+                                            .   !arg:(?userspec.?wfs)
+                                              &   whl
+                                                ' (   !wfs
+                                                    :   (?tool,(?output.?))
+                                                      + ?wfs
+                                                  &   add$(!output.!fvs)
+                                                    : ?fvs
                                                   )
-                                              : ?preselvalsrows
-                                          | 
                                           )
-                                        )
-                                    &   log
-                                      $ ( makeValRows-preselvalsrows
-                                          !preselvalsrows
-                                        )
-                                    & !preselvalsrows
-                                )
-                              &     createGoalPickLists
-                                  $ ( makeValRows$!nfvs
-                                    .   makeExpandedSelectLists
-                                      $ (makeSuperGoals$!nfvs)
-                                    . 
-                                    )
-                                : ?formFields
-                              & "postpone pruning, which is costly. Instead, show input fields again, but with restricted option lists."
-                              &   str
-                                $ ( 200~~~
-                                      toML
-                                    $ ( !BodyContainer
-                                      $ ( ( h1
-                                          .   
-                                            ,   localized
-                                              $ ( "Refinement of your goal"
-                                                  "Nærmere bestemmelse af dit mål"
-                                                )
-                                          )
-                                          ( form
-                                          .     (action.showworkflows)
-                                                (class.formRounded)
-                                            ,   ( p
-                                                .   
-                                                  ,     localized
-                                                      $ ( "There are workflow candidates with different output specifications. "
-                                                          "Vi fandt arbejdsgange med forskellige outputspecifikationer. "
-                                                        )
-                                                      (   !nfvs:?*[>1
-                                                        &   localized
-                                                          $ ( "Here you can supply more specifiations for the output. It is advisable to do this one specification at a time. In that way, you do not run the risk of selecting a combination of values for which no workflow exists."
-                                                              "På denne side kan du vælge flere specifikationer, men det er bedst at vælge fra én liste ad gangen. På den måde undgår du at du kommer til at selektere en kombination af værdier som ikke resulterer i nogen arbejdsgangkandidater."
-                                                            )
-                                                      |   localized
-                                                        $ ( "Here you can supply the missing specification and thereby reduce the number of proposed workflow candidates."
-                                                            "På denne side kan du give den manglende specifikation og på den måde reducere antallet af foreslåede arbejdsgange."
-                                                          )
-                                                      )
-                                                )
-                                                ( 
-                                                &   !userInput
-                                                  : (?.?.?.?superset)
-                                                &     updateOargFromParg
-                                                    $ !orgarg
-                                                  : ?updatedArg
-                                                &     ( 
-                                                      =     updatedArg
-                                                          , fixed ft v
-                                                          , A Z
-                                                        .     !arg
-                                                            : ( ?updatedArg
-                                                              . ?fixed
-                                                              )
-                                                          &   whl
-                                                            ' (   !fixed
-                                                                :     %?ft
-                                                                    ^ (#*%@?v)
-                                                                  * ?fixed
-                                                              &     (   str
-                                                                      $ (O !ft)
-                                                                    . !v
-                                                                    )
-                                                                    (     !updatedArg
-                                                                        :   ?A
-                                                                            ( @( ?
-                                                                               :   O
-                                                                                   !ft
-                                                                               )
-                                                                            . ?
-                                                                            )
-                                                                            ?Z
-                                                                      & !A !Z
-                                                                    | !updatedArg
-                                                                    )
-                                                                : ?updatedArg
-                                                              )
-                                                          & !updatedArg
-                                                      )
-                                                    $ (!updatedArg.!fixed)
-                                                  : ?updatedArg
-                                                &   makeHiddenFields
-                                                  $ ( makeArgsForHiddenFields
-                                                    $ (!updatedArg.!superset)
-                                                    )
-                                                )
-                                                ( div
-                                                .   (class.topmargin)
-                                                  , !formFields
-                                                )
-                                                ( div
-                                                .   (class.topmargin)
-                                                  ,     !nfvs:?*[>1
-                                                      &     submit
-                                                          $ ( localized
-                                                            $ !helpmespecifymygoal
-                                                            )
-                                                            submitNR
-                                                          $ ( localized
-                                                            $ !"skip zoom"
-                                                            )
-                                                    |   submit
-                                                      $ ( localized
-                                                        $ !"show workflows"
-                                                        )
-                                                )
-                                                (paragraph.,helplink$)
-                                          )
-                                        )
+                                        $ !pipe
                                       )
+                                |   !reorderedworkflowlist:?rwl
+                                  &   whl
+                                    ' (   !rwl
+                                        :   (?,(?.? (?tool.?.?.?output)))
+                                          + ?rwl
+                                      & add$(!output.!fvs):?fvs
+                                      )
+                                )
+                              & "It is not unimportant how fvs is obtained.
+                             Reorderedworkflowlist outputs can have features
+                             that are not (yet) in the output of pipes."
+                              & 1:?nfvs:?fixed
+                              &   whl
+                                ' ( !fvs:%?f^%?vs*?fvs
+                                  & (   !vs:%+%
+                                      & 0:?nvs
+                                      &   whl
+                                        ' ( !vs:%?A+?vs
+                                          &   whl
+                                            ' ( !A:?B*%?M^%*?Y
+                                              & !B*!M*!Y:?A
+                                              )
+                                          & !nvs+!A:?nvs
+                                          )
+                                      & !nvs:%+%
+                                      &   whl
+                                        ' ( !nvs:%?A+?nvs
+                                          & (!A:#%*?A|)
+                                          & !vs+!A:?vs
+                                          )
+                                      & !f^!vs*!nfvs:?nfvs
+                                    | !fixed*!f^!vs:?fixed
+                                    )
                                   )
+                              & (   !nfvs:(1|sml^?)
+                                  & (   !returnCode:workflowsFound
+                                      &   (       makeWorkflowsSequential
+                                                $ !pipes
+                                              : ( ?reorderedworkflowlist
+                                                . ?topologicalOrderedTools
+                                                )
+                                            & allRight
+                                          |   0:?reorderedworkflowlist
+                                            &   
+                                              : ?topologicalOrderedTools
+                                            & tooComplex
+                                          )
+                                        : ?returnCode
+                                    | 
+                                    )
+                                  & log$(returnCode !returnCode)
+                                  &   ShowAllPipesIfNotTooExpensive
+                                    $ ( !returnCode
+                                      . !hiddenData
+                                      . !userInput
+                                      . !reorderedworkflowlist
+                                      . !topologicalOrderedTools
+                                      )
+                                |   ( makeValRows
+                                    =       fs
+                                            name
+                                            short
+                                            description
+                                            table
+                                        , hide preselvalsrows
+                                      .   readTable$features
+                                        & !features:?fs
+                                        & :?preselvalsrows
+                                        &   whl
+                                          ' ( !fs:%?f+?fs
+                                            &   !f
+                                              : ? (name.?name) ?
+                                              : ? (short.?short) ?
+                                              :   ?
+                                                  (description.?description)
+                                                  ?
+                                              : ? (table.?table) ?
+                                            & (   !f
+                                                : ? (hide.?hide) ?
+                                              | :?hide
+                                              )
+                                            & (     !arg
+                                                  : ?*!short^?vs*?
+                                                & !hide:
+                                                & readTable$!table
+                                                &     !preselvalsrows
+                                                      ( ?
+                                                      . !short
+                                                      . localized$!name
+                                                      .   map
+                                                        $ ( ( 
+                                                            =   
+                                                              .     !arg
+                                                                  : ( ?
+                                                                    . [%( !vs
+                                                                        :   ?
+                                                                          +   ?
+                                                                            * !sjt
+                                                                            * ?
+                                                                          + ?
+                                                                        )
+                                                                    . ?
+                                                                    )
+                                                                | 
+                                                            )
+                                                          . !!table
+                                                          )
+                                                      . 
+                                                      )
+                                                  : ?preselvalsrows
+                                              | 
+                                              )
+                                            )
+                                        &   log
+                                          $ ( makeValRows-preselvalsrows
+                                              !preselvalsrows
+                                            )
+                                        & !preselvalsrows
+                                    )
+                                  &     createGoalPickLists
+                                      $ ( makeValRows$!nfvs
+                                        .   makeExpandedSelectLists
+                                          $ (makeSuperGoals$!nfvs)
+                                        . 
+                                        )
+                                    : ?formFields
+                                  & "postpone pruning, which is costly. Instead, show input fields again, but with restricted option lists."
+                                  &   str
+                                    $ ( 200~~~
+                                          toML
+                                        $ ( !BodyContainer
+                                          $ ( ( h1
+                                              .   
+                                                ,   localized
+                                                  $ ( "Refinement of your goal"
+                                                      "Nærmere bestemmelse af dit mål"
+                                                    )
+                                              )
+                                              ( form
+                                              .     (action.showworkflows)
+                                                    (class.formRounded)
+                                                ,   ( p
+                                                    .   
+                                                      ,     localized
+                                                          $ ( "There are workflow candidates with different output specifications. "
+                                                              "Vi fandt arbejdsgange med forskellige outputspecifikationer. "
+                                                            )
+                                                          (     !nfvs
+                                                              : ?*[>1
+                                                            &   localized
+                                                              $ ( "Here you can supply more specifiations for the output. It is advisable to do this one specification at a time. In that way, you do not run the risk of selecting a combination of values for which no workflow exists."
+                                                                  "På denne side kan du vælge flere specifikationer, men det er bedst at vælge fra én liste ad gangen. På den måde undgår du at du kommer til at selektere en kombination af værdier som ikke resulterer i nogen arbejdsgangkandidater."
+                                                                )
+                                                          |   localized
+                                                            $ ( "Here you can supply the missing specification and thereby reduce the number of proposed workflow candidates."
+                                                                "På denne side kan du give den manglende specifikation og på den måde reducere antallet af foreslåede arbejdsgange."
+                                                              )
+                                                          )
+                                                    )
+                                                    ( 
+                                                    &   !userInput
+                                                      : (?.?.?.?superset)
+                                                    &     updateOargFromParg
+                                                        $ !orgarg
+                                                      : ?updatedArg
+                                                    &     ( 
+                                                          =     updatedArg
+                                                              , fixed ft v
+                                                              , A Z
+                                                            .     !arg
+                                                                : ( ?updatedArg
+                                                                  . ?fixed
+                                                                  )
+                                                              &   whl
+                                                                ' (   !fixed
+                                                                    :     %?ft
+                                                                        ^ (#*%@?v)
+                                                                      * ?fixed
+                                                                  &     (   str
+                                                                          $ ( O
+                                                                              !ft
+                                                                            )
+                                                                        . !v
+                                                                        )
+                                                                        (     !updatedArg
+                                                                            :   ?A
+                                                                                ( @( ?
+                                                                                   :   O
+                                                                                       !ft
+                                                                                   )
+                                                                                . ?
+                                                                                )
+                                                                                ?Z
+                                                                          &   !A
+                                                                              !Z
+                                                                        | !updatedArg
+                                                                        )
+                                                                    : ?updatedArg
+                                                                  )
+                                                              & !updatedArg
+                                                          )
+                                                        $ (!updatedArg.!fixed)
+                                                      : ?updatedArg
+                                                    &   makeHiddenFields
+                                                      $ ( makeArgsForHiddenFields
+                                                        $ ( !updatedArg
+                                                          . !superset
+                                                          )
+                                                        )
+                                                    )
+                                                    ( div
+                                                    .   (class.topmargin)
+                                                      , !formFields
+                                                    )
+                                                    ( div
+                                                    .   (class.topmargin)
+                                                      ,     !nfvs:?*[>1
+                                                          &     submit
+                                                              $ ( localized
+                                                                $ !helpmespecifymygoal
+                                                                )
+                                                                submitNR
+                                                              $ ( localized
+                                                                $ !"skip zoom"
+                                                                )
+                                                        |   submit
+                                                          $ ( localized
+                                                            $ !"show workflows"
+                                                            )
+                                                    )
+                                                    (paragraph.,helplink$)
+                                              )
+                                            )
+                                          )
+                                      )
+                                )
                             )
+                        |   !returnCode:onlyWithoutRestriction
+                          &   !parms
+                            : ? (desiredtool.?restriction) ?
+                          & FulfillableWithoutRestriction$!restriction
+                        |   !returnCode:triviallyFulfilled
+                          & localized$!"next step":!Submit
+                          & NothingToDo$!hiddenData
+                        |     !returnCode
+                            : (tooMany|tooComplex)
+                          & TooManyWorkflows$
+                        |   !returnCode:notFulfillable
+                          & NotFulfillable$!returnCode
                         )
-                    |   !returnCode:onlyWithoutRestriction
-                      &   !parms
-                        : ? (desiredtool.?restriction) ?
-                      & FulfillableWithoutRestriction$!restriction
-                    |   !returnCode:triviallyFulfilled
-                      & localized$!"next step":!Submit
-                      & NothingToDo$!hiddenData
-                    |     !returnCode
-                        : (tooMany|tooComplex)
-                      & TooManyWorkflows$
-                    |   !returnCode:notFulfillable
-                      & NotFulfillable$!returnCode
+                    | NotFulfillable$!returnCode
                     )
-                | NotFulfillable$!returnCode
                 )
             )
       )
@@ -15336,32 +15470,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   submit$Submit
                                   (br.,)
                                   (br.,)
-                                  submit$Bookmark
-                                    makeTextFormField
-                                  $ (   localized
-                                      $ ( "Name for this workflow"
-                                          "Navn for denne arbejdsgang"
-                                        )
-                                    . bm
-                                    .   (val.!bm)
-                                        ( desc
-                                        .   localized
-                                          $ ( "A unique name that tells you and other users what the workflow is about."
-                                              "Et unikt navn som giver mening for dig og for andre brugere."
-                                            )
-                                        )
-                                        (size.40)
-                                        ( required
-                                        . span
-                                        . (class.requiblue),"*"
-                                        )
-                                    )
-                                  ( !bm:
-                                  |   !err:
-                                    & "(" localized$(saved gemt) ")"
-                                  |   localized
-                                    $ ("Already in use!" "Allerede brugt!")
-                                  )
+                                  BookMark$(!bm.!err)
                                   !formFields
                               : ?formFields
                             )
@@ -15879,7 +15988,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , restriction sources bm err
                 , goals topologicalOrderedTools wf
               .   ( whichButton
-                  =   
+                  =   bm
                     .   !arg:?bm
                       & (     !Submit
                             : ( !ViewDetails (" - " ?nth|)
@@ -16023,7 +16132,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & buildItemList$!parms:?Items
             | 
             )
-          &   analyzeInput$(!parms.!Items.!errors)
+          &   analyzeInput$(!Items.!errors)
             : (?Items.?presels.?errors)
           & ( !errors:~
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
@@ -19071,7 +19180,7 @@ function main2(evt) {
                                           .   
                                             ,     localized
                                                 $ ( "Find the most recent source code of the Text Tonsorium on "
-                                                    "Find den seneste version af kildekoden af Text Tonsorium på "
+                                                    "Find den seneste version af Text Tonsoriums kildekode på "
                                                   )
                                                 ( a
                                                 .   ( href
