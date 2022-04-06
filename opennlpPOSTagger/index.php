@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
     
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -353,13 +353,14 @@ try {
 
     function opennlpPOSTagger($uploadfileSeg,$uploadfileTok,$lang)
         {
-        logit("opennlpPOSTagger($uploadfileSeg,$uploadfileTok)");
+        logit("opennlpPOSTagger($uploadfileSeg,$uploadfileTok,$lang)");
 
         $filename = combine($uploadfileTok,$uploadfileSeg);
 
         $opennlpPOSTaggerfileRaw = tempFileName("opennlpPOSTagger-raw");
+        copy($filename,"filename"); 
         http($filename,$opennlpPOSTaggerfileRaw,$lang);
-        
+        copy($opennlpPOSTaggerfileRaw,"opennlpPOSTaggerfileRaw"); 
         $filename = postagannotation($uploadfileTok,$opennlpPOSTaggerfileRaw,$filename);
         logit('filename:'.$filename);
 
@@ -399,9 +400,9 @@ try {
 
     function http($input,$output,$lang)
         {
-        //curl_setopt($curl_handle, CURLOPT_POST, 1);
-        $CF = curl_file_create($input, 'text/plain', $input);
-	
+	// see https://www.whatsmyip.org/lib/php-curl-option-guide/
+	copy($input,"input");
+        $CF = curl_file_create($input, 'text/plain', basename($input));
         #$CF = new CURLFile($input);
         $CF->setPostFilename("openNLPposTaggerInput");
         $postfields = array(
@@ -409,14 +410,26 @@ try {
             'inputFile' => $CF
             );
         $ch = curl_init("http://localhost:8080/opennlpPOSTagger/");
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
-        curl_setopt($ch, CURLOPT_POST, true); // enable posting
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate       -k/--insecure        FALSE to stop cURL from verifying the peer's certificate
+	// Return data instead of printing it
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                       
+        curl_setopt($ch, CURLOPT_POST, true); // enable posting                              -X/--request POST    TRUE to do a regular HTTP POST
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // if any redirection after upload   -L/--location        TRUE to follow any Location headers sent by server
+	// post data (--data)
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);//                                 -d/--data <data>     if urlencoded string
+	                                                  //                      OR         -F/--form            if array                        
+	/*
+	 * The full data to post in a HTTP "POST" operation. To post a file, prepend a filename with @ and use the full path.
+	 * The filetype can be explicitly specified by following the filename with the type in the format ';type=mimetype'.
+	 * This parameter can either be passed as a urlencoded string like 'para1=val1&para2=val2&...' or as an array with the field name as key and field data as value.
+	 * If value is an array, the Content-Type header will be set to multipart/form-data.
+	 * As of PHP 5.2.0, value must be an array if files are passed to this option with the @ prefix.
+         */
         $fp = fopen($output, "w");
         curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_HEADER, 0);//                                                -i/--include        TRUE to include the header in the output
+	// curl -k -X POST -L -F "lang=da" -F "inputFile=@filename" http://localhost:8080/opennlpPOSTagger/
+	// Does not work with -d instead of -F 
         $r = curl_exec($ch);
         curl_close($ch);
         fclose($fp);
