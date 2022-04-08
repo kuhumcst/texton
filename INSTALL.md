@@ -345,6 +345,11 @@ In addition
     $> cd /opt/texton/tesseract
     $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 
+For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
+Make sure that tesseract an be seen by the webserver.
+
+    $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
+
 ### dependency2tree
 
     $> git clone https://github.com/boberle/dependency2tree.git
