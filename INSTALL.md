@@ -350,9 +350,8 @@ Make sure that tesseract an be seen by the webserver.
 
     $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
 
-Text Tonsorium needs ImageMagick to extracom a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that and add the line
-    <policy domain="coder" rights="read|write" pattern="{EPS,PS2,PS3,PS,PDF,XPS}" />
-    
+Text Tonsorium needs ImageMagick to extracom a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
+       
     convert-im6.q16: not authorized `*******' @ error/constitute.c/ReadImage/412.
 
 In that case, edit /etc/ImageMagick-6/policy.xml and add the line
