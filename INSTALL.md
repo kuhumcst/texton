@@ -5,7 +5,7 @@ This document explains how you can install the Text Tonsorium under Linux.
 The instructions are valid under the following assumptions:
 
   * The software is installed in the Windows Subsystem for Linux
-  * The OS is Ubuntu 18.04
+  * The OS is Ubuntu 18.04 or higher
   * The URI to the resulting web application is http://localhost/texton 
   * Most of the Text Tonsorium (software and linguistic resources) is located under `/opt/texton/`.  
    Only programs that are installed using apt-get reside elsewhere.
@@ -66,7 +66,7 @@ Restart apache
     $ sudo apt install default-jdk
     
 ## ant
-Ant is needed if you want to build tha DK-Clarin tools .war file from source.
+Ant is needed if you want to build the texton.war file from source.
 
     $> sudo apt install ant
 
@@ -345,11 +345,30 @@ In addition
     $> cd /opt/texton/tesseract
     $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 
+For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
+Make sure that tesseract an be seen by the webserver.
+
+    $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
+
+Text Tonsorium needs ImageMagick to extracom a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
+       
+    convert-im6.q16: not authorized `*******' @ error/constitute.c/ReadImage/412.
+
+In that case, edit /etc/ImageMagick-6/policy.xml and add the line
+
+    <policy domain="coder" rights="read|write" pattern="{EPS,PS2,PS3,PS,PDF,XPS}" />
+
+and comment out the lines telling that rights is "none" for these file types.
+
 ### dependency2tree
 
     $> git clone https://github.com/boberle/dependency2tree.git
-    $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
+
+and comment out the lines telling that rights is "none" for these file types.
+$> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
     $> sudo apt install graphviz
+
+and comment out the lines telling that rights is "none" for these file types.
 
 ### pdf2htmlEX
 
@@ -373,6 +392,9 @@ Make all directories accessible and readable and give owner and group write righ
 Set group to www-data, recursively
 
     $> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
+    
+In the BASE folder, which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
+Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.
     
 ## Enabling webservices
 
