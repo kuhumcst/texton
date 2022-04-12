@@ -6393,10 +6393,7 @@ try {
                     & saveToolTable$tooladm
                     & "O.k."
                   |   str
-                    $ ( "You need to be logged in to save or replace an active tool. (handle=\""
-                        !handle
-                        "\")"
-                      )
+                    $ "You need to provide valid password to save or replace an active tool. Otherwise you can only look at the metadata."
                   )
             )
           & "Body of Register starts here"
@@ -10150,7 +10147,15 @@ try {
                 . !o
                 )
             : ?oo
-          & (!i.sort$(!oo !pp).!restriction.!superset):?userInput
+          &   ( !i
+              .   sort$(!oo !pp)
+                : ( ? (!superset,?) ?
+                  | ?&:?superset
+                  )
+              . !restriction
+              . !superset
+              )
+            : ?userInput
           & log$(Pipelines/userInput !userInput)
           & ( furtherCheck
             =   uiou wfs output nwfs wf
@@ -13518,7 +13523,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               (format.flat)
                           )
                         : ?R
-                    | text/x-conll&(format.flat):?R
+                    |   text/x-conll
+                      & log$text/x-conll
+                      & (format.flat):?R
                     |   @( ?
                          :   image/
                              (   ( gif
