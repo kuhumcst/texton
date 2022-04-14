@@ -15,7 +15,25 @@ vådmørtler       N         N.IND.PLU    vådmørtel
 X=
   ( doit
   =   
-    .   !arg:(?tok.?seg.?pos.?lem.?outp.?today)
+    .   !arg:(?tok.?seg.?pos.?lem.?segtok.?outp.?today)
+      & :?past:?lbpb
+      &   (!segtok:|get$(!segtok,X ML TRM))
+        : ?ST
+      &   whl
+        ' ( !ST:%?A ?ST
+          & (   !A:((lb|pb):?A.?)
+              & (!A.!past) !lbpb:?lbpb
+              & :?past
+            |     !A
+                : (c|w.? ("xml:id".?idA) ?)
+              & !idA !past:?past
+            | 
+            )
+          )
+      & :?lpb
+      & whl'(!lbpb:%?A ?lbpb&!A !lpb:?lpb)
+      & lst$(lpb,lpb,NEW)
+      & put$(,fid,NEW)
       & ( !tok:
         |   get$(!tok,X ML):?T
           &   (!seg:|get$(!seg,X ML TRM))
@@ -29,7 +47,10 @@ X=
           &   whl
             ' (   !T
                 :   ?
-                    (span.? ("xml:id".?tid) ?)
+                    ( span
+                    .   ? ("xml:id".?tid) ?
+                      : ? (from.@(?:"#" ?fid)) ?
+                    )
                     ?token
                     (.span.)
                     ?T
@@ -49,6 +70,15 @@ X=
                       (.span.)
                       ?L
                 | "_":?lemma
+                )
+              & lst$(fid,fid,APP)
+              & lst$(lpb,fid,APP)
+              & (   !lpb:(?.? !fid ?) ?
+                  & put$(yes\n,fid,APP)
+                |   put$(ADD\n,fid,APP)
+                  & !lpb:(?lp.?) ?lpb
+                  & \n (!lp.,) !words:?words
+                | 
                 )
               &       str
                     $ ( !token
@@ -76,11 +106,11 @@ X=
                       )
                   &   (   !p:
                         &   \n
-                            (sentence.(id.!ID),str$(\n !sent))
+                            (sentence.(id.!ID),\n !sent)
                             \n
                       |   !p
                           \n
-                          (sentence.(id.!ID),str$(\n !sent))
+                          (sentence.(id.!ID),\n !sent)
                           \n
                       )
                     : ?p
@@ -113,8 +143,9 @@ X=
         & (arg$:?seg|:?seg)
         & (arg$:?pos|:?pos)
         & (arg$:?lem|:?lem)
+        & (arg$:?segtok|:?segtok)
         & (arg$:?today|:?today)
-        & (its.doit)$(!tok.!seg.!pos.!lem.!outp.!today)
+        & (its.doit)$(!tok.!seg.!pos.!lem.!segtok.!outp.!today)
   );
 
 r=
