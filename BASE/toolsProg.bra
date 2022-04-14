@@ -9987,8 +9987,10 @@ try {
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
               & log$selectCommonTracks
               & selectCommonTracks$!incarnationpipes:?As
+              & log$selectCommonTracksDONE
               & !As:?+[?Npipes
-              & !Npipes:~>1000
+              & log$(Npipes !Npipes)
+              & !Npipes:~>10000
               & :?pipesN
               & log$unfoldTree
               &   whl
@@ -10384,7 +10386,7 @@ try {
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
                   & prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
-                  & !Npipes:~>1000
+                  & !Npipes:~>10000
                   & log$"Calling prunePipes success"
                   & log$(userInput !userInput)
                   &   (!userInput.!FP) !memoizedTrees
@@ -10397,7 +10399,9 @@ try {
                 . !userInput
                 .     !FP:(?,?) ?
                     & ((!FP.).triviallyFulfilled)
-                  |   !FP:?+[>1000
+                  |   !FP:?+[>10000
+                    & !FP:?+[?NNNN
+                    & log$(tooMany !NNNN)
                     & ((!FP.).tooMany)
                   |   ( !restriction:
                       |   !FP
@@ -10425,6 +10429,7 @@ try {
                             & allRight:?returnCode
                           |   0:?reorderedworkflowlist
                             & :?topologicalOrderedTools
+                            & log$(makeWorkflowsSequential tooComplex)
                             & tooComplex:?returnCode
                           )
                         & !reorderedworkflowlist:?+[?nr
@@ -10443,10 +10448,13 @@ try {
                   | ((!FP.).onlyWithoutRestriction)
                 )
             |   !FP:#:<0
+              & log$("!FP:#:<0 gives tooMany")
               & (!parms.!userInput.(0.).tooMany)
             |   !Npipes:0
               & (!parms.!userInput.(0.).notFulfillable)
-            | (!parms.!userInput.(0.).tooMany)
+            |               log$("No particular reason gives tooMany")
+
+            &(!parms.!userInput.(0.).tooMany)
             )
       )
       ( composeValueString
@@ -15155,6 +15163,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       & allRight:?returnCode
                                     |   0:?reorderedworkflowlist
                                       & :?topologicalOrderedTools
+                            & log$(makeWorkflowsSequential2 tooComplex)
                                       & tooComplex:?returnCode
                                     )
                                 | 
@@ -15231,6 +15240,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                           |   0:?reorderedworkflowlist
                                             &   
                                               : ?topologicalOrderedTools
+                            & log$(makeWorkflowsSequential3 tooComplex)
                                             & tooComplex
                                           )
                                         : ?returnCode
