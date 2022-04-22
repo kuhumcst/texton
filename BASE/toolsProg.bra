@@ -3433,7 +3433,7 @@ toolsProg=
             )
       )
       ( makeOptionList
-      =   table aBbR full selected prefix stable
+      =   table aBbR full selected prefix stable,sel spc
         .     !arg
             : ( ?table
               .   (?selected.?prefix)
@@ -3456,6 +3456,30 @@ toolsProg=
                 , chu$8239
               )
               \r\n
+              (   !selected:%*%
+                & :?fulls
+                & !selected:?sls
+                &   whl
+                  ' ( !sls:%?sel^?spc*?sls
+                    & !stable:? (?.?full.!sel) ?
+                    &     !fulls
+                          ", "
+                          !full
+                          ( !spc:1&
+                          | "[" !spc "]"
+                          )
+                      : ?fulls
+                    )
+                & !fulls:", " ?fulls
+                &   ( option
+                    .     (id.xml-id$!selected)
+                          (value.str$(!prefix !selected))
+                          (selected.selected)
+                      , !fulls
+                    )
+                    \r\n
+              | 
+              )
                 map
               $ ( ( 
                   =   
@@ -6980,7 +7004,9 @@ try {
             =   ss g go gp gs a z sp so tail ngs
               .   !arg:(?ss.?gs)
                 & "take the first factor of the goal feature value"
-                & !gs:%(%?g^?gp ?go)*?ngs
+                & !gs:%?g*?ngs
+                & (!g:(?g.OnE)|)
+                & !g:%?g^?gp ?go
                 & "Match it with a source feature value"
                 & !ss:?a*(!g^?sp ?so)*?z
                 & "At this point we may have failure."
@@ -7713,7 +7739,7 @@ try {
       ( collect
       =     f v outp a featprod alts opts partOf V remainder
           , actualOptions A Z common partOfFunc vs strictPartOf
-        .   !arg:(?arg.?f,?v.?vs)
+        .   !arg:(?alts.?f,?v.?vs)
           & ( partOf
             =   a z S Z spc
               .   !arg:(1.?a)&!a
@@ -7729,6 +7755,7 @@ try {
                           * ?z
                         )
                       | (((?.OnE):?S)*?Z.?a*!S*?z)
+                      | ((?S.OnE)*?Z.?a)&partOf$(!S.!a)
                       )
                   & partOf$(!Z.!a*!z)
             )
@@ -7770,7 +7797,6 @@ try {
             )
           & 0:?outp
           & (!v:%?v %?opts|1:?opts)
-          & !arg:?alts
           & "step through the alternative paths"
           &   whl
             ' ( !alts:%?a+?alts
@@ -7821,8 +7847,8 @@ try {
       the input either
       (1) has a feature list for each value
       (2) has a feature list with a multivalued value, just like the goal.
-      The second is the case if the multivalued feature in the goal is prefixed
-      with a % sign.
+      The second is the case if the multivalued feature in the goal is 
+      annotated as '(val1*val2*val3.OnE)'. (Assuming three values).
 
       The input can be the very input to the workflow or the potential outputs
       from previous steps. In the second case, the input is a sum of
@@ -8414,6 +8440,7 @@ try {
                                             : ?pathsonetool
                                           &   hasfulfilled
                                             $ (!source.!pathfields.!memopaths)
+                                          & log$hasfulfilled
                                           & ( !goaly:!pathfields
                                             |   hasfulfilled
                                               $ (!source.!goaly.!memopaths)
@@ -8799,7 +8826,7 @@ try {
             )
       )
       ( extractIOfeaturesFromHTTParg
-      =     fs IorO f name short p A v Z
+      =     fs IorO f short p A v Z
           , feat spec io V a z
         .   "Collects features of the input(s) or of the output. Each feature
              is mentioned once. If there are more than one input, one feature
@@ -8809,10 +8836,7 @@ try {
           & :?io
           &   whl
             ' ( !fs:%?f+?fs
-              &   !f
-                : ? (name.?name) ?
-                : ? (short.?short) ?
-              & localized$!name:?name
+              & !f:? (short.?short) ?
               & str$(!IorO !short):?p
               &   whl
                 ' ( !arg:?A (!p.?v) ?Z
@@ -8834,8 +8858,7 @@ try {
                       &     vap
                           $ ( ( 
                               =   feat spec
-                                .   !arg:%?feat^%?spec
-                                  |   !arg:@(?:?feat "^" ?spec)
+                                .     !arg:@(?:?feat "^" ?spec)
                                     & !feat^!spec
                                   | !arg
                               )
@@ -8864,6 +8887,76 @@ try {
                   )
               )
           & sort$!io
+      )
+      ( 
+      | ( extractIOfeaturesFromHTTPargOLD
+        =     fs IorO f name short p A v Z
+            , feat spec io V a z
+          .   "Collects features of the input(s) or of the output. Each feature
+             is mentioned once. If there are more than one input, one feature
+             will have more than one value. These values are the factors in a
+             product."
+            & !arg:(?fs.?IorO.?arg)
+            & :?io
+            &   whl
+              ' ( !fs:%?f+?fs
+                &   !f
+                  : ? (name.?name) ?
+                  : ? (short.?short) ?
+                & localized$!name:?name
+                & str$(!IorO !short):?p
+                &   whl
+                  ' ( !arg:?A (!p.?v) ?Z
+                    & !A !Z:?arg
+                    & (   !v:%*%
+                        & :?z
+                        &   whl
+                          ' ( !v:%?a*?v
+                            &     ( !a:%?feat^%?spec
+                                  |   !a:@(?:?feat "^" ?spec)
+                                    & !feat^!spec
+                                  | !a
+                                  )
+                                  !z
+                              : ?z
+                            )
+                        & !z:?v
+                      |   str$!v:?v
+                        &     vap
+                            $ ( ( 
+                                =   feat spec
+                                  .   !arg:%?feat^%?spec
+                                    |     !arg
+                                        : @(?:?feat "^" ?spec)
+                                      & !feat^!spec
+                                    | !arg
+                                )
+                              . !v
+                              . "*"
+                              )
+                          : ?v
+                      )
+                    & ( !v:
+                      |   ( !io:?a (!short,?V) ?z
+                          |   1:?V
+                            & !io:?z
+                            & :?a
+                          )
+                        &   map
+                          $ ( ( 
+                              =   
+                                .   !V:?*!arg*?
+                                  | !arg*!V:?V
+                              )
+                            . !v
+                            )
+                        & !a (!short,!V) !z:?io
+                      | (!short,!v) !io:?io
+                      )
+                    )
+                )
+            & sort$!io
+        )
       )
       ( has
       =   rstr S
@@ -10038,7 +10131,6 @@ try {
                     )
                   )
               )
-          & log$(testing calls !calls)
           & (!newpipes.!Npipes)
       )
       ( saveTask
@@ -10105,7 +10197,6 @@ try {
                     . !superset
                     )
                 : ?superset
-              & log$(superset2 !superset)
             | 
             )
           & "If there is a filled Pxyz, remove it from superset. Additional
@@ -10121,16 +10212,6 @@ try {
                 . !superset
                 )
             : ?superset
-          & ( 
-            |   log
-              $ ( superset
-                  !superset
-                  usupset
-                  !usupset
-                  o-SUpPLEMENT
-                  !o-SUpPLEMENT
-                )
-            )
           & "P values come from a subset of select boxes, when the user has
              asked for assistance to fill out the remaining fields."
           & !o-SUpPLEMENT:?pp
@@ -10158,7 +10239,6 @@ try {
               . !superset
               )
             : ?userInput
-          & log$(Pipelines/userInput !userInput)
           & ( furtherCheck
             =   uiou wfs output nwfs wf
               .   log$furtherCheck1
@@ -10448,13 +10528,12 @@ try {
                   | ((!FP.).onlyWithoutRestriction)
                 )
             |   !FP:#:<0
-              & log$("!FP:#:<0 gives tooMany")
+              & log$"!FP:#:<0 gives tooMany"
               & (!parms.!userInput.(0.).tooMany)
             |   !Npipes:0
               & (!parms.!userInput.(0.).notFulfillable)
-            |               log$("No particular reason gives tooMany")
-
-            &(!parms.!userInput.(0.).tooMany)
+            |   log$"No particular reason gives tooMany"
+              & (!parms.!userInput.(0.).tooMany)
             )
       )
       ( composeValueString
@@ -10694,33 +10773,38 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               ' ( !vals:%?Val*?vals
                                 & 0:?specs
                                 &   !Val
-                                  : ( ( %@?val^?spec
-                                      .     @?file
-                                          & OffSet$!file:?file
-                                          &   !dep (!file,pending)
-                                            : ?dep
-                                          & (   !newJobs
-                                              :   ?
-                                                  (!jobNr.!file.?.?.?.?file)
-                                                  ?
-                                            |   log
-                                              $ (OOPS !jobNr file !file)
-                                            )
-                                          & (F.!file):?fileTerm
-                                        |   (FiL.?FiLfeats)
-                                          &     getCompatibleInputFile
-                                              $ (!Items.!Uploads.!FiLfeats)
-                                            : ?fileitem
-                                          & !dep !fileitem:?dep
-                                          & (F.!fileitem):?fileTerm
-                                      )
-                                    |   %@?val^?spec
+                                  : (   %@?val^?spec
                                       & 0:?fileTerm
-                                    | ( ?val&1:?spec
-                                      .     @?file
-                                          &   composeValueString$!val
-                                            : (?val.?specs)
-                                          & OffSet$!file:?file
+                                    |   (   %@?val^?spec
+                                          |   ?val
+                                            & 1:?spec
+                                        . FiL
+                                        . ?FiLfeats
+                                        )
+                                      &     getCompatibleInputFile
+                                          $ (!Items.!Uploads.!FiLfeats)
+                                        : ?fileitem
+                                      & log$(Compatible !fileitem)
+                                      & !dep !fileitem:?dep
+                                      & (F.!fileitem):?fileTerm
+                                    |   (%@?val^?spec.@?file)
+                                      & OffSet$!file:?file
+                                      & !dep (!file,pending):?dep
+                                      & (   !newJobs
+                                          :   ?
+                                              (!jobNr.!file.?.?.?.?file)
+                                              ?
+                                        | log$(OOPS1 !jobNr file !file)
+                                        )
+                                      & (F.!file):?fileTerm
+                                    |   ( ?val&1:?spec
+                                        . @?file
+                                        )
+                                      & log$(file !file val !val)
+                                      &   composeValueString$!val
+                                        : (?val.?specs)
+                                      & ( !file:OnE
+                                        |   OffSet$!file:?file
                                           &   !dep (!file,pending)
                                             : ?dep
                                           & (   !newJobs
@@ -10728,16 +10812,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                   (!jobNr.!file.?.?.?.?file)
                                                   ?
                                             |   log
-                                              $ (OOPS !jobNr file !file)
+                                              $ (OOPS2 !jobNr file !file)
                                             )
                                           & (F.!file):?fileTerm
-                                        |   (FiL.?FiLfeats)
-                                          &     getCompatibleInputFile
-                                              $ (!Items.!Uploads.!FiLfeats)
-                                            : ?fileitem
-                                          & !dep !fileitem:?dep
-                                          & (F.!fileitem):?fileTerm
-                                      )
+                                        )
                                     |   ?val
                                       & log$(UNMATCHED !val)
                                       & ~
@@ -10848,6 +10926,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$Uploads
           & :?newJobs
           & (readTable$jobs|:?jobs)
+          & log$"[["
+          & lst$(JobStack,path$"log.txt",APP RAW)
+          & log$"]]"
           & "Note: this whl'() loop cannot be rewritten as a map$-ping,
              since the constructed list (newJobs) is consulted."
           &   whl
@@ -12983,8 +13064,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                               & 
                                             |     !arg !seenInputs
                                                 : ?seenInputs
-                                              &   log
-                                                $ (seenInputs !seenInputs)
                                               &   paragraph
                                                 $ ( "input:"
                                                     ( a
@@ -12999,6 +13078,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                     )
                                                   )
                                             )
+                                        | !arg:(?,?)&
+                                        |   !arg
+                                          : @
+                                          : @(!arg:step ?)
                                         |   log$(NOTfoundInUploads !arg)
                                           & 
                                     )
@@ -13274,7 +13357,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , language date analyseContentType
         .   ( analyseContentType
             =     R spec nofonts ct DestinationDir LocalFileName
-                , isDiplom input getInput isTabSeparated
+                , isDiplom input getInput isTabSeparated isConll
               .     !arg
                   : (?arg.?nofonts.?DestinationDir.?LocalFileName)
                 & @( !arg
@@ -13343,6 +13426,169 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           )
                           (period.c13)
                           (pres.nml)
+                  )
+                & ( isConll
+                  =     TL L spc
+                      , ID FORM LEMMA HEAD DEPREL
+                      ,   PLEMMA
+                          POS
+                          PPOS
+                          FEAT
+                          PFEAT
+                          PHEAD
+                          PDEPREL
+                          FILLPRED
+                          PRED
+                          APREDs
+                      , UPOSTAG XPOSTAG FEATS DEPS MISC
+                    .   @( !arg
+                         : ( "#" ?
+                           | \n ?
+                           | # \t ?
+                           | # "-" # \t ?
+                           )
+                         )
+                      &   vap
+                        $ ( ( 
+                            =   
+                              .     @( !arg
+                                     : ( \r
+                                       | 
+                                       | "#" ?
+                                       | # \t ?
+                                       | # "-" # \t ?
+                                       )
+                                     )
+                                  & 
+                                | !arg
+                            )
+                          . !arg
+                          . \n
+                          )
+                      &   
+                        : ?FORM
+                        : ?LEMMA
+                        : ?HEAD
+                        : ?DEPREL
+                        : ?PLEMMA
+                        : ?POS
+                        : ?PPOS
+                        : ?FEAT
+                        : ?PFEAT
+                        : ?PHEAD
+                        : ?PDEPREL
+                        : ?FILLPRED
+                        : ?PRED
+                        : ?APREDs
+                        : ?UPOSTAG
+                        : ?XPOSTAG
+                        : ?FEATS
+                        : ?DEPS
+                        : ?MISC
+                      & ( @(!arg:? \n (# \t ?:?TL))
+                        & @(!TL:?TL (\r|\n) ?)
+                        & vap$((=.!arg).!TL.\t):?TL
+                        & !TL:? [?L
+                        &   (   !L:10
+                              & ( clU
+                                . ( 
+                                  =   %?ID
+                                      %?FORM
+                                      %?LEMMA
+                                      %?UPOSTAG
+                                      %?XPOSTAG
+                                      %?FEATS
+                                      %?HEAD
+                                      %?DEPREL
+                                      %?DEPS
+                                      %?MISC
+                                  )
+                                )
+                            |   !L:~<14
+                              & ( cnl2009
+                                . ( 
+                                  =   %?ID
+                                      %?FORM
+                                      %?LEMMA
+                                      %?PLEMMA
+                                      %?POS
+                                      %?PPOS
+                                      %?FEAT
+                                      %?PFEAT
+                                      %?HEAD
+                                      %?PHEAD
+                                      %?DEPREL
+                                      %?PDEPREL
+                                      %?FILLPRED
+                                      %?PRED
+                                      ( %?APREDs
+                                      | &:?APREDs
+                                      )
+                                  )
+                                )
+                            )
+                          : (?spc.(=?pat))
+                        )
+                      & !TL:!pat
+                      & ( est
+                        =   
+                          .   str
+                            $ ( vap
+                              $ ( (=.!arg)
+                                .   str
+                                  $ (vap$((=.!arg).str$!arg."_"))
+                                . "-"
+                                )
+                              )
+                        )
+                      &     seg
+                          * ( est$!FORM:&1
+                            | tok
+                            )
+                          * (   est$(!LEMMA !PLEMMA):
+                              & 1
+                            | lem
+                            )
+                          * (     est$(!UPOSTAG !XPOSTAG !POS !PPOS)
+                                : 
+                              & 1
+                            | pos
+                            )
+                          * (   est$(!FEATS !FEAT !PFEAT):
+                              & 1
+                            | mrf
+                            )
+                          * (     est$(!HEAD !PHEAD !DEPREL !PDEPREL)
+                                : 
+                              & 1
+                            | stx
+                            )
+                        : ?facet
+                      & "https://ufal.mff.cuni.cz/conll2009-st/task-description.html
+                        ID FORM LEMMA PLEMMA POS PPOS FEAT PFEAT HEAD PHEAD DEPREL PDEPREL FILLPRED PRED APREDs
+
+                         https://github.com/UniversalDependencies/docs/issues/229
+                        Change naming in CoNLL-U: CPOSTAG --> UPOSTAG #229 
+        
+                         https://universaldependencies.org/docs/format.html
+
+                        CoNLL-U Format
+
+                        ID: Word index, integer starting at 1 for each new sentence; may be a range for tokens with multiple words.
+                        FORM: Word form or punctuation symbol.
+                        LEMMA: Lemma or stem of word form.
+                        UPOSTAG: Universal part-of-speech tag drawn from our revised version of the Google universal POS tags.
+                        XPOSTAG: Language-specific part-of-speech tag; underscore if not available.
+                        FEATS: List of morphological features from the universal feature inventory or from a defined language-specific extension; underscore if not available.
+                        HEAD: Head of the current token, which is either a value of ID or zero (0).
+                        DEPREL: Universal Stanford dependency relation to the HEAD (root iff HEAD = 0) or a defined language-specific subtype of one.
+                        DEPS: List of secondary dependencies (head-deprel pairs).
+                        MISC: Any other annotation.
+                        "
+                      &   ( !facet:1&
+                          | (facet.!facet)
+                          )
+                          (format.conll^!spc)
                   )
                 & ( isTabSeparated
                   =   L H e empty
@@ -13432,6 +13678,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     |   ( application/x-download
                         | application/octet-stream
                         )
+                      & log$application/octet-stream
                       & getInput$:?input
                       & ( @( !input
                            : ( ("%PDF" ?|"%pdf" ?)
@@ -13448,8 +13695,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                : ?R
                              )
                            )
-                        | isDiplom$!input:?R
-                        | isTabSeparated$!input:?R
+                        |   isDiplom$!input:?R
+                          & log$diplom
+                        | isConll$!input:?R
+                        |   isTabSeparated$!input:?R
+                          & log$tabs
                         | :?R
                         )
                     |   application/msword
@@ -13525,6 +13775,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     |   text/plain
                       & getInput$:?input
                       &   ( isDiplom$!input
+                          | isConll$!input:?R
                           | isTabSeparated$!input
                           |   (app.nrm)
                               (facet.txt)
@@ -14146,8 +14397,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                         )
                   )
-                & !arg:(?presels.?items)
-                & :?linkedWorkflows
+                & !arg:?presels
+                & :?linkedWorkflows:?items
                 & readTable$features
                 & !features:?fs
                 & 1:?prod
@@ -14340,15 +14591,17 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                               )
                                                         )
                                                     )
-                                                |   makeSelectFormField
-                                                  $ ( 
-                                                    . str$(I !short !exr)
-                                                    . options
-                                                    .   makeOptionList
-                                                      $ ( !servicedSourcesTable
-                                                        . 
-                                                        )
-                                                    )
+                                                |   log$NOTFOUND
+                                                  &   makeSelectFormField
+                                                    $ ( 
+                                                      .   str
+                                                        $ (I !short !exr)
+                                                      . options
+                                                      .   makeOptionList
+                                                        $ ( !servicedSourcesTable
+                                                          . 
+                                                          )
+                                                      )
                                                 )
                                         )
                                       . !items
@@ -14378,6 +14631,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 &     makeExpandedSelectLists
                                     $ !servicedSuperGoals
                                   : ?expandedSelectLists
+                                & log$(createGoalPickLists !arg)
                                 & ( !arg
                                   .   createGoalPickLists
                                     $ ( !preselvalsrows
@@ -14392,9 +14646,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & setLang$!G
                   | 
                   )
-                & log$(cmptblWrkflwsA !items presels !presels)
                 & cmptblWrkflws$(!items.!presels):?items
-                & log$(cmptblWrkflwsB !items)
                 & ( !items
                   .     fieldset
                       $ (     !items:? (?.?.% ?) ?
@@ -14515,7 +14767,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , itemGroupsExt linkedWorkflows
                 , hiddenData Items A Z
               .   !arg:(?presels.?hiddenData.?Items)
+                & log$"We are at the start. Show an input form."
                 & (   !Items:
+                    & log$noitems
                     &   str
                       $ ( 200~~~
                             toML
@@ -14529,22 +14783,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             )
                         )
-                  |       sourcesAndGoals
-                        $ ( !presels
-                          .   map
-                            $ ( ( 
-                                =   
-                                  .       !arg
-                                        : ( FieldName,?
-                                          . Name,?arg
-                                          . ?
-                                          )
-                                      & !arg
-                                    | 
-                                )
-                              . !arg
-                              )
-                          )
+                  |     sourcesAndGoals$!presels
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
                     &   (   !itemGroupsExt:(@.@.?)
                           & !Items !hiddenData
@@ -14897,7 +15136,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . ?reorderedworkflowlist
                     . ?topologicalOrderedTools
                     )
-                & log$(ShowAllPipes hiddenData !hiddenData)
                 &   str
                   $ ( 200~~~
                         toML
@@ -15163,7 +15401,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       & allRight:?returnCode
                                     |   0:?reorderedworkflowlist
                                       & :?topologicalOrderedTools
-                            & log$(makeWorkflowsSequential2 tooComplex)
+                                      &   log
+                                        $ ( makeWorkflowsSequential2
+                                            tooComplex
+                                          )
                                       & tooComplex:?returnCode
                                     )
                                 | 
@@ -15240,7 +15481,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                           |   0:?reorderedworkflowlist
                                             &   
                                               : ?topologicalOrderedTools
-                            & log$(makeWorkflowsSequential3 tooComplex)
+                                            &   log
+                                              $ ( makeWorkflowsSequential3
+                                                  tooComplex
+                                                )
                                             & tooComplex
                                           )
                                         : ?returnCode
@@ -15315,6 +15559,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                             )
                                         & !preselvalsrows
                                     )
+                                  & log$createGoalPickLists
                                   &     createGoalPickLists
                                       $ ( makeValRows$!nfvs
                                         .   makeExpandedSelectLists
@@ -16105,7 +16350,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &   localized$("View details" "Se detaljer")
                   : ?ViewDetails
                 & (   !nth:#
-                    & log$(calling Pipelines !nth)
                     &   Pipelines$(!parms.!nth)
                       : ( ?
                         . (?sources.?goals.?)
@@ -16132,7 +16376,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   | NotFulfillable$NoPipelinesFound
                   )
             )
-          & (|log$NEW)
+          & log$NEW
           & log$SINGLEWORKFLOWLOGJE
           & :?PIPE
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
