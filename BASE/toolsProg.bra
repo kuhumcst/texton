@@ -3059,7 +3059,9 @@ toolsProg=
       =   ( style
           .   
             ,   \r\n
-                ( ".bodycanvas {background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat;}"
+                "html {height: 100%;}"
+                \r\n
+                ( ".bodycanvas {min-height: 100%; background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat; }"
                 | ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
                 )
                 \r\n
@@ -3172,7 +3174,9 @@ toolsProg=
       =   ( style
           .   
             ,   \r\n
-                ( ".bodycanvas {background: linear-gradient(181deg, rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0));background-repeat: no-repeat;}"
+                "html {height: 100%;}"
+                \r\n
+                ( ".bodycanvas {min-height: 100%; background: linear-gradient(181deg, rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0));background-repeat: no-repeat;}"
                 | ".bodycanvas {background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat;}"
                 | ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
                 )
@@ -3889,7 +3893,6 @@ toolsProg=
             & ( !arg:? (selected.?selected) ?
               | 
               )
-            & 
             & (   !arg
                 : ? (passwordAsHandle.?passwordAsHandle) ?
               | (.):?passwordAsHandle
@@ -6318,13 +6321,17 @@ try {
                     & ( subset
                       =   toolprop ToolName Fe A fe subs
                         .   !arg:(?toolprop.?ToolName)
-                          & !toolprop:?A+(!ToolName.?Fe)+?toolprop
-                          & 0:?subs
-                          &   whl
-                            ' ( !toolprop:(!ToolName.?fe)+?toolprop
-                              & !subs+(!ToolName.!fe):?subs
-                              )
-                          & ((!ToolName.!Fe)+!subs.!A+!toolprop)
+                          & (     !toolprop
+                                : ?A+(!ToolName.?Fe)+?toolprop
+                              & 0:?subs
+                              &   whl
+                                ' (   !toolprop
+                                    : (!ToolName.?fe)+?toolprop
+                                  & !subs+(!ToolName.!fe):?subs
+                                  )
+                              & ((!ToolName.!Fe)+!subs.!A+!toolprop)
+                            | (0.!toolprop)
+                            )
                       )
                     &   subset$(!toolprop.!ToolName)
                       : (?thisToolProp.?otherToolprop)
@@ -6388,8 +6395,10 @@ try {
                           | 0
                       )
                     & IOcombine$!thisToolProp:?thisToolProp
-                    & !thisToolProp+!otherToolprop:?toolprop
-                    & saveToolTable$toolprop
+                    & ( !thisToolProp:0
+                      |   !thisToolProp+!otherToolprop:?toolprop
+                        & saveToolTable$toolprop
+                      )
                     & (     !tooladm
                           : ?A+(? (ToolID.!ToolName) ?)+?Z
                         & !A+!Z:?tooladm
@@ -6452,7 +6461,6 @@ try {
           & ( !arg:? (mail2.?mail2) ?
             | :?mail2
             )
-          & log$CallcreateBoilerPlate
           & (     createBoilerPlate$!arg
                 : (?ToolName.?password.?contactEmail.?arg)
               & staticFields$!arg:?formFields
@@ -6478,12 +6486,7 @@ try {
                 request string.
                 Otherwise: use metadata from toolprop.table.
                 "
-              &   (   ~
-                    & !ToolName:
-                    & -1:?nth
-                    & "Register a new tool. The tool hasn't any features yet."
-                    & !arg
-                  |     !arg
+              &   (     !arg
                       :   ?
                           ( bsubmit
                           . @(?:(prev|next) #?nth)
@@ -6684,38 +6687,42 @@ try {
                                   . !ToolInactive
                                   . !Submit
                                   )
-                              |   storeTool
-                                $ ( !Metadata
-                                  . !ToolName
-                                  . !PassWord:?password
-                                  . !ContactEmail:?contactEmail
-                                  . !ToolVersion
-                                  . !FullToolName
-                                  . !ToolURL
-                                  . !ToolPublisher
-                                  . !ContentProvider
-                                  . !ToolCreator
-                                  . !InfoAbout
-                                  . !ToolDescription
-                                  . !ToolExternalURI
-                                  . !ToolXMLparms
-                                  . !ToolPostData
-                                  . !ToolInactive
-                                  .     !Submit:!storeToolButton
-                                      & -1
-                                    | !ZZ
-                                  . !force
-                                  )
+                              |   0:?nth
+                                &   storeTool
+                                  $ ( !Metadata
+                                    . !ToolName
+                                    . !PassWord:?password
+                                    . !ContactEmail:?contactEmail
+                                    . !ToolVersion
+                                    . !FullToolName
+                                    . !ToolURL
+                                    . !ToolPublisher
+                                    . !ContentProvider
+                                    . !ToolCreator
+                                    . !InfoAbout
+                                    . !ToolDescription
+                                    . !ToolExternalURI
+                                    . !ToolXMLparms
+                                    . !ToolPostData
+                                    . !ToolInactive
+                                    .     !Submit:!storeToolButton
+                                        & -1
+                                      | !ZZ
+                                    . !force
+                                    )
                               )
                           |   !Submit:!deleteToolButton
                             & (   !toolprop:?AA+(!ToolName.?)+!ZZ
                                 & !AA+!ZZ:?toolprop
                                 & saveToolTable$toolprop
+                                &   (!nth+-1:~<0|0)
+                                  : ?nth
                                 &   str
                                   $ ( "Deleted current incarnation of tool "
                                       !ToolName
                                     )
-                              |     !tooladm
+                              |   -1:?nth
+                                &   !tooladm
                                   :   ?AA
                                     + (? (ToolID.!ToolName) ?)
                                     + ?ZZ
@@ -6726,48 +6733,65 @@ try {
                                       !ToolName
                                     )
                               )
-                          | Updated
+                          | "Up to date"
                           )
                         : ?error
-                      & log$(error !error)
-                      &   toML
-                        $ ( !HTMLbodyContainer
-                          $ ( ( !formFields:
-                              |   form
-                                $ ( register
-                                  .   ( !handle:
-                                      | makeHiddenFields$(handle.!handle)
-                                      )
-                                      !formFields
-                                      submit$!storeToolButton
-                                      ( !nth:<0&
-                                      |   submit$!replaceToolButton
-                                          makeHiddenFields$(nth.!nth)
-                                      )
-                                        makeHiddenFields
-                                      $ ( (password.!password)
-                                          (   !passwordAsHandle:(.)
-                                            & 
-                                          | ( passwordAsHandle
-                                            . !passwordAsHandle
-                                            )
-                                          )
-                                          ( !mail2:
-                                          | (mail2.!mail2)
-                                          )
-                                          (contactEmail.!contactEmail)
-                                        )
-                                      submit$!deleteToolButton
-                                      submit$!UpdateButton
-                                      submit$!PHPbutton
-                                      helplink$(usedonly.n)
-                                  . POST
-                                  )
+                      & log$(error !error nth !nth)
+                      & (   (|!nth:<0)
+                          & !error:~"Up to date"
+                          &   update
+                            $ ( (msg.!error)
+                                (   !passwordAsHandle:(.)
+                                  & 
+                                | (passwordAsHandle.!passwordAsHandle)
+                                )
+                                ( !contactEmail:
+                                | (contactEmail.!contactEmail)
+                                )
+                                ( !handle:
+                                | (handle.!handle)
+                                )
                               )
-                              (p.,!error (br.,))
-                              (hr.,)
+                        |   toML
+                          $ ( !HTMLbodyContainer
+                            $ ( ( !formFields:
+                                |   form
+                                  $ ( register
+                                    .   ( !handle:
+                                        | makeHiddenFields$(handle.!handle)
+                                        )
+                                        !formFields
+                                        submit$!storeToolButton
+                                        ( !nth:<0&
+                                        |   submit$!replaceToolButton
+                                            makeHiddenFields$(nth.!nth)
+                                        )
+                                          makeHiddenFields
+                                        $ ( (password.!password)
+                                            (     !passwordAsHandle
+                                                : (.)
+                                              & 
+                                            | ( passwordAsHandle
+                                              . !passwordAsHandle
+                                              )
+                                            )
+                                            ( !mail2:
+                                            | (mail2.!mail2)
+                                            )
+                                            (contactEmail.!contactEmail)
+                                          )
+                                        submit$!deleteToolButton
+                                        submit$!UpdateButton
+                                        submit$!PHPbutton
+                                        helplink$(usedonly.n)
+                                    . POST
+                                    )
+                                )
+                                (p.,!error (br.,))
+                                (hr.,)
+                              )
                             )
-                          )
+                        )
                     )
                 | str$("unknown button: " !Submit)
                 )
@@ -8440,7 +8464,6 @@ try {
                                             : ?pathsonetool
                                           &   hasfulfilled
                                             $ (!source.!pathfields.!memopaths)
-                                          & log$hasfulfilled
                                           & ( !goaly:!pathfields
                                             |   hasfulfilled
                                               $ (!source.!goaly.!memopaths)
