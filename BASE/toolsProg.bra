@@ -246,38 +246,6 @@ toolsProg=
                 )
             & 
       )
-      ( saveTable
-      =   tab saved folder
-        .     !arg:
-            & :?saved
-            & (   !where
-                :   ?
-                    ( ?Tables
-                    .   ?folder
-                      &   whl
-                        ' ( !Tables
-                          :   ( %?tab
-                              & saveTable$(!folder.!tab)
-                              & !saved !tab:?saved
-                              )
-                              ?Tables
-                          )
-                      & ~
-                    )
-                    ?
-              | Saved !saved
-              )
-          |   !arg:(?folder.?tab)
-            & lst$(!tab,path$(!folder !tab),NEW,RAW)
-          |     whl
-              ' ( !arg:%?tab ?arg
-                & (   !where:? (? !tab ?.?folder) ?
-                    & lst$(!tab,path$(!folder !tab),NEW,RAW)
-                  | 
-                  )
-                )
-            & 
-      )
       ( localized
       =   
         .   ( !lANgs:% !LaNg&!arg:% %?arg
@@ -1702,8 +1670,7 @@ toolsProg=
       =     edges workflow A Z ABC XYZ
           , 2p Kahn edg pr shorting
           , pairs shrtlst nshrtlst kahn
-        .   log$topologicalOrder
-          & ( edg
+        .   ( edg
             =   a b
               .   !arg:%?a %?b&edg$!b edg$!a
                 | !arg:(?a,?b)&edg$!a+edg$!b
@@ -1751,9 +1718,7 @@ toolsProg=
           & (   !edges:@
               & log$"There is only one step."
               & !edges
-            |   log$callPR
-              & pr$(0..!edges):?pairs
-              & log$callPRdone
+            |   pr$(0..!edges):?pairs
               & ( 2p
                 =   a b
                   .     !arg:%@?a %@?b ?arg
@@ -1865,13 +1830,13 @@ toolsProg=
           , toolPlumbing "*" simplify
           , wf wfs workflow workflowlist saveio toolPattern
         .   ( enumerateToolsDetail
-            =   tool o i predecessors myfold,a b
+            =   tool o i predecessors myfold I,a b
               .       !arg
                     : ( ?tool
                       , ( ?o
-                        . ?
+                        . ?I
                         .   (?i.?predecessors)
-                          | ?i&:?predecessors
+                          |?i&"If input is composed of x and y, i must be '(x*y.OnE)'. Perhaps we could just always use I instead of i?"&!I:?i&:?predecessors
                         )
                       )
                   & ( myfold
@@ -2253,7 +2218,6 @@ toolsProg=
                     !disambiguatedworkflowlist
                 : ?disambiguatedworkflowlist
               )
-          & log$disambiguatedworkflowlistCREATED
           & ( !n:<1000000
             | "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
@@ -7582,7 +7546,7 @@ try {
               & "Each goaly field must be satisfied."
               & (   ~(!toolFeatures:? (!gfield,?) ?)
                   & "Assume that tool leaves field unchanged: percolate output requirement to input."
-                  & !pathfields (!gfield,!gvaluesAlts):?pathfields
+                  & !pathfields (!gfield,(!gvaluesAlts:(?A.OnE)&!A|!gvaluesAlts)):?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
                 |   !goaly:(sml,nsl)
                   & !toolFeatures:? (sml,(?.?toolfeat)) ?
@@ -9613,15 +9577,17 @@ try {
                 | harmonizeSubspecsOnSimilarFeatures$!arg
             )
           & ( fromToolOrSource
-            =   OF LF RF tool meta output sub
-              .     !arg:(?tool,(?output.?meta.?sub).?OF)
+            =   OF LF RF tool meta output sub A F V Z
+              .      !arg:(?tool,(?output.?meta.?sub).?OF)
                   & fromInputTowardOutput$(!sub.!OF):(?sub.?RF)
                   &   harmonizeSubspecsOnSimilarFeatures$(!output.!RF)
                     : (?output.?LF)
+                  & (!output:?A (?F,(?V.OnE)) ?Z & !A (!F,!V) !Z:?output|log$(NoOnE))
                   & ( !tool,(!output.supplement$(!meta.!RF).!sub)
                     . !LF
                     )
-                | harmonizeSubspecsOnSimilarFeatures$!arg
+                | 
+                harmonizeSubspecsOnSimilarFeatures$!arg
             )
           & ( fromMethods
             =   L R OF LF RF
@@ -9716,9 +9682,9 @@ try {
                               * ?a
                             )
                         & ( !a:1
-                          |   ~
+                          |   
                             &   log
-                              $ ( "In feature bundle"
+                              $ ( "XXXXXXXXX In feature bundle"
                                   !A
                                   str$(\n "of tool")
                                   !t
@@ -9900,7 +9866,6 @@ try {
                   | !calls:<567890&(!stop.!arg)
                   )
             )
-          & log$prunePipes
           & "wantThis either returns the argument (if it is wanted) or
                    zero (if it isn't). So it does not FAIL."
           & ( wantThis
@@ -10085,6 +10050,8 @@ try {
                   )
             )
           & !arg:(?pipes.?parms.?sources)
+          & log$prunePipes
+          & log$(pipes !pipes parms !parms sources !sources)
           & 0:?calls
           & 0:?newpipes
           & log$(whl calls !calls)
@@ -10105,7 +10072,6 @@ try {
               & selectCommonTracks$!incarnationpipes:?As
               & log$selectCommonTracksDONE
               & !As:?+[?Npipes
-              & log$(Npipes !Npipes)
               & !Npipes:~>10000
               & :?pipesN
               & log$unfoldTree
@@ -10144,6 +10110,7 @@ try {
                 | 
                 )
               & percolateForgottenFeatures$!pipesN:?pipesN
+                
               & !pipesN:?+[?NNN
               &   whl
                 ' ( !pipesN:%?pipe+?pipesN
@@ -10491,7 +10458,6 @@ try {
                   & prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
                   & !Npipes:~>10000
                   & log$"Calling prunePipes success"
-                  & log$(userInput !userInput)
                   &   (!userInput.!FP) !memoizedTrees
                     : ?memoizedTrees
                   & ( !memoizedTrees:?memoizedTrees [100 ?
@@ -10823,7 +10789,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     |   ( ?val&1:?spec
                                         . @?file
                                         )
-                                      & log$(file !file val !val)
                                       &   composeValueString$!val
                                         : (?val.?specs)
                                       & ( !file:OnE
@@ -11021,6 +10986,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ?requestString
                             )
                       )
+                    & log$(requestString !requestString)
                     & (     !requestString
                           : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
                             | ?+(F.?)+?
