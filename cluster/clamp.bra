@@ -13,7 +13,7 @@ X=
     .     new$hash:?clp
         & new$hash:?wrd
         & 0:?n
-        & 0:?N
+        & 0:?NN
         & :?Lines
         & :?containsSpace
         & :?containsNonAlpha
@@ -24,18 +24,21 @@ X=
               & !R
           )
         & !arg:(?in.?ou.?keep)
-        & (|put$(str$("in:" !in " ou:" !ou " keep:" !keep),"log.txt",APP))
+        & ( 
+          |   put
+            $ (str$("in:" !in " ou:" !ou " keep:" !keep),"log.txt",APP)
+          )
         & fil$(!in,r)
         & fil$(,STR,\n)
         &   whl
           ' ( fil$:(?line.?)
-            & 1+!N:?N
+            & 1+!NN:?NN
             & @(!line:?left \t ?right)
             & ( @(!right:?right \t ?other)
               | :?other
               )
             & (!keep:yes|:?other)
-            & (  (!left:|!right:)
+            & ( (!left:|!right:)
               |   ( @(!left:? " " ?)
                   | @(!right:? " " ?)
                   )
@@ -169,27 +172,61 @@ X=
               | (clp..insert)$(!L.!line)
               )
             )
-        & put$(,!ou,NEW)
         & 0:?nc
-        &   (clp..forall)
-          $ ( 
-            =   B T S l r c
-              .   !arg:(?.?*%@?S+?B)
-                & @(!S:?l \t ?r)
-                & (!l.!r):?c
-                &   whl
-                  ' ( !B:?*%@?T+?B
-                    & !S \n !T:?S
-                    & @(!T:?l \t ?r)
-                    & (!l.!r) !c:?c
-                    )
-                &   (1+!nc:?nc.!c) !braclumps
-                  : ?braclumps
-                & put$(str$(!S \n\n),!ou,APP)
-            )
+        & (   
+            & ( 
+              | put$(str$("lines read: " !NN \n),!ou,NEW BIN)
+              )
+            &   (clp..forall)
+              $ ( 
+                =   
+                  .   !arg:(?.?arg)
+                    &   put
+                      $ (   str
+                          $ (   mop
+                              $ ( ( 
+                                  =   
+                                    .   !arg:?*%@?arg
+                                      & !arg \n
+                                  )
+                                . !arg
+                                . (=+)
+                                )
+                              \n
+                            )
+                        , !ou
+                        , APP BIN
+                        )
+                )
+          |   
+            & ( 
+              | put$(str$("lines read: " !NN \n),!ou,NEW BIN)
+              )
+            &   (clp..forall)
+              $ ( 
+                =   B T S l r c
+                  .   !arg:(?.?*%@?S+?B)
+                    & @(!S:?l \t ?r)
+                    & (!l.!r):?c
+                    &   whl
+                      ' ( !B:?*%@?T+?B
+                        & !S \n !T:?S
+                        & @(!T:?l \t ?r)
+                        & (!l.!r) !c:?c
+                        )
+                    &   (1+!nc:?nc.!c) !braclumps
+                      : ?braclumps
+                    & put$(str$(!S \n\n),!ou,APP BIN)
+                )
+          )
       | 
   )
-  (new=.(its.doit)$(arg$.arg$.arg$));
+  ( new
+  =   
+    .     ~
+        & (its.doit)$("albanian-word-lemma-pos.txt".uit.no)
+      | (its.doit)$(arg$.arg$.arg$)
+  );
 
 r=
   get'("clamp.bra",TXT)
