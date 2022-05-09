@@ -1836,7 +1836,10 @@ toolsProg=
                       , ( ?o
                         . ?I
                         .   (?i.?predecessors)
-                          |?i&"If input is composed of x and y, i must be '(x*y.OnE)'. Perhaps we could just always use I instead of i?"&!I:?i&:?predecessors
+                          |   ?i
+                            & "If input is composed of x and y, i must be '(x*y.OnE)'. Perhaps we could just always use I instead of i?"
+                            & !I:?i
+                            & :?predecessors
                         )
                       )
                   & ( myfold
@@ -7546,7 +7549,12 @@ try {
               & "Each goaly field must be satisfied."
               & (   ~(!toolFeatures:? (!gfield,?) ?)
                   & "Assume that tool leaves field unchanged: percolate output requirement to input."
-                  & !pathfields (!gfield,(!gvaluesAlts:(?A.OnE)&!A|!gvaluesAlts)):?pathfields
+                  &     !pathfields
+                        ( !gfield
+                        ,   !gvaluesAlts:(?A.OnE)&!A
+                          | !gvaluesAlts
+                        )
+                    : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
                 |   !goaly:(sml,nsl)
                   & !toolFeatures:? (sml,(?.?toolfeat)) ?
@@ -9578,16 +9586,18 @@ try {
             )
           & ( fromToolOrSource
             =   OF LF RF tool meta output sub A F V Z
-              .      !arg:(?tool,(?output.?meta.?sub).?OF)
+              .     !arg:(?tool,(?output.?meta.?sub).?OF)
                   & fromInputTowardOutput$(!sub.!OF):(?sub.?RF)
                   &   harmonizeSubspecsOnSimilarFeatures$(!output.!RF)
                     : (?output.?LF)
-                  & (!output:?A (?F,(?V.OnE)) ?Z & !A (!F,!V) !Z:?output|log$(NoOnE))
+                  & (   !output:?A (?F,(?V.OnE)) ?Z
+                      & !A (!F,!V) !Z:?output
+                    | log$NoOnE
+                    )
                   & ( !tool,(!output.supplement$(!meta.!RF).!sub)
                     . !LF
                     )
-                | 
-                harmonizeSubspecsOnSimilarFeatures$!arg
+                | harmonizeSubspecsOnSimilarFeatures$!arg
             )
           & ( fromMethods
             =   L R OF LF RF
@@ -10110,7 +10120,6 @@ try {
                 | 
                 )
               & percolateForgottenFeatures$!pipesN:?pipesN
-                
               & !pipesN:?+[?NNN
               &   whl
                 ' ( !pipesN:%?pipe+?pipesN
@@ -13068,9 +13077,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                   )
                                             )
                                         | !arg:(?,?)&
-                                        |   !arg
-                                          : @
-                                          : @(!arg:step ?)
+                                        |     !arg
+                                            : @
+                                            : @(!arg:step ?)
+                                          & 
                                         |   log$(NOTfoundInUploads !arg)
                                           & 
                                     )
