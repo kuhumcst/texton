@@ -388,6 +388,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         {
         $flexrulessubdir = "/0";
         }
+    else if($language == 'sq')
+        {
+        $flexrulessubdir = "/2";
+        $flexrules = "flexrules.albanian-word-lemma-pos-364.txt-234-step1.2cole_XD";
+        }
     else if($language == 'sr')
         {
         $flexrulessubdir = "/1";
@@ -643,17 +648,17 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
-        $IfacettokF = "";	/* Input with type of content tokens (Tokens) */
+        $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Iambigamb = false;	/* Ambiguity in input is ambiguous (tvetydig) if true */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacet_par_pos_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (Paragrafsegmenter) and segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacet_pos_seg_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) if true */
-        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_par_pos_seg_tok = false;	/* Type of content in input is paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) if true */
+        $Ifacet_par_seg_tok = false;	/* Type of content in input is paragraphs (paragrafsegmenter) and segments (sætningssegmenter) and tokens (tokens) if true */
+        $Ifacet_pos_seg_tok = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (sætningssegmenter) and tokens (tokens) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (Tokens) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
@@ -682,6 +687,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Ilangru = false;	/* Language in input is Russian (russisk) if true */
         $Ilangsk = false;	/* Language in input is Slovak (slovakisk) if true */
         $Ilangsl = false;	/* Language in input is Slovene (slovensk) if true */
+        $Ilangsq = false;	/* Language in input is Albanian (albansk) if true */
         $Ilangsr = false;	/* Language in input is Serbian (serbisk) if true */
         $Ilangsv = false;	/* Language in input is Swedish (svensk) if true */
         $Ilanguk = false;	/* Language in input is Ukrainian (ukrainsk) if true */
@@ -693,11 +699,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
-        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
-        $Ofacetpar = false;	/* Type of content in output is paragraphs (Paragrafsegmenter) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
+        $Ofacetpar = false;	/* Type of content in output is paragraphs (paragrafsegmenter) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
-        $Ofacetseg = false;	/* Type of content in output is segments (Sætningssegmenter) if true */
-        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (sætningssegmenter) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatcols = false;	/* Format in output is columns, tab separated fields (kolonner, tab separeret) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
@@ -727,6 +733,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Olangru = false;	/* Language in output is Russian (russisk) if true */
         $Olangsk = false;	/* Language in output is Slovak (slovakisk) if true */
         $Olangsl = false;	/* Language in output is Slovene (slovensk) if true */
+        $Olangsq = false;	/* Language in output is Albanian (albansk) if true */
         $Olangsr = false;	/* Language in output is Serbian (serbisk) if true */
         $Olangsv = false;	/* Language in output is Swedish (svensk) if true */
         $Olanguk = false;	/* Language in output is Ukrainian (ukrainsk) if true */
@@ -736,14 +743,14 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Opresalf = false;	/* Assemblage in output is alphabetic list (alfabetisk liste) if true */
         $Opresfrq = false;	/* Assemblage in output is frequency list (frekvensliste) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_par_pos_seg_tok__pos_Uni = false;	/* Style of type of content paragraphs (Paragrafsegmenter) and PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_DSL = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_PT = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_Par = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
-        $Ifacet_pos_seg_tok__pos_Uni = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (Sætningssegmenter) and tokens (Tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_Uni = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_DSL = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_PT = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_Par = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_Uni = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
         $IfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in input is DSL-tagset if true */
         $IfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Penn Treebank if true */
         $IfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in input is CST-tagset if true */
@@ -795,7 +802,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $IfacettokF = requestFile("IfacettokF");
             if($IfacettokF == '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'tokens (Tokens)' not found (IfacettokF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacettokF=$IfacettokF ";
@@ -860,10 +867,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $Ilangru = existsArgumentWithValue("Ilang", "ru");
             $Ilangsk = existsArgumentWithValue("Ilang", "sk");
             $Ilangsl = existsArgumentWithValue("Ilang", "sl");
+            $Ilangsq = existsArgumentWithValue("Ilang", "sq");
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
             $Ilangsv = existsArgumentWithValue("Ilang", "sv");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
+            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -933,10 +941,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $Olangru = existsArgumentWithValue("Olang", "ru");
             $Olangsk = existsArgumentWithValue("Olang", "sk");
             $Olangsl = existsArgumentWithValue("Olang", "sl");
+            $Olangsq = existsArgumentWithValue("Olang", "sq");
             $Olangsr = existsArgumentWithValue("Olang", "sr");
             $Olangsv = existsArgumentWithValue("Olang", "sv");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangaf=$Olangaf " . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
+            $echos = $echos . "Olangaf=$Olangaf " . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
             }
         if( hasArgument("Operiod") )
             {
@@ -1062,6 +1071,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
              && $language != "sl"
          
              && $language != "sr"
+             && $language != "sq"
              && $language != "sv" 
              && $language != "uk" 
              )
