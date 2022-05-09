@@ -391,7 +391,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'sq')
         {
         $flexrulessubdir = "/2";
-        $flexrules = "flexrules.albanian-word-lemma-pos-364.txt-234-step1.2cole_XD";
+        $flexrules = "flexrules";
         }
     else if($language == 'sr')
         {
