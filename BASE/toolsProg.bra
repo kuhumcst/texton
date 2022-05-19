@@ -14187,7 +14187,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
             )
           & ( sourcesAndGoals
-            =     f fs name short
+            =     f name short Ofields
                 , servicedGoalsTable cmptblWrkflws
                 , servicedSourcesTable
                 , description itms Types linkedWorkflows
@@ -14197,7 +14197,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , G sourcePicklists
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
-                , features links
+                , features links addOutputWishesFrom3rdParty
               .   ( cmptblWrkflws
                   =   itemGroups presels
                     .   !arg:(?itemGroups.?presels)
@@ -14396,41 +14396,152 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 )
                         )
                   )
-                & !arg:?presels
+                & ( addOutputWishesFrom3rdParty
+                  =   R
+                    .   !arg:? (!LaNg.?R) ?
+                      &   map
+                        $ ( ( 
+                            =     f v v1 v2 v3 v4 v5
+                                , v6 v7 v8 v9 v10 v11
+                                , v7a v6-8 v6a v7m v7z
+                              .     !arg:(?f.?v)
+                                  &   !R
+                                    :   ?v1
+                                        ( tr
+                                        .   
+                                          ,   (td.,?v2)
+                                              (td.,?v3)
+                                              ( td
+                                              .   
+                                                ,   ?v4
+                                                    ( select
+                                                    .       ?
+                                                            ( name
+                                                            . @(?:O !f)
+                                                            )
+                                                            ?
+                                                        : ?v5
+                                                      ,       ?v6
+                                                              ( option
+                                                              .       ?
+                                                                      ( value
+                                                                      . !v
+                                                                      )
+                                                                      ?
+                                                                  : ?v7a
+                                                                , ?v7
+                                                              )
+                                                              ?v8
+                                                          &     !v6
+                                                                ( option
+                                                                .     !v7a
+                                                                      ( selected
+                                                                      . selected
+                                                                      )
+                                                                  , !v7
+                                                                )
+                                                                !v8
+                                                            : ?v6-8
+                                                        |     ?v6
+                                                              ( optgroup
+                                                              .   ?v6a
+                                                                ,   ?v7a
+                                                                    ( option
+                                                                    .       ?
+                                                                            ( value
+                                                                            . !v
+                                                                            )
+                                                                            ?
+                                                                        : ?v7m
+                                                                      , ?v7
+                                                                    )
+                                                                    ?v7z
+                                                              )
+                                                              ?v8
+                                                          &     !v6
+                                                                ( optgroup
+                                                                .   !v6a
+                                                                  ,   !v7a
+                                                                      ( option
+                                                                      .     !v7m
+                                                                            ( selected
+                                                                            . selected
+                                                                            )
+                                                                        , !v7
+                                                                      )
+                                                                      !v7z
+                                                                )
+                                                                ?v8
+                                                            : ?v6-8
+                                                    )
+                                                    ?v9
+                                              )
+                                              ?v10
+                                        )
+                                        ?v11
+                                  &     !v1
+                                        ( tr
+                                        .   
+                                          ,   (td.,!v2)
+                                              (td.,!v3)
+                                              ( td
+                                              .   
+                                                ,   !v4
+                                                    (select.!v5,!v6-8)
+                                                    !v9
+                                              )
+                                              !v10
+                                        )
+                                        !v11
+                                    : ?R
+                                |   log
+                                  $ ( str
+                                    $ ("Cannot find " !arg " in output fields")
+                                    )
+                            )
+                          . !Ofields
+                          )
+                      & !R
+                  )
+                & !arg:(?presels.?Ofields)
+                & log$(presels743566 !presels Ofields !Ofields)
                 & :?linkedWorkflows:?items
                 & readTable$features
-                & !features:?fs
                 & 1:?prod
                 & :?preselvalsrows
-                &   whl
-                  ' ( !fs:%?f+?fs
-                    &   !f
-                      : ? (name.?name) ?
-                      : ? (short.?short) ?
-                      : ? (description.?description) ?
-                      : ? (table.?table) ?
-                    & ( !f:? (hide.?hide) ?
-                      | :?hide
-                      )
-                    & readTable$!table
-                    &     map
-                        $ ( ( 
-                            =   
-                              .     !arg:(!short.?presel.?item)
-                                  & ( !items:? !item ?
-                                    | !items !item:?items
+                &     mop
+                    $ ( ( 
+                        =   
+                          .     !arg
+                              : ? (name.?name) ?
+                              : ? (short.?short) ?
+                              : ? (description.?description) ?
+                              : ? (table.?table) ?
+                            & ( !f:? (hide.?hide) ?
+                              | :?hide
+                              )
+                            & readTable$!table
+                            &     map
+                                $ ( ( 
+                                    =   
+                                      .       !arg
+                                            : (!short.?presel.?item)
+                                          & ( !items:? !item ?
+                                            | !items !item:?items
+                                            )
+                                          & !item^!presel*!prod:?prod
+                                          & (!presel.!item)
+                                        | 
                                     )
-                                  & !item^!presel*!prod:?prod
-                                  & (!presel.!item)
-                                | 
-                            )
-                          . !presels
-                          )
-                      : ?preselvals
-                    &     !preselvalsrows
-                          (!preselvals.!short.!name.!!table.!hide)
-                      : ?preselvalsrows
-                    )
+                                  . !presels
+                                  )
+                              : ?preselvals
+                            & (!preselvals.!short.!name.!!table.!hide)
+                        )
+                      . !features
+                      . (=+)
+                      )
+                  : ?preselvalsrows
                 &   whl
                   ' ( !prod:?A*%?B^%?x*?C*%?D^!x*?E
                     & !A*(!B !D)^!x*!C*!E:?prod
@@ -14645,6 +14756,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & setLang$!G
                   | 
                   )
+                & log$(presels324 !presels)
                 & cmptblWrkflws$(!items.!presels):?items
                 & ( !items
                   .     fieldset
@@ -14750,12 +14862,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         .   Table
                           $ ( id,goal
                             . row$(cell$() cell$() cell$)
-                            .   ( 
-                                =   R
-                                  .   !arg:? (!LaNg.?R) ?
-                                    & !R
-                                )
-                              $ !goalPicklists
+                            . addOutputWishesFrom3rdParty$!goalPicklists
                             )
                         )
                   . !linkedWorkflows
@@ -14764,9 +14871,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
                 , itemGroupsExt linkedWorkflows
-                , hiddenData Items A Z
+                , hiddenData Items A Z Ofields
               .   !arg:(?presels.?hiddenData.?Items)
                 & log$"We are at the start. Show an input form."
+                & log$(preselsHIER !presels)
                 & (   !Items:
                     & log$noitems
                     &   str
@@ -14782,7 +14890,18 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                             )
                         )
-                  |     sourcesAndGoals$!presels
+                  |       map
+                        $ ( ( 
+                            =   f v
+                              .       !arg
+                                    : (~Item:@(?:O ?f).?v)
+                                  & (!f.!v)
+                                | 
+                            )
+                          . !hiddenData
+                          )
+                      : ?Ofields
+                    &   sourcesAndGoals$(!presels.!Ofields)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
                     &   (   !itemGroupsExt:(@.@.?)
                           & !Items !hiddenData
@@ -14860,7 +14979,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( updatePreselsWithUserAmendments
-            =   presels inputs Ifields ninp inp Items
+            =     presels inputs Ifields ninp inp Items
+                , computedInputFeatures
               .   !arg:(?presels.?arg.?Items)
                 &     map
                     $ ( ( 
@@ -14873,13 +14993,17 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !arg
                       )
                   : ?Ifields
-                & ( !Ifields:
+                & (   "No input amendments from user."
+                    & !Ifields:
                   |   0:?inputs
+                    & 0:?computedInputFeatures
                     &   map
                       $ ( ( 
-                          =   
-                            .     !arg:(?.?.?arg)
+                          =   f v
+                            .     !arg:(?f.?v.?arg)
                                 & !inputs+!arg:?inputs
+                                &   (!f.!v)+!computedInputFeatures
+                                  : ?computedInputFeatures
                               | 
                           )
                         . !presels
@@ -14898,17 +15022,34 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             & !inp !inputs:?inputs
                             )
                       )
-                    &     map
-                        $ ( ( 
-                            =   f v
-                              .   !arg:(?f.?v)
-                                & ( !v:
-                                  |   map
-                                    $ ((=.!f.!v.!arg).!inputs)
-                                  )
+                    &       map
+                          $ ( ( 
+                              =   f v A Z
+                                .   !arg:(?f.?v)
+                                  & (     !computedInputFeatures
+                                        : ?A+(!f.?)+?Z
+                                      & !A+!Z:?computedInputFeatures
+                                    | 
+                                    )
+                                  & ( !v:
+                                    |   map
+                                      $ ((=.!f.!v.!arg).!inputs)
+                                    )
+                              )
+                            . !Ifields
                             )
-                          . !Ifields
-                          )
+                            mop
+                          $ ( ( 
+                              =   f v A Z
+                                .   !arg:(?f.?v)
+                                  & ( !v:
+                                    |   map
+                                      $ ((=.!f.!v.!arg).!inputs)
+                                    )
+                              )
+                            . !computedInputFeatures
+                            . (=+)
+                            )
                       : ?presels
                   )
                 & (!presels.!Items)
@@ -14932,12 +15073,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           &   analyzeInput$(!Items.!errors)
             : (?Items.?presels.?errors)
+          & log$(Items !Items presels !presels errors !errors)
+          & log$(parms !parms)
           & ( !errors:~
             |     getBatchHandleDesiredtoolSuperset$(!parms.!hiddenData)
                 : (?parms.?hiddenData.?batch)
               &   updatePreselsWithUserAmendments$(!presels.!arg.!Items)
                 : (?presels.?Items)
               & readTable$tooladm
+              & log$(preselsNU !presels hiddenData !hiddenData)
               &   "We are at the start. Show an input form."
                 $ (!presels.!hiddenData.!Items)
             )
