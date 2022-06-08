@@ -7566,8 +7566,10 @@ try {
                         )
                     : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
-                |   !goaly:(sml,nsl)
-                  & !toolFeatures:? (sml,(?.?toolfeat)) ?
+                |   ~
+                  & !gfield:sml
+                  & !gvaluesAlts:nsl
+                  & !toolFeatures:? (sml,(?.?)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
                   & "toolfeat is a sum of alternative (input.output) specs."
                   & !Ar !Zr:?toolFeatures
@@ -9303,38 +9305,12 @@ try {
                   map
                 $ ( ( 
                     =   
-                      .   !arg:(?f,?vs)
-                        & (   !x:? (!f,?xs) ?
-                            & 1:?ns
-                            &   whl
-                              ' ( !vs:%@?v^?e*?vs
-                                & (   !xs:?*!v^?g*?
-                                    &     (   !e:~1
-                                            & !g:~1
-                                            & !e:~!g
-                                            & 1
-                                          |   (   ( !e:~1
-                                                  | !g:~1
-                                                  )
-                                                & !e*!g:%?h^?
-                                              | 1:?h
-                                              )
-                                            & !v^!h
-                                          )
-                                        * !ns
-                                      : ?ns
-                                  | 
-                                  )
-                                )
-                            & ( !ns:1&
-                              |   (!f,!ns):?V
-                                & ( !I:? !V ?&
-                                  | !V
-                                  )
-                              )
-                          | !I:? !arg ?&
-                          | !arg
-                          )
+                      .     ( !I:? !arg ?
+                            |   !arg:(?f,?)
+                              & !x:? (!f,?) ?
+                            )
+                          & 
+                        | !arg
                     )
                   . !y
                   )
@@ -9378,11 +9354,13 @@ try {
                         )
                   )
                 & !arg:(?results.?methods)
+                & "results can have 'OnE' groups. methods are at least as rich as results, and can e.g. have 'sml' features"
                 & 1:?nres
                 &   whl
                   ' ( !results:%?result*?results
                     & Sig$!result:?SR
-                    & "Compound feature values in 'result' are in OnE group."
+                    & "'SR' is (feature,value*value*...) (feature,value*value*...) ...,
+	         also if (some of) the values are in a 'OnE' group in 'result'."
                     &     map
                         $ ( ( 
                             =   f v
@@ -9539,15 +9517,17 @@ try {
             =   OF LF RF tool meta output sub A F V Z
               .     !arg:(?tool,(?output.?meta.?sub).?OF)
                   & fromInputTowardOutput$(!sub.!OF):(?sub.?RF)
-                  &   harmonizeSubspecsOnSimilarFeatures$(!output.!RF)
-                    : (?output.?LF)
-                  & (   !output:?A (?F,(?V.OnE)) ?Z
-                      & !A (!F,!V) !Z:?output
-                    | 
-                    | log$NoOnE
-                    )
-                  & ( !tool,(!output.supplement$(!meta.!RF).!sub)
-                    . !LF
+                  & ( !sub:0&(0.0)
+                    |     harmonizeSubspecsOnSimilarFeatures$(!output.!RF)
+                        : (?output.?LF)
+                      & (   !output:?A (?F,(?V.OnE)) ?Z
+                          & !A (!F,!V) !Z:?output
+                        | 
+                        | log$NoOnE
+                        )
+                      & ( !tool,(!output.supplement$(!meta.!RF).!sub)
+                        . !LF
+                        )
                     )
                 | harmonizeSubspecsOnSimilarFeatures$!arg
             )
@@ -9556,8 +9536,18 @@ try {
               .   !arg:(?arg.?OF)
                 & (   !arg:%?L*%?R
                     & fromMethods$(!R.!OF):(?R.?RF)
-                    & fromToolOrSource$(!L.!OF):(?L.?LF)
-                    & (!L*!R.Intersection$(!RF.!LF))
+                    & ( !R:0&(0.0)
+                      |   fromToolOrSource$(!L.!OF):(?L.?LF)
+                        & ( !L:0&(0.0)
+                          |   !RF:? (sml,?sRF) ?
+                            & !LF:? (sml,?sLF) ?
+                            & (   !sRF:!sLF
+                                & (!L*!R.Intersection$(!RF.!LF))
+                              | (0.0)
+                              )
+                          | (!L*!R.Intersection$(!RF.!LF))
+                          )
+                      )
                   | fromToolOrSource$(!arg.!OF)
                   )
             )
@@ -9565,9 +9555,12 @@ try {
             =   results methods OF NF
               .     !arg:((?results.?methods).?OF)
                   & fromMethods$(!methods.!OF):(?methods.?NF)
-                  &   UpdateResultsFromMethods$(!results.oUts$!methods)
-                    : ?results
-                  & ((!results.!methods).!NF)
+                  & ( !methods:0&(0.0)
+                    |       UpdateResultsFromMethods
+                          $ (!results.oUts$!methods)
+                        : ?results
+                      & ((!results.!methods).!NF)
+                    )
                 | Results$!arg
             )
           & ( toTool
@@ -9674,14 +9667,16 @@ try {
             ' ( !arg:%?pipe1+?arg
               & 1+!NN:?NN
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
-              & fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
-              & ( !pipe3:0
-                |   validateInputsForEachTool$!pipe3
-                  & ( !pipes:?+!pipe3+?
-                    | !pipe3+!pipes:?pipes
+              & ( !pipe2:0
+                |   fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
+                  & ( !pipe3:0
+                    |   validateInputsForEachTool$!pipe3
+                      & ( !pipes:?+!pipe3+?
+                        | !pipe3+!pipes:?pipes
+                        )
+                    | 
+                    | log$INVALID
                     )
-                | 
-                | log$INVALID
                 )
               )
           & !pipes
@@ -13229,7 +13224,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , language date analyseContentType
         .   ( analyseContentType
             =     R spec nofonts ct DestinationDir LocalFileName
-                , isDiplom input getInput isTabSeparated isConll
+                , asDiplom input getInput asTabSeparated asConll
               .     !arg
                   : (?arg.?nofonts.?DestinationDir.?LocalFileName)
                 & @( !arg
@@ -13238,7 +13233,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & ( getInput
                   = .@(get$(str$(!DestinationDir !LocalFileName),STR))
                   )
-                & ( isDiplom
+                & ( asDiplom
                   =   N lang input
                     .   0:?lang
                       & !arg:?input
@@ -13299,7 +13294,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           (period.c13)
                           (pres.nml)
                   )
-                & ( isConll
+                & ( asConll
                   =     TL L spc facet pat est
                       , ID FORM LEMMA HEAD DEPREL
                       , PLEMMA POS PPOS FEAT PFEAT PHEAD
@@ -13454,7 +13449,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           )
                           (format.conll^!spc)
                   )
-                & ( isTabSeparated
+                & ( asTabSeparated
                   =   L H e empty
                     .   :?e
                       & (   @(!arg:? \t ? \n ? \t ? \n ?)
@@ -13542,27 +13537,24 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     |   ( application/x-download
                         | application/octet-stream
                         )
-                      & log$application/octet-stream
+                      & log$!ct
                       & getInput$:?input
-                      & ( @( !input
-                           : ( ("%PDF" ?|"%pdf" ?)
-                             &     (   !nofonts:true
-                                     & (app.rom)
-                                   | (app.nrm)
-                                   )
-                                   (facet.txt)
-                                   ( format
-                                   .     !nofonts:true
-                                       & img^pdf
-                                     | pdf
-                                   )
-                               : ?R
-                             )
-                           )
-                        |   isDiplom$!input:?R
+                      & (   @(!input:("%PDF" ?|"%pdf" ?))
+                          &     (   !nofonts:true
+                                  & (app.rom)
+                                | (app.nrm)
+                                )
+                                (facet.txt)
+                                ( format
+                                .     !nofonts:true
+                                    & img^pdf
+                                  | pdf
+                                )
+                            : ?R
+                        |   asDiplom$!input:?R
                           & log$diplom
-                        | isConll$!input:?R
-                        |   isTabSeparated$!input:?R
+                        | asConll$!input:?R
+                        |   asTabSeparated$!input:?R
                           & log$tabs
                         | :?R
                         )
@@ -13638,17 +13630,19 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         : ?R
                     |   text/plain
                       & getInput$:?input
-                      &   ( isDiplom$!input
-                          | isConll$!input:?R
-                          | isTabSeparated$!input
+                      &   ( asDiplom$!input
+                          | asConll$!input
+                          | asTabSeparated$!input
                           |   (app.nrm)
                               (facet.txt)
                               (format.flat)
                           )
                         : ?R
-                    |   text/x-conll
-                      & log$text/x-conll
-                      & (format.flat):?R
+                    |   (application/conllu|text/x-conll)
+                      & log$!ct
+                      & getInput$:?input
+                      &   (asConll$!input|(format.flat))
+                        : ?R
                     |   @( ?
                          :   image/
                              (   ( gif
@@ -14593,7 +14587,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                               )
                                                         )
                                                     )
-                                                |   log$NOTFOUND
+                                                |     log
+                                                    $ ( str
+                                                      $ ( "NOTFOUND <"
+                                                          !arg
+                                                          "> IN ["
+                                                          !preselvals
+                                                          "]"
+                                                        )
+                                                      )
                                                   &   makeSelectFormField
                                                     $ ( 
                                                       .   str
@@ -14964,15 +14966,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           &   analyzeInput$(!Items.!errors)
             : (?Items.?presels.?errors)
-          & log$(Items !Items presels !presels errors !errors)
-          & log$(parms !parms)
           & ( !errors:~
             |     getBatchHandleDesiredtoolSuperset$(!parms.!hiddenData)
                 : (?parms.?hiddenData.?batch)
               &   updatePreselsWithUserAmendments$(!presels.!arg.!Items)
                 : (?presels.?Items)
               & readTable$tooladm
-              & log$(preselsNU !presels hiddenData !hiddenData)
               &   "We are at the start. Show an input form."
                 $ (!presels.!hiddenData.!Items)
             )
@@ -15436,9 +15435,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     |   0:?reorderedworkflowlist
                                       & :?topologicalOrderedTools
                                       &   log
-                                        $ ( makeWorkflowsSequential2
-                                            tooComplex
-                                          )
+                                        $ "makeWorkflowsSequential2 tooComplex"
                                       & tooComplex:?returnCode
                                     )
                                 | 
@@ -15516,9 +15513,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                             &   
                                               : ?topologicalOrderedTools
                                             &   log
-                                              $ ( makeWorkflowsSequential3
-                                                  tooComplex
-                                                )
+                                              $ "makeWorkflowsSequential3 tooComplex"
                                             & tooComplex
                                           )
                                         : ?returnCode
