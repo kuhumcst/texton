@@ -3417,67 +3417,74 @@ toolsProg=
               .   (?selected.?prefix)
                 | ?selected&:?prefix
               )
-          &     map
-              $ ( ( 
-                  =   f a
-                    .   !arg:(?f.(?a.?)|?a)
-                      & (low$(localized$!f:?f).!f.!a)
-                  )
-                . !table
-                )
-            : ?stable
-          & ( !stable:? [<5
-            | sort$!stable:?stable
-            )
-          &   ( option
-              .   (id.str$(b !tabind)) (value.)
-                , chu$8239
-              )
-              \r\n
-              (   !selected:%*%
-                &     mop
-                    $ ( ( 
-                        =   
-                          .   !arg:%?sel^?spc
-                            & (   !stable:? (?.?full.!sel) ?
-                                &   ", "
-                                    !full
-                                    ( !spc:1&
-                                    | "[" !spc "]"
-                                    )
-                              | 
-                              )
-                        )
-                      . !selected
-                      . (=*)
-                      )
-                  : ", " ?fulls
-                &   ( option
-                    .     (id.xml-id$!selected)
-                          (value.str$(!prefix !selected))
-                          (selected.selected)
-                      , !fulls
-                    )
-                    \r\n
-              | 
-              )
-                map
-              $ ( ( 
-                  =   
-                    .   !arg:(?.?full.?aBbR)
-                      &   ( option
-                          .     (id.xml-id$!aBbR)
-                                (value.str$(!prefix !aBbR))
-                                (   !selected:!aBbR
-                                  & (selected.selected)
-                                | 
-                                )
-                            , !full
-                          )
-                          \r\n
-                  )
-                . !stable
-                )
+          & !( 
+             ' (     map
+                   $ ( ( 
+                       =   f a
+                         .   !arg:(?f.(?a.?)|?a)
+                           & (low$(localized$!f:?f).!f.!a)
+                       )
+                     . $table
+                     )
+                 : ?stable
+               & ( !stable:? [<5
+                 | sort$!stable:?stable
+                 )
+               )
+             )
+          & !( 
+             ' ( ( option
+                 .   (id.str$(b !tabind)) (value.)
+                   , chu$8239
+                 )
+                 \r\n
+                 (   $selected:%*%
+                   &     mop
+                       $ ( ( 
+                           =   
+                             .   !arg:%?sel^?spc
+                               & (     $stable
+                                     : ? (?.?full.!sel) ?
+                                   &   ", "
+                                       !full
+                                       ( !spc:1&
+                                       | "[" !spc "]"
+                                       )
+                                 | 
+                                 )
+                           )
+                         . $selected
+                         . (=*)
+                         )
+                     : ", " ?fulls
+                   &   ( option
+                       .     (id.xml-id$($selected))
+                             (value.str$($prefix ()$selected))
+                             (selected.selected)
+                         , !fulls
+                       )
+                       \r\n
+                 | 
+                 )
+                   map
+                 $ ( ( 
+                     =   
+                       .   !arg:(?.?full.?aBbR)
+                         &   ( option
+                             .     (id.xml-id$!aBbR)
+                                   (value.str$($prefix !aBbR))
+                                   (   $selected:!aBbR
+                                     & (selected.selected)
+                                   | 
+                                   )
+                               , !full
+                             )
+                             \r\n
+                     )
+                   . $stable
+                   )
+               )
+             )
       )
       ( makeOptgroupList
       =     featTbl aBbR full selected prefix stable
@@ -7566,8 +7573,7 @@ try {
                         )
                     : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
-                |   ~
-                  & !gfield:sml
+                |   !gfield:sml
                   & !gvaluesAlts:nsl
                   & !toolFeatures:? (sml,(?.?)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
@@ -8076,9 +8082,6 @@ try {
       ( selectServicedValues
       =   short table pat Pat
         .     !arg:(?short.?table.(=?pat))
-            & readTable$toolprop
-            & readTable$tooladm
-            & readTable$features
             & "Important! Next map fuction has local variable 'abbr', spelled just like that. '!abbr' occurs in pattern 'pat'."
             &   map
               $ ( ( 
@@ -8088,14 +8091,14 @@ try {
                       & (   !( 
                              ' ( $toolprop
                                :   ?
-                                 + (   ?tool
+                                 + ( ?tool
+                                   .   ? ($short,$Pat) ?
                                      &   $tooladm
                                        :   ?
-                                         + ( ? (ToolID.!tool) ?
-                                           : ? (Inactive.) ?
-                                           )
+                                         + `( ? (ToolID.!tool) ?
+                                            : ? (Inactive.) ?
+                                            )
                                          + ?
-                                   . ? ($short,$Pat) ?
                                    )
                                  + ?
                                )
@@ -8116,7 +8119,7 @@ try {
           &   map
             $ ( ( 
                 =     short name table servicedGoalsTable
-                    , servicedGoals optgroups
+                    , optgroups
                   .     !arg:(?.?short.?name.?table.)
                       & (   !servicedGoals
                           : ? (!short.?servicedGoalsTable) ?
@@ -9320,7 +9323,7 @@ try {
       ( percolateForgottenFeatures
       =     pipes F updateOFwithNF NN
           , harmonizeSubspecsOnSimilarFeatures
-          , Results pipe1 pipe2 pipe3
+          , Results pipe1 pipe2 pipe3 pipe4
           , fromMethods fromInputTowardOutput fromToolOrSource
           , toMethods fromOutputTowardInput toTool
           , UpdateResultsFromMethods oUts
@@ -9342,19 +9345,21 @@ try {
           & ( UpdateResultsFromMethods
             =     results methods nres result A method
                 , Sig SR SM B
+                , f v e E VS NVS
               .   ( Sig
                   =   
                     .   map
                       $ ( ( 
-                          =   f v
-                            .   !arg:(?f,?v)
-                              & (!f,sig$!v)
+                          =   
+                            .   !arg:(sml,nsl)&
+                              |   !arg:(?f,?v)
+                                & (!f,sig$!v)
                           )
                         . !arg
                         )
                   )
                 & !arg:(?results.?methods)
-                & "results can have 'OnE' groups. methods are at least as rich as results, and can e.g. have 'sml' features"
+                & "'results' can have 'OnE' groups. 'methods' is at least as rich as 'results', and can e.g. have 'sml' features"
                 & 1:?nres
                 &   whl
                   ' ( !results:%?result*?results
@@ -9363,7 +9368,7 @@ try {
 	         also if (some of) the values are in a 'OnE' group in 'result'."
                     &     map
                         $ ( ( 
-                            =   f v
+                            =   
                               .     !arg:(?f,(?v.OnE))
                                   & (!f,!v)
                                 | !arg
@@ -9374,57 +9379,59 @@ try {
                     &     (   !methods:?A*!B*?methods
                             & !A*!methods:?methods
                             & !result
-                          |     !methods
+                          |   "Each {feature,value} pair in the SR (signature of the result) must
+	                 either be (smell,new smell)
+	                 or occur in the same factor of SM (the signature of one of the methods).
+		   So we must find a method for which we can prove that there are
+		       no features different from (sml,nsl) in SR
+		       that are not represented in the signature of that method SM.
+		   "
+                            &   !methods
                               :   ?A
-                                * `( (?,?) ?:?method
-                                   & Sig$!method:?SM
-                                   &     map
-                                       $ ( ( 
-                                           =   
-                                             .     !SM:~(? !arg ?)
-                                                 & !arg:~(sml,nsl)
-                                               | 
-                                           )
-                                         . !SR
-                                         )
-                                     : 
-                                   )
+                                * `%( ?method
+                                    & Sig$!method:?SM
+                                    & ~!( 
+                                        ' ( $SR
+                                          : ? `[%($SM:~(? !sjt ?)) ?
+                                          )
+                                        )
+                                    )
                                 * ?methods
                             & !A*!methods:?methods
+                            &     
+                                ' ( whl
+                                  ' ( !VS:%@?v^?e*?VS
+                                    &     !NVS
+                                        *   !v
+                                          ^ (   !e:1
+                                              & (     $method
+                                                    :   ?
+                                                        (!f,?*!v^?E*?)
+                                                        ?
+                                                  & !E
+                                                | 1
+                                                )
+                                            | !e
+                                            )
+                                      : ?NVS
+                                    )
+                                  )
+                              : (=?loop)
                             &   map
                               $ ( ( 
-                                  =   F v e E VS NVS
-                                    .   !arg:(?F,?v)
-                                      & ( !F
+                                  =   
+                                    .   !arg:(?f,?v)
+                                      & ( !f
                                         ,     !v:(?VS.OnE)
                                             & 1:?NVS
-                                            &   whl
-                                              ' ( !VS:%@?v^?e*?VS
-                                                &     !NVS
-                                                    *   !v
-                                                      ^ (   !e:1
-                                                          & (     !method
-                                                                :   ?
-                                                                    ( !F
-                                                                    ,   ?
-                                                                      * !v^?E
-                                                                      * ?
-                                                                    )
-                                                                    ?
-                                                              & !E
-                                                            | 1
-                                                            )
-                                                        | !e
-                                                        )
-                                                  : ?NVS
-                                                )
+                                            & !loop
                                             & (!NVS.OnE)
                                           |   !v:@?v^?e
                                             &   !v
                                               ^ (   !e:1
                                                   & (     !method
                                                         :   ?
-                                                            (!F,?*!v^?E*?)
+                                                            (!f,?*!v^?E*?)
                                                             ?
                                                       & !E
                                                     | 1
@@ -9661,19 +9668,22 @@ try {
                 & !arg:(?.?arg)
                 & recr$!arg
             )
-          & 0:?pipes
+          & :?pipes
           & 0:?NN
+          & !arg:?+[?NN
           &   whl
             ' ( !arg:%?pipe1+?arg
-              & 1+!NN:?NN
+              & log$(NN !NN)
+              & -1+!NN:?NN
               & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
               & ( !pipe2:0
                 |   fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
                   & ( !pipe3:0
-                    |   validateInputsForEachTool$!pipe3
-                      & ( !pipes:?+!pipe3+?
-                        | !pipe3+!pipes:?pipes
-                        )
+                    | ( !pipes:? `!pipe3 ?
+                      |   validateInputsForEachTool$!pipe3
+                        & wantThis$!pipe3:?pipe4
+                        & !pipe4 !pipes:?pipes
+                      )
                     | 
                     | log$INVALID
                     )
@@ -9924,7 +9934,6 @@ try {
                               )
                           + ?
                   )
-                & log$signatures
                 & signatures$!arg:?sig
                 & "sig is a product of tool IDs. Each ID has an exponent
                    that is the sum of all (O.I) specs occuring in the
@@ -9946,7 +9955,6 @@ try {
                        pairs do nowhere occur in the current workflow, so
                        now we substitute the rich O.I pairs for the
                        original ones."
-                    & log$notClashing
                     & ( unspec
                       =   A B
                         .   !arg:%@?A^%&!A
@@ -10021,7 +10029,7 @@ try {
           & !arg:(?pipes.?parms.?sources)
           & log$prunePipes
           & 0:?calls
-          & 0:?newpipes
+          & :?newpipes
           & 0:?Npipes
           &   whl
             ' ( !calls:<567890
@@ -10079,19 +10087,11 @@ try {
                   & filter$(!pipesN.!restriction):?pipesN
                 | 
                 )
-              & percolateForgottenFeatures$!pipesN:?pipesN
-              & !pipesN:?+[?NNN
-              &   whl
-                ' ( !pipesN:%?pipe+?pipesN
-                  & log$wantThis
-                  & wantThis$!pipe:?pipe
-                  & ( !pipe:0
-                    | !newpipes:?+!pipe+?
-                    | !pipe+!newpipes:?newpipes
-                    )
-                  )
+              &   percolateForgottenFeatures$!pipesN !newpipes
+                : ?newpipes
+              & log$percolateForgottenFeaturesDONE
               )
-          & (!newpipes.!Npipes)
+          & (list2sum$!newpipes.!Npipes)
       )
       ( saveTask
       =   
@@ -14403,6 +14403,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & log$(presels743566 !presels Ofields !Ofields)
                 & :?linkedWorkflows:?items
                 & readTable$features
+                & log$featuresRead
                 & 1:?prod
                 & :?preselvalsrows
                 &     mop
@@ -14438,10 +14439,31 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . (=+)
                       )
                   : ?preselvalsrows
+                & "'preselvalsrows' is a list of all features and their possible values.
+	     The first field is filled with pairs of {feature value,item name}, if available.
+	     e.g.  (txt.pictureA)
+                         (txt.pictureB)
+                         (txt.myPlainText)
+
+	     and   (img^png.pictureA)
+                         (img^png.pictureB)
+                         (flat.myPlainText)
+	     Otherwise this field is empty."
+                & "'prod' is a product of input item names, each with an exponent that is the sum of features guessed by the system.
+	     E.g.
+	          myPlainText^(flat+nrm+txt+una)
+	        * pictureA^(rom+txt+una+img^png)
+	        * pictureB^(rom+txt+una+img^png)
+	    "
                 &   whl
                   ' ( !prod:?A*%?B^%?x*?C*%?D^!x*?E
                     & !A*(!B !D)^!x*!C*!E:?prod
                     )
+                & "'prod' now lists item names together if they have the same feature values.
+	     E.g.
+	          myPlainText^(flat+nrm+txt+una)
+	        * (pictureA pictureB)^(rom+txt+una+img^png)
+	    "
                 & :?items
                 & !prod:?p
                 & 0:?R
@@ -14449,14 +14471,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   ' ( !p:(? [?n:%?itms)^%?*?p
                     & (!n.!itms)+!R:?R
                     )
-                &     mop
-                    $ ( ( 
-                        = .!arg:(?.?itms)&(.!itms)
-                        )
-                      . !R
-                      . (=+)
-                      )
-                  : ?items
+                & "R is a sum of lists of item names. The most numerous group last."
+                & :?items
+                &   whl
+                  ' ( !R:(?.?itms)+?R
+                    & (.!itms) !items:?items
+                    )
+                & "items is a list of lists of item names, most numerous list first. E.g.
+	     (.pictureA pictureB) (.myPlainText)
+	    "
                 & 0:?nt
                 &     map
                     $ ( ( 
@@ -14468,6 +14491,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !items
                       )
                   : ?items
+                & "'items' now has ordinal numbers."
                 &     map
                     $ ( ( 
                         =   seen a b c d e
@@ -14499,17 +14523,30 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !preselvalsrows
                       )
                   : ?preselvalsrows
+                & "The first field in 'preselvalsrows' now groups items that are similar in all features.
+	     e.g.  (txt.pictureA pictureB)
+                         (txt.myPlainText)
+
+	     and   (img^png.pictureA pictureB)
+                         (flat.myPlainText)
+	     Otherwise this field is empty."
                 & "Notice: this function does not have local variable 'abbr' !"
+                & log$CreateSourcePicklists
+                & readTable$toolprop
+                & readTable$tooladm
+                & readTable$features
                 &     map
                     $ ( ( 
                         =   exr
                           .       !arg
                                 : (?preselvals.?short.?name.?table.)
+                              & log$
                               & (   !servicedSources
                                   :   ?
                                       (!short.?servicedSourcesTable)
                                       ?
-                                |       selectServicedValues
+                                |   log$CreateGlobalServicedSources
+                                  &     selectServicedValues
                                       $ ( !short
                                         . !table
                                         . ( 
@@ -14549,12 +14586,14 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     $ ( ( 
                                         =   
                                           .   !arg:(?nt.?arg)
+                                            & log$(Column !nt arg !arg)
                                             &   cell
                                               $ (     !preselvals
                                                     :   ?
                                                         (%?presel^?spec.!arg)
                                                         ?
                                                   & (   !spec:1
+                                                      & "List all values, without subspecifucations."
                                                       &   makeSelectFormField
                                                         $ ( 
                                                           .   str
@@ -14565,50 +14604,48 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                               . !presel
                                                               )
                                                           )
-                                                    |   makeSelectFormField
-                                                      $ ( 
-                                                        .   str
-                                                          $ (I !short !exr)
-                                                        . options
-                                                        .     !features
-                                                            :   ?
-                                                              + (   ?
-                                                                    ( short
-                                                                    . !short
-                                                                    )
-                                                                    ?
-                                                                :   ?
-                                                                    ( specificationTable
-                                                                    .   ?
-                                                                        (   ?
-                                                                            ( %@
-                                                                            : !presel
-                                                                            )
-                                                                            ?
-                                                                        . ?Types
-                                                                        )
-                                                                        ?
-                                                                    )
-                                                                    ?
+                                                    |   "List all subspecifications, no possibility to choose other feature value."
+                                                      &   makeSelectFormField
+                                                        $ ( 
+                                                          .   str
+                                                            $ (I !short !exr)
+                                                          . options
+                                                          .     !features
+                                                              :   ?
+                                                                + (   ?
+                                                                      ( short
+                                                                      . !short
+                                                                      )
+                                                                      ?
+                                                                  :   ?
+                                                                      ( specificationTable
+                                                                      .   ?
+                                                                          (   ?
+                                                                              ( %@
+                                                                              : !presel
+                                                                              )
+                                                                              ?
+                                                                          . ?Types
+                                                                          )
+                                                                          ?
+                                                                      )
+                                                                      ?
+                                                                  )
+                                                                + ?
+                                                            &   readTable
+                                                              $ !Types
+                                                            &   makeOptionList
+                                                              $ ( !!Types
+                                                                . !spec
+                                                                .   str
+                                                                  $ (!presel "^")
                                                                 )
-                                                              + ?
-                                                          & readTable$!Types
-                                                          &   makeOptionList
-                                                            $ ( !!Types
-                                                              . !spec
-                                                              .   str
-                                                                $ (!presel "^")
-                                                              )
-                                                        )
+                                                          )
                                                     )
                                                 |     log
-                                                    $ ( str
-                                                      $ ( "NOTFOUND <"
-                                                          !arg
-                                                          "> IN ["
-                                                          !preselvals
-                                                          "]"
-                                                        )
+                                                    $ ( !short
+                                                        NotPredefinedFor
+                                                        !arg
                                                       )
                                                   &   makeSelectFormField
                                                     $ ( 
@@ -14630,6 +14667,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       . !preselvalsrows
                       )
                   : ?sourcePicklists
+                & log$SourcePicklistsCreated
                 & getActiveTools$:?activeTools
                 & (   !servicedSuperGoals:
                     &     makeSuperGoals
@@ -14854,7 +14892,18 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                           submit
                                         $ (localized$!helpmespecifymygoal)
                                         submitNR$(localized$!"skip zoom")
-                                        helplink$
+                                        helplink$()
+                                        (br.,)
+                                        ( small
+                                        .   
+                                          , ( i
+                                            .   
+                                              ,   localized
+                                                $ ( "You may experience long waiting time and even time-out. In the latter case, try again some minutes later. The results of the workflow computations are memoized!"
+                                                    "Du kan opleve en lang ventetid og endda en time-out. Når det sidste sker, kan du prøve igen efter nogle minutter. Resultaterne af beregningerne er blevet husket!"
+                                                  )
+                                            )
+                                        )
                                     )
                                   (br.,)
                                   ( !linkedWorkflows:
