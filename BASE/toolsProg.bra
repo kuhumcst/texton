@@ -135,6 +135,7 @@ toolsProg=
       (globval=)
       (runningThreads=0)
       (maxRunningThreads=0)
+      (MAXPIPES=10000)
       ( headerTitle
       = "Text Tonsorium - Natural Language Processing workflows automatically composed, scheduled and enacted"
       )
@@ -3514,33 +3515,53 @@ toolsProg=
                   , chu$8239
                 )
                 \r\n
-                  map
-                $ ( ( 
-                    =   f F exp
-                      .   !arg:(?F.?exp)
-                        & !featTbl:? (?f.!F.?) ?
-                        & ( optgroup
-                          .   (label.low$(localized$!f))
-                            ,   map
-                              $ ( ( 
-                                  =   
-                                    .   ( option
-                                        .     (id.xml-id$!arg)
-                                              (value.str$(!prefix !arg))
-                                              (   !selected:!arg
-                                                & (selected.selected)
-                                              | 
-                                              )
-                                          , str$(hum$!arg)
-                                        )
-                                        \r\n
-                                  )
-                                . !exp
-                                )
-                          )
-                    )
-                  . !valueExpandedListPairs
-                  )
+                (     !valueExpandedListPairs
+                    : ? (?.? %*% ?) ?
+                  &   map
+                    $ ( ( 
+                        =   f F exp
+                          .   !arg:(?F.?exp)
+                            & !featTbl:? (?f.!F.?) ?
+                            & ( optgroup
+                              .   (label.low$(localized$!f))
+                                ,   map
+                                  $ ( ( 
+                                      =   
+                                        .   ( option
+                                            .     (id.xml-id$!arg)
+                                                  (value.str$(!prefix !arg))
+                                                  (   !selected:!arg
+                                                    & (selected.selected)
+                                                  | 
+                                                  )
+                                              , str$(hum$!arg)
+                                            )
+                                            \r\n
+                                      )
+                                    . !exp
+                                    )
+                              )
+                        )
+                      . !valueExpandedListPairs
+                      )
+                |     map
+                    $ ( ( 
+                        =   F
+                          .   !arg:(?F.?)
+                            & ( option
+                              .     (id.xml-id$!F)
+                                    (value.str$(!prefix !F))
+                                    (   !selected:!F
+                                      & (selected.selected)
+                                    | 
+                                    )
+                                , str$(hum$!F)
+                              )
+                        )
+                      . !valueExpandedListPairs
+                      )
+                    \r\n
+                )
             : ?stable
           & !stable
       )
@@ -3935,12 +3956,21 @@ toolsProg=
           & !arg
       )
       ( removeNumFactors
-      =   A M Z
-        .     whl
-            ' ( !arg:?A+#%*?M+?Z
-              & !A+!M+!Z:?arg
+      =   L a N
+        .   :?L
+          &   mop
+            $ ( ( 
+                =   
+                  .   (!arg:#%*?arg|)
+                    & (.!arg) !L:?L
+                )
+              . !arg
+              . (=+)
               )
-          & !arg
+          & 0:?N
+          &   whl
+            ' (!L:(.?a) ?L&!a+!N:?N)
+          & !N
       )
       "
 /*
@@ -6407,6 +6437,8 @@ try {
           & "Body of Register starts here"
           & log$NEW
           & log$REGISTER
+          & lst$(arg,path$"log.txt",APP RAW)
+          & log$
           &   
             : ?servicedSources
             : ?servicedGoals
@@ -7987,10 +8019,11 @@ try {
           & !S
       )
       ( makeSuperGoals
-      =   name os Os c o v vs ss s collector SuperSets
-        .   "makeSuperGoals only returns value sets for features 
+      =     name os Os c o v vs ss s collector SuperSets
+          , SimpleSets
+        .   "makeSuperGoals only returns value sets for features\r
              that have at least one composed feature value."
-          & :?SuperSets
+          & :?SuperSets:?SimpleSets
           & 0:?vs
           & !arg:?collector
           &   whl
@@ -8014,10 +8047,10 @@ try {
                   )
               & (   !c:? (?.? %*% ?) ?
                   & !SuperSets (!name.!c):?SuperSets
-                | 
+                | !SimpleSets (!name.!c):?SimpleSets
                 )
               )
-          & !SuperSets
+          & (!SuperSets.!SimpleSets)
       )
       ( makeExpandedSelectLists
       =   servicedSuperGoals
@@ -8421,17 +8454,17 @@ try {
                                                   & (   assert
                                                       ' ( !pathh
                                                         : ~( ?
-                                                           + ( ?
-                                                             , (   ?
-                                                                   ( ?
-                                                                   ,   %+%
-                                                                     | %^(%+%)
-                                                                   )
-                                                                   ?
-                                                               . ?
-                                                               . ?
-                                                               )
-                                                             )
+                                                           + `( ?
+                                                              , (   ?
+                                                                    ( ?
+                                                                    ,   %+%
+                                                                      | %^(%+%)
+                                                                    )
+                                                                    ?
+                                                                . ?
+                                                                . ?
+                                                                )
+                                                              )
                                                            + ?
                                                            )
                                                         )
@@ -8442,8 +8475,11 @@ try {
                                                   &   whl
                                                     ' (   !pathh
                                                         : %?path1 ?pathh
-                                                      & (   !toolspath
-                                                          : ?+!path1+?
+                                                      & ( !( 
+                                                           ' ( $toolspath
+                                                             : ?+$path1+?
+                                                             )
+                                                           )
                                                         |       !toolspath
                                                               + !path1
                                                             : ?toolspath
@@ -8502,7 +8538,7 @@ try {
                     & 1+!Calls:?Calls
                     & (   mod$(!Calls,100):0
                         & log$!Calls
-                        & clk$+!StartClk:>60
+                        & clk$+!StartClk:>100
                         & -1*!Calls:?Calls
                       | 
                       )
@@ -8918,19 +8954,18 @@ try {
             )
       )
       ( filter
-      =   pipes desiredtool fpipes o pipe1
+      =   pipes desiredtool o pipe1
         .   !arg:(?pipes.?desiredtool)
-          & 0:?fpipes
-          &   whl
-            ' ( !pipes:(?o.?pipe1)+?pipes
-              & (   has$(!pipe1.!desiredtool)
-                  & ( !fpipes:?+(?.!o.!pipe1)+?
-                    | (!o.!pipe1)+!fpipes:?fpipes
-                    )
-                | 
+          &   map
+            $ ( ( 
+                =   
+                  .   !arg:(?o.?pipe1)
+                    & ( has$(!pipe1.!desiredtool)&!arg
+                      | 
+                      )
                 )
+              . !pipes
               )
-          & !fpipes
       )
       ( haz
       =   rstr S F T notfound
@@ -9002,23 +9037,23 @@ try {
         .   ( updateWithSubSpec
             =   vn v e nv nvs ve w0 ws a OnE
               .   !arg:(?vn.?ve:@?v^%?e)
+                & (   !vn:?a*!v*?vn
+                    & !a*!ve*!vn:?vn
+                  | 
+                  )
                 & 1:?nv
                 &   whl
-                  ' ( !vn:%?w0*?vn
+                  ' ( !vn:?w0*(?ws.One)*?vn
                     &     !nv
-                        * (   !w0:(?ws.?OnE)
-                            & 1:?nvs
-                            &   whl
-                              ' ( !ws:?a*!v*?ws
-                                & !nvs*!a*!ve:?nvs
-                                )
-                            & (!nvs*!ws.OnE)
-                          | !w0:!v&!ve
-                          | !w0
+                        * !w0
+                        * (     !ws:?a*!v*?ws
+                              & !a*!ve*!ws
+                            | !ws
+                          . OnE
                           )
                       : ?nv
                     )
-                & !nv
+                & !nv*!vn
             )
           & !arg:(?tgt.?src)
           &   map
@@ -9144,8 +9179,8 @@ try {
       )
       ( walkTreeSubspecHarmonize
       =     toolSignatures I aSource o i sub prog nsub
-          , H O SAVEIN Sources gold
-        .   !arg:(?Sources.?toolSignatures):?SAVEIN
+          , H O Sources gold
+        .   !arg:(?Sources.?toolSignatures)
           & (   !Sources:%?aSource*%?Sources
               &   walkTreeSubspecHarmonize$(!aSource.!toolSignatures)
                 : ?H
@@ -9153,35 +9188,35 @@ try {
                 | !H*walkTreeSubspecHarmonize$(!Sources.!toolSignatures)
                 )
             |   !Sources:(%@?prog,(?o.?i.?sub))
-              & (     !toolSignatures
-                    :   ?
-                      * ( !prog
-                        . ?O
-                        .   ?I
-                          & noValueSpecConflict$(!O.!o)
-                          & noValueSpecConflict$(!I.!i)
+              & (   !toolSignatures:?*(!prog.?O.?I)*?
+                  & (   noValueSpecConflict$(!O.!o)
+                      & noValueSpecConflict$(!I.!i)
+                      &   SubspecHarmonize$(!sub.!toolSignatures)
+                        : ?nsub
+                      & ( !nsub:(0.?)&0
+                        | ( !prog
+                          , ( !O
+                            .       !nsub
+                                  : (((?,?) ?)*?:?gold.?)
+                                &   map
+                                  $ ( ( 
+                                      =   fea vals
+                                        .   !arg:(?fea,?vals)
+                                          & (!fea,rpl$(!vals.!fea.!gold))
+                                      )
+                                    . !I
+                                    )
+                              | !I
+                            . !nsub
+                            )
+                          )
                         )
-                      * ?
-                  & SubspecHarmonize$(!sub.!toolSignatures):?nsub
-                  & ( !nsub:(0.?)&0y
-                    | ( !prog
-                      , ( !O
-                        .       !nsub
-                              : (((?,?) ?)*?:?gold.?)
-                            &   map
-                              $ ( ( 
-                                  =   fea vals
-                                    .   !arg:(?fea,?vals)
-                                      & (!fea,rpl$(!vals.!fea.!gold))
-                                  )
-                                . !I
-                                )
-                          | !I
-                        . !nsub
-                        )
-                      )
+                    | 0
                     )
-                | 0
+                |   SubspecHarmonize$(!sub.!toolSignatures):?nsub
+                  & ( !nsub:(0.?)&0
+                    | (!prog,(!o.!i.!nsub))
+                    )
                 )
             | "Input Resource"&!Sources
             )
@@ -9344,7 +9379,7 @@ try {
             )
           & ( UpdateResultsFromMethods
             =     results methods nres result A method
-                , Sig SR SM B
+                , Sig SR SM B loop
                 , f v e E VS NVS
               .   ( Sig
                   =   
@@ -9390,11 +9425,11 @@ try {
                               :   ?A
                                 * `%( ?method
                                     & Sig$!method:?SM
-                                    & ~!( 
-                                        ' ( $SR
-                                          : ? `[%($SM:~(? !sjt ?)) ?
-                                          )
-                                        )
+                                    & !( 
+                                       ' ( $SR
+                                         : ~(? `[%($SM:~(? !sjt ?)) ?)
+                                         )
+                                       )
                                     )
                                 * ?methods
                             & !A*!methods:?methods
@@ -9669,30 +9704,35 @@ try {
                 & recr$!arg
             )
           & :?pipes
-          & 0:?NN
-          & !arg:?+[?NN
-          &   whl
-            ' ( !arg:%?pipe1+?arg
-              & log$(NN !NN)
-              & -1+!NN:?NN
-              & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
-              & ( !pipe2:0
-                |   fromOutputTowardInput$(!pipe2.!F):(?pipe3.?)
-                  & ( !pipe3:0
-                    | ( !pipes:? `!pipe3 ?
-                      |   validateInputsForEachTool$!pipe3
-                        & wantThis$!pipe3:?pipe4
-                        & !pipe4 !pipes:?pipes
+          & !arg:? [?NN
+          &   map
+            $ ( ( 
+                =   
+                  .   !arg:%?pipe1
+                    & ( @(!NN:? 0)&log$(NN !NN)
+                      | 
                       )
-                    | 
-                    | log$INVALID
-                    )
+                    & -1+!NN:?NN
+                    & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
+                    & ( !pipe2:0
+                      |     fromOutputTowardInput$(!pipe2.!F)
+                          : (?pipe3.?)
+                        & ( !pipe3:0&log$ZEEROOED
+                          |   validateInputsForEachTool$!pipe3
+                            & (   wantThis$!pipe3:~0:?pipe4
+                                & !pipe4 !pipes:?pipes
+                              | 
+                              )
+                          | log$INVALID
+                          )
+                      )
                 )
+              . !arg
               )
           & !pipes
       )
       ( prunePipes
-      =     As NNN Z incarnationpipes parms
+      =     As NNN Z incarnationpipes parms NIncarnationPipes
           , newpipes pipe pipes pipesN restriction
           , wantThis unfoldTree sources calls Npipes
         .   ( unfoldTree
@@ -9834,8 +9874,10 @@ try {
                   | !calls:<567890&(!stop.!arg)
                   )
             )
-          & "wantThis either returns the argument (if it is wanted) or
-                   zero (if it isn't). So it does not FAIL."
+          & "'wantThis' looks workflow-wide at the subspecifications occurring in the inputs and outputs of each tool.
+          If the same tool occurs with differently subspecified values, then it is checked whether unification is possible.
+          If so, unification is done. If unification is not possible, the workflow is discarded by returning 0. 
+          "
           & ( wantThis
             =     sig nsig clashing NoValueConflicts copySpecs
                 , signatures unifySignaturesAtSpecLevel
@@ -9859,13 +9901,6 @@ try {
                         & !prog^(!o.!i)*signatures$!sub
                       | 1
                   )
-                & "NoValueConflicts IGNORES subspecs"
-                & ( NoValueConflicts
-                  =   i I o O
-                    .   !arg:((?o.?i),(?O.?I))
-                      & noValueSpecConflict$(!i.!I)
-                      & noValueSpecConflict$(!o.!O)
-                  )
                 & ( copySpecs
                   =   Ao Ai Bo Bi
                     .   !arg:((?Ao.?Ai),(?Bo.?Bi))
@@ -9874,80 +9909,175 @@ try {
                 & ( mergeOIbundlesWherePossible
                   =   oi1 oi2 A M Z
                     .       !arg
-                          :   ?A
-                            + #*((?.?):?oi1)
-                            + ?M
-                            +   #
-                              * ( (?.?):?oi2
-                                & NoValueConflicts$(!oi1,!oi2)
-                                )
-                            + ?Z
+                          : ((?.?):?oi1) ((?.?):?oi2) ?Z
                         &   mergeOIbundlesWherePossible
-                          $ ( !A
-                            + copySpecs$(!oi2,copySpecs$(!oi1,!oi2))
-                            + !M
-                            + !Z
-                            )
+                          $ (copySpecs$(!oi2,copySpecs$(!oi1,!oi2)) !Z)
                       | !arg
                   )
                 & ( unifySignaturesAtSpecLevel
-                  =   tool A sigs
-                    .     !arg:?A*%@?tool^(%+%:?sigs)*?arg
-                        &   !A
-                          * !tool^mergeOIbundlesWherePossible$!sigs
-                          * unifySignaturesAtSpecLevel$!arg
+                  =   tool A sigs nsigs
+                    .       !arg
+                          : ?A*%@?tool^(?*(% %)*?:?sigs)*?arg
+                        & 1:?nsigs
+                        &   mop
+                          $ ( ( 
+                              =   
+                                .     !nsigs
+                                    * (   !arg:% %
+                                        & mergeOIbundlesWherePossible$!arg
+                                      | !arg
+                                      )
+                                  : ?nsigs
+                              )
+                            . !sigs
+                            . (=*)
+                            )
+                        & !A*!tool^!nsigs*unifySignaturesAtSpecLevel$!arg
                       | !arg
                   )
-                & ( clashing
-                  =   oi1 oi2 ConflictingSpecs specConflict
-                    .   ( specConflict
-                        =   A B f e x y
-                          .   !arg:(?A.?B)
-                            &   !A
+                & ( unspec
+                  =   A B
+                    .   !arg:%@?A^%&!A
+                      |   !arg:?A_?B
+                        & (unspec$!A)_(unspec$!B)
+                      | !arg
+                  )
+                & ( separate
+                  =   A a B sims nonsims
+                    .     !arg:0
+                        & out$separate0
+                        & 0
+                      |   !arg:#*((?.?):%?A)+?arg
+                        & unspec$!A:?a
+                        & !A:?sims
+                        & 0:?nonsims
+                        &   whl
+                          ' ( !arg:#*((?.?):%?B)+?arg
+                            & (   unspec$!B:!a
+                                & !sims !B:?sims
+                              | !nonsims+!B:?nonsims
+                              )
+                            )
+                        &   (!sims:% %|0)
+                          + separate$!nonsims
+                  )
+                & ( signatureDotSep
+                  =   tool V L v
+                    .   1:?L
+                      &   whl
+                        ' ( !arg:%@?tool^?V*?arg
+                          & separate$!V:?V
+                          & "Note that each v can be a list with two or more elements, separated by space: Those with equal signatures, apart from subspecs."
+                          &   whl
+                            ' ( !V:%?v+?V
+                              & !L*(!tool.!v):?L
+                              )
+                          )
+                      & !L
+                  )
+                & ( clsh
+                  =   A B F vs a e f
+                    .   !arg:(?A.?B)
+                      &   !A
+                        :   ?
+                            (?F,?vs)
+                            ( ?
+                            &   !B
                               :   ?
-                                  ( ?f
+                                  ( !F
                                   ,   ?
-                                    * `%@( ?e^?x
-                                         &   !B
-                                           : ? (!f,?*!e^?y*?) ?
-                                         & !x*!y:%*%
-                                         )
-                                    * ?
+                                    * `%@?a^%?e
+                                    * ( ?
+                                      & !vs:?*!a^%?f*?
+                                      & !e*!f:%*%
+                                      )
                                   )
                                   ?
-                        )
-                      & ( ConflictingSpecs
-                        =   i I o O
-                          .   NoValueConflicts$!arg
-                            & !arg:((?o.?i),(?O.?I))
-                            & ( specConflict$(!i.!I)
-                              | specConflict$(!o.!O)
-                              )
-                        )
-                      &   !sjt
-                        :   ?
-                          + #*((?.?):?oi1)
-                          + ?
-                          +   #
-                            * ( (?.?):?oi2
-                              & ConflictingSpecs$(!oi1,!oi2)
-                              )
-                          + ?
+                            )
                   )
-                & signatures$!arg:?sig
-                & "sig is a product of tool IDs. Each ID has an exponent
+                & ( Clashing
+                  =   i o I O
+                    .   !arg
+                      :   ?
+                        * ( ?
+                          .   ?
+                              (?i.?o)
+                              ?
+                              (?I.?O)
+                              ( ?
+                              & (clsh$(!i.!I)|clsh$(!o.!O))
+                              )
+                          )
+                        * ?
+                  )
+                & 1:?sig
+                &   mop
+                  $ ( ( 
+                      =   
+                        .     !arg:?^(%+%)
+                            & !sig*!arg:?sig
+                          | 
+                      )
+                    . signatures$!arg
+                    . (=*)
+                    )
+                & "sig is a product of tool IDs that occur multiple times with different parameters.
+	     Each ID has an exponent
                    that is the sum of all (O.I) specs occuring in the
                    current computed workflow. Here, O and I are feature
                    bundles."
-                & (   !sig:?*?^(%+%:clashing$)*?
-                    & log$clashing
-                    & "Discard solutions that contain steps that are
-                       equal (or at least compatible) at the un-
-                       subspecified level, but clash at the spec level.
-                       Such solutions are not 'wrong', but unlikely what
-                       the user wants."
-                    & 0
-                  |   unifySignaturesAtSpecLevel$!sig:?nsig
+                & signatureDotSep$!sig:?Nsig
+                & "In Nsig, parameter sets that are equal if all subspecs are ignored,
+	     are combined in space separated lists "
+                & "Discard solutions that contain steps that are
+                    equal (or at least compatible) at the un-
+                    subspecified level, but clash at the spec level.
+                    Such solutions are not 'wrong', but unlikely what
+                    the user wants."
+                & "Clashing example:
+		...
+	            * ( RTFread
+		.   (   (app,nrm)
+		        (facet,seg*tok^PT)
+		        (format,plainD)
+		    .   (app,ocr)
+		        (facet,txt)
+		        (format,flat)
+		    )
+		    (   (app,nrm)
+		        (facet,seg*tok^simple)
+		        (format,plainD)
+		    .   (app,ocr)
+		        (facet,txt)
+		        (format,flat)
+		    )
+		)
+	            * ...
+
+
+                  Not Clashing example:
+
+		...
+	            * ( RTFread
+		.   (   (app,nrm)
+		        (facet,seg*tok^PT)
+		        (format,plainD)
+		    .   (app,ocr)
+		        (facet,txt)
+		        (format,flat)
+		    )
+		    (   (app,nrm)
+		        (facet,seg*tok)
+		        (format,plainD)
+		    .   (app,ocr)
+		        (facet,txt)
+		        (format,flat)
+		    )
+		)
+	            * ...
+	            "
+                & ( Clashing$!Nsig&0
+                  |   unifySignaturesAtSpecLevel$!Nsig:?nsig
                     & "nsig is a product of maximally compressed
                        signatures. If two (O.I) feature bundle pairs can
                        enrich each other without clashing, then those
@@ -9955,46 +10085,7 @@ try {
                        pairs do nowhere occur in the current workflow, so
                        now we substitute the rich O.I pairs for the
                        original ones."
-                    & ( unspec
-                      =   A B
-                        .   !arg:%@?A^%&!A
-                          |   !arg:?A_?B
-                            & (unspec$!A)_(unspec$!B)
-                          | !arg
-                      )
-                    & ( separate
-                      =   A a B sims nonsims
-                        .     !arg:0
-                            & out$separate0
-                            & 0
-                          |   !arg:#*((?.?):%?A)+?arg
-                            & unspec$!A:?a
-                            & !A:?sims
-                            & 0:?nonsims
-                            &   whl
-                              ' ( !arg:#*((?.?):%?B)+?arg
-                                & (   unspec$!B:!a
-                                    & !sims !B:?sims
-                                  | !nonsims+!B:?nonsims
-                                  )
-                                )
-                            & !sims+separate$!nonsims
-                      )
-                    & ( signatureDotSep
-                      =   tool V L v
-                        .   1:?L
-                          &   whl
-                            ' ( !arg:%@?tool^?V*?arg
-                              & separate$!V:?V
-                              & "Note that each v can be a list with two or more elements, separated by space: Those with equal signatures, apart from subspecs."
-                              &   whl
-                                ' ( !V:%?v+?V
-                                  & !L*(!tool.!v):?L
-                                  )
-                              )
-                          & !L
-                      )
-                    & signatureDotSep$!nsig:?Nsig
+                    & "Nsig only contains ambiguous signatures: those that need unification."
                     & ( trySignatures
                       =     Feats tool f pAth nsig
                           , pipes R goodpipes
@@ -10012,8 +10103,10 @@ try {
                                     : ?goodpipes
                                   )
                               & !goodpipes
-                            |     SubspecHarmonize$(!pipes.!pAth)
-                                : (~0.?)
+                            |     ( !pAth:1&!pipes
+                                  |   SubspecHarmonize$(!pipes.!pAth)
+                                    : (~0.?)
+                                  )
                                 : ?R
                               & !goodpipes+!R
                             | !goodpipes
@@ -10030,7 +10123,7 @@ try {
           & log$prunePipes
           & 0:?calls
           & :?newpipes
-          & 0:?Npipes
+          & 0:?Npipes:?NIncarnationPipes
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -10046,41 +10139,42 @@ try {
               & log$selectCommonTracks
               & selectCommonTracks$!incarnationpipes:?As
               & log$selectCommonTracksDONE
-              & !As:?+[?Npipes
-              & !Npipes:~>10000
+              & !As:?+[?NIncarnationPipes
+              & log$(NIncarnationPipes !NIncarnationPipes)
+              & !NIncarnationPipes+!Npipes:?Npipes
+              & log$(Npipes !Npipes)
+              & !Npipes:~>!MAXPIPES
               & log$unfoldTree
-              &     list2sum
-                  $ ( mop
-                    $ ( ( 
-                        =   
-                          .   !arg:#*((?.?):?arg)
-                            & !arg
-                        )
-                      .   list2sum
-                        $ ( mop
-                          $ ( ( 
-                              =   
-                                .   mop
-                                  $ ( ( 
-                                      =   
-                                        .   !arg:(?.?arg)
-                                          & !arg
-                                      )
-                                    . unfoldTree$(1.!arg)
-                                    . (=+)
-                                    )
-                              )
-                            . !As
-                            . (=+)
-                            )
-                          )
-                      . (=+)
+              &     mop
+                  $ ( ( 
+                      =   
+                        .   !arg:#*((?.?):?arg)
+                          & !arg
                       )
+                    .   list2sum
+                      $ ( mop
+                        $ ( ( 
+                            =   
+                              .   mop
+                                $ ( ( 
+                                    =   
+                                      .   !arg:(?.?arg)
+                                        & !arg
+                                    )
+                                  . unfoldTree$(1.!arg)
+                                  . (=+)
+                                  )
+                            )
+                          . !As
+                          . (=+)
+                          )
+                        )
+                    . (=+)
                     )
                 : ?pipesN
               & "The 1 is the initial stop list, which is formed as a product."
               & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
-              & !pipesN:?+[?NNN
+              & !pipesN:? [?NNN
               & log$(NNN !NNN)
               & (   !parms:? (desiredtool.?restriction) ?
                   & !restriction:~
@@ -10091,7 +10185,7 @@ try {
                 : ?newpipes
               & log$percolateForgottenFeaturesDONE
               )
-          & (list2sum$!newpipes.!Npipes)
+          & (removeNumFactors$(list2sum$!newpipes).!Npipes)
       )
       ( saveTask
       =   
@@ -10126,6 +10220,7 @@ try {
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
             )
+          & 0:?Npipes
           &     map
               $ ( ( 
                   =   
@@ -10275,7 +10370,7 @@ try {
             |   log$"Not in recentTasks"
               & "memoizedTrees: global variable"
               & (!memoizedTrees|:?memoizedTrees)
-              & 0:?indent:?calls:?Npipes
+              & 0:?indent:?calls
               & (   log$("Look in meMOizedTrees for" !userInput)
                   & !userInput:(?uiin.?uiou.?restriction.?superset)
                   & "o1o The userInput may be more strict than what is found in
@@ -10428,7 +10523,7 @@ try {
                   & "prunePipes fails if tooComplex"
                   & ( !FP:(?,?) ?
                     |   prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
-                      & !Npipes:~>10000
+                      & !Npipes:~>!MAXPIPES
                     )
                   & log$"Calling prunePipes success"
                   &   (!userInput.!FP) !memoizedTrees
@@ -10441,7 +10536,7 @@ try {
                 . !userInput
                 .     !FP:(?,?) ?
                     & ((!FP.).triviallyFulfilled)
-                  |   !FP:?+[>10000
+                  |   !FP:?+[>!MAXPIPES
                     & !FP:?+[?NNNN
                     & log$(tooMany !NNNN)
                     & ((!FP.).tooMany)
@@ -10495,7 +10590,7 @@ try {
             |   !Npipes:0
               & log$(NOTFULFILLABLE FP !FP)
               & (!parms.!userInput.(0.).notFulfillable)
-            |   log$"No particular reason gives tooMany"
+            |   log$(Npipes !Npipes ">" !MAXPIPES)
               & (!parms.!userInput.(0.).tooMany)
             )
       )
@@ -14066,18 +14161,19 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                           . desiredtool
                           . options
-                          .   makeOptionList
-                            $ (   mop
-                                $ ( ( 
-                                    =   
-                                      .   !arg:(?.?Title.?ToolID)
-                                        & (!Title.!ToolID)
+                          .   make
+                                List
+                              $ (   mop
+                                  $ ( ( 
+                                      =   
+                                        .   !arg:(?.?Title.?ToolID)
+                                          & (!Title.!ToolID)
+                                      )
+                                    . !S
+                                    . (=+)
                                     )
-                                  . !S
-                                  . (=+)
-                                  )
-                              . 
-                              )
+                                . 
+                                )
                           )
                         )
                     )
@@ -14674,7 +14770,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         $ ( retrieveServicedOutputFeaturesAndTheirValues
                           $ !activeTools
                           )
-                      : ?servicedSuperGoals
+                      : (?servicedSuperGoals.?)
                   | 
                   )
                 & readTable$features
@@ -15201,6 +15297,108 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               | localized$("Already in use!" "Allerede brugt!")
               )
       )
+      ( NoNeedForMoreZoomingIn
+      =     returnCode pipes
+          , reorderedworkflowlist topologicalOrderedTools userInput
+        .     !arg
+            : ( ?returnCode
+              . ?pipes
+              . ?reorderedworkflowlist
+              . ?topologicalOrderedTools
+              . ?userInput
+              )
+          & (   !returnCode:workflowsFound
+              &   (     makeWorkflowsSequential$!pipes
+                      : (?reorderedworkflowlist.?topologicalOrderedTools)
+                    & allRight
+                  |   0:?reorderedworkflowlist
+                    & :?topologicalOrderedTools
+                    & log$"makeWorkflowsSequential3 tooComplex"
+                    & tooComplex
+                  )
+                : ?returnCode
+            | 
+            )
+          & log$(returnCode !returnCode)
+          &   ShowAllPipesIfNotTooExpensive
+            $ ( !returnCode
+              . !hiddenData
+              . !userInput
+              . !reorderedworkflowlist
+              . !topologicalOrderedTools
+              )
+      )
+      ( ZoomIn
+      =     returnCode pipes
+          , reorderedworkflowlist topologicalOrderedTools userInput
+          , A B M Y f fixed
+          , fvs nfvs nvs output pipe pps rwl tool vs
+        .     !arg
+            : ( ?returnCode
+              . ?pipes
+              . ?reorderedworkflowlist
+              . ?topologicalOrderedTools
+              . ?userInput
+              )
+          & 1:?fvs
+          & (   !returnCode:workflowsFound
+              & !pipes:?pps
+              &   whl
+                ' ( !pps:%?pipe+?pps
+                  &   ( 
+                      =   userspec wfs tool output
+                        .   !arg:(?userspec.?wfs)
+                          &   whl
+                            ' ( !wfs:(?tool,(?output.?))+?wfs
+                              & add$(!output.!fvs):?fvs
+                              )
+                      )
+                    $ !pipe
+                  )
+            |   log$(returnCode~workflowsFound !returnCode)
+              & !reorderedworkflowlist:?rwl
+              &   whl
+                ' ( !rwl:(?,(?.? (?tool.?.?.?output)))+?rwl
+                  & add$(!output.!fvs):?fvs
+                  )
+            )
+          & "It is not unimportant how fvs is obtained.
+                             Reorderedworkflowlist outputs can have features
+                             that are not (yet) in the output of pipes."
+          & 1:?nfvs:?fixed
+          &   whl
+            ' ( !fvs:%?f^%?vs*?fvs
+              & (   !vs:%+%
+                  & 0:?nvs
+                  &   whl
+                    ' ( !vs:%?A+?vs
+                      &   whl
+                        ' ( !A:?B*%?M^%*?Y
+                          & !B*!M*!Y:?A
+                          )
+                      & !nvs+!A:?nvs
+                      )
+                  & !nvs:%+%
+                  &   whl
+                    ' ( !nvs:%?A+?nvs
+                      & (!A:#%*?A|)
+                      & !vs+!A:?vs
+                      )
+                  & !f^!vs*!nfvs:?nfvs
+                | !fixed*!f^!vs:?fixed
+                )
+              )
+          & (   !nfvs:(1|sml^?)
+              &   NoNeedForMoreZoomingIn
+                $ ( !returnCode
+                  . !pipes
+                  . !reorderedworkflowlist
+                  . !topologicalOrderedTools
+                  . !userInput
+                  )
+            | ShowZoomedInForm$
+            )
+      )
       "
 /**
  * showworkflows
@@ -15223,6 +15421,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , val allpipes batch returnCode restriction sources
           , ShowAllPipesIfNotTooExpensive add makeValRows
           , B M Y f fixed formFields fvs nfvs nvs output
+          , ZoomInOrShowWorkflows
           , pipes pps rwl superset tool updatedArg userInput vs
         .   ( ShowAllPipes
             =     hiddenData reorderedworkflowlist
@@ -15385,6 +15584,187 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 |   !returnCode:tooComplex
                   & TooExpensive$
             )
+          & ( ShowZoomedInForm
+            =   
+              .   ( makeValRows
+                  =     name short description table
+                      , hide preselvalsrows nfvs
+                    .   !arg:?nfvs
+                      & readTable$features
+                      &     mop
+                          $ ( ( 
+                              =   
+                                .     !arg
+                                    : ? (name.?name) ?
+                                    : ? (short.?short) ?
+                                    : ? (description.?description) ?
+                                    : ? (table.?table) ?
+                                  & ( !arg:? (hide.?hide) ?
+                                    | :?hide
+                                    )
+                                  & (   !nfvs:?*!short^?vs*?
+                                      & !hide:
+                                      & readTable$!table
+                                      & ( ?
+                                        . !short
+                                        . localized$!name
+                                        .   map
+                                          $ ( ( 
+                                              =   
+                                                .     !arg
+                                                    : ( ?
+                                                      . [%( !vs
+                                                          : ?+?*!sjt*?+?
+                                                          )
+                                                      . ?
+                                                      )
+                                                  | 
+                                              )
+                                            . !!table
+                                            )
+                                        . 
+                                        )
+                                    | 
+                                    )
+                              )
+                            . !features
+                            . (=+)
+                            )
+                        : ?preselvalsrows
+                      & log$(makeValRows-preselvalsrows !preselvalsrows)
+                      & !preselvalsrows
+                  )
+                & log$createGoalPickLists
+                &     createGoalPickLists
+                    $ ( makeValRows$!nfvs
+                      .   makeExpandedSelectLists
+                        $ ( makeSuperGoals$!nfvs:(?SUP.?SMP)
+                          & lst$(nfvs,path$nfvs)
+                          & lst$(SUP,path$SUP,NEW,RAW)
+                          & lst$(SMP,path$SMP,NEW,RAW)
+                          & !SUP !SMP
+                          )
+                      . 
+                      )
+                  : ?formFields
+                & "postpone pruning, which is costly. Instead, show input fields again, but with restricted option lists."
+                &   str
+                  $ ( 200~~~
+                        toML
+                      $ ( !BodyContainer
+                        $ ( ( h1
+                            .   
+                              ,   localized
+                                $ ( "Refinement of your goal"
+                                    "Nærmere bestemmelse af dit mål"
+                                  )
+                            )
+                            ( form
+                            .     (action.showworkflows)
+                                  (class.formRounded)
+                                  (accept-charset.UTF-8)
+                              ,   ( p
+                                  .   
+                                    ,     localized
+                                        $ ( "There are workflow candidates with different output specifications. "
+                                            "Vi fandt arbejdsgange med forskellige outputspecifikationer. "
+                                          )
+                                        (   !nfvs:?*[>1
+                                          &   localized
+                                            $ ( "Here you can supply more specifiations for the output. It is advisable to do this one specification at a time. In that way, you do not run the risk of selecting a combination of values for which no workflow exists."
+                                                "På denne side kan du vælge flere specifikationer, men det er bedst at vælge fra én liste ad gangen. På den måde undgår du at du kommer til at selektere en kombination af værdier som ikke resulterer i nogen arbejdsgangkandidater."
+                                              )
+                                        |   localized
+                                          $ ( "Here you can supply the missing specification and thereby reduce the number of proposed workflow candidates."
+                                              "På denne side kan du give den manglende specifikation og på den måde reducere antallet af foreslåede arbejdsgange."
+                                            )
+                                        )
+                                  )
+                                  ( 
+                                  & !userInput:(?.?.?.?superset)
+                                  &   updateOargFromParg$!orgarg
+                                    : ?updatedArg
+                                  &     ( 
+                                        =     updatedArg
+                                            , fixed ft v
+                                            , A Z
+                                          .     !arg
+                                              : (?updatedArg.?fixed)
+                                            &   whl
+                                              ' (   !fixed
+                                                  : %?ft^(#*%@?v)*?fixed
+                                                &     (str$(O !ft).!v)
+                                                      (     !updatedArg
+                                                          :   ?A
+                                                              ( @( ?
+                                                                 : O !ft
+                                                                 )
+                                                              . ?
+                                                              )
+                                                              ?Z
+                                                        & !A !Z
+                                                      | !updatedArg
+                                                      )
+                                                  : ?updatedArg
+                                                )
+                                            & !updatedArg
+                                        )
+                                      $ (!updatedArg.!fixed)
+                                    : ?updatedArg
+                                  &   makeHiddenFields
+                                    $ ( makeArgsForHiddenFields
+                                      $ (!updatedArg.!superset)
+                                      )
+                                  )
+                                  ( div
+                                  . (class.topmargin),!formFields
+                                  )
+                                  ( div
+                                  .   (class.topmargin)
+                                    ,     !nfvs:?*[>1
+                                        &     submit
+                                            $ (localized$!helpmespecifymygoal)
+                                            submitNR$(localized$!"skip zoom")
+                                      | submit$(localized$!"show workflows")
+                                  )
+                                  (paragraph.,helplink$)
+                            )
+                          )
+                        )
+                    )
+            )
+          & ( ZoomInOrShowWorkflows
+            =     returnCode pipes
+                , reorderedworkflowlist topologicalOrderedTools userInput
+              .     !arg
+                  : ( ?returnCode
+                    . ?pipes
+                    . ?reorderedworkflowlist
+                    . ?topologicalOrderedTools
+                    . ?userInput
+                    )
+                & log$(Submit !Submit)
+                & log$(zubmit localized$!helpmespecifymygoal)
+                & (   ( localized$!"show workflows":!Submit
+                      | localized$!"skip zoom":!Submit
+                      )
+                    &   NoNeedForMoreZoomingIn
+                      $ ( !returnCode
+                        . !pipes
+                        . !reorderedworkflowlist
+                        . !topologicalOrderedTools
+                        . !userInput
+                        )
+                  |   localized$!helpmespecifymygoal:!Submit
+                    &   ZoomIn
+                      $ ( !returnCode
+                        . !pipes
+                        . !reorderedworkflowlist
+                        . !topologicalOrderedTools
+                        . !userInput
+                        )
+                  )
+            )
           & log$WORKFLOWLISTLOGJE
           & !arg:?orgarg
           & setLanguageNotPermanently$!arg
@@ -15484,301 +15864,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                      tooMany"
                       & (     !returnCode
                             : (workflowsFound|allRight)
-                          & log$(Submit !Submit)
-                          & log$(zubmit localized$!helpmespecifymygoal)
-                          & (   ( localized$!"show workflows":!Submit
-                                | localized$!"skip zoom":!Submit
-                                )
-                              & (   !returnCode:workflowsFound
-                                  & (     makeWorkflowsSequential$!pipes
-                                        : ( ?reorderedworkflowlist
-                                          . ?topologicalOrderedTools
-                                          )
-                                      & allRight:?returnCode
-                                    |   0:?reorderedworkflowlist
-                                      & :?topologicalOrderedTools
-                                      &   log
-                                        $ "makeWorkflowsSequential2 tooComplex"
-                                      & tooComplex:?returnCode
-                                    )
-                                | 
-                                )
-                              &   ShowAllPipesIfNotTooExpensive
-                                $ ( !returnCode
-                                  . !hiddenData
-                                  . !userInput
-                                  . !reorderedworkflowlist
-                                  . !topologicalOrderedTools
-                                  )
-                            |     localized$!helpmespecifymygoal
-                                : !Submit
-                              & 1:?fvs
-                              & (   !returnCode:workflowsFound
-                                  & !pipes:?pps
-                                  &   whl
-                                    ' ( !pps:%?pipe+?pps
-                                      &   ( 
-                                          =   userspec wfs tool output
-                                            .   !arg:(?userspec.?wfs)
-                                              &   whl
-                                                ' (   !wfs
-                                                    :   (?tool,(?output.?))
-                                                      + ?wfs
-                                                  &   add$(!output.!fvs)
-                                                    : ?fvs
-                                                  )
-                                          )
-                                        $ !pipe
-                                      )
-                                |   !reorderedworkflowlist:?rwl
-                                  &   whl
-                                    ' (   !rwl
-                                        :   (?,(?.? (?tool.?.?.?output)))
-                                          + ?rwl
-                                      & add$(!output.!fvs):?fvs
-                                      )
-                                )
-                              & "It is not unimportant how fvs is obtained.
-                             Reorderedworkflowlist outputs can have features
-                             that are not (yet) in the output of pipes."
-                              & 1:?nfvs:?fixed
-                              &   whl
-                                ' ( !fvs:%?f^%?vs*?fvs
-                                  & (   !vs:%+%
-                                      & 0:?nvs
-                                      &   whl
-                                        ' ( !vs:%?A+?vs
-                                          &   whl
-                                            ' ( !A:?B*%?M^%*?Y
-                                              & !B*!M*!Y:?A
-                                              )
-                                          & !nvs+!A:?nvs
-                                          )
-                                      & !nvs:%+%
-                                      &   whl
-                                        ' ( !nvs:%?A+?nvs
-                                          & (!A:#%*?A|)
-                                          & !vs+!A:?vs
-                                          )
-                                      & !f^!vs*!nfvs:?nfvs
-                                    | !fixed*!f^!vs:?fixed
-                                    )
-                                  )
-                              & (   !nfvs:(1|sml^?)
-                                  & (   !returnCode:workflowsFound
-                                      &   (       makeWorkflowsSequential
-                                                $ !pipes
-                                              : ( ?reorderedworkflowlist
-                                                . ?topologicalOrderedTools
-                                                )
-                                            & allRight
-                                          |   0:?reorderedworkflowlist
-                                            &   
-                                              : ?topologicalOrderedTools
-                                            &   log
-                                              $ "makeWorkflowsSequential3 tooComplex"
-                                            & tooComplex
-                                          )
-                                        : ?returnCode
-                                    | 
-                                    )
-                                  & log$(returnCode !returnCode)
-                                  &   ShowAllPipesIfNotTooExpensive
-                                    $ ( !returnCode
-                                      . !hiddenData
-                                      . !userInput
-                                      . !reorderedworkflowlist
-                                      . !topologicalOrderedTools
-                                      )
-                                |   ( makeValRows
-                                    =     name short description table
-                                        , hide preselvalsrows nfvs
-                                      .   !arg:?nfvs
-                                        & readTable$features
-                                        &     mop
-                                            $ ( ( 
-                                                =   
-                                                  .     !arg
-                                                      :   ?
-                                                          (name.?name)
-                                                          ?
-                                                      :   ?
-                                                          (short.?short)
-                                                          ?
-                                                      :   ?
-                                                          ( description
-                                                          . ?description
-                                                          )
-                                                          ?
-                                                      :   ?
-                                                          (table.?table)
-                                                          ?
-                                                    & (   !arg
-                                                        :   ?
-                                                            (hide.?hide)
-                                                            ?
-                                                      | :?hide
-                                                      )
-                                                    & (     !nfvs
-                                                          : ?*!short^?vs*?
-                                                        & !hide:
-                                                        & readTable$!table
-                                                        & ( ?
-                                                          . !short
-                                                          . localized$!name
-                                                          .   map
-                                                            $ ( ( 
-                                                                =   
-                                                                  .     !arg
-                                                                      : ( ?
-                                                                        . [%( !vs
-                                                                            :   ?
-                                                                              +   ?
-                                                                                * !sjt
-                                                                                * ?
-                                                                              + ?
-                                                                            )
-                                                                        . ?
-                                                                        )
-                                                                    | 
-                                                                )
-                                                              . !!table
-                                                              )
-                                                          . 
-                                                          )
-                                                      | 
-                                                      )
-                                                )
-                                              . !features
-                                              . (=+)
-                                              )
-                                          : ?preselvalsrows
-                                        &   log
-                                          $ ( makeValRows-preselvalsrows
-                                              !preselvalsrows
-                                            )
-                                        & !preselvalsrows
-                                    )
-                                  & log$createGoalPickLists
-                                  &     createGoalPickLists
-                                      $ ( makeValRows$!nfvs
-                                        .   makeExpandedSelectLists
-                                          $ (makeSuperGoals$!nfvs)
-                                        . 
-                                        )
-                                    : ?formFields
-                                  & "postpone pruning, which is costly. Instead, show input fields again, but with restricted option lists."
-                                  &   str
-                                    $ ( 200~~~
-                                          toML
-                                        $ ( !BodyContainer
-                                          $ ( ( h1
-                                              .   
-                                                ,   localized
-                                                  $ ( "Refinement of your goal"
-                                                      "Nærmere bestemmelse af dit mål"
-                                                    )
-                                              )
-                                              ( form
-                                              .     (action.showworkflows)
-                                                    (class.formRounded)
-                                                    (accept-charset.UTF-8)
-                                                ,   ( p
-                                                    .   
-                                                      ,     localized
-                                                          $ ( "There are workflow candidates with different output specifications. "
-                                                              "Vi fandt arbejdsgange med forskellige outputspecifikationer. "
-                                                            )
-                                                          (     !nfvs
-                                                              : ?*[>1
-                                                            &   localized
-                                                              $ ( "Here you can supply more specifiations for the output. It is advisable to do this one specification at a time. In that way, you do not run the risk of selecting a combination of values for which no workflow exists."
-                                                                  "På denne side kan du vælge flere specifikationer, men det er bedst at vælge fra én liste ad gangen. På den måde undgår du at du kommer til at selektere en kombination af værdier som ikke resulterer i nogen arbejdsgangkandidater."
-                                                                )
-                                                          |   localized
-                                                            $ ( "Here you can supply the missing specification and thereby reduce the number of proposed workflow candidates."
-                                                                "På denne side kan du give den manglende specifikation og på den måde reducere antallet af foreslåede arbejdsgange."
-                                                              )
-                                                          )
-                                                    )
-                                                    ( 
-                                                    &   !userInput
-                                                      : (?.?.?.?superset)
-                                                    &     updateOargFromParg
-                                                        $ !orgarg
-                                                      : ?updatedArg
-                                                    &     ( 
-                                                          =     updatedArg
-                                                              , fixed ft v
-                                                              , A Z
-                                                            .     !arg
-                                                                : ( ?updatedArg
-                                                                  . ?fixed
-                                                                  )
-                                                              &   whl
-                                                                ' (   !fixed
-                                                                    :     %?ft
-                                                                        ^ (#*%@?v)
-                                                                      * ?fixed
-                                                                  &     (   str
-                                                                          $ ( O
-                                                                              !ft
-                                                                            )
-                                                                        . !v
-                                                                        )
-                                                                        (     !updatedArg
-                                                                            :   ?A
-                                                                                ( @( ?
-                                                                                   :   O
-                                                                                       !ft
-                                                                                   )
-                                                                                . ?
-                                                                                )
-                                                                                ?Z
-                                                                          &   !A
-                                                                              !Z
-                                                                        | !updatedArg
-                                                                        )
-                                                                    : ?updatedArg
-                                                                  )
-                                                              & !updatedArg
-                                                          )
-                                                        $ (!updatedArg.!fixed)
-                                                      : ?updatedArg
-                                                    &   makeHiddenFields
-                                                      $ ( makeArgsForHiddenFields
-                                                        $ ( !updatedArg
-                                                          . !superset
-                                                          )
-                                                        )
-                                                    )
-                                                    ( div
-                                                    .   (class.topmargin)
-                                                      , !formFields
-                                                    )
-                                                    ( div
-                                                    .   (class.topmargin)
-                                                      ,     !nfvs:?*[>1
-                                                          &     submit
-                                                              $ ( localized
-                                                                $ !helpmespecifymygoal
-                                                                )
-                                                                submitNR
-                                                              $ ( localized
-                                                                $ !"skip zoom"
-                                                                )
-                                                        |   submit
-                                                          $ ( localized
-                                                            $ !"show workflows"
-                                                            )
-                                                    )
-                                                    (paragraph.,helplink$)
-                                              )
-                                            )
-                                          )
-                                      )
-                                )
-                            )
+                          &   ZoomInOrShowWorkflows
+                            $ ( !returnCode
+                              . !pipes
+                              . !reorderedworkflowlist
+                              . !topologicalOrderedTools
+                              . !userInput
+                              )
                         |   !returnCode:onlyWithoutRestriction
                           &   !parms
                             : ? (desiredtool.?restriction) ?
