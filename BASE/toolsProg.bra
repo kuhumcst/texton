@@ -2170,6 +2170,7 @@ toolsProg=
                 | !arg
             )
           & !arg:?pipes
+          & lst$(pipes,path$pipes,NEW,RAW)
           & "pipes is an unnumbered list sorted on directly on full workflow tree."
           & :?workflowlist
           & 0:?n
@@ -2180,6 +2181,7 @@ toolsProg=
               &   saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist
                 : ?workflowlist
               )
+          & lst$(workflowlist,path$workflowlist,NEW,RAW)
           & ( !n:<1000000
             | "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
@@ -9301,68 +9303,49 @@ try {
             | "input resource"&!pipe
             )
       )
-      ( Intersection
-      =   x y f v I e g V h ns vs xs ys
+      "Union: result includes all features of the bundles combined.
+       The result of 'Union' can be percolated downstream. (Towards the output.)"
+      ( Union
+      =   x y f v I e g V h ns vs xs ys A Z
         .   !arg:(?x.?y)
-          &     map
-              $ ( ( 
-                  =   
-                    .   !arg:(?f,?vs)
-                      & (   !y:? (!f,?ys) ?
-                          & 1:?ns
-                          &   whl
-                            ' ( !vs:%@?v^?e*?vs
-                              & (   !ys:?*!v^?g*?
-                                  &     (   !e:~1
-                                          & !g:~1
-                                          & !e:~!g
-                                          & 1
-                                        |   (   ( !e:~1
-                                                | !g:~1
-                                                )
-                                              & !e*!g:%?h^?
-                                            | 1:?h
-                                            )
-                                          & !v^!h
-                                        )
-                                      * !ns
-                                    : ?ns
-                                | 
-                                )
-                              )
-                          & ( !ns:1&
-                            | (!f,!ns)
-                            )
-                        | !arg
-                        )
-                  )
-                . !x
-                )
-            : ?I
-          &     !I
-                  map
+          &   sort
+            $ (   map
                 $ ( ( 
                     =   
-                      .     ( !I:? !arg ?
-                            |   !arg:(?f,?)
-                              & !x:? (!f,?) ?
-                            )
-                          & 
-                        | !arg
+                      .   !arg:(?f,?vs)
+                        & (   !y:?A (!f,?ys) ?Z
+                            & !A !Z:?y
+                            & 1:?g
+                            &   mop
+                              $ ( ( 
+                                  =   
+                                    .     !g
+                                        * (   !arg^#%*?e
+                                            & !arg^!e
+                                          | !arg
+                                          )
+                                      : ?g
+                                  )
+                                . !vs*!ys
+                                )
+                            & (!f,!g)
+                          | !arg
+                          )
                     )
-                  . !y
+                  . !x
                   )
-            : ?I
-          & sort$!I
+                !y
+              )
       )
       ( percolateForgottenFeatures
-      =     pipes F updateOFwithNF NN
+      =     pipes F NN
           , harmonizeSubspecsOnSimilarFeatures
           , Results pipe1 pipe2 pipe3 pipe4
           , fromMethods fromInputTowardOutput fromToolOrSource
           , toMethods fromOutputTowardInput toTool
-          , UpdateResultsFromMethods oUts
+          , UpdateResultzFromMethods oUts
           , validateInputsForEachTool sig
+          , Mem
         .   "TODO sig is not meaningful if we can have multiple OnE complexes
              (a*b*c.OnE)*d*(a*f*g.OnE)*z
              One of the problems is 'a' occuring two places.
@@ -9377,7 +9360,7 @@ try {
                     * sig$!arg
                 | 1
             )
-          & ( UpdateResultsFromMethods
+          & ( UpdateResultzFromMethods
             =     results methods nres result A method
                 , Sig SR SM B loop
                 , f v e E VS NVS
@@ -9484,54 +9467,20 @@ try {
                     )
                 & !nres
             )
-          & "updateOFwithNF: let OF inherit subspecs from NF if OF and NF have same feature value, but OF is not subspecified. 
-             If a feature has different values in OF and NF, replace OF's value with NF's (In this, updateOFwithNF$ is different from supplement$)
-             Add any features in NF that OF does not have."
-          & ( updateOFwithNF
-            =   tgt src
-              .   !arg:(?tgt.?src)
-                &   map
-                  $ ( ( 
-                      =     f vsc vtg v e E A
-                          , Z a z nsg nv vs vN
-                        .   !arg:(?f,?vsc)
-                          & sig$!vsc:?nsg
-                          & (     !tgt
-                                : ?A (!f,?vN:?vtg) ?Z
-                              & (   sig$!vtg:!nsg
-                                  &   whl
-                                    ' ( !vsc:%?nv*?vsc
-                                      & (   !nv:(?nv.OnE)
-                                          &   whl
-                                            ' ( !vs:?*%@?v^%?e*?vs
-                                              & !vtg:?a*!v^?E*?z
-                                              & ( !e:!E
-                                                | !a*!v^!e*!z:?vtg
-                                                )
-                                              )
-                                        |   !nv:@?v^%?e
-                                          & !vtg:?a*!v^?E*?z
-                                          & ( !e:!E
-                                            | !a*!v^!e*!z:?vtg
-                                            )
-                                        )
-                                      )
-                                  & ( !vtg:!vN
-                                    | !A (!f,!vtg) !Z:?tgt
-                                    )
-                                | !A (!f,!vsc) !Z:?tgt
-                                )
-                            | !arg !tgt:?tgt
-                            )
-                      )
-                    . !src
-                    )
-                & sort$!tgt
-            )
+          & "harmonizeSubspecsOnSimilarFeatures: 
+               enrich first argument using second argument, 
+	 enrich and update second argumemt using first argument.
+	 In the output, the second argument is hoisted to the level of the first.
+	 This function is used in both directions, downstream and upstream.
+	 "
           & ( harmonizeSubspecsOnSimilarFeatures
             =   OF NF
-              .   !arg:((@?,~(?.~OnE)) ?:?NF.?OF)
-                & (supplement$(!NF.!OF).updateOFwithNF$(!OF.!NF))
+              .   ( !Mem:? (!arg.?NF) ?
+                  |   !arg:(?NF.?OF)
+                    & supplement$(!NF.!OF):?NF
+                    & (!arg.!NF) !Mem:?Mem
+                  )
+                & !NF
             )
           & ( oUts
             =   R F
@@ -9547,12 +9496,19 @@ try {
                 & !R
             )
           & ( Results
-            =   L R OF LF RF
+            =   L R OF RF
               .     !arg:(%?L*%?R.?OF)
                   & Results$(!R.!OF):(?R.?RF)
-                  &   harmonizeSubspecsOnSimilarFeatures$(!L.!OF)
-                    : (?L.?LF)
-                  & (!L*!R.Intersection$(!RF.!LF))
+                  & harmonizeSubspecsOnSimilarFeatures$(!L.!OF):?L
+                  & (!L*!R.Union$(!RF.!L))
+                | (harmonizeSubspecsOnSimilarFeatures$!arg:?L.!L)
+            )
+          & ( Results1
+            =   L R OF
+              .     !arg:(%?L*%?R.?OF)
+                  & Results1$(!R.!OF):?R
+                  & harmonizeSubspecsOnSimilarFeatures$(!L.!OF):?L
+                  & !L*!R
                 | harmonizeSubspecsOnSimilarFeatures$!arg
             )
           & ( fromToolOrSource
@@ -9561,17 +9517,17 @@ try {
                   & fromInputTowardOutput$(!sub.!OF):(?sub.?RF)
                   & ( !sub:0&(0.0)
                     |     harmonizeSubspecsOnSimilarFeatures$(!output.!RF)
-                        : (?output.?LF)
+                        : ?output
+                        : ?LF
                       & (   !output:?A (?F,(?V.OnE)) ?Z
                           & !A (!F,!V) !Z:?output
                         | 
-                        | log$NoOnE
                         )
                       & ( !tool,(!output.supplement$(!meta.!RF).!sub)
                         . !LF
                         )
                     )
-                | harmonizeSubspecsOnSimilarFeatures$!arg
+                | (harmonizeSubspecsOnSimilarFeatures$!arg:?L.!L)
             )
           & ( fromMethods
             =   L R OF LF RF
@@ -9580,14 +9536,13 @@ try {
                     & fromMethods$(!R.!OF):(?R.?RF)
                     & ( !R:0&(0.0)
                       |   fromToolOrSource$(!L.!OF):(?L.?LF)
-                        & ( !L:0&(0.0)
-                          |   !RF:? (sml,?sRF) ?
-                            & !LF:? (sml,?sLF) ?
-                            & (   !sRF:!sLF
-                                & (!L*!R.Intersection$(!RF.!LF))
-                              | (0.0)
+                        & (   ( !L:0
+                              |   !RF:? (sml,?sRF) ?
+                                & !LF:? (sml,?sLF) ?
+                                & ~(!sRF:!sLF)
                               )
-                          | (!L*!R.Intersection$(!RF.!LF))
+                            & (0.0)
+                          | (!L*!R.Union$(!RF.!LF))
                           )
                       )
                   | fromToolOrSource$(!arg.!OF)
@@ -9598,7 +9553,7 @@ try {
               .     !arg:((?results.?methods).?OF)
                   & fromMethods$(!methods.!OF):(?methods.?NF)
                   & ( !methods:0&(0.0)
-                    |       UpdateResultsFromMethods
+                    |       UpdateResultzFromMethods
                           $ (!results.oUts$!methods)
                         : ?results
                       & ((!results.!methods).!NF)
@@ -9606,28 +9561,24 @@ try {
                 | Results$!arg
             )
           & ( toTool
-            =   OF LF RF tool meta output sub
+            =   OF RF tool meta output sub
               .   !arg:(?arg.?OF)
                 & (   !arg:(?tool,(?output.?meta.?sub))
                     &   harmonizeSubspecsOnSimilarFeatures$(!output.!OF)
-                      : (?output.?LF)
-                    & fromOutputTowardInput$(!sub.!LF):(?sub.?RF)
-                    & ( !tool,(!output.supplement$(!meta.!LF).!sub)
-                      . !RF
-                      )
-                  |   !arg:(|(?,?) ?)
-                    & harmonizeSubspecsOnSimilarFeatures$(!arg.!OF)
+                      : ?output
+                    & fromOutputTowardInput$(!sub.!output):?sub
+                    & (!tool,(!output.supplement$(!meta.!output).!sub))
+                  | harmonizeSubspecsOnSimilarFeatures$(!arg.!OF)
                   )
             )
           & ( toMethods
             =   L R OF LF RF
               .   !arg:(?arg.?OF)
                 & (   !arg:%?L*%?R
-                    & toMethods$(!R.!OF):(?R.?RF)
-                    & toTool$(!L.!OF):(?L.?LF)
-                    & (!L*!R.Intersection$(!RF.!LF))
+                    & toMethods$(!R.!OF):?R
+                    & toTool$(!L.!OF):?L
+                    & !L*!R
                   | toTool$(!arg.!OF)
-                  | !arg:(@,?)&(!arg.!OF)
                   )
             )
           & ( fromOutputTowardInput
@@ -9635,9 +9586,8 @@ try {
               .   !arg:(?arg.?OF)
                 & (   !arg:(?results.?methods)
                     & Results$(!results.!OF):(?results.?NF)
-                    & toMethods$(!methods.!NF):(?methods.?NF)
-                    & ((!results.!methods).!NF)
-                  | Results$(!arg.!OF)
+                    & (!results.toMethods$(!methods.!NF))
+                  | Results1$(!arg.!OF)
                   )
             )
           & ( validateInputsForEachTool
@@ -9704,6 +9654,7 @@ try {
                 & recr$!arg
             )
           & :?pipes
+          & :?Mem
           & !arg:? [?NN
           &   map
             $ ( ( 
@@ -9713,10 +9664,13 @@ try {
                       | 
                       )
                     & -1+!NN:?NN
+                    & !DownStream:?Mem
                     & fromInputTowardOutput$(!pipe1.):(?pipe2.?F)
+                    & !Mem:?DownStream
                     & ( !pipe2:0
-                      |     fromOutputTowardInput$(!pipe2.!F)
-                          : (?pipe3.?)
+                      |   !UpStream:?Mem
+                        & fromOutputTowardInput$(!pipe2.!F):?pipe3
+                        & !Mem:?UpStream
                         & ( !pipe3:0&log$ZEEROOED
                           |   validateInputsForEachTool$!pipe3
                             & (   wantThis$!pipe3:~0:?pipe4
@@ -9735,6 +9689,7 @@ try {
       =     As NNN Z incarnationpipes parms NIncarnationPipes
           , newpipes pipe pipes pipesN restriction
           , wantThis unfoldTree sources calls Npipes
+          , DownStream UpStream
         .   ( unfoldTree
             =     tool ou ou2 inputprop childstuff
                 , A Z goal b
@@ -10124,6 +10079,7 @@ try {
           & 0:?calls
           & :?newpipes
           & 0:?Npipes:?NIncarnationPipes
+          & :?DownStream:?UpStream
           &   whl
             ' ( !calls:<567890
               & !pipes:((?.?):?incarnationpipes)+?pipes
@@ -10185,6 +10141,27 @@ try {
                 : ?newpipes
               & log$percolateForgottenFeaturesDONE
               )
+          & lst$(DownStream,path$DownStream,NEW,RAW)
+          & lst$(UpStream,path$UpStream,NEW,RAW)
+          & ( 
+            |   ( showDif
+                =   L Name
+                  .   !arg:(?L.?Name)
+                    &     map
+                        $ ( ( 
+                            =   x
+                              .     !arg:((?.?).?x.!x)
+                                  & 
+                                | !arg
+                            )
+                          . !L
+                          )
+                      : ?L
+                    & lst$(L,path$!Name,RAW,NEW)
+                )
+              & showDif$(!DownStream.DownDiff)
+              & showDif$(!UpStream.UpDiff)
+            )
           & (removeNumFactors$(list2sum$!newpipes).!Npipes)
       )
       ( saveTask
