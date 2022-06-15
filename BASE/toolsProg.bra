@@ -2170,7 +2170,6 @@ toolsProg=
                 | !arg
             )
           & !arg:?pipes
-          & lst$(pipes,path$pipes,NEW,RAW)
           & "pipes is an unnumbered list sorted on directly on full workflow tree."
           & :?workflowlist
           & 0:?n
@@ -2181,7 +2180,6 @@ toolsProg=
               &   saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist
                 : ?workflowlist
               )
-          & lst$(workflowlist,path$workflowlist,NEW,RAW)
           & ( !n:<1000000
             | "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
@@ -9320,13 +9318,16 @@ try {
                               $ ( ( 
                                   =   
                                     .     !g
-                                        * (   !arg^#%*?e
+                                        * (     !arg
+                                              :   ?arg
+                                                ^ (#%*?e|1+?e)
                                             & !arg^!e
                                           | !arg
                                           )
                                       : ?g
                                   )
                                 . !vs*!ys
+                                . (=*)
                                 )
                             & (!f,!g)
                           | !arg
@@ -9474,13 +9475,12 @@ try {
 	 This function is used in both directions, downstream and upstream.
 	 "
           & ( harmonizeSubspecsOnSimilarFeatures
-            =   OF NF
-              .   ( !Mem:? (!arg.?NF) ?
-                  |   !arg:(?NF.?OF)
-                    & supplement$(!NF.!OF):?NF
-                    & (!arg.!NF) !Mem:?Mem
+            =   
+              .   ( !Mem:? (!arg.?arg) ?
+                  |   (!arg.supplement$!arg:?arg) !Mem
+                    : ?Mem
                   )
-                & !NF
+                & !arg
             )
           & ( oUts
             =   R F
@@ -9561,13 +9561,38 @@ try {
                 | Results$!arg
             )
           & ( toTool
-            =   OF RF tool meta output sub
+            =     OF RF tool meta output sub
+                , a A f z Z x y
               .   !arg:(?arg.?OF)
                 & (   !arg:(?tool,(?output.?meta.?sub))
                     &   harmonizeSubspecsOnSimilarFeatures$(!output.!OF)
                       : ?output
                     & fromOutputTowardInput$(!sub.!output):?sub
-                    & (!tool,(!output.supplement$(!meta.!output).!sub))
+                    & supplement$(!meta.!output):?meta
+                    & (   !meta:?a (?f,?A*(?x.OnE)*?Z) ?z
+                        &   !sub
+                          : (?*(!a (!f,?*(?y.OnE)*?) !z)*?.?)
+                        & !x*!y:?y
+                        & 1:?x
+                        &   mop
+                          $ ( ( 
+                              =   e
+                                .     !x
+                                    * (     !arg
+                                          :   ?arg
+                                            ^ (#%*?e|1+?e)
+                                        & !arg^!e
+                                      | !arg
+                                      )
+                                  : ?x
+                              )
+                            . !y
+                            . (=*)
+                            )
+                        & !a (!f,!A*(!x.OnE)*!Z) !z:?meta
+                      | 
+                      )
+                    & (!tool,(!output.!meta.!sub))
                   | harmonizeSubspecsOnSimilarFeatures$(!arg.!OF)
                   )
             )
@@ -10141,8 +10166,6 @@ try {
                 : ?newpipes
               & log$percolateForgottenFeaturesDONE
               )
-          & lst$(DownStream,path$DownStream,NEW,RAW)
-          & lst$(UpStream,path$UpStream,NEW,RAW)
           & ( 
             |   ( showDif
                 =   L Name
@@ -15616,9 +15639,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     $ ( makeValRows$!nfvs
                       .   makeExpandedSelectLists
                         $ ( makeSuperGoals$!nfvs:(?SUP.?SMP)
-                          & lst$(nfvs,path$nfvs)
-                          & lst$(SUP,path$SUP,NEW,RAW)
-                          & lst$(SMP,path$SMP,NEW,RAW)
                           & !SUP !SMP
                           )
                       . 
