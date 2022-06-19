@@ -158,6 +158,7 @@ toolsProg=
       ( helpmespecifymygoal
       = "Next: zoom in on goal." "Zoom ind med flere detaljer"
       )
+      (Bookmark=Bookmark Marker)
       ( "show workflows"
       = "Show available workflows" "Vis mulige arbejdsgange"
       )
@@ -14264,6 +14265,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   ,   str
                                     $ ( !L
                                         " "
+                                        (   !L:1
+                                          &   localized
+                                            $ (bookmarked markeret)
+                                        | localized$(bookmarked markerede)
+                                        )
+                                        " "
                                         localized$(workflow arbejdsgang)
                                         ( !L:1&
                                         | localized$(s e)
@@ -14334,10 +14341,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       & ( tr
                         .   (class.specialrow)
                           ,     cell
-                              $ ( localized$("Bookmarked:" "Markeret:")
-                                  (br.,)
-                                    submit
-                                  $ (localized$!updateAvailableWorkflows)
+                              $ ( submit
+                                $ (localized$!updateAvailableWorkflows)
                                 )
                                 cell
                               $ ( ( div
@@ -14364,10 +14369,20 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         )
                                       &   cell
                                         $ (   !wrkfls:
-                                            &   localized
-                                              $ ( "(No bookmarked workflows)"
-                                                  "(Ingen bogmærkede arbejdsgange)"
-                                                )
+                                            &     localized
+                                                $ ( "(No workflow has been"
+                                                    "(Ingen arbejdsgang"
+                                                  )
+                                                (br.,)
+                                                  localized
+                                                $ ( "bookmarked for this kind"
+                                                    "er blevet markeret"
+                                                  )
+                                                (br.,)
+                                                  localized
+                                                $ ( "of input.)"
+                                                    "til denne type input.)"
+                                                  )
                                           |       listToThreeColumnTable
                                                 $ !wrkfls
                                               : ?stable
@@ -14812,12 +14827,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 $ ("Your uploaded input" "Din uploadede input")
                             )
                             (br.,)
-                            (   !items:? (?.?.% ?) ?
-                              &   localized
-                                $ ( "Text Tonsorium can enact a pre-existing, bookmarked workflow or compute and enact a workflow that fulfils your goal."
-                                    "Text Tonsorium kan afvikle en allerede eksisterende og markeret arbejdsgang eller beregne og udføre en arbejdsgang som opfylder dit mål."
-                                  )
-                            |   !items:% %
+                            (   !items:% %
                               &   localized
                                 $ ( "Text Tonsorium has categorized your inputs. Correct if you see something wrong. Not every field needs to be filled out. Choose one of the columns of inputs."
                                     "Text Tonsorium har kategoriseret dine inputs. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke. Vælg en af kolonnerne."
@@ -14854,7 +14864,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     $ (   cell
                                         $ ( localized
                                           $ ( "Inputs are dissimilar. Select a column."
-                                              "Inputs er ulige. Vælg en kolonne."
+                                              "Inputs tilhører uens kategorier. Vælg en kolonne."
                                             )
                                           )
                                         cell$()
@@ -14892,7 +14902,16 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                         )
                         fieldset
-                      $ (   (strong.,localized$("Your goal" "Dit mål"))
+                      $ (   (   !items:? (?.?.% ?) ?
+                              &     localized
+                                  $ ( "Text Tonsorium can enact a bookmarked workflow or compute and enact a workflow that fulfils your goal as specified below."
+                                      "Text Tonsorium kan afvikle en markeret arbejdsgang eller beregne og udføre en arbejdsgang som opfylder dit mål som beskrevet hernede."
+                                    )
+                                  (br.,)
+                                  (br.,)
+                            | 
+                            )
+                            (strong.,localized$("Your goal" "Dit mål"))
                             (br.,)
                             localized$("Fill out only " "Udfyld ")
                             (strong.,localized$(two to))
@@ -14998,7 +15017,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         !formFields
                                           submit
                                         $ (localized$!helpmespecifymygoal)
-                                        submitNR$(localized$!"skip zoom")
+                                        ( 
+                                        | submitNR$(localized$!"skip zoom")
+                                        )
                                         helplink$()
                                         (br.,)
                                         ( small
@@ -15006,8 +15027,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                           , ( i
                                             .   
                                               ,   localized
-                                                $ ( "You may experience long waiting time and even time-out. In the latter case, try again some minutes later. The results of the workflow computations are memoized!"
-                                                    "Du kan opleve en lang ventetid og endda en time-out. Når det sidste sker, kan du prøve igen efter nogle minutter. Resultaterne af beregningerne er blevet husket!"
+                                                $ ( "You may experience some waiting time and even time-out. In the latter case, try again some minutes later. In general, the computations terminate normally and the results are memoized!"
+                                                    "Du kan opleve at du skal vente, eller at siden indikerer time-out. Når det sidste sker, kan du prøve igen efter nogle minutter. Normalt kører beregningerne bare videre og bliver resultaterne husket!"
                                                   )
                                             )
                                         )
@@ -15290,7 +15311,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( BookMark
       =   bm err
         .   !arg:(?bm.?err)
-          &   submit$Bookmark
+          &   submit$(localized$!Bookmark)
                 makeTextFormField
               $ (   localized
                   $ ("Name for this workflow" "Navn for denne arbejdsgang")
@@ -15734,7 +15755,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     ,     !nfvs:?*[>1
                                         &     submit
                                             $ (localized$!helpmespecifymygoal)
-                                            submitNR$(localized$!"skip zoom")
+                                            ( 
+                                            |   submitNR
+                                              $ (localized$!"skip zoom")
+                                            )
                                       | submit$(localized$!"show workflows")
                                   )
                                   (paragraph.,helplink$)
@@ -16486,7 +16510,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                 $ (TEImetadata.!nth.!parms..!hiddenData)
                             | NoNeedForMetadata$
                             )
-                        |   !Submit:Bookmark
+                        |   localized$!Bookmark:!Submit
                           & ((!sources.!goals).!struct):?wf
                           & ( !wrkflws:
                             | readTable$wrkflws
