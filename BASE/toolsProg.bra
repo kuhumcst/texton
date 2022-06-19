@@ -3759,13 +3759,17 @@ toolsProg=
         .   map
           $ ( ( 
               =   
-                .   !arg:(?par.?val)
-                  & ( input
-                    .     (type.hidden)
-                          (name.!par)
-                          (value.str$!val)
-                      , 
-                    )
+                .     !arg:(?par.?val)
+                    & ( input
+                      .     (type.hidden)
+                            (name.!par)
+                            (value.str$!val)
+                        , 
+                      )
+                  |   str
+                    $ ( "Error encountered in makeHiddenFields. arg="
+                        lst$(arg,MEM RAW LIN)
+                      )
               )
             . !arg
             )
@@ -14237,7 +14241,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                                         . !knownInputFeatures
                                                         )
                                                     : !knownInputFeatures
-                                                  & log$OK
                                                   & !name
                                                 | 
                                                 )
@@ -14360,7 +14363,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         | :?exr
                                         )
                                       &   cell
-                                        $ ( !wrkfls:
+                                        $ (   !wrkfls:
+                                            &   localized
+                                              $ ( "(No bookmarked workflows)"
+                                                  "(Ingen bogmærkede arbejdsgange)"
+                                                )
                                           |       listToThreeColumnTable
                                                 $ !wrkfls
                                               : ?stable
@@ -14795,23 +14802,31 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & setLang$!G
                   | 
                   )
+                & log$(cmptblWrkflws items !items presels !presels)
                 & cmptblWrkflws$(!items.!presels):?items
                 & ( !items
                   .     fieldset
-                      $ (     !items:? (?.?.% ?) ?
-                            &   localized
-                              $ ( "Text Tonsorium can enact a pre-existing, bookmarked workflow or compute and enact a workflow that fulfils your goal."
-                                  "Text Tonsorium kan afvikle en allerede eksisterende og markeret arbejdsgang eller beregne og udføre en arbejdsgang som opfylder dit mål."
+                      $ (   ( strong
+                            .   
+                              ,   localized
+                                $ ("Your uploaded input" "Din uploadede input")
+                            )
+                            (br.,)
+                            (   !items:? (?.?.% ?) ?
+                              &   localized
+                                $ ( "Text Tonsorium can enact a pre-existing, bookmarked workflow or compute and enact a workflow that fulfils your goal."
+                                    "Text Tonsorium kan afvikle en allerede eksisterende og markeret arbejdsgang eller beregne og udføre en arbejdsgang som opfylder dit mål."
+                                  )
+                            |   !items:% %
+                              &   localized
+                                $ ( "Text Tonsorium has categorized your inputs. Correct if you see something wrong. Not every field needs to be filled out. Choose one of the columns of inputs."
+                                    "Text Tonsorium har kategoriseret dine inputs. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke. Vælg en af kolonnerne."
+                                  )
+                            |   localized
+                              $ ( "Text Tonsorium has categorized your input. Correct if you see something wrong. Not every field needs to be filled out."
+                                  "Text Tonsorium har kategoriseret din input. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke."
                                 )
-                          |   !items:% %
-                            &   localized
-                              $ ( "Text Tonsorium has analysed the types of your inputs. Choose one of them and specify the desired output (your goal)."
-                                  "Text Tonsorium har analyseret dine inputs. Vælg en inputstype og fortsæt med at specificere den ønskede output (dit mål)."
-                                )
-                          |   localized
-                            $ ( "Text Tonsorium has analysed the type of your input. Please specify the desired output (your goal)."
-                                "Text Tonsorium har analyseret din input. Fortsæt med at specificere den ønskede output (dit mål)."
-                              )
+                            )
                         .   Table
                           $ ( id,inputs
                             .   row
@@ -14941,6 +14956,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       : ?Ofields
                     &   sourcesAndGoals$(!presels.!Ofields)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
+                    & log$sourcesAndGoalsDONE
                     &   (   !itemGroupsExt:(@.@.?)
                           & !Items !hiddenData
                         |   readTable$ItemGroupsCache
@@ -15059,7 +15075,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                     & (   !inputs:0
                         & !arg:? (Item.?inputs) ?
-                        & (Item.!inputs) Items:?Items
+                        & ( !Items:? (Item.!inputs) ?
+                          | (Item.!inputs) !Items:?Items
+                          )
                       |     mop
                           $ ( ( 
                               = .!arg:#*%@?arg&!arg
@@ -15103,6 +15121,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
           & log$NEW
           & log$CREATELOGJE
+          & log$(arg !arg)
           & !arg:?orgarg
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : ( ?errors
@@ -15826,6 +15845,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & saveTable$Uploads
                 )
               & (   localized$!updateAvailableWorkflows:!Submit
+                  & log$(Call specifyGoal !parms)
                   & specifyGoal$!parms
                 |   updateUploads$!parms
                   & 0:?allpipes
