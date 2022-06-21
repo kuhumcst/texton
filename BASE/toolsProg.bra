@@ -9334,7 +9334,9 @@ try {
                                 . !vs*!ys
                                 . (=*)
                                 )
-                            & (!f,!g)
+                            & ( !g:1&
+                              | (!f,!g)
+                              )
                           | !arg
                           )
                     )
@@ -9488,7 +9490,7 @@ try {
                 & !arg
             )
           & ( oUts
-            =   R F
+            =   R F X Y V Z
               .   1:?R
                 &   whl
                   ' (   !arg
@@ -9498,6 +9500,23 @@ try {
                         * ?arg
                     & !F*!R:?R
                     )
+                & "Check that only one feature can have conflicting values."
+                & (   !R:%?X*%?Y
+                    &   !X
+                      :   ?
+                          (?F,?V)
+                          ( ?Z
+                          & !Y:?*(? (!F,~!V) ?)*?
+                          &   !Z
+                            :   ?
+                                (?F,?V)
+                                ( ?
+                                & !Y:?*(? (!F,~!V) ?)*?
+                                )
+                          )
+                    & 0:?R
+                  | 
+                  )
                 & !R
             )
           & ( Results
@@ -9557,9 +9576,11 @@ try {
             =   results methods OF NF
               .     !arg:((?results.?methods).?OF)
                   & fromMethods$(!methods.!OF):(?methods.?NF)
-                  & ( !methods:0&(0.0)
-                    |       UpdateResultzFromMethods
-                          $ (!results.oUts$!methods)
+                  & (   ( !methods:0
+                        | oUts$!methods:?OF:0
+                        )
+                      & (0.0)
+                    |     UpdateResultzFromMethods$(!results.!OF)
                         : ?results
                       & ((!results.!methods).!NF)
                     )
