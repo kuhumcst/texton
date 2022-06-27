@@ -323,7 +323,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'fo')
         {
         $flexrulessubdir = "/1";
-        $flexrules = "flexrules.edfm2-100.tab-521-step2.3cole_XC";
+        $flexrules = "flexrules.WrdLem-20220412_edfm2-599.tsv-308-step2.3cole_XC";
         }
     else if($language == 'fr')
         {
