@@ -2687,6 +2687,13 @@ toolsProg=
             | !full
             )
       )
+      ( getFeatName
+      =   
+        .   ( !features:?+(? (short.!arg) ?:? (name.?arg) ?)+?
+            | 
+            )
+          & localized$!arg
+      )
       ( makeHiddenFields
       =   par val
         .   map
@@ -2801,7 +2808,7 @@ toolsProg=
  */"
       ( wrapper
       =     combineToolIncarnations getBoilerPlate specTable
-          , getFeatName getFeatSpecTable getFeatTable listAlts
+          , getFeatSpecTable getFeatTable listAlts
           , makeName DATA DATATEXT FEATURES FEATURETEXT Features
           , IO STYLES STYLETEXT basejobpost2 boilerPlate
           , boolfunc boolvar data declarations ech featname fname
@@ -2958,11 +2965,6 @@ catch (SystemExit $e)
               .   !arg:(?id.?field)
                 & !tooladm:?+(? (ToolID.!id) ?:? (!field.?val) ?)+?
                 & !val
-            )
-          & ( getFeatName
-            =   fname
-              .   !features:?+(? (short.!arg) ?:? (name.?fname) ?)+?
-                & localized$!fname
             )
           & ( getFeatTable
             =   table
@@ -4778,6 +4780,247 @@ try {
                         )
                     )
                 & sort$!io
+            )
+          & ( noPathReason
+            =   source goal feature sourceValue goalValue getEdges
+              .   ( getEdges
+                  =   T F L S
+                    .   ( removeExponents
+                        =   i
+                          .   1:?i
+                            &   mop
+                              $ ( ( 
+                                  =   
+                                    .   !arg:?arg^?
+                                      & !i*!arg:?i
+                                      & 
+                                  )
+                                . !arg
+                                . (=*)
+                                )
+                            & !i
+                        )
+                      & :?L
+                      & !arg:?F
+                      &   sort
+                        $ ( mop
+                          $ ( ( 
+                              =   T IOS
+                                .     !arg:(?T.? (!F,?IOS) ?)
+                                    & (     !tooladm
+                                          :   ?
+                                            + ( ? (ToolID.!T) ?
+                                              : ? (ServiceURL.~) ?
+                                              : ? (Inactive.) ?
+                                              )
+                                            + ?
+                                        &   mop
+                                          $ ( ( 
+                                              =   I O
+                                                .   !arg:(?I.?O)
+                                                  &   mop
+                                                    $ ( ( 
+                                                        =   
+                                                          .     !arg:%?arg ?
+                                                              & !arg:?is^?
+                                                              &   mop
+                                                                $ ( ( 
+                                                                    =   i
+                                                                      .     !arg
+                                                                          : ?i^?
+                                                                        & (     !i
+                                                                              : ( ?i
+                                                                                . OnE
+                                                                                )
+                                                                            &     removeExponents
+                                                                                $ !i
+                                                                              : ?i
+                                                                          | 
+                                                                          )
+                                                                        &   mop
+                                                                          $ ( ( 
+                                                                              =   
+                                                                                .         removeExponents
+                                                                                        $ !arg
+                                                                                      : ?arg
+                                                                                    &   !i
+                                                                                      : ~!arg
+                                                                                    & ( !i
+                                                                                      . !arg
+                                                                                      )
+                                                                                  | 
+                                                                              )
+                                                                            . !O
+                                                                            . ( 
+                                                                              =   
+                                                                                + 
+                                                                              )
+                                                                            )
+                                                                    )
+                                                                  . !is
+                                                                  . (=*)
+                                                                  )
+                                                            | 
+                                                        )
+                                                      . !I
+                                                      . (=+)
+                                                      )
+                                              )
+                                            . !IOS
+                                            . (=+)
+                                            )
+                                      | 
+                                      )
+                                  | 
+                              )
+                            . !toolprop
+                            . (=+)
+                            )
+                          )
+                  )
+                & ( getFullNames
+                  =   feature sourceValue goalValue table so go
+                    .   !arg:(?feature,?sourceValue,?goalValue.?)
+                      &   !features
+                        : ?+(? (short.!feature) ?:? (table.?table) ?)+?
+                      & log$(table !table)
+                      & readTable$!table
+                      & log$read
+                      &   !(&!table)
+                        : ? (?so.!sourceValue.) ?
+                        : ? (?go.!goalValue.) ?
+                      & (!so.!go)
+                  )
+                & !arg:(?source.?goal.?.?)
+                & log$(noPathReason source !source goal !goal)
+                & readTable$tooladm
+                & readTable$toolprop
+                & :?bridges
+                & (   !source
+                    :   ?
+                        (?feature,?sourceValue)
+                        ( ?
+                        &   !goal
+                          :   ?
+                              (!feature,?goalValue)
+                              ( ?
+                              & !sourceValue:~!goalValue
+                              & log$(feature !feature sourceValue !sourceValue goalValue !goalValue)
+                              &     (!feature,!sourceValue,!goalValue.getEdges$!feature)
+                                    !bridges
+                                : ?bridges
+                              & ~
+                              )
+                        )
+                  | 
+                  )
+                & lst$(bridges,path$bridges,RAW NEW)
+                & log$bridged
+                & (   "Failure reason 1: A feature cannot change at all"
+                    &     map
+                        $ ( ( 
+                            =   
+                              .     !arg:(?feature,?,?.)
+                                  &   str
+                                    $ (   localized
+                                        $ ( "There are currently no tools in the Text Tonsorium that can transform the \""
+                                            "Der er ikke nogen værktøjer i Text Tonsorium der kan transformere \""
+                                          )
+                                        getFeatName$!feature
+                                        localized$("\" feature." "\". ")
+                                      )
+                                | 
+                            )
+                          . !bridges
+                          )
+                      : ~
+                  |   "Failure reason 2: A specific feature value cannot cannot be transformed to or from any other value for that feature."
+                    &     map
+                        $ ( ( 
+                            =   
+                              .   !arg:(?feature,?sourceValue,?goalValue.?edges)
+                                & getFullNames$!arg:(?so.?go)
+                                & log$(so !so go !go)
+                                & (   !edges:~(? (!sourceValue.?) ?)
+                                    &   str
+                                      $ (   localized
+                                          $ ( "There is no tool that can transform feature \""
+                                              "Der er ikke noget værktøj der kan tranformere \""
+                                            )
+                                          getFeatName$!feature
+                                          "\" = \""
+                                          localized$!so
+                                          localized$("\" to another value." "\" til en anden værdi.")
+                                        )
+                                  |   !edges:~(? (?.!goalValue) ?)
+                                    &   str
+                                      $ (   localized
+                                          $ ( "There is no tool that can produce feature \""
+                                              "Der er ikke noget værktøj der kan producere \""
+                                            )
+                                          getFeatName$!feature
+                                          "\" = \""
+                                          localized$!go
+                                          localized$("\" from another value." "\" fra en anden værdi.")
+                                        )
+                                  | 
+                                  )
+                            )
+                          . !bridges
+                          )
+                      : ~
+                  |   "Failure reason 3: There is no chance that for a specific feature, the source value can be transformed to the goal value. There is no path through the DAG for that feature."
+                    & ( recur
+                      =   edges sourceValue goalValue aValue
+                        .   !arg:(?edges.?sourceValue,?goalValue)
+                          &     map
+                              $ ( ( 
+                                  = .!arg:(?.~!sourceValue)|
+                                  )
+                                . !edges
+                                )
+                            : ?edges
+                            : ( ? (!sourceValue.!goalValue) ?
+                              |   ?
+                                  ( !sourceValue
+                                  . ?aValue&recur$(!edges.!aValue,!goalValue)
+                                  )
+                                  ?
+                              )
+                      )
+                    & log$maprecur
+                    &     map
+                        $ ( ( 
+                            =   
+                              .     !arg:(?feature,?sourceValue,?goalValue.?edges)
+                                  & log$recur
+                                  & recur$(!edges.!sourceValue,!goalValue)
+                                  & log$succes
+                                  & 
+                                |   getFullNames$!arg:(?so.?go)
+                                  & log$(so !so go !go)
+                                  &   str
+                                    $ (   localized
+                                        $ ( "There is no tool chain leading from feature \""
+                                            "Der er ikke nogen værktøjskæde der fører fra \""
+                                          )
+                                        getFeatName$!feature
+                                        "\" = \""
+                                        localized$!so
+                                        localized$("\" to \"" "\" til \"")
+                                        getFeatName$!feature
+                                        "\" = \""
+                                        localized$!go
+                                        "\"."
+                                      )
+                            )
+                          . !bridges
+                          )
+                      : ~
+                  |   "Failure reason 4: The combination of feature values."
+                    & log$(noPathReason IS !arg)
+                    & localized$("There is no easy explanation." "Der er ikke nogen nem forklaring.")
+                  )
             )
           & ( fp
             =     tool source goal restriction superset makeSmell
@@ -6697,7 +6940,7 @@ try {
               & log$(windFW !nth)
               & windFW$(!reorderedworkflowlist.!nth):?reorderedworkflowlist
               & log$woundFW
-              & (!parms.!userInput.(!reorderedworkflowlist.!topologicalOrderedTools).allRight)
+              & (!parms.!userInput.(!reorderedworkflowlist.!topologicalOrderedTools).allRight.)
             |   log$"Not in recentTasks"
               & "memoizedTrees: global variable"
               & (!memoizedTrees|:?memoizedTrees)
@@ -6850,11 +7093,11 @@ try {
               & ( !parms
                 . !userInput
                 .     !FP:(?,?) ?
-                    & ((!FP.).triviallyFulfilled)
+                    & ((!FP.).triviallyFulfilled.)
                   |   !FP:?+[>!MAXPIPES
                     & !FP:?+[?NNNN
                     & log$(tooMany !NNNN)
-                    & ((!FP.).tooMany)
+                    & ((!FP.).tooMany.)
                   |   ( !restriction:
                       | !FP:?+(?.?fP&haz$(!fP.!restriction))+?
                       )
@@ -6865,7 +7108,7 @@ try {
                            have the chance to refine the goal by looking which
                            feature values are represented in the computed
                            workflows."
-                        & ((!FP.!arg).workflowsFound)
+                        & ((!FP.!arg).workflowsFound.)
                       |   "This is unusual. If the user chooses a specific 
                            workflow, it will normally not have to be
                            recomputed. Instead, it will be found in
@@ -6883,17 +7126,17 @@ try {
                         & log$(UNUSUALsaveTask !userInput length !nr)
                         & saveTask$(!userInput.!reorderedworkflowlist.!topologicalOrderedTools)
                         & windFW$(!reorderedworkflowlist.!nth):?reorderedworkflowlist
-                        & ((!reorderedworkflowlist.!topologicalOrderedTools).allRight)
+                        & ((!reorderedworkflowlist.!topologicalOrderedTools).!returnCode.)
                       )
-                  | ((!FP.).onlyWithoutRestriction)
+                  | ((!FP.).onlyWithoutRestriction.)
                 )
             |   !FP:#:<0
               & log$"!FP:#:<0 gives tooMany"
-              & (!parms.!userInput.(0.).tooMany)
+              & (!parms.!userInput.(0.).tooMany.)
             |   !Npipes:0
               & log$(NOTFULFILLABLE FP !FP)
-              & (!parms.!userInput.(0.).notFulfillable)
-            | log$(Npipes !Npipes ">" !MAXPIPES)&(!parms.!userInput.(0.).tooMany)
+              & (!parms.!userInput.(0.).notFulfillable.noPathReason$!userInput)
+            | log$(Npipes !Npipes ">" !MAXPIPES)&(!parms.!userInput.(0.).tooMany.)
             )
       )
       ( composeValueString
@@ -6945,7 +7188,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , base post2 val vals JobStack Val item In
           , jobIDoffset A OffSet addOutputsToRequestString
           , extension ID forceFeed jobNr jobID maxjobID
-          , Short Long DiscerningFeature getDisFe
+          , Short DiscerningFeature getDisFe
           , DATE Tool URL dep discerningFeature
           , feat in ou spec v nfiles fileTerm notIncompatible
           , inputs moreinputs firstinput other fh oh
@@ -6968,13 +7211,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   | 
                   )
                 & !arg
-            )
-          & ( Long
-            =   
-              .   ( !features:?+(? (short.!arg) ?:? (name.?arg) ?)+?
-                  | 
-                  )
-                & localized$!arg
             )
           & ( compact
             =   A B C D E x
@@ -7230,7 +7466,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                     & (F.!file)
                                   |   !feats:? (!discerningFeature.?v) ?
                                     & getShort$(!discerningFeature.!v):?v
-                                    & Long$!discerningFeature:?DiscerningFeature
+                                    & getFeatName$!discerningFeature:?DiscerningFeature
                                     & notIncompatible$(!feats.!In)
                                     & compatible$(!feats.!In)
                                     &   !In
@@ -8052,21 +8288,33 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             )
       )
       ( NotFulfillable
-      =   
-        .   str
-          $ ( 404~~~
-                toML
-              $ ( !BodyContainer
-                $ (   paragraph
-                    $ ( localized
-                      $ ( "Your goal cannot be fulfilled with the currently integrated tools. Try to make your goal less specific."
-                          "Dit mål kan ikke opfyldes med de værktøjer der p.t. er integreret i infrastrukturen. Prøv at lave dit mål mindre specifikt."
+      =   userInput goal
+        .   !arg:(?arg.?userInput)
+          & log$(userInput !userInput)
+          & !userInput:(?.?goal.?)
+          &   str
+            $ ( 404~~~
+                  toML
+                $ ( !BodyContainer
+                  $ (   paragraph
+                      $ ( str
+                        $ (   localized
+                            $ ( "Your goal cannot be fulfilled with the currently integrated tools. "
+                                "Dit mål kan ikke opfyldes med de værktøjer der p.t. er integreret i infrastrukturen. "
+                              )
+                            (   !goal:% %
+                              &   localized
+                                $ ( "Try to make your goal less specific."
+                                    "Prøv at lave dit mål mindre specifikt."
+                                  )
+                            | 
+                            )
+                          )
                         )
-                      )
-                    (p.,str$("(Returncode: " !arg ")"))
+                      (p.,str$("(" !arg ")"))
+                    )
                   )
-                )
-            )
+              )
       )
       ( FulfillableWithoutRestriction
       =   
@@ -10172,12 +10420,14 @@ function main2(evt) {
                     | ?&1:?nth
                     )
                 & localized$("View details" "Se detaljer"):?ViewDetails
+                & :?msg
                 & (   !nth:#
                     &   Pipelines$(!parms.!nth)
                       : ( ?
                         . (?sources.?goals.?)
                         . ((?.?.?.?.?),(?.?struct).?topologicalOrderedTools)
                         . ?returnCode
+                        . ?msg
                         )
                     & log$(returnCode !returnCode)
                     & "!returnCode:(allRight
@@ -10193,7 +10443,7 @@ function main2(evt) {
                       | UnexpectedReturnCode$!returnCode
                       )
                   | !wrkflws:? (!nth.?.?struct) ?&whichButton$!nth
-                  | NotFulfillable$NoPipelinesFound
+                  | NotFulfillable$(!msg:~|NoPipelinesFound.!sources.!goals.)
                   )
             )
           & (|log$NEW)
@@ -11022,9 +11272,13 @@ function main2(evt) {
                       )
                     & (   !prod:
                         & "Do not export production data: empty tables consisting of production data only."
-                        & log$("EMPTY" !prodtables)
+                        & log$(EMPTY !prodtables)
                         &   map
-                          $ ( (=.:?(&!arg)&log$("emptied" !arg))
+                          $ ( ( 
+                              =   
+                                .   :?(&!arg)
+                                  & log$(emptied !arg)
+                              )
                             . !prodtables
                             )
                         & "Do not export contact email and service URL."
@@ -14983,8 +15237,9 @@ function main2(evt) {
                   & localized$("No workflows found." "Ingen arbejdsgange fundet."):?returnCode
                   & :?restriction
                   & log$CALL-Pipelines
+                  & :?msg
                   & (     Pipelines$(!parms.)
-                        : (?.(?sources.?):?userInput.?2or3things.?returnCode)
+                        : (?.(?sources.?):?userInput.?2or3things.?returnCode.?msg)
                       & (   !returnCode:allRight
                           & log$"returnCode:allRight"
                           & !2or3things:(?reorderedworkflowlist.?topologicalOrderedTools)
@@ -15008,9 +15263,10 @@ function main2(evt) {
                         |   !returnCode:(tooMany|tooComplex)
                           & TooManyWorkflows$
                         |   !returnCode:notFulfillable
-                          & NotFulfillable$!returnCode
+                          &   NotFulfillable
+                            $ (!msg:~|!returnCode.!userInput)
                         )
-                    | NotFulfillable$!returnCode
+                    | NotFulfillable$(!msg:~|!returnCode.)
                     )
                 )
             )
