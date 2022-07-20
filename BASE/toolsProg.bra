@@ -4883,16 +4883,13 @@ try {
                     .   !arg:(?feature,?sourceValue,?goalValue.?)
                       &   !features
                         : ?+(? (short.!feature) ?:? (table.?table) ?)+?
-                      & log$(table !table)
                       & readTable$!table
-                      & log$read
                       &   !(&!table)
                         : ? (?so.!sourceValue.) ?
                         : ? (?go.!goalValue.) ?
                       & (!so.!go)
                   )
                 & !arg:(?source.?goal.?.?)
-                & log$(noPathReason source !source goal !goal)
                 & readTable$tooladm
                 & readTable$toolprop
                 & :?bridges
@@ -4905,7 +4902,6 @@ try {
                               (!feature,?goalValue)
                               ( ?
                               & !sourceValue:~!goalValue
-                              & log$(feature !feature sourceValue !sourceValue goalValue !goalValue)
                               &     (!feature,!sourceValue,!goalValue.getEdges$!feature)
                                     !bridges
                                 : ?bridges
@@ -4914,8 +4910,6 @@ try {
                         )
                   | 
                   )
-                & lst$(bridges,path$bridges,RAW NEW)
-                & log$bridged
                 & (   "Failure reason 1: A feature cannot change at all"
                     &     map
                         $ ( ( 
@@ -4940,7 +4934,6 @@ try {
                             =   
                               .   !arg:(?feature,?sourceValue,?goalValue.?edges)
                                 & getFullNames$!arg:(?so.?go)
-                                & log$(so !so go !go)
                                 & (   !edges:~(? (!sourceValue.?) ?)
                                     &   str
                                       $ (   localized
@@ -4988,17 +4981,13 @@ try {
                                   ?
                               )
                       )
-                    & log$maprecur
                     &     map
                         $ ( ( 
                             =   
                               .     !arg:(?feature,?sourceValue,?goalValue.?edges)
-                                  & log$recur
                                   & recur$(!edges.!sourceValue,!goalValue)
-                                  & log$succes
                                   & 
                                 |   getFullNames$!arg:(?so.?go)
-                                  & log$(so !so go !go)
                                   &   str
                                     $ (   localized
                                         $ ( "There is no tool chain leading from feature \""
@@ -5018,7 +5007,6 @@ try {
                           )
                       : ~
                   |   "Failure reason 4: The combination of feature values."
-                    & log$(noPathReason IS !arg)
                     & localized$("There is no easy explanation." "Der er ikke nogen nem forklaring.")
                   )
             )
