@@ -14,15 +14,15 @@ Installation requires
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
   * texton - Bracmat part (this repo)
-  * install linguistic resources
+  * linguistic resources
   * apache2
   * PHP
   * Java
   * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
-  * enabling webservices
   * proxy settings
+  * cron jobs
   * python3
   * xmllint
   * bracmat  
@@ -34,7 +34,6 @@ Installation requires
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * many tools wrapped in web services in `/opt/texton/`
   * tools that can be compiled from source
-  * create cron jobs
 
 ## git-lfs
 
@@ -51,7 +50,7 @@ Installation requires
 In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
 Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
 
-## install linguistic resources
+## linguistic resources
 
     $> cd /opt
     $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
@@ -70,6 +69,13 @@ Set group to www-data, recursively
 ## apache
 
     $> sudo apt install apache2
+
+### enabling webservices
+
+    $> cd /opt/texton/apache2-sites/
+    $> sudo cp texton.conf /etc/apache2/sites-available/
+    $> sudo a2ensite texton.conf
+    $> sudo service apache2 reload
 
 ## PHP
 
@@ -163,13 +169,6 @@ Make the file executable
 
     $> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
 
-## Enabling webservices
-
-    $> cd apache2-sites/
-    $> sudo cp texton.conf /etc/apache2/sites-available/
-    $> sudo a2ensite texton.conf
-    $> sudo service apache2 reload
-
 ## Proxy settings
 
     $> sudo vi /etc/apache2/mods-available/proxy.conf
@@ -193,6 +192,13 @@ All of the above can also be expressed as
     $> sudo a2enmod proxy_ajp
     $> sudo a2enmod proxy_http
     $> sudo service apache2 restart
+
+## cron jobs
+The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
+
+    0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+    0  *  * * * /usr/bin/find /var/log/tomcat9/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+    0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
 
 ## Python3
 
@@ -501,12 +507,4 @@ $> sudo chmod ugo+x maketaggerXML.bash
 $> ./maketaggerXML.bash
 $> sudo cp taggerXML/taggerXML /opt/texton/bin/
 ```
-
-## create cron jobs
-The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
-
-    0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
-    0  *  * * * /usr/bin/find /var/log/tomcat9/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
-    0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
-
 
