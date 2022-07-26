@@ -1,6 +1,6 @@
 # Text Tonsorium
 
-This document explains how you can install the Text Tonsorium under Linux.
+This document explains how you can install the Text Tonsorium under Linux Ubuntu.
 
 The instructions are valid under the following assumptions:
 
@@ -14,12 +14,15 @@ Installation requires
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
   * texton - Bracmat part (this repo)
+  * install linguistic resources
   * apache2
   * PHP
-  * java
+  * Java
   * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
+  * enabling webservices
+  * proxy settings
   * python3
   * xmllint
   * bracmat  
@@ -29,11 +32,8 @@ Installation requires
   * texton - Java part
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
-  * Many tools wrapped in web services in `/opt/texton/`
-  * Tools that can be compiled from source
-  * Linguistic resources
-  * set access rights
-  * Proxy
+  * many tools wrapped in web services in `/opt/texton/`
+  * tools that can be compiled from source
   * create cron jobs
 
 ## git-lfs
@@ -47,6 +47,25 @@ Installation requires
     $> cd texton
     $> sudo chgrp -R www-data *
     $> sudo chmod -R g+w * 
+
+In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
+Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
+
+## install linguistic resources
+
+    $> cd /opt
+    $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+    $> cd texton
+    $> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
+    
+Make all directories accessible and readable and give owner and group write rights
+
+    $> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
+
+Set group to www-data, recursively
+
+    $> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
+
 
 ## apache
 
@@ -143,6 +162,37 @@ If your computer has more than 8 GB RAM, you can add
 Make the file executable
 
     $> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
+
+## Enabling webservices
+
+    $> cd apache2-sites/
+    $> sudo cp texton.conf /etc/apache2/sites-available/
+    $> sudo a2ensite texton.conf
+    $> sudo service apache2 reload
+
+## Proxy settings
+
+    $> sudo vi /etc/apache2/mods-available/proxy.conf
+
+Add:
+
+        ProxyPass /texton/ http://127.0.0.1:8080/texton/
+        ProxyPass /texton/ http://127.0.0.1:8080/texton/
+        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
+        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
+        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
+        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
+        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
+        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
+        
+All of the above can also be expressed as
+
+        ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
+
+    $> sudo a2enmod proxy
+    $> sudo a2enmod proxy_ajp
+    $> sudo a2enmod proxy_http
+    $> sudo service apache2 restart
 
 ## Python3
 
@@ -451,53 +501,6 @@ $> sudo chmod ugo+x maketaggerXML.bash
 $> ./maketaggerXML.bash
 $> sudo cp taggerXML/taggerXML /opt/texton/bin/
 ```
-
-## Install linguistic resources
-
-    $> cd /opt
-    $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
-    $> cd texton
-    $> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
-    
-## set access rights
-
-Make all directories accessible and readable and give owner and group write rights
-
-    $> sudo find /opt/texton/res -type d -exec chmod 775 {} \; 
-
-Set group to www-data, recursively
-
-    $> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
-    
-In the BASE folder, which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
-Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.
-    
-## Enabling webservices
-
-    $> cd apache2-sites/
-    $> sudo cp texton.conf /etc/apache2/sites-available/
-    $> sudo a2ensite texton.conf
-    $> sudo service apache2 reload
-
-## Proxy
-
-    $> sudo vi /etc/apache2/mods-available/proxy.conf
-
-Add:
-
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
-        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
-        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
-        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
-        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
-        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
-        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
-
-    $> sudo a2enmod proxy
-    $> sudo a2enmod proxy_ajp
-    $> sudo a2enmod proxy_http
-    $> sudo service apache2 restart
 
 ## create cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
