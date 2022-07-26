@@ -13,6 +13,7 @@ The instructions are valid under the following assumptions:
 Installation requires 
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
+  * texton - Bracmat part (this repo)
   * apache2
   * PHP
   * java
@@ -21,22 +22,25 @@ Installation requires
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
   * python3
   * xmllint
-  * this repo
   * bracmat  
    Interpreters are installed in two locations:  
    as a JNI (Java Native Interface) inside Tomcat  
    and as a command line tool in `/opt/texton/bin/`
-  * BASE
+  * texton - Java part
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * Many tools wrapped in web services in `/opt/texton/`
+  * Tools that can be compiled from source
   * Linguistic resources
+  * set access rights
+  * Proxy
+  * create cron jobs
 
 ## git-lfs
 
     $> sudo apt-get install -y git-lfs
 
-## this repo
+## texton - Bracmat part (this repo)
 
     $> cd /opt
     $> sudo git clone https://github.com/kuhumcst/texton.git
@@ -161,9 +165,7 @@ Installing:
 
     $> sudo apt install libxml2-utils
 
-## BASE
-
-### bracmat
+## bracmat
 
 ```bash
 $> cd ~
@@ -171,16 +173,15 @@ $> git clone https://github.com/BartJongejan/Bracmat.git
 $> cd Bracmat/src/
 $> make
 $> sudo cp bracmat /opt/texton/bin/
-$> cd ../../
 ```
 
+## texton - Java part
+
 ### bracmat.jar and libbracmat.so.1.0
-You need administrator rights for this.
 
 ```bash
-$> cd Bracmat/java-JNI/
+$> cd ~/Bracmat/java-JNI/
 $> sudo ./compileAndTestJNI.sh
-$> cd ../../
 ```
 
 This script creates the symbolicv links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
@@ -219,7 +220,7 @@ Copy the file name of the most recent "alltables..." file to the clipboard. Now 
 
 You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
 
-## Wrapped binaries
+## Wrapped NLP tools
 
 Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
@@ -400,7 +401,7 @@ and comment out the lines telling that rights is "none" for these file types.
 
 See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
 
-## Tools to be compiled from source
+## Tools that can be compiled from source
 
 In this readme, we assume that the `bin` directory is `/opt/texton/bin`.
 
