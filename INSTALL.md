@@ -46,7 +46,9 @@ Installation requires
     $> cd texton
     $> sudo chgrp -R www-data *
     $> sudo chmod -R g+w * 
-
+    $> cd BASE
+    $> sudo chown -R tomcat *
+    
 In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
 Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
 
@@ -240,7 +242,7 @@ $> cd ~/Bracmat/java-JNI/
 $> sudo ./compileAndTestJNI.sh
 ```
 
-This script creates the symbolicv links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
+This script creates the symbolic links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
 The script also creates bracmat.jar and attempts to copy it to Tomcat's "lib" folder. This is because bracmat runs as a JNI, its functions being called from the texton-java java code. 
 
 ### texton-Java
