@@ -161,10 +161,6 @@ Installing:
 
     $> sudo apt install libxml2-utils
 
-## Bracmat
-
-See https://github.com/kuhumcst/texton-bin.
-
 ## BASE
 
 The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
@@ -376,6 +372,90 @@ and comment out the lines telling that rights is "none" for these file types.
     $> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
 
 See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
+
+## Software to be compiled from source
+
+In this readme, we assume that the `bin` directory is `/opt/texton/bin`.
+
+### texton-Java, bracmat, bracmat.jar, libbracmat.so.1.0
+```bash
+$> git clone https://github.com/kuhumcst/texton-Java.git
+$> git clone https://github.com/BartJongejan/Bracmat.git
+```
+Make sure that texton-Java/ and Bracmat/ share the same parent folder.
+
+#### bracmat
+```bash
+$> cd Bracmat/src/
+$> make
+$> sudo cp bracmat /opt/texton/bin/
+$> cd ../../
+```
+
+#### bracmat.jar and libbracmat.so.1.0
+You need administrator rights for this.
+
+```bash
+$> cd Bracmat/java-JNI/
+$> ./compileAndTestJNI.sh
+$> cd ../../
+```
+
+This script creates the symbolicv links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
+The script also creates bracmat.jar and attempts to copy it to Tomcat's "lib" folder. This is because bracmat runs as a JNI, its functions being called from the texton-java java code. 
+
+#### texton-java
+
+$> cd texton-Java
+$> sudo ./compileTomcat.sh
+$> cd ../
+
+For the second step, it is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
+
+### cstlemma
+```bash
+$> wget https://raw.githubusercontent.com/kuhumcst/cstlemma/master/doc/makecstlemma.bash
+$> chmod ugo+x makecstlemma.bash
+$> ./makecstlemma.bash
+$> sudo cp cstlemma/cstlemma /opt/texton/bin/
+```
+
+### jsoncat
+```bash
+$> git clone https://github.com/pantuza/jsoncat.git
+```
+Follow the instructions in `README.md`. Copy jsoncat to `/opt/texton/bin/`.  
+
+### lapos
+`$> git clone https://github.com/cltk/lapos.git`
+
+Follow the build instructions. Copy the executable file `lapos` to `/opt/texton/bin`.
+
+### repver
+```bash
+$> wget https://raw.githubusercontent.com/kuhumcst/repetitiveness-checker/master/doc/makerepver.bash
+$> chmod ugo+x makerepver.bash
+$> ./makerepver.bash
+$> sudo cp repetitiveness-checker/repver /opt/texton/bin/
+```
+
+### rtfreader
+```bash
+$> wget https://raw.githubusercontent.com/kuhumcst/rtfreader/master/doc/makertfreader.bash
+$> sudo chmod ugo+x makertfreader.bash
+$> ./makerepver.bash
+$> sudo cp rtfreader/rtfreader /opt/texton/bin/
+```
+
+### taggerXML
+Copy https://github.com/kuhumcst/taggerXML/blob/master/doc/maketaggerXML.bash to your disk and run it.
+Copy `taggerXML/taggerXML` to `/opt/texton/bin`.
+```bash
+$> wget https://raw.githubusercontent.com/kuhumcst/taggerXML/master/doc/maketaggerXML.bash
+$> sudo chmod ugo+x maketaggerXML.bash
+$> ./maketaggerXML.bash
+$> sudo cp taggerXML/taggerXML /opt/texton/bin/
+```
 
 ## Install linguistic resources
 
