@@ -36,7 +36,7 @@ Installation requires
 
     $> sudo apt-get install -y git-lfs
 
-## This repo
+## this repo
 
     $> cd /opt
     $> sudo git clone https://github.com/kuhumcst/texton.git
@@ -163,37 +163,34 @@ Installing:
 
 ## BASE
 
-### bracmat, bracmat.jar, libbracmat.so.1.0, texton-Java, texton
+### bracmat
 
 ```bash
 $> cd ~
 $> git clone https://github.com/BartJongejan/Bracmat.git
-```
-Make sure that texton-Java/ and Bracmat/ share the same parent folder.
-
-#### bracmat
-```bash
 $> cd Bracmat/src/
 $> make
 $> sudo cp bracmat /opt/texton/bin/
 $> cd ../../
 ```
 
-#### bracmat.jar and libbracmat.so.1.0
+### bracmat.jar and libbracmat.so.1.0
 You need administrator rights for this.
 
 ```bash
 $> cd Bracmat/java-JNI/
-$> ./compileAndTestJNI.sh
+$> sudo ./compileAndTestJNI.sh
 $> cd ../../
 ```
 
 This script creates the symbolicv links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
 The script also creates bracmat.jar and attempts to copy it to Tomcat's "lib" folder. This is because bracmat runs as a JNI, its functions being called from the texton-java java code. 
 
-#### texton-Java
+### texton-Java
 
 The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
+Make sure that texton-Java/ and Bracmat/ share the same parent folder. You can clone whereever you want. Here we assume that you build software in your home folder.
+
 The installation instructions in https://github.com/kuhumcst/texton-Java are not up-to-data as of 2020.08.17
 Just do:
 
@@ -204,17 +201,16 @@ Just do:
     $> sudo ./compileTomcat.sh
     $> sudo /opt/tomcat/latest/bin/startup.sh
 
-(Here we assume you installed Tomcat from a downloaded archive, see above.)
+Here we assume you installed Tomcat from a downloaded archive, see above.
 
-You can clone whereever you want. Here we assumed that you were in your home folder.
 The Text Tonsorium only needs the .war file that is the result of compiling the java source.
 But for the second step, it is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
 
+### running Text Tonsorium the first time
 
-Then, open a browser and navigate to http://localhost:8080/ That should open the Tomcat welcome page. Click the "Manager App" button, using the user and password that
-you defined in tomcat-users.xml. Then, in the "Path" column, click "/texton". That must open the Text Tonsorium front page.
+Open a browser and navigate to http://localhost:8080/texton/
 
-Before proceeding, we need to install the metadata table that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
+Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
     $> cd /opt/texton/BASE/
     $> ls -lrt alltables*
@@ -222,11 +218,6 @@ Before proceeding, we need to install the metadata table that the Text Tonsorium
 Copy the file name of the most recent "alltables..." file to the clipboard. Now bavigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
 You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
-
-#### texton
-
-The Bracmat code of the central hub is in this (https://github.com/kuhumcst/texton) repo.
-
 
 ## Wrapped binaries
 
@@ -241,14 +232,14 @@ Install prerequisite:
 
 This installs /usr/bin/pdffonts.
 
-Visit https://github.com/pdfminer/pdfminer.six and follow installation instructions.
+Visit https://github.com/euske/pdfminer and follow the installation instructions.
 
     $> sudo su
     $> cd ~
     $> umask 022
     $> pip3 install pdfminer
 
-If you like, you can instead install the newer pdfminer.six software. We do currently (2020.08.20) see no reason to do that.
+If you like, you can instead install the newer pdfminer.six (https://github.com/pdfminer/pdfminer.six) software. We do currently (2020.08.20) see no reason to do that.
 
     $> pip3 install pdfminer.six
 
@@ -285,6 +276,7 @@ Dapipe is at https://github.com/ITUnlp/dapipe
     $> sudo git clone https://github.com/ITUnlp/dapipe.git
 
 Afterwards there will be a subdirectory `dapipe/dapipe`.
+It is probably better to use the newer udpipe software. 
 
 ### udpipe
 
@@ -408,11 +400,12 @@ and comment out the lines telling that rights is "none" for these file types.
 
 See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
 
-## Software to be compiled from source
+## Tools to be compiled from source
 
 In this readme, we assume that the `bin` directory is `/opt/texton/bin`.
 
 ### cstlemma
+
 ```bash
 $> wget https://raw.githubusercontent.com/kuhumcst/cstlemma/master/doc/makecstlemma.bash
 $> chmod ugo+x makecstlemma.bash
@@ -421,6 +414,7 @@ $> sudo cp cstlemma/cstlemma /opt/texton/bin/
 ```
 
 ### jsoncat
+
 ```bash
 $> git clone https://github.com/pantuza/jsoncat.git
 ```
