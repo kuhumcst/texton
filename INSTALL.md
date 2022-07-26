@@ -36,17 +36,26 @@ Installation requires
 
     $> sudo apt-get install -y git-lfs
 
+## This repo
+
+    $> cd /opt
+    $> sudo git clone https://github.com/kuhumcst/texton.git
+    $> cd texton
+    $> sudo chgrp -R www-data *
+    $> sudo chmod -R g+w * 
+
 ## apache
 
     $> sudo apt install apache2
+
+## PHP
+
     $> sudo apt-get install php libapache2-mod-php
     $> sudo a2enmod php7.4
     $> sudo service apache2 restart
 
 Note "php7.4" is an example. Use the php version that you saw being installed in the presvious step. 
-Copy apache2-sites/texton.conf to /etc/apache2/sites-available. 
-
-## PHP
+Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
 
 Some php scripts use the CURLFile class. To make that work
 
@@ -151,14 +160,6 @@ The teianno tool uses xmllint.
 Installing:
 
     $> sudo apt install libxml2-utils
-
-## This repo
-
-    $> cd /opt
-    $> sudo git clone https://github.com/kuhumcst/texton.git
-    $> cd texton
-    $> sudo chgrp -R www-data *
-    $> sudo chmod -R g+w * 
 
 ## Bracmat
 
