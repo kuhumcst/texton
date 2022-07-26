@@ -163,22 +163,53 @@ Installing:
 
 ## BASE
 
+### bracmat, bracmat.jar, libbracmat.so.1.0, texton-Java, texton
+
+```bash
+$> cd ~
+$> git clone https://github.com/BartJongejan/Bracmat.git
+```
+Make sure that texton-Java/ and Bracmat/ share the same parent folder.
+
+#### bracmat
+```bash
+$> cd Bracmat/src/
+$> make
+$> sudo cp bracmat /opt/texton/bin/
+$> cd ../../
+```
+
+#### bracmat.jar and libbracmat.so.1.0
+You need administrator rights for this.
+
+```bash
+$> cd Bracmat/java-JNI/
+$> ./compileAndTestJNI.sh
+$> cd ../../
+```
+
+This script creates the symbolicv links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
+The script also creates bracmat.jar and attempts to copy it to Tomcat's "lib" folder. This is because bracmat runs as a JNI, its functions being called from the texton-java java code. 
+
+#### texton-Java
+
 The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
-The Bracmat code of the central hub is in this (https://github.com/kuhumcst/texton) repo.
-   
-You can clone whereever you want. The Text Tonsorium only needs the .war file that is the result
-of compiling the java source.
-   
 The installation instructions in https://github.com/kuhumcst/texton-Java are not up-to-data as of 2020.08.17
 Just do:
 
+    $> cd ~
     $> git clone https://github.com/kuhumcst/texton-Java.git
     $> cd texton-Java/
     $> sudo chmod ugo+x compileTomcat.sh
     $> sudo ./compileTomcat.sh
     $> sudo /opt/tomcat/latest/bin/startup.sh
-   
-(Assuming you installed Tomcat from a downloaded archive, see above.)
+
+(Here we assume you installed Tomcat from a downloaded archive, see above.)
+
+You can clone whereever you want. Here we assumed that you were in your home folder.
+The Text Tonsorium only needs the .war file that is the result of compiling the java source.
+But for the second step, it is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
+
 
 Then, open a browser and navigate to http://localhost:8080/ That should open the Tomcat welcome page. Click the "Manager App" button, using the user and password that
 you defined in tomcat-users.xml. Then, in the "Path" column, click "/texton". That must open the Text Tonsorium front page.
@@ -191,6 +222,10 @@ Before proceeding, we need to install the metadata table that the Text Tonsorium
 Copy the file name of the most recent "alltables..." file to the clipboard. Now bavigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
 You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
+
+#### texton
+
+The Bracmat code of the central hub is in this (https://github.com/kuhumcst/texton) repo.
 
 
 ## Wrapped binaries
@@ -376,41 +411,6 @@ See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
 ## Software to be compiled from source
 
 In this readme, we assume that the `bin` directory is `/opt/texton/bin`.
-
-### texton-Java, bracmat, bracmat.jar, libbracmat.so.1.0
-```bash
-$> git clone https://github.com/kuhumcst/texton-Java.git
-$> git clone https://github.com/BartJongejan/Bracmat.git
-```
-Make sure that texton-Java/ and Bracmat/ share the same parent folder.
-
-#### bracmat
-```bash
-$> cd Bracmat/src/
-$> make
-$> sudo cp bracmat /opt/texton/bin/
-$> cd ../../
-```
-
-#### bracmat.jar and libbracmat.so.1.0
-You need administrator rights for this.
-
-```bash
-$> cd Bracmat/java-JNI/
-$> ./compileAndTestJNI.sh
-$> cd ../../
-```
-
-This script creates the symbolicv links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
-The script also creates bracmat.jar and attempts to copy it to Tomcat's "lib" folder. This is because bracmat runs as a JNI, its functions being called from the texton-java java code. 
-
-#### texton-java
-
-$> cd texton-Java
-$> sudo ./compileTomcat.sh
-$> cd ../
-
-For the second step, it is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
 
 ### cstlemma
 ```bash
