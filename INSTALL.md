@@ -37,78 +37,103 @@ Installation requires
 
 ## git-lfs
 
-    $> sudo apt-get install -y git-lfs
+```bash
+$> sudo apt-get install -y git-lfs
+```
 
 ## texton - Bracmat part (this repo)
 
-    $> cd /opt
-    $> sudo git clone https://github.com/kuhumcst/texton.git
-    $> cd texton
-    $> sudo chgrp -R www-data *
-    $> sudo chmod -R g+w * 
-    $> cd BASE
-    $> sudo chown -R tomcat *
-    
+```bash
+$> cd /opt
+$> sudo git clone https://github.com/kuhumcst/texton.git
+$> cd texton
+$> sudo chgrp -R www-data *
+$> sudo chmod -R g+w * 
+$> cd BASE
+$> sudo chown -R tomcat *
+```
+
 In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
 Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
 
 ## linguistic resources
 
-    $> cd /opt
-    $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
-    $> cd texton
-    $> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
-    
+```bash
+$> cd /opt
+$> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+$> cd texton
+$> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
+```
+
 Make all directories accessible and readable and give owner and group write rights
 
-    $> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
+```bash
+$> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
+```
 
 Set group to www-data, recursively
 
-    $> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
-
+```bash
+$> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
+```
 
 ## apache
 
-    $> sudo apt install apache2
+```bash
+$> sudo apt install apache2
+```
 
 ### enabling webservices
 
-    $> cd /opt/texton/apache2-sites/
-    $> sudo cp texton.conf /etc/apache2/sites-available/
-    $> sudo a2ensite texton.conf
-    $> sudo service apache2 reload
+```bash
+$> cd /opt/texton/apache2-sites/
+$> sudo cp texton.conf /etc/apache2/sites-available/
+$> sudo a2ensite texton.conf
+$> sudo service apache2 reload
+```
 
 ## PHP
 
-    $> sudo apt-get install php libapache2-mod-php
-    $> sudo a2enmod php7.4
-    $> sudo service apache2 restart
+```bash
+$> sudo apt-get install php libapache2-mod-php
+$> sudo a2enmod php7.4
+$> sudo service apache2 restart
+```
 
 Note "php7.4" is an example. Use the php version that you saw being installed in the presvious step. 
 Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
 
 Some php scripts use the CURLFile class. To make that work
 
-    $> sudo apt-get install php-curl
+```bash
+$> sudo apt-get install php-curl
+```
 
 The html2text converter (https://github.com/soundasleep/html2text.git) requires two PHP packages
 
-    $> sudo apt-get install php-mbstring
-    $> sudo apt-get install php-dom
+```bash
+$> sudo apt-get install php-mbstring
+$> sudo apt-get install php-dom
+```
 
 Restart apache
 
-    $> sudo service apache2 restart
+```bash
+$> sudo service apache2 restart
+```
 
 ## java
 
-    $ sudo apt install default-jdk
-    
+```bash
+$> sudo apt install default-jdk
+```
+
 ## ant
 Ant is needed if you want to build the texton.war file from source.
 
-    $> sudo apt install ant
+```bash
+$> sudo apt install ant
+```
 
 ## Tomcat
 
@@ -117,16 +142,18 @@ Therefore, if you install the Text Tonsorium under WSL, you must install Tomcat 
 
 Visit https://tomcat.apache.org/ to obtain a link to a recent archive.
 
-    $> sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
-    $> cd /tmp
-    $> wget http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.14/bin/apache-tomcat-9.0.14.tar.gz -P .
-    $> sudo mkdir /opt/tomcat
-    $> sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
-    $> sudo ln -s /opt/tomcat/apache-tomcat-9.0.14 /opt/tomcat/latest
-    $> sudo chown -RH tomcat: /opt/tomcat/latest
-    $> sudo chmod o+x /opt/tomcat/latest/bin/
+```bash
+$> sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
+$> cd /tmp
+$> wget http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.14/bin/apache-tomcat-9.0.14.tar.gz -P .
+$> sudo mkdir /opt/tomcat
+$> sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
+$> sudo ln -s /opt/tomcat/apache-tomcat-9.0.14 /opt/tomcat/latest
+$> sudo chown -RH tomcat: /opt/tomcat/latest
+$> sudo chmod o+x /opt/tomcat/latest/bin/
    
-    $> sudo vi /opt/tomcat/latest/conf/tomcat-users.xml  
+$> sudo vi /opt/tomcat/latest/conf/tomcat-users.xml  
+```
 
 Add
 
@@ -135,7 +162,9 @@ Add
 
 Make sure that you use a good password instead of "secret-password".
 
-    $> sudo vi /opt/tomcat/latest/conf/server.xml
+```bash
+$> sudo vi /opt/tomcat/latest/conf/server.xml
+```
 
 change
 
@@ -147,11 +176,15 @@ to
 
 Start Tomcat
 
-    $> sudo /opt/tomcat/latest/bin/startup.sh
+```bash
+$> sudo /opt/tomcat/latest/bin/startup.sh
+```
 
 Stop Tomcat
 
-    $> sudo /opt/tomcat/latest/bin/shutdown.sh
+```bash
+$> sudo /opt/tomcat/latest/bin/shutdown.sh
+```
 
 Add "bracmat.jar" to classpath: create (or edit) the file /opt/tomcat/latest/bin/setenv.sh. For example
 
@@ -169,11 +202,15 @@ If your computer has more than 8 GB RAM, you can add
 
 Make the file executable
 
-    $> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
+```bash
+$> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
+```
 
 ## Proxy settings
 
-    $> sudo vi /etc/apache2/mods-available/proxy.conf
+```bash
+$> sudo vi /etc/apache2/mods-available/proxy.conf
+```
 
 Add:
 
@@ -190,10 +227,12 @@ All of the above can also be expressed as
 
         ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
 
-    $> sudo a2enmod proxy
-    $> sudo a2enmod proxy_ajp
-    $> sudo a2enmod proxy_http
-    $> sudo service apache2 restart
+```bash
+$> sudo a2enmod proxy
+$> sudo a2enmod proxy_ajp
+$> sudo a2enmod proxy_http
+$> sudo service apache2 restart
+```
 
 ## cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
@@ -206,22 +245,28 @@ The input, intermediate and final data in workflow processes, and tomcat log fil
 
 We need pip3
 
-    $> sudo apt-get install python3-pip
-    
+```bash
+$> sudo apt-get install python3-pip
+```
+
 Libraries must be installed for all users, so we install them as root:
 
-    $> sudo su
-    $> cd ~
-    $> umask 022
-    $> pip3 install cltk
-    $> exit
+```bash
+$> sudo su
+# cd ~
+# umask 022
+# pip3 install cltk
+# exit
+```
 
 ## xmllint
 
 The teianno tool uses xmllint.
 Installing:
 
-    $> sudo apt install libxml2-utils
+```bash
+$> sudo apt install libxml2-utils
+```
 
 ## bracmat
 
@@ -253,12 +298,14 @@ Make sure that texton-Java/ and Bracmat/ share the same parent folder. You can c
 The installation instructions in https://github.com/kuhumcst/texton-Java are not up-to-data as of 2020.08.17
 Just do:
 
-    $> cd ~
-    $> git clone https://github.com/kuhumcst/texton-Java.git
-    $> cd texton-Java/
-    $> sudo chmod ugo+x compileTomcat.sh
-    $> sudo ./compileTomcat.sh
-    $> sudo /opt/tomcat/latest/bin/startup.sh
+```bash
+$> cd ~
+$> git clone https://github.com/kuhumcst/texton-Java.git
+$> cd texton-Java/
+$> sudo chmod ugo+x compileTomcat.sh
+$> sudo ./compileTomcat.sh
+$> sudo /opt/tomcat/latest/bin/startup.sh
+```
 
 Here we assume you installed Tomcat from a downloaded archive, see above.
 
@@ -271,8 +318,10 @@ Open a browser and navigate to http://localhost:8080/texton/
 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
-    $> cd /opt/texton/BASE/
-    $> ls -lrt alltables*
+```bash
+$> cd /opt/texton/BASE/
+$> ls -lrt alltables*
+```
 
 Copy the file name of the most recent "alltables..." file to the clipboard. Now bavigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
@@ -283,47 +332,27 @@ You are now ready to upload input to http://localhost:8080/texton/ and to comput
 Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
 
-### PDFminer
-
-Install prerequisite:
-
-    $> sudo apt install poppler-utils
-
-This installs /usr/bin/pdffonts.
-
-Visit https://github.com/euske/pdfminer and follow the installation instructions.
-
-    $> sudo su
-    $> cd ~
-    $> umask 022
-    $> pip3 install pdfminer
-
-If you like, you can instead install the newer pdfminer.six (https://github.com/pdfminer/pdfminer.six) software. We do currently (2020.08.20) see no reason to do that.
-
-    $> pip3 install pdfminer.six
-
-
-### Cuneiform
-
-A somewhat old OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
-
-    $> sudo apt install cuneiform
-
 ### CST-lemma
 
 Binary is in https://github.com/kuhumcst/texton-bin.
 For building from source, see https://github.com/kuhumcst/texton-bin#cstlemma
 
-### taggerXML
+### Cuneiform
 
-For building from source, see https://github.com/kuhumcst/texton-bin#taggerXML
+A somewhat old OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
+
+```bash
+$> sudo apt install cuneiform
+```
 
 ### daner
 
 Daner is at https://github.com/ITUnlp/daner
 
-    $> cd /opt/texton/daner
-    $> sudo git clone https://github.com/ITUnlp/daner.git
+```bash
+$> cd /opt/texton/daner
+$> sudo git clone https://github.com/ITUnlp/daner.git
+```
 
 Afterwards there will be a subdirectory `daner/daner`.
 
@@ -331,40 +360,43 @@ Afterwards there will be a subdirectory `daner/daner`.
 
 Dapipe is at https://github.com/ITUnlp/dapipe 
 
-    $> cd /opt/texton/dapipe
-    $> sudo git clone https://github.com/ITUnlp/dapipe.git
+```bash
+$> cd /opt/texton/dapipe
+$> sudo git clone https://github.com/ITUnlp/dapipe.git
+```
 
 Afterwards there will be a subdirectory `dapipe/dapipe`.
 It is probably better to use the newer udpipe software. 
 
-### udpipe
+### dependency2tree
 
-UDPipe is at https://github.com/ufal/udpipe
-The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
+```bash
+$> git clone https://github.com/boberle/dependency2tree.git
+```
 
-    $> cd ~
-    $> git clone https://github.com/ufal/udpipe.git
-    $> cd udpipe/src
-    $> make
-    $> cp udpipe <texton folder>/bin
+and comment out the lines telling that rights is "none" for these file types.
 
-The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
-Unzip this resource:
+```bash
+$> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
+$> sudo apt install graphviz
+```
 
-    $> cd <texton folder>/udpipe
-    $> cp ~/udpipe-ud-2.5-191206.zip .
-    $> unzip udpipe-ud-2.5-191206.zip
+and comment out the lines telling that rights is "none" for these file types.
 
 ### espeak
 
 This is simply installed by the following command:
 
-    $> sudo apt-get install espeak
+```bash
+$> sudo apt-get install espeak
+```
 
 ### html2text
 
-    $> cd /opt/texton/html2text
-    $> sudo git clone https://github.com/soundasleep/html2text
+```bash
+$> cd /opt/texton/html2text
+$> sudo git clone https://github.com/soundasleep/html2text
+```
 
 Afterwards there will be a subdirectory `html2text/html2text`.
 
@@ -372,29 +404,42 @@ Afterwards there will be a subdirectory `html2text/html2text`.
 
 See https://github.com/kuhumcst/texton-bin#jsoncat
 
-    $> cd ~
-    $> git clone https://github.com/pantuza/jsoncat.git
-    $> cd jsoncat
-    $> make
-    $> sudo cp bin/jsoncat /opt/texton/bin
-
+```bash
+$> cd ~
+$> git clone https://github.com/pantuza/jsoncat.git
+$> cd jsoncat
+$> make
+$> sudo cp bin/jsoncat /opt/texton/bin
+```
 
 ### Lapos
 
-    $> cd ~
-    $> git clone https://github.com/cltk/lapos.git
+```bash
+$> cd ~
+$> git clone https://github.com/cltk/lapos.git
+```
 
 Follow the build instructions. Copy the executable file "lapos" to /opt/texton/bin.
 
-### mate-POStagger
+### LibreOffice (soffice)
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
-The .war file can also be built from source, see  https://github.com/kuhumcst/mate-POStagger.
+LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled by the tokenizer, RTFreader.
+
+```bash
+$> sudo apt install libreoffice
+```
+
+It is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one. Be warned.
 
 ### mate-parser
 
 This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
 The .war file can also be built from source, see https://github.com/kuhumcst/mate-parser
+
+### mate-POStagger
+
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
+The .war file can also be built from source, see  https://github.com/kuhumcst/mate-POStagger.
 
 ### np-genkender
 
@@ -406,32 +451,67 @@ go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
 This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
 The .war file can also be built from source, see https://github.com/kuhumcst/opennlpPOSTagger
 
+### pdf2htmlEX
+
+```bash
+$> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
+```
+
+See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
+
+### PDFminer
+
+Install prerequisite:
+
+```bash
+$> sudo apt install poppler-utils
+```
+
+This installs /usr/bin/pdffonts.
+
+Visit https://github.com/euske/pdfminer and follow the installation instructions.
+
+```bash
+$> sudo su
+# cd ~
+# umask 022
+# pip3 install pdfminer
+```
+
+If you like, you can instead install the newer pdfminer.six (https://github.com/pdfminer/pdfminer.six) software. We do currently (2020.08.20) see no reason to do that.
+
+```bash
+$> pip3 install pdfminer.six
+```
+
 ### rep-check
 
 Binary is in https://github.com/kuhumcst/texton-bin.
 For building from source, see https://github.com/kuhumcst/texton-bin#repver
 
-### LibreOffice (soffice)
+### taggerXML
 
-LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled by the tokenizer, RTFreader.
-
-    $> sudo apt install libreoffice
-
-It is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one. Be warned.
+For building from source, see https://github.com/kuhumcst/texton-bin#taggerXML
 
 ### Tesseract OCR
 
-    $> sudo apt install tesseract-ocr
+```bash
+$> sudo apt install tesseract-ocr
+```
 
 In addition
 
-    $> cd /opt/texton/tesseract
-    $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
+```bash
+$> cd /opt/texton/tesseract
+$> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
+```
 
 For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
 Make sure that tesseract an be seen by the webserver.
 
-    $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
+```bash
+$> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
+```
 
 Text Tonsorium needs ImageMagick to extracom a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
        
@@ -443,21 +523,27 @@ In that case, edit /etc/ImageMagick-6/policy.xml and add the line
 
 and comment out the lines telling that rights is "none" for these file types.
 
-### dependency2tree
+### udpipe
 
-    $> git clone https://github.com/boberle/dependency2tree.git
+UDPipe is at https://github.com/ufal/udpipe
+The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
 
-and comment out the lines telling that rights is "none" for these file types.
-$> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
-    $> sudo apt install graphviz
+```bash
+$> cd ~
+$> git clone https://github.com/ufal/udpipe.git
+$> cd udpipe/src
+$> make
+$> cp udpipe <texton folder>/bin
+```
 
-and comment out the lines telling that rights is "none" for these file types.
+The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
+Unzip this resource:
 
-### pdf2htmlEX
-
-    $> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
-
-See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
+```bash
+$> cd <texton folder>/udpipe
+$> cp ~/udpipe-ud-2.5-191206.zip .
+$> unzip udpipe-ud-2.5-191206.zip
+```
 
 ## Tools that can be compiled from source
 
