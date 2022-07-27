@@ -334,8 +334,7 @@ Some of the necessary binaries can be obtained by cloning https://github.com/kuh
 
 ### CST-lemma
 
-Binary is in https://github.com/kuhumcst/texton-bin.
-For building from source, see https://github.com/kuhumcst/texton-bin#cstlemma
+Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin.
 
 ### Cuneiform
 
@@ -414,12 +413,7 @@ $> sudo cp bin/jsoncat /opt/texton/bin
 
 ### Lapos
 
-```bash
-$> cd ~
-$> git clone https://github.com/cltk/lapos.git
-```
-
-Follow the build instructions. Copy the executable file "lapos" to /opt/texton/bin.
+This tool must be built from source. See below.
 
 ### LibreOffice (soffice)
 
@@ -433,13 +427,11 @@ It is difficult to get soffice to do what we want from PHP. What works on one ma
 
 ### mate-parser
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
-The .war file can also be built from source, see https://github.com/kuhumcst/mate-parser
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the .war file to the tomcat webapps folder.
 
 ### mate-POStagger
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
-The .war file can also be built from source, see  https://github.com/kuhumcst/mate-POStagger.
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the .war file to the tomcat webapps folder.
 
 ### np-genkender
 
@@ -448,16 +440,11 @@ go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
 
 ### opennlpPOSTagger
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.
-The .war file can also be built from source, see https://github.com/kuhumcst/opennlpPOSTagger
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.  Copy the .war file to the tomcat webapps folder.
 
 ### pdf2htmlEX
 
-```bash
-$> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
-```
-
-See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
+This tool can be downloaded in binary format, but we have not tried that. For building, see further down.
 
 ### PDFminer
 
@@ -484,14 +471,13 @@ If you like, you can instead install the newer pdfminer.six (https://github.com/
 $> pip3 install pdfminer.six
 ```
 
-### rep-check
+### repetitiveness checker
 
-Binary is in https://github.com/kuhumcst/texton-bin.
-For building from source, see https://github.com/kuhumcst/texton-bin#repver
+Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
 
 ### taggerXML
 
-For building from source, see https://github.com/kuhumcst/texton-bin#taggerXML
+Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
 
 ### Tesseract OCR
 
@@ -507,13 +493,13 @@ $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
 ```
 
 For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
-Make sure that tesseract an be seen by the webserver.
+Make sure that tesseract can be seen by the webserver.
 
 ```bash
 $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
 ```
 
-Text Tonsorium needs ImageMagick to extracom a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
+Text Tonsorium needs ImageMagick to extract a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
        
     convert-im6.q16: not authorized `*******' @ error/constitute.c/ReadImage/412.
 
@@ -525,16 +511,7 @@ and comment out the lines telling that rights is "none" for these file types.
 
 ### udpipe
 
-UDPipe is at https://github.com/ufal/udpipe
-The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
-
-```bash
-$> cd ~
-$> git clone https://github.com/ufal/udpipe.git
-$> cd udpipe/src
-$> make
-$> cp udpipe <texton folder>/bin
-```
+You need to build this program. See below.
 
 The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
 Unzip this resource:
@@ -545,11 +522,13 @@ $> cp ~/udpipe-ud-2.5-191206.zip .
 $> unzip udpipe-ud-2.5-191206.zip
 ```
 
-## Tools that can be compiled from source
+## Tools that can or must be compiled from source
 
 In this readme, we assume that the `bin` directory is `/opt/texton/bin`.
 
 ### cstlemma
+
+For building from source, also see https://github.com/kuhumcst/texton-bin#cstlemma
 
 ```bash
 $> wget https://raw.githubusercontent.com/kuhumcst/cstlemma/master/doc/makecstlemma.bash
@@ -565,12 +544,38 @@ $> git clone https://github.com/pantuza/jsoncat.git
 ```
 Follow the instructions in `README.md`. Copy jsoncat to `/opt/texton/bin/`.  
 
-### lapos
-`$> git clone https://github.com/cltk/lapos.git`
+### Lapos
 
-Follow the build instructions. Copy the executable file `lapos` to `/opt/texton/bin`.
+```bash
+$> cd ~
+$> git clone https://github.com/cltk/lapos.git
+```
 
-### repver
+Follow the build instructions. Copy the executable file "lapos" to /opt/texton/bin.
+
+### mate-parser
+
+The .war file can be built from source, see https://github.com/kuhumcst/mate-parser. Copy the .war file to the tomcat webapps folder.
+
+### mate-POStagger
+
+The .war file can be built from source, see  https://github.com/kuhumcst/mate-POStagger. Copy the .war file to the tomcat webapps folder.
+
+### opennlpPOSTagger
+
+The .war file can be built from source, see https://github.com/kuhumcst/opennlpPOSTagger.  Copy the .war file to the tomcat webapps folder.
+
+### pdf2htmlEX
+```bash
+$> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
+```
+
+See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
+
+### repetitiveness checker
+
+For building from source, also see https://github.com/kuhumcst/texton-bin#repver
+
 ```bash
 $> wget https://raw.githubusercontent.com/kuhumcst/repetitiveness-checker/master/doc/makerepver.bash
 $> chmod ugo+x makerepver.bash
@@ -587,8 +592,12 @@ $> sudo cp rtfreader/rtfreader /opt/texton/bin/
 ```
 
 ### taggerXML
+
+For building from source, also see https://github.com/kuhumcst/texton-bin#taggerXML
+
 Copy https://github.com/kuhumcst/taggerXML/blob/master/doc/maketaggerXML.bash to your disk and run it.
 Copy `taggerXML/taggerXML` to `/opt/texton/bin`.
+
 ```bash
 $> wget https://raw.githubusercontent.com/kuhumcst/taggerXML/master/doc/maketaggerXML.bash
 $> sudo chmod ugo+x maketaggerXML.bash
@@ -596,3 +605,15 @@ $> ./maketaggerXML.bash
 $> sudo cp taggerXML/taggerXML /opt/texton/bin/
 ```
 
+### udpipe
+
+UDPipe is at https://github.com/ufal/udpipe
+The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
+
+```bash
+$> cd ~
+$> git clone https://github.com/ufal/udpipe.git
+$> cd udpipe/src
+$> make
+$> cp udpipe <texton folder>/bin
+```
