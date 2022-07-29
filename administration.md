@@ -30,15 +30,17 @@ At the bottom of the registration form are five buttons:
 4. Show more entry fields
 5. PHP wrapper
 
+Details:
+
 1. Save metadata. If you have been editing existing metadata, the following happens:
-  a. If you made a change in the boiler plate section, the old values are replaced by the new ones.
-  b. If you made changes in the I/O metadata, then these metadata are saved without overwriting the old metadata.
+* If you made a change in the boiler plate section, the old values are replaced by the new ones.
+* If you made changes in the I/O metadata, then these metadata are saved without overwriting the old metadata.
 
 2. Replace metadata. This is like 'Save metadata' as far as boiler plate metadata is concerned. If you made changes to I/O metadata, then the old values are overwritten by the new ones.
 
 3. Delete metadata. This button can have two different effects.
-  a. If there are any I/O metadata, these metadata are completely removed. The number of incarnations decreases by one.
-  b. If there are no I/O metadata, pressing this button removes the boiler plate metadata. Hereafter the tool is no longer known to Text Tonsorium.
+* If there are any I/O metadata, these metadata are completely removed. The number of incarnations decreases by one.
+* If there are no I/O metadata, pressing this button removes the boiler plate metadata. Hereafter the tool is no longer known to Text Tonsorium.
 
 4. Show more entry fields. Almost any field in the I/O section of the registration form can occur more than once. Such fields are marked with check boxes named 'more' or 'Add an input/output combination'. When you check such boxes the GUI does not immediately add the requested extra fields. For that, you press this button.
 
