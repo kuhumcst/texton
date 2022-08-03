@@ -530,7 +530,7 @@ try {
             if($Ilangde)
                 {
                 $lang = "de";
-                $flexrules = "$res/de/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $flexrules = "$res/de/lemmatiser/notags/0/flexrules.dict_de_without_doubles.ph_ziggurat_XC.bra";
                 $traindata = "$res/de/lemmatiser/training/dict_de_without_doubles.ph";
                 }
             else if($Ilangnl)

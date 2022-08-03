@@ -292,7 +292,8 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         }
     else if($language == 'de')
         {
-        $flexrulessubdir = "/1";
+        $flexrulessubdir = "/0";
+        $flexrules = "flexrules.dict_de_without_doubles.ph_ziggurat_XC";
         }
     else if($language == 'el')
         {
