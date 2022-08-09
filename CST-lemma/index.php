@@ -387,7 +387,8 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         }
     else if($language == 'sl')
         {
-        $flexrulessubdir = "/0";
+        $flexrulessubdir = "/1";
+        $flexrules = "flexrules.clearedFile-40.sort-349-step1.2cole_ziggurat_XC";
         }
     else if($language == 'sq')
         {

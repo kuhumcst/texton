@@ -661,7 +661,7 @@ try {
             else if($Ilangsl)
                 {
                 $lang = "sl";
-                $flexrules = "$res/sl/lemmatiser/notags/0/flexrules.bra";
+                $flexrules = "$res/sl/lemmatiser/notags/0/flexrules.clearedFile-40.sort-349-step1.2cole_ziggurat_XC.bra";
                 $traindata = "$res/sl/lemmatiser/training/wfl-sl.txt.ph";
                 $TorC = "C";
                 }
