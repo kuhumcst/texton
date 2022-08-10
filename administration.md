@@ -114,3 +114,13 @@ It is quite possible that your tool sometimes needs one input, and at other time
 As you can see, the comments following the PHP variables try to help you. If the wrapper receives a single file, the variable `$F` will contain the name of a file and both `$IfacetposF` and `$IfacettokF` will be empty strings and vice versa. In your code you should therefore check the emptyness of these variables to decide which branch it should take.
 
 Per default, the PHP wrapper works synchronously, which means that it returns the result of the tool as the response to the HTTP request, accompanied by the return code 200. It is however possible to make it work asynchronously, which means that it returns 201 even before the tool is finished doing its thing. Then, when the tool is ready, the PHP code must POST the result to the Text Tonsorium. One should be careful with asynchronous tools; the Text Tonsorium will take advantage of the doubling of the interaction by sending two new requests, if there are enough jobs waiting to be run. Especially if the Text Tonsorium is fed with many uploaded texts (e.g. 100 text documents that all have to be syntactically annotated), a single asynchrounous tool will cause a broad fan of simultaneously running jobs. If the hardware can handle those, it's fine, and the results for all annotation tasks will be available rather quickly. But if there are not that many cores, the jobs will be plodding. The Text Tonsorium will try to restrict the number of running tasks to about 8, but there is no guarantee that will succeed.
+
+## Expanding and editing metadata in the file system
+
+The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several tables. Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
+
+```xml
+<entry key="toolsHome">/opt/texton/BASE/</entry>
+```
+
+So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, is very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools.
