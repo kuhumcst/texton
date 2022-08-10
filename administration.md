@@ -30,7 +30,7 @@ At the bottom of the registration form are five buttons:
 4. Show more entry fields
 5. PHP wrapper
 
-Details:
+### Details
 
 1. Save metadata. If you have been editing existing metadata, the following happens:
 * If you made a change in the boiler plate section, the old values are replaced by the new ones.
@@ -61,6 +61,8 @@ This is how integration is done
 5. Copy index.php to a location where the webserver can see it.
 6. Tell the webserver under which condition to activate this index.php, i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
 
+### Details
+
 1. See the previous section.
 
 2. See the previous section.
@@ -70,7 +72,7 @@ This is how integration is done
 ```php
 //* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $anasplitfile = tempFileName("anasplit-results");
-        $command = "echo $echos >> $anasplitfile";
+        $corrmmand = "echo $echos >> $anasplitfile";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
@@ -86,8 +88,27 @@ This is how integration is done
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $anasplitfile
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $myveryfirsttoolfile
 //*/
 ```
 
-Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! If you don't do this, your code will be commented out.
+Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file, in this case called `$myveryfirsttoolfile`. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! If you don't do this, your code will be commented out.
+
+Your code must use the input data that was sent in the HTTP request by the Text Tonsorium. Input files are always parameters with names that end with a capital 'F'. Scroll through the PHP code to find them. If the tool receives only a single file, then this parameter is always called simply 'F' and the wrapper has already saved that file and bound its name to the PHP variable `$F`. So a hypothetical 'do nothing' tool could just do
+");
+
+```php
+        system("cp $F $myveryfirsttoolfile");
+```
+
+Often, a tool needs two or more inputs. In that case, search for PHP variables that have names that start with a capital 'I' (for 'Input') and that end with 'F'. If your tool needs two different types of contents: tokens and PoS-tags, then these variables will be called `$IfacettokF` and `$IfacetposF`.
+
+It is quite possible that your tool sometimes needs one input, and at other times needs more. This can be the case if the tool has more than one incarnation. So, for example, the CST lemmatizer sometimes runs with a single input file that contains both tokens, POS tags and perhaps even more types of contents. At other times it needs separate input files for tokens and for PoS tags. Therefore, the generated PHP-code says
+
+```php
+        $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
+        $IfacettokF = "";	/* Input with type of content tokens (tokens) */
+```
+
+As you can see, the comments following the PHP variables try to help you. If the wrapper receives a single file, the variable `$F` will contain the name of a file and both `$IfacetposF` and `$IfacettokF` will be empty strings and vice versa. In your code you should therefore check the emptyness of these variables to decide which branch it should take.
