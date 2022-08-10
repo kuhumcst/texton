@@ -67,25 +67,27 @@ This is how integration is done
 
 3. The contents of index.php may seem overwhelming, but making the integration work is really simple. Look for this code:
 
-    //* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
-            $anasplitfile = tempFileName("anasplit-results");
-            $command = "echo $echos >> $anasplitfile";
-            logit($command);
-     
-            if(($cmd = popen($command, "r")) == NULL)
-                {
-                throw new SystemExit(); // instead of exit()
-                }
-    
-            while($read = fgets($cmd))
-                {
-                }
-     
-            pclose($cmd);
-    /*/
-    // YOUR CODE STARTS HERE.
-    //        TODO your code!
-    // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $anasplitfile
-    //*/
+```php
+//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+        $anasplitfile = tempFileName("anasplit-results");
+        $command = "echo $echos >> $anasplitfile";
+        logit($command);
+
+        if(($cmd = popen($command, "r")) == NULL)
+            {
+            throw new SystemExit(); // instead of exit()
+            }
+
+        while($read = fgets($cmd))
+            {
+            }
+
+        pclose($cmd);
+/*/
+// YOUR CODE STARTS HERE.
+//        TODO your code!
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $anasplitfile
+//*/
+```
 
 Sometimes, a tool is already 
