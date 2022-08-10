@@ -9,7 +9,7 @@ You can
 5. import all metadata from a file in another instance of Text Tonsorium, optionally without overwriting metadata that are specific to this particular instance.
 
 There are many metadata related files, but the only ones that are affected by the web based GUI are /opt/texton/BASE/meta/tooladm and /opt/texton/BASE/meta/toolprop.
-In the folder /opt/texton/BASE/meta/ and its subfolders are a number of files that contain the data with wich drop down lists are filled in the GUI. If you think a value is missing in a dropdown list, then the corresponding metadata file has to be edited directly.
+In the folder /opt/texton/BASE/meta/ and its subfolders are a number of files that contain the data with which drop down lists are filled in the GUI. If you think a value is missing in a dropdown list, then the corresponding metadata file has to be edited directly.
 
 To be able to add or change metadata in the web GUI you need to know the password. Per default, the password is a zero length ('blank') string. For instances of Text Tonsorium that are visible to other people than you alone, you must set a good password. How to do that is described in 
 texton-Java/README.md 
