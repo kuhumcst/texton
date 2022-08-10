@@ -55,10 +55,37 @@ Every tool that can run
 can be integrated in the Text Tonsorium.
 
 This is how integration is done
-1. Add the tool's metadata to the Text Tonsorium
-   See the previous section.
+1. Add the tool's metadata to the Text Tonsorium.   
 3. Generate the PHP wrapper for that specific tool. Copy and paste the code to a file called 'index.php'.
-4. Open index.php and search for the comments that say TODO
+4. Open index.php and search for the comments that say TODO. Add or edit code as you see necessary to run the tool.
 5. Copy index.php to a location where the webserver can see it.
 6. Tell the webserver under which condition to activate this index.php, i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
+
+1. See the previous section.
+
+2. See the previous section.
+
+3. The contents of index.php may seem overwhelming, but making the integration work is really simple. Look for this code:
+
+    //* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+            $anasplitfile = tempFileName("anasplit-results");
+            $command = "echo $echos >> $anasplitfile";
+            logit($command);
+     
+            if(($cmd = popen($command, "r")) == NULL)
+                {
+                throw new SystemExit(); // instead of exit()
+                }
+    
+            while($read = fgets($cmd))
+                {
+                }
+     
+            pclose($cmd);
+    /*/
+    // YOUR CODE STARTS HERE.
+    //        TODO your code!
+    // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $anasplitfile
+    //*/
+
 Sometimes, a tool is already 
