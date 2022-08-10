@@ -1,5 +1,5 @@
 # Administration
-## Adding new tools and maintaining existing ones
+## Adding metadata for new tools and maintaining metadata for existing ones
 Part of the code in toolsprog.bra is dedicated registration of tools. The web GUI interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting).
 You can 
 1. register new tools
@@ -21,7 +21,7 @@ If you want to update existing metadate, you will first have to choose a tool fr
 
 The registration form is devided in two parts.
 1. The upper part is for boiler plate information: name, description, author, URL, etc.
-2. Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. These metadata can occur in multiple 'incarnations'. Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. Since a text cannot both be POS tagged and not POS tagged, the two incarnations cannot be combined into one. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
+2. Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. These metadata can occur in multiple 'incarnations'. Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. The two incarnations cannot be combined into one, because it would imply that the lemmatizer also would work for Danish if the input is not POS-tagged. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
 
 At the bottom of the registration form are five buttons:
 1. Save metadata
@@ -39,11 +39,26 @@ Details:
 2. Replace metadata. This is like 'Save metadata' as far as boiler plate metadata is concerned. If you made changes to I/O metadata, then the old values are overwritten by the new ones.
 
 3. Delete metadata. This button can have two different effects.
-* If there are any I/O metadata, these metadata are completely removed. The number of incarnations decreases by one.
-* If there are no I/O metadata, pressing this button removes the boiler plate metadata. Hereafter the tool is no longer known to Text Tonsorium.
+* The current incarnation is deleted. The number of incarnations decreases by one.
+* If there are no I/O metadata at all (i.e. zero incarnations), pressing this button removes the boiler plate metadata. Hereafter the tool is no longer known to Text Tonsorium.
 
-4. Show more entry fields. Almost any field in the I/O section of the registration form can occur more than once. Such fields are marked with check boxes named 'more' or 'Add an input/output combination'. When you check such boxes the GUI does not immediately add the requested extra fields. For that, you press this button.
+4. Show more entry fields. Almost any field in the I/O section of the registration form can occur more than once. Such fields are marked with check boxes named 'more' or 'Add an input/output combination'. When you check such boxes, the GUI does not immediately add the requested extra fields. For that, you press this button.
 
 5. PHP wrapper. When you are content with all the registered metadata, you press this button to generate a PHP wrapper that you can use to integrate the actual tool in Text Tonsorium. Often, the tool is a command line tool. In other cases the tool is already accessible over the internet or intranet. And finally, sometimes the tool can be implemented in PHP itself. In each of these cases it is advisable to use the produced PHP wrapper.
 
 To leave the registration form, just enter another URL in the browser's address bar.
+
+## Integration of NLP (or other) tool
+Every tool that can run
+1. in batch mode (i.e. without requiring interaction while running)
+2. under an operating system featuring a webserver that includes PHP
+can be integrated in the Text Tonsorium.
+
+This is how integration is done
+1. Add the tool's metadata to the Text Tonsorium
+   See the previous section.
+3. Generate the PHP wrapper for that specific tool. Copy and paste the code to a file called 'index.php'.
+4. Open index.php and search for the comments that say TODO
+5. Copy index.php to a location where the webserver can see it.
+6. Tell the webserver under which condition to activate this index.php, i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
+Sometimes, a tool is already 
