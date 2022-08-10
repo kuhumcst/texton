@@ -90,4 +90,4 @@ This is how integration is done
 //*/
 ```
 
-Sometimes, a tool is already 
+Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! If you don't do this, your code will be commented out.
