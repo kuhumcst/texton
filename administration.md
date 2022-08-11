@@ -60,16 +60,19 @@ To leave the registration form, just enter another URL in the browser's address 
 
 ## Integration of NLP (or other) tool
 Every tool that can run
+
 1. in batch mode (i.e. without requiring interaction while running)
 2. under an operating system featuring a webserver that includes PHP
+ 
 can be integrated in the Text Tonsorium.
 
-This is how integration is done
+This is how integration is done:
+
 1. Add the tool's metadata to the Text Tonsorium.   
-3. Generate the PHP wrapper for that specific tool. Copy and paste the code to a file called 'index.php'.
-4. Open index.php and search for the comments that say TODO. Add or edit code as you see necessary to run the tool.
-5. Copy index.php to a location where the webserver can see it.
-6. Tell the webserver under which condition to activate this index.php, i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
+2. Generate the PHP wrapper for that specific tool. Copy and paste the code to a file called 'index.php'.
+3. Open index.php in an editor and search for the comments that say TODO. Add or edit code as you see necessary to run the tool.
+4. Copy index.php to a location where the webserver can see it.
+5. Tell the webserver under which condition to activate this index.php, i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
 
 ### Details
 
@@ -77,7 +80,7 @@ This is how integration is done
 
 2. See the previous section.
 
-3. The contents of index.php may seem overwhelming, but making the integration work is really simple. Look for this code:
+3. The contents of index.php may seem overwhelming, but making the integration work is really simple. You have to look for this code:
 
 ```php
 //* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
@@ -102,7 +105,7 @@ This is how integration is done
 //*/
 ```
 
-Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file, in this case called `$myveryfirsttoolfile`. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! If you don't do this, your code will be commented out.
+Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file, in this case called `$myveryfirsttoolfile`. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! Your code will be commented out if you don't do this.
 
 Your code must use the input data that was sent in the HTTP request by the Text Tonsorium. Input files are always parameters with names that end with a capital 'F'. Scroll through the PHP code to find them. If the tool receives only a single file, then this parameter is always called simply 'F' and the wrapper has already saved that file and bound its name to the PHP variable `$F`. So a hypothetical 'do nothing' tool could just do
 ");
@@ -111,7 +114,7 @@ Your code must use the input data that was sent in the HTTP request by the Text 
         system("cp $F $myveryfirsttoolfile");
 ```
 
-Often, a tool needs two or more inputs. In that case, search for PHP variables that have names that start with a capital 'I' (for 'Input') and that end with 'F'. If your tool needs two different types of contents: tokens and PoS-tags, then these variables will be called `$IfacettokF` and `$IfacetposF`.
+Often, a tool needs two or more inputs. If that is the case, search for PHP variables that have names that start with a capital 'I' (for 'Input') and that end with 'F'. If your tool needs two different types of contents: tokens and PoS-tags, then these variables will be called `$IfacettokF` and `$IfacetposF`.
 
 It is quite possible that your tool sometimes needs one input, and at other times needs more. This can be the case if the tool has more than one incarnation. So, for example, the CST lemmatizer sometimes runs with a single input file that contains both tokens, POS tags and perhaps even more types of contents. At other times it needs separate input files for tokens and for PoS tags. Therefore, the generated PHP-code says
 
@@ -121,7 +124,7 @@ It is quite possible that your tool sometimes needs one input, and at other time
         $IfacettokF = "";	/* Input with type of content tokens (tokens) */
 ```
 
-As you can see, the comments following the PHP variables try to help you. If the wrapper receives a single file, the variable `$F` will contain the name of a file and both `$IfacetposF` and `$IfacettokF` will be empty strings and vice versa. In your code you should therefore check the emptyness of these variables to decide which branch it should take.
+The comments following the PHP variables try to help you. If the wrapper receives a single file, the variable `$F` will contain the name of a file and both `$IfacetposF` and `$IfacettokF` will be empty strings and vice versa. In your code you should therefore check the emptyness of these variables to decide which branch it should take.
 
 Per default, the PHP wrapper works synchronously, which means that it returns the result of the tool as the response to the HTTP request, accompanied by the return code 200. It is however possible to make it work asynchronously, which means that it returns 201 even before the tool is finished doing its thing. Then, when the tool is ready, the PHP code must POST the result to the Text Tonsorium. One should be careful with asynchronous tools; the Text Tonsorium will take advantage of the doubling of the interaction by sending two new requests, if there are enough jobs waiting to be run. Especially if the Text Tonsorium is fed with many uploaded texts (e.g. 100 text documents that all have to be syntactically annotated), a single asynchrounous tool will cause a broad fan of simultaneously running jobs. If the hardware can handle those, it's fine, and the results for all annotation tasks will be available rather quickly. But if there are not that many cores, the jobs will be plodding. The Text Tonsorium will try to restrict the number of running tasks to about 8, but there is no guarantee that will succeed.
 
@@ -133,4 +136,4 @@ The Text Tonsorium does not depend on a database management system like MySQL, y
 <entry key="toolsHome">/opt/texton/BASE/</entry>
 ```
 
-So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, is very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools.
+So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, are very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools.
