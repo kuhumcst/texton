@@ -10,6 +10,7 @@ If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then addin
 6. Check the current version of Bracmat.
 
 There are things that you sometimes need to do, but for which there is no web interface.
+
 7. Restart Text Tonsorium (including the Java code).
 8. Copy a dump file to the normally remote file location from where it can be imported using the web interface.
 9. Edit lists with feature values that the user (or the administrator) can select from, when using the web interface.
