@@ -2,24 +2,19 @@
 ## Web page for administrative tasks
 If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
 
-1. register new tools
-2. change the metadata of existing ones
-3. reload the non-Java part of the Text Tonsorium program
-4. set the language of the user interface
-5. export all metadata to a dump file
-6. import all metadata from a dump file in another instance of Text Tonsorium, optionally without overwriting metadata that are specific to this particular instance.
-7. perform a stress tests
-8. evaluate some code
-9. emulate an asynchronous request
-
-Some of these tasks (set the language of the user interface, perform a stress tests, evaluate some code and emulate an asynchronous request are mostly for development purposes.
+1. Register new tools.
+2. Change the metadata of existing ones.
+3. Reload the non-Java part of the Text Tonsorium program.
+4. Export all metadata to a dump file.
+5. Import all metadata from a dump file in another instance of Text Tonsorium, optionally without overwriting metadata that are specific to this particular instance.
+6. Check the current version of Bracmat.
 
 There are things that you sometimes need to do, but for which there is no web interface.
-10. restart Text Tonsorium (including the Java code)
-11. install a dump file, so it can be imported using the web interface
-12. edit lists with feature values that the user (or the administrator) can select from when using the web interface
+7. Restart Text Tonsorium (including the Java code).
+8. Copy a dump file to the normally remote file location from where it can be imported using the web interface.
+9. Edit lists with feature values that the user (or the administrator) can select from, when using the web interface.
 
-## (1. - 2.) Adding metadata for new tools and maintaining metadata for existing ones
+## (1 and 2) Adding metadata for new tools and maintaining metadata for existing ones
 Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
 You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
