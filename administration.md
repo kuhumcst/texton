@@ -1,18 +1,32 @@
 # Administration
-## Adding metadata for new tools and maintaining metadata for existing ones
-Part of the code in toolsprog.bra is dedicated registration of tools. The web GUI interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting).
-You can 
+## Web page for administrative tasks
+If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
+
 1. register new tools
 2. change the metadata of existing ones
-3. generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs
-4. export all metadata to a file
-5. import all metadata from a file in another instance of Text Tonsorium, optionally without overwriting metadata that are specific to this particular instance.
+3. reload the non-Java part of the Text Tonsorium program
+4. set the language of the user interface
+5. export all metadata to a dump file
+6. import all metadata from a dump file in another instance of Text Tonsorium, optionally without overwriting metadata that are specific to this particular instance.
+7. perform a stress tests
+8. evaluate some code
+9. emulate an asynchronous request
+
+Some of these tasks (set the language of the user interface, perform a stress tests, evaluate some code and emulate an asynchronous request are mostly for development purposes.
+
+There are things that you sometimes need to do, but for which there is no web interface.
+10. restart Text Tonsorium (including the Java code)
+11. install a dump file, so it can be imported using the web interface
+12. edit lists with feature values that the user (or the administrator) can select from when using the web interface
+
+## (1. - 2.) Adding metadata for new tools and maintaining metadata for existing ones
+Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
+You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
 There are many metadata related files, but the only ones that are affected by the web based GUI are /opt/texton/BASE/meta/tooladm and /opt/texton/BASE/meta/toolprop.
-In the folder /opt/texton/BASE/meta/ and its subfolders are a number of files that contain the data with which drop down lists are filled in the GUI. If you think a value is missing in a dropdown list, then the corresponding metadata file has to be edited directly.
+In the folder /opt/texton/BASE/meta/ and its subfolders are a number of files that contain the data with which drop down lists are filled in the GUI. If you think a value is missing in a dropdown list, then the corresponding metadata file has to be edited manually.
 
-To be able to add or change metadata in the web GUI you need to know the password. Per default, the password is a zero length ('blank') string. For instances of Text Tonsorium that are visible to other people than you alone, you must set a good password. How to do that is described in 
-texton-Java/README.md 
+To be able to add or change metadata in the web GUI, you need to know the password. Per default, the password is a zero length ('blank') string. For instances of Text Tonsorium that are visible to other people than you alone, you must set a good password. How to do that is described in texton-Java/README.md. 
 
 A second requirement for entering the registration web GUI is that you provide an email address. If you want to edit existing metadata, then the email address must be the same as that recorded in the metadata.
 
