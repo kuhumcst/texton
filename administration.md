@@ -187,7 +187,47 @@ Per default, the PHP wrapper works synchronously, which means that it returns th
 
 If the tool you want to integrate already is a web app, then the easiest way to integrate it is to still generate and use the PHP app. Instead of running the code with `system` or `popen`, the wrapper can forward the request to the web app. There are several examples of such tools in this repo. (Search for functions called `http'.)
 
+In case you need to debug the wrapper and the wrapper's communication with the tool, there is the function `logit`. There is also another function related to logging, called `loginit`. Both functions need to be edited a little bit before they become useful: the `return` statements at the start of the function bodies need to be commented out:
+
+```php
+function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
+    {
+    //return;
+    global $toollog,$ftemp;
+    $ftemp = fopen($toollog,'w');
+    if($ftemp)
+        {
+        fwrite($ftemp,$toollog . "\n");
+        fclose($ftemp);
+        }
+    }
+    
+function logit($str) /* TODO You can use this function to write strings to the log file. */
+    {
+    //return;
+    global $toollog,$ftemp;
+    $ftemp = fopen($toollog,'a');
+    if($ftemp)
+        {
+        fwrite($ftemp,$str . "\n");
+        fclose($ftemp);
+        }
+    }    
+```
+
 #### Copy the PHP file
 All index.php files are in subfolders of the folder /opt/texton, as siblings of the folder `BASE' that, among many other things, contains the Bracmat code toolsProg.bra for the Text Tonsorium. You can name the subfolder as you like, but it is of course best to give it a name that reflects the tool's name. In this subfolder you can put other scripts (Python, Perl, etc.) that you want to activate from the index.php file.
 
 #### Configuration
+You need to instruct the webserver where the new tool resides that requests directed at the [Service URL of the tool](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones) must be handled by the index.php file that wraps around your tool. To that end, in Apache, you can take inspiration from the file apache2-sites/texton.conf, which has entries like
+
+```
+    Alias /CoreNLP /opt/texton/CoreNLP
+    <Directory /opt/texton/CoreNLP>
+        Options None
+        AllowOverride None
+        DirectoryIndex index.php
+        Require all granted
+    </Directory>
+```
+In this example, /CoreNLP is the path after the domain name in the Service URL of the tool. /opt/texton/CoreNLP is the folder where the index.php file is installed.
