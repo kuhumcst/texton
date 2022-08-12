@@ -101,7 +101,7 @@ This is how integration is done:
 1. [Add the tool's metadata to the Text Tonsorium](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).   
 2. [Generate the PHP wrapper for that specific tool](#php-wrapper). Copy and paste the code to a file called 'index.php'.
 3. [Open index.php in an editor and search for the comments that say TODO. Add or edit code as you see necessary to run the tool](#Editing-the-PHP-file).
-4. [Copy index.php](#Copy-index-php) to a location where the webserver can see it.
+4. [Copy index.php](#Copy-the-PHP-file) to a location where the webserver can see it.
 5. [Tell the webserver under which condition to activate this index.php](#configuration), i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
 
 #### Editing the PHP file
@@ -153,6 +153,6 @@ The comments following the PHP variables try to help you. If the wrapper receive
 
 Per default, the PHP wrapper works synchronously, which means that it returns the result of the tool as the response to the HTTP request, accompanied by the return code 200. It is however possible to make it work asynchronously, which means that it returns 201 even before the tool is finished doing its thing. Then, when the tool is ready, the PHP code must POST the result to the Text Tonsorium. One should be careful with asynchronous tools; the Text Tonsorium will take advantage of the doubling of the interaction by sending two new requests, if there are enough jobs waiting to be run. Especially if the Text Tonsorium is fed with many uploaded texts (e.g. 100 text documents that all have to be syntactically annotated), a single asynchrounous tool will cause a broad fan of simultaneously running jobs. If the hardware can handle those, it's fine, and the results for all annotation tasks will be available rather quickly. But if there are not that many cores, the jobs will be plodding. The Text Tonsorium will try to restrict the number of running tasks to about 8, but there is no guarantee that will succeed.
 
-#### Copy index.php
+#### Copy the PHP file
 
 #### Configuration
