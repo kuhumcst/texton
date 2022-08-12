@@ -2,22 +2,21 @@
 ## GUI (Graphical User Interface) for administrative tasks
 If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
 
-1. [Register new tools](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
-2. [Change the metadata of existing ones](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
-3. [Reload the non-Java part of the Text Tonsorium program](#reload-the-non-java-part-of-the-text-tonsorium-program).
-4. [Export all metadata to a dump file](#Export-all-metadata-to-a-dump-file).
-5. [Import metadata from a dump file in another instance of Text Tonsorium](#Import-metadata-from-a-dump-file-in-another-instance-of-Text-Tonsorium).
-6. [Check the current version of Bracmat](#Check-the-current-version-of-Bracmat).
+1. [Register new tools and change the metadata of existing tools](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
+2. [Reload the non-Java part of the Text Tonsorium program](#reload-the-non-java-part-of-the-text-tonsorium-program).
+3. [Export all metadata to a dump file](#Export-all-metadata-to-a-dump-file).
+4. [Import metadata from a dump file in another instance of Text Tonsorium](#Import-metadata-from-a-dump-file-in-another-instance-of-Text-Tonsorium).
+5. [Check the current version of Bracmat](#Check-the-current-version-of-Bracmat).
 
 ## Administrative tasks for which there is no GUI
 There are things that you sometimes need to do, but for which there is no web interface.
 
-7. [Restart Text Tonsorium (including the Java code)](#Restart-Text-Tonsorium).
-8. [Copy a dump file to the normally remote file location from where it can be imported using the web interface](#Copy-a-dump-file).
-9. [Edit lists with feature values that the user (or the administrator) can select from, when using the web interface](Expanding-and-editing-metadata-in-the-file-system).
-10. [Integrate a new tool](#Integrate-a-new-tool).
+6. [Restart Text Tonsorium (including the Java code)](#Restart-Text-Tonsorium).
+7. [Copy a dump file to the normally remote file location from where it can be imported using the web interface](#Copy-a-dump-file).
+8. [Edit lists with feature values that the user (or the administrator) can select from, when using the web interface](Expanding-and-editing-metadata-in-the-file-system).
+9. [Integrate a new tool](#Integrate-a-new-tool).
 
-## Adding metadata for new tools and maintaining metadata for existing ones)
+## Adding metadata for new tools and maintaining metadata for existing ones
 Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
 You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
@@ -98,13 +97,13 @@ The Text Tonsorium does not depend on a database management system like MySQL, y
 <entry key="toolsHome">/opt/texton/BASE/</entry>
 ```
 
-So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, are very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools.
+So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, are very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools. The folder '/opt/texton/BASE/data' does not contain metadata, but input, output and intermediary data.
 
 ## Integrate a new tool
 Integration of an NLP (or other) tool
 Every tool that can run
 
-1. in batch mode (i.e. without requiring interaction while running)
+1. in batch mode (i.e. without requiring user interaction while running)
 2. under an operating system featuring a webserver that includes PHP
  
 can be integrated in the Text Tonsorium.
@@ -113,12 +112,15 @@ This is how integration is done:
 
 1. [Add the tool's metadata to the Text Tonsorium](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).   
 2. [Generate the PHP wrapper for that specific tool](#php-wrapper). Copy and paste the code to a file called 'index.php'.
-3. [Open index.php in an editor and search for the comments that say TODO. Add or edit code as you see necessary to run the tool](#Editing-the-PHP-file).
+3. [Edit index.php](#Editing-the-PHP-file).
 4. [Copy index.php](#Copy-the-PHP-file) to a location where the webserver can see it.
 5. [Tell the webserver under which condition to activate this index.php](#configuration), i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
 
 #### Editing the PHP file
-The contents of index.php may seem overwhelming, but making the integration work is really simple. You have to look for this code:
+
+Open index.php in an editor and search for the comments that say TODO. Add or edit code as you see necessary to run the tool.
+
+The contents of index.php may seem overwhelming, but making the integration work is really simple. Most importantly, you have to look for this code:
 
 ```php
 //* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
@@ -152,6 +154,23 @@ Your code must use the input data that was sent in the HTTP request by the Text 
         system("cp $F $myveryfirsttoolfile");
 ```
 
+Here we have used `os.system`. Normally, however, we use `popen` instead of `system`:
+
+```php
+        $myveryfirsttoolfile = tempFileName("firstTool");
+        $command = 'python3 mylitllepython.py ' . $F . ' ' . $myveryfirsttoolfile;
+
+        if(($cmd = popen($command, "r")) == NULL)
+            {
+            throw new SystemExit();
+            }
+
+        while($read = fgets($cmd))
+            {
+            }
+        pclose($cmd);
+```
+
 Often, a tool needs two or more inputs. If that is the case, search for PHP variables that have names that start with a capital 'I' (for 'Input') and that end with 'F'. If your tool needs two different types of contents: tokens and PoS-tags, then these variables will be called `$IfacettokF` and `$IfacetposF`.
 
 It is quite possible that your tool sometimes needs one input, and at other times needs more. This can be the case if the tool has more than one incarnation. So, for example, the CST lemmatizer sometimes runs with a single input file that contains both tokens, POS tags and perhaps even more types of contents. At other times it needs separate input files for tokens and for PoS tags. Therefore, the generated PHP-code says
@@ -166,6 +185,9 @@ The comments following the PHP variables try to help you. If the wrapper receive
 
 Per default, the PHP wrapper works synchronously, which means that it returns the result of the tool as the response to the HTTP request, accompanied by the return code 200. It is however possible to make it work asynchronously, which means that it returns 201 even before the tool is finished doing its thing. Then, when the tool is ready, the PHP code must POST the result to the Text Tonsorium. One should be careful with asynchronous tools; the Text Tonsorium will take advantage of the doubling of the interaction by sending two new requests, if there are enough jobs waiting to be run. Especially if the Text Tonsorium is fed with many uploaded texts (e.g. 100 text documents that all have to be syntactically annotated), a single asynchrounous tool will cause a broad fan of simultaneously running jobs. If the hardware can handle those, it's fine, and the results for all annotation tasks will be available rather quickly. But if there are not that many cores, the jobs will be plodding. The Text Tonsorium will try to restrict the number of running tasks to about 8, but there is no guarantee that will succeed.
 
+If the tool you want to integrate already is a web app, then the easiest way to integrate it is to still generate and use the PHP app. Instead of running the code with `system` or `popen`, the wrapper can forward the request to the web app. There are several examples of such tools in this repo. (Search for functions called `http'.)
+
 #### Copy the PHP file
+All index.php files are in subfolders of the folder /opt/texton, as siblings of the folder `BASE' that, among many other things, contains the Bracmat code toolsProg.bra for the Text Tonsorium. You can name the subfolder as you like, but it is of course best to give it a name that reflects the tool's name. In this subfolder you can put other scripts (Python, Perl, etc.) that you want to activate from the index.php file.
 
 #### Configuration
