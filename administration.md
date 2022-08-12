@@ -2,7 +2,7 @@
 ## Web page for administrative tasks
 If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
 
-1. Register new tools.
+1. [Register new tools](#h1h2).
 2. Change the metadata of existing ones.
 3. Reload the non-Java part of the Text Tonsorium program.
 4. Export all metadata to a dump file.
@@ -14,8 +14,9 @@ There are things that you sometimes need to do, but for which there is no web in
 7. Restart Text Tonsorium (including the Java code).
 8. Copy a dump file to the normally remote file location from where it can be imported using the web interface.
 9. Edit lists with feature values that the user (or the administrator) can select from, when using the web interface.
+10. Integrate a new tool.
 
-## (1 and 2) Adding metadata for new tools and maintaining metadata for existing ones
+## (1 and 2) Adding metadata for new tools and maintaining metadata for existing ones {#h1h2}
 Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
 You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
@@ -58,7 +59,17 @@ At the bottom of the registration form are five buttons:
 
 To leave the registration form, just enter another URL in the browser's address bar.
 
-## Integration of NLP (or other) tool
+## (9) Expanding and editing metadata in the file system
+
+The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several tables. Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
+
+```xml
+<entry key="toolsHome">/opt/texton/BASE/</entry>
+```
+
+So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, are very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools.
+
+## (10) Integration of NLP (or other) tool
 Every tool that can run
 
 1. in batch mode (i.e. without requiring interaction while running)
@@ -128,12 +139,3 @@ The comments following the PHP variables try to help you. If the wrapper receive
 
 Per default, the PHP wrapper works synchronously, which means that it returns the result of the tool as the response to the HTTP request, accompanied by the return code 200. It is however possible to make it work asynchronously, which means that it returns 201 even before the tool is finished doing its thing. Then, when the tool is ready, the PHP code must POST the result to the Text Tonsorium. One should be careful with asynchronous tools; the Text Tonsorium will take advantage of the doubling of the interaction by sending two new requests, if there are enough jobs waiting to be run. Especially if the Text Tonsorium is fed with many uploaded texts (e.g. 100 text documents that all have to be syntactically annotated), a single asynchrounous tool will cause a broad fan of simultaneously running jobs. If the hardware can handle those, it's fine, and the results for all annotation tasks will be available rather quickly. But if there are not that many cores, the jobs will be plodding. The Text Tonsorium will try to restrict the number of running tasks to about 8, but there is no guarantee that will succeed.
 
-## Expanding and editing metadata in the file system
-
-The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several tables. Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
-
-```xml
-<entry key="toolsHome">/opt/texton/BASE/</entry>
-```
-
-So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, are very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools.
