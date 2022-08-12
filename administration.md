@@ -35,11 +35,11 @@ The registration form is devided in two parts.
 2. Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. These metadata can occur in multiple 'incarnations'. Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. The two incarnations cannot be combined into one, because it would imply that the lemmatizer also would work for Danish if the input is not POS-tagged. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
 
 At the bottom of the registration form are five buttons:
-1. [Save metadata](save-metadata)
-2. [Replace metadata](replace-metadata)
-3. [Delete metadata](delete-metadata)
-4. [Show more entry fields](show-more-entry-fields)
-5. [PHP wrapper](php-wrapper)
+1. [Save metadata](#save-metadata)
+2. [Replace metadata](#replace-metadata)
+3. [Delete metadata](#delete-metadata)
+4. [Show more entry fields](#show-more-entry-fields)
+5. [PHP wrapper](#php-wrapper)
 
 #### Save metadata
 If you have been editing existing metadata, the following happens:
