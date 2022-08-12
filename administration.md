@@ -16,7 +16,7 @@ There are things that you sometimes need to do, but for which there is no web in
 9. Edit lists with feature values that the user (or the administrator) can select from, when using the web interface.
 10. Integrate a new tool.
 
-(##Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones)
+(#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones)
 Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
 You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
