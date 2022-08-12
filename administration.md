@@ -3,7 +3,7 @@
 If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
 
 1. [Register new tools](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
-2. Change the metadata of existing ones.
+2. [Change the metadata of existing ones](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
 3. Reload the non-Java part of the Text Tonsorium program.
 4. Export all metadata to a dump file.
 5. Import all metadata from a dump file in another instance of Text Tonsorium, optionally without overwriting metadata that are specific to this particular instance.
@@ -35,27 +35,30 @@ The registration form is devided in two parts.
 2. Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. These metadata can occur in multiple 'incarnations'. Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. The two incarnations cannot be combined into one, because it would imply that the lemmatizer also would work for Danish if the input is not POS-tagged. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
 
 At the bottom of the registration form are five buttons:
-1. Save metadata
-2. Replace metadata
-3. Delete metadata
-4. Show more entry fields
-5. PHP wrapper
+1. [Save metadata](save-metadata)
+2. [Replace metadata](replace-metadata)
+3. [Delete metadata](delete-metadata)
+4. [Show more entry fields](show-more-entry-fields)
+5. [PHP wrapper](php-wrapper)
 
-### Details
-
-1. Save metadata. If you have been editing existing metadata, the following happens:
+#### Save metadata
+If you have been editing existing metadata, the following happens:
 * If you made a change in the boiler plate section, the old values are replaced by the new ones.
 * If you made changes in the I/O metadata, then these metadata are saved without overwriting the old metadata.
 
-2. Replace metadata. This is like 'Save metadata' as far as boiler plate metadata is concerned. If you made changes to I/O metadata, then the old values are overwritten by the new ones.
+#### Replace metadata
+This is like 'Save metadata' as far as boiler plate metadata is concerned. If you made changes to I/O metadata, then the old values are overwritten by the new ones.
 
-3. Delete metadata. This button can have two different effects.
+#### Delete metadata
+This button can have two different effects.
 * The current incarnation is deleted. The number of incarnations decreases by one.
 * If there are no I/O metadata at all (i.e. zero incarnations), pressing this button removes the boiler plate metadata. Hereafter the tool is no longer known to Text Tonsorium.
 
-4. Show more entry fields. Almost any field in the I/O section of the registration form can occur more than once. Such fields are marked with check boxes named 'more' or 'Add an input/output combination'. When you check such boxes, the GUI does not immediately add the requested extra fields. For that, you press this button.
+#### Show more entry fields
+Almost any field in the I/O section of the registration form can occur more than once. Such fields are marked with check boxes named 'more' or 'Add an input/output combination'. When you check such boxes, the GUI does not immediately add the requested extra fields. For that, you press this button.
 
-5. PHP wrapper. When you are content with all the registered metadata, you press this button to generate a PHP wrapper that you can use to integrate the actual tool in Text Tonsorium. Often, the tool is a command line tool. In other cases the tool is already accessible over the internet or intranet. And finally, sometimes the tool can be implemented in PHP itself. In each of these cases it is advisable to use the produced PHP wrapper.
+#### PHP wrapper
+When you are content with all the registered metadata, you press this button to generate a PHP wrapper that you can use to integrate the actual tool in Text Tonsorium. Often, the tool is a command line tool. In other cases the tool is already accessible over the internet or intranet. And finally, sometimes the tool can be implemented in PHP itself. In each of these cases it is advisable to use the produced PHP wrapper.
 
 To leave the registration form, just enter another URL in the browser's address bar.
 
