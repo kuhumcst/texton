@@ -13,7 +13,7 @@ There are things that you sometimes need to do, but for which there is no web in
 
 6. [Restart Text Tonsorium (including the Java code)](#Restart-Text-Tonsorium).
 7. [Copy a dump file to the normally remote file location from where it can be imported using the web interface](#Copy-a-dump-file).
-8. [Edit lists with feature values that the user (or the administrator) can select from, when using the web interface](Expanding-and-editing-metadata-in-the-file-system).
+8. [Edit lists with feature values that the user (or the administrator) can select from, when using the web interface](#Expanding-and-editing-metadata-in-the-file-system).
 9. [Integrate a new tool](#Integrate-a-new-tool).
 
 ## Adding metadata for new tools and maintaining metadata for existing ones
