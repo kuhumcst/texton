@@ -2,7 +2,7 @@
 ## Web page for administrative tasks
 If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
 
-1. [Register new tools](#h1h2).
+1. [Register new tools](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
 2. Change the metadata of existing ones.
 3. Reload the non-Java part of the Text Tonsorium program.
 4. Export all metadata to a dump file.
@@ -16,7 +16,7 @@ There are things that you sometimes need to do, but for which there is no web in
 9. Edit lists with feature values that the user (or the administrator) can select from, when using the web interface.
 10. Integrate a new tool.
 
-## (1 and 2) Adding metadata for new tools and maintaining metadata for existing ones {#h1h2}
+(##Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones)
 Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
 You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
