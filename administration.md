@@ -99,7 +99,7 @@ can be integrated in the Text Tonsorium.
 This is how integration is done:
 
 1. [Add the tool's metadata to the Text Tonsorium](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).   
-2. [Generate the PHP wrapper for that specific tool](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones). Copy and paste the code to a file called 'index.php'.\
+2. [Generate the PHP wrapper for that specific tool](#php-wrapper). Copy and paste the code to a file called 'index.php'.
 3. [Open index.php in an editor and search for the comments that say TODO. Add or edit code as you see necessary to run the tool](#Editing-the-PHP-file).
 4. [Copy index.php](#Copy-index-php) to a location where the webserver can see it.
 5. [Tell the webserver under which condition to activate this index.php](#configuration), i.e. bind the tool's URL (as stated in the metadata) to the location where index.php is saved.
