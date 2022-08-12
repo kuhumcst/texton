@@ -78,13 +78,17 @@ The inverse of exporting metadata is of course importing such data. You can choo
 If you want to import a dump file that was exported from the same instance of Text Tonsorium, and if you never touched (edited, deleted, moved to another location) the dump file, you do not need to do anything outside the administrative GUI. If, on the other hand, you want to import a dump file that was created in another instance of the Text Tonsorium, then you need to copy the dump file from the original location to the new one. Dump files are always located in the same folder as the file 'toolsProg.bra'. Make sure that they are readable for the tomcat user. The name of a dump file always starts with with the string 'alltables'. 
 
 ## Check the current version of Bracmat
-If you want to know whether the Bracmat JNI (Java Native Interface) is the latest version, press the button. Compare the date with the date of the files in the [Bracmat repo](https://github.com/BartJongejan/Bracmat)
+If you want to know whether the Bracmat JNI (Java Native Interface) is the latest version, press the button. Compare the date with the date of the files in the [Bracmat repo](https://github.com/BartJongejan/Bracmat).
 
 ## Restart Text Tonsorium 
-(including the Java code)
+To make a clean start of the Text Tonsorium (the Bracmat part as well as the Java part), do the following
+
+* stop tomcat
+* remove /opt/texton/BASE/job/recentTasks
+* start tomcat
 
 ## Copy a dump file
-to the normally remote file location from where it can be imported using the web interface.
+Dump files are saved in the same folder as the toolsProg.bra" file, e.g. as /opt/texton/BASE/alltables.bra. Use a tool like scp to copy alltables.bra to another installation of Text Tonsorium.
 
 ## Expanding and editing metadata in the file system
 
