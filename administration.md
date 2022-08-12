@@ -1,5 +1,5 @@
 # Administration
-## Web page for administrative tasks
+## GUI (Graphical User Interface) for administrative tasks
 If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then adding an extra 'admin.html' brings you to the administrative page, where you can do many tasks:
 
 1. [Register new tools](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones).
@@ -9,6 +9,7 @@ If the URL of front page of Text Tonsorium is https://xxx.yy/texton/, then addin
 5. [Import metadata from a dump file in another instance of Text Tonsorium](#Import-metadata-from-a-dump-file-in-another-instance-of-Text-Tonsorium).
 6. [Check the current version of Bracmat](#Check-the-current-version-of-Bracmat).
 
+## Administrative tasks for which there is no GUI
 There are things that you sometimes need to do, but for which there is no web interface.
 
 7. [Restart Text Tonsorium (including the Java code)](#Restart-Text-Tonsorium).
@@ -30,11 +31,10 @@ A second requirement for entering the registration web GUI is that you provide a
 If your credentials are accepted, and you want to register a new tool, then you are led straight to an input form were you can start entering metadata. 
 If you want to update existing metadate, you will first have to choose a tool from a drop down list before being led to the input form. In the latter case, the input form is filled with the existing metadata.
 
-The registration form is devided in two parts.
+The registration form is divided in three parts.
 1. The upper part is for boiler plate information: ToolID, Title, Description, Creator, Service URL of the tool, Inactive, etc. Of these fields, ToolID, Service URL of the tool and Inactive are the most 'technical' one. ToolID is used as a unique key in the list of integrated tools. It is also used as part of a PHP variable. The Service URL of the tool is the address where the Text Tonsorium sends requests to each time it wants to activate the tool. Finally, if Inactive is checked, the tool is registered, but will not take part in any workflow. When registering a tool, Inactive is set per default. This flag can only be toggled when updating a tool.
 2. Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. These metadata can occur in multiple 'incarnations'. Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. The two incarnations cannot be combined into one, because it would imply that the lemmatizer also would work for Danish if the input is not POS-tagged. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
-
-At the bottom of the registration form are five buttons:
+3. At the bottom of the registration form are five buttons:
 1. [Save metadata](#save-metadata)
 2. [Replace metadata](#replace-metadata)
 3. [Delete metadata](#delete-metadata)
@@ -63,13 +63,22 @@ When you are content with all the registered metadata, you press this button to 
 To leave the registration form, just enter another URL in the browser's address bar.
 
 ## Reload the non-Java part of the Text Tonsorium program
+Most of the program code is written in the Bracmat, a programming language with some programming constructs that make it equisitely apt to the task of "dynamic programming with memoization". The Bracmat code is interpreted rather than compiled, and can be replaced by an updated version while the Java-code of the Text Tonsorium is still running. Because many improvements of the Bracmat program code have to do with the computation of workflow candidates, we have chosen to reset memoized results when the Bracmat code is replaced. The computation of workflow candidates will therefore be slower for some time after reloading.
+
+Reloading is advisable after making a `git pull' of this repositorium that includes a new version of the file `toolsProg.bra'. It is also advisable before and after reading a dump file containing metadata. (See below.)
 
 ## Export all metadata to a dump file
+As a way to make a backup of the metadata, and also as a way to distribute metadata to similar instances of Text Tonsorium, metadata can be saved to a file with the press of a button. The dump file - the file with the saved metadata - is not downloadable via the web interface, but resides in the same folder as the Bracmat program code, e.g. /opt/texton/BASE on the server from where the Text Tonsorium web application is served. You must have root (sudo) access rights to be able to see the contents of the file.
+
+When exporting, you can choose to also export metadata that is specific for the specific Text Tonsorium installation, such as information about jobs and about the whereabouts of the integrated tools and their 'inactivity' status. To export such metadata, place a checkmark in the checkbox.
 
 ## Import metadata from a dump file in another instance of Text Tonsorium
-optionally without overwriting metadata that are specific to this particular instance.
+The inverse of exporting metadata is of course importing such data. You can choose to overwrite the current production data with the production data in the dump file. This is in general not what you want.
+
+If you want to import a dump file that was exported from the same instance of Text Tonsorium, and if you never touched (edited, deleted, moved to another location) the dump file, you do not need to do anything outside the administrative GUI. If, on the other hand, you want to import a dump file that was created in another instance of the Text Tonsorium, then you need to copy the dump file from the original location to the new one. Dump files are always located in the same folder as the file 'toolsProg.bra'. Make sure that they are readable for the tomcat user. The name of a dump file always starts with with the string 'alltables'. 
 
 ## Check the current version of Bracmat
+If you want to know whether the Bracmat JNI (Java Native Interface) is the latest version, press the button. Compare the date with the date of the files in the [Bracmat repo](https://github.com/BartJongejan/Bracmat)
 
 ## Restart Text Tonsorium 
 (including the Java code)
