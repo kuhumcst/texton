@@ -127,7 +127,6 @@ In '/opt/texton/BASE/' you find the file called 'where' that tells where each ta
   (   features
       HTTP-status-codes
       ISO-639
-      licences
       subtype2facet
       tooladm
       toolprop
@@ -297,21 +296,78 @@ is equivalent to
   </dd>
   <dt>HTTP-status-codes</dt>
   <dd>
+    A list of HTTP status codes together with meaning and some explanation. E.g.
+    <pre>
+  ( 201
+  . Created
+  . "The request has been fulfilled and resulted in a new resource being created."
+  )    
+    </pre>
   </dd>
   <dt>ISO-639</dt>
-  <dd>
-  </dd>
-  <dt>licences</dt>
-  <dd>
-  </dd>
+  <dd>Two and three letter codes for languages</dd>
   <dt>subtype2facet</dt>
   <dd>
   </dd>
   <dt>tooladm</dt>
   <dd>
+    Table that contains boiler plate metadata for all integrated tools. These data can be edited in the GUI. An example:
+    <pre>
+  ( (ToolID.Brill-tagger)
+    (PassWord.)
+    (ContactEmail."x@x.xxx")
+    (Version.1cst)
+    (Title."Brill tagger")
+    (ServiceURL."http://localhost/BrillTagger/")
+    (Publisher.CST)
+    (ContentProvider."cst.ku.dk")
+    (Creator.Brill)
+    (InfoAbout."https://nlpweb01.nors.ku.dk/download/tagger/")
+    ( Description
+    . "Part-of-speech tagger: Marks each word in a text with information about word class and morphological features."
+    )
+    (ExternalURI.)
+    (XMLparms.)
+    (PostData.)
+    (Inactive.)
+  )
+    </pre>
+    <dl>
+      <dt>ToolID</dt>
+      <dd>Unique name of tool, for internal use only</dd>
+      <dt>PassWord</dt>
+      <dd>Needed if one wants to pass on admistration rights to someone with a different email address. This procedure is circumvented by editing the table outside the GUI.</dd>
+      <dt>ContactEmail</dt>
+      <dd>If you enter the wrong email before updating a tool, you won't have access, unless you know the password.</dd>
+      <dt>Version</dt>
+      <dd>Version of the tool</dd>
+      <dt>Title</dt>
+      <dd>Name of the tool. Monolingual!</dd>
+      <dt>ServiceURL</dt>
+      <dd>The URL where the Text Tonsorium sends its requests to when it wants to activate the tool.</dd>
+      <dt>Publisher</dt>
+      <dd>(No explanation available. Sorry for that.)</dd>
+      <dt>ContentProvider</dt>
+      <dd>(No explanation available. Sorry for that.)</dd>
+      <dt>Creator</dt>
+      <dd>(No explanation available. Sorry for that.)</dd>
+      <dt>InfoAbout</dt>
+      <dd>Link to a page that offers information about the tool.</dd>
+      <dt>Description</dt>
+      <dd>A description of the tool in rather general terms. The languages and file formats supported by the tool, for example, need not be mentioned here.</dd>
+      <dt>ExternalURI</dt>
+      <dd>Link to another page where the tool can be tried out.</dd>
+      <dt>XMLparms</dt>
+      <dd>If 'on', Text Tonsorium should send the parameters in some XML. Not implemented!</dd>
+      <dt>PostData</dt>
+      <dd>If 'on', input to a tool is sent alongside the parameters in a POST request. The default is GET, which means that input isn't pushed to the tool by pulled by the tool.</dd>
+      <dt>Inactive</dt>
+      <dd>'on' when a new tool is registered and also when later set to 'on'. The value 'on' makes the tool invisible to the workflow computation algorithm.</dd>
+    </dl>
   </dd>
   <dt>toolprop</dt>
   <dd>
+    Contains for each incarnation for each tool the input/output specs for each feature that is relevant for the tool's proper working. This file can be edited using the GUI.
   </dd>
   <dt>type2facet</dt>
   <dd>
@@ -321,15 +377,19 @@ is equivalent to
   </dd>
   <dt>UIlanguage</dt>
   <dd>
+    A list with two elements: the ISO-639 codes for the default GUI language and for the second GUI language. Currently 'en' and 'da' respectively. The 'setLanguage' function is able to swap the order of the languages.
   </dd>
   <dt>SuperSets</dt>
   <dd>
+    The user does not need to specify all features, and if a feature van be composed of several feature values, the user does not need to specify them all. To make the latter possible, the 'SuperSets' table lists how the value chosen by the user can be expanded to a multivalued, composite value. At the time of writing, the only feature for which this is relevant is the "Type of content" value ('facet' in internal speak).  
   </dd>
   <dt>TEImetadata</dt>
   <dd>
+    This file defines the XML fields and their positions in the XML tree that together constitute much of the 'metadata' of a Clarin-dk output file.
   </dd>
   <dt>Typeface</dt>
   <dd>
+    Defines the default typeface in the Text Tonsorium.
   </dd>
 </dl>
 
