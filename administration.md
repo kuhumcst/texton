@@ -91,13 +91,88 @@ Dump files are saved in the same folder as the toolsProg.bra" file, e.g. as /opt
 
 ## Expanding and editing metadata in the file system
 
-The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several tables. Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
+The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several 'tables'. (They are not really tables, but data structured in trees, like what you normally see expressed in XML and JSON.) Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
 
 ```xml
 <entry key="toolsHome">/opt/texton/BASE/</entry>
 ```
 
 So, per default the metadata are somewhere under '/opt/texton/BASE/' and its subfolders. The metadata under '/opt/texton/BASE/job' is very volatile and you should not edit those. The metadata under '/opt/texton/BASE/meta', however, are very static, and you have to edit them to influence how the Text Tonsorium sees the world of tools. The folder '/opt/texton/BASE/data' does not contain metadata, but input, output and intermediary data.
+
+These are things you need to know about editing the tables:
+
+1. [Finding the file you need to edit](#Finding-the-file-you-need-to-edit)
+2. [What is in the files](#What-is-in-the-files)
+3. [Editing selection lists](#Editing-selection-lists)
+4. [Adding subspecifications](#Adding-subspecifications)
+
+#### Finding the file you need to edit
+
+In '/opt/texton/BASE/' you find the file called 'where' that tells where each table is stored, including 'where' itself. Here are the contents of 'where' as they currently (August 2022) look like. What you see are a number of parenthesised expressions. Each of these has a dot '.' near the end. The part between the dot and the closing parenthesis is a path that starts at '/opt/texton/BASE/' (or whatever place the file toolsProg.bra is located). So the path '/' means '/opt/texton/BASE/' and the path 'meta/feature/' means '/opt/texton/BASE/meta/feature'. The part between the opening parenthesis and the dot is the list of filenames of the tables in the aforementioned file location. So `(AAA changelog footer where./)` means that there are files '/opt/texton/BASE/AAA', '/opt/texton/BASE/changelog', '/opt/texton/BASE/footer' and '/opt/texton/BASE/where'. Whether things are listed on a single line or over several lines makes no difference.
+
+
+```
+  (AAA changelog footer where./)
+  (   CTBs
+      jobAbout
+      jobNr
+      jobs
+      relations
+      Uploads
+      zippedresults
+      ItemGroupsCache
+      recentTasks
+      wrkflws
+  . job/
+  )
+  (   features
+      HTTP-status-codes
+      ISO-639
+      licences
+      subtype2facet
+      tooladm
+      toolprop
+      type2facet
+      Workflows
+      UIlanguage
+      SuperSets
+      TEImetadata
+      Typeface
+  . meta/
+  )
+  (   facets
+      fileFormats
+      linguae
+      periods
+      presentations
+      vulticuli
+      ambiguity
+      smell
+  . meta/feature/
+  )
+  (   annotationStyles
+      basistextStyles
+      conllStyles
+      flatFileTypes
+      htmlStyles
+      imageStyles
+      jsonStyles
+      morfSets
+      sndStyles
+      tagSets
+      tokenisationStyles
+      vidStyles
+  . meta/style/
+  )
+```
+
+#### What is in the files
+
+
+
+#### Editing selection lists
+
+#### Adding subspecifications
 
 ## Integrate a new tool
 Integration of an NLP (or other) tool
