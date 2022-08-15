@@ -167,6 +167,8 @@ In '/opt/texton/BASE/' you find the file called 'where' that tells where each ta
 ```
 
 #### What is in the files
+
+##### self descriptive files
 <dl>
   <dt>AAA
   </dt><dd>This file contains the file name of the dump file where this file (AAA) was extracted from.</dd>
@@ -200,11 +202,44 @@ is equivalent to
   
   </dd>
   <dt>where
-  </dt><dd></dd>
+  </dt><dd>This file describes where each of the files that can be exported to and imported from a dump file is located in the file system.
+  </dd>
   </dl>
  
+##### job related files
 
-
+<dl>
+  <dt>CTBs</dt>
+  <dd>
+  </dd>
+  <dt>jobAbout</dt>
+  <dd>
+  </dd>
+  <dt>jobNr</dt>
+  <dd>
+  </dd>
+  <dt>jobs</dt>
+  <dd>
+  </dd>
+  <dt>relations</dt>
+  <dd>
+  </dd>
+  <dt>Uploads</dt>
+  <dd>
+  </dd>
+  <dt>zippedresults</dt>
+  <dd>
+  </dd>
+  <dt>ItemGroupsCache</dt>
+  <dd>
+  </dd>
+  <dt>recentTasks</dt>
+  <dd>
+  </dd>
+  <dt>wrkflws</dt>
+  <dd>
+  </dd>
+</dl>
 
 #### Editing selection lists
 
