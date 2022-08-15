@@ -188,15 +188,15 @@ In '/opt/texton/BASE/' you find the file called 'where' that tells where each ta
   </pre>
 is equivalent to
 <pre>
-  <p class="indent">
-      <small>
-          <a href="/was">
-              <span class="s">
+  &gt;p class="indent"&lt;
+      &gt;small&lt;
+          &gt;a href="/was"&lt;
+              &gt;span class="s"&lt;
                   Accessibility (Danish)
-              </span>
-          </a>
-      </small>
-  </p>
+              &gt;/span&lt;
+          &gt;/a&lt;
+      &gt;/small&lt;
+  &gt;/p&lt;
   </pre>
   
   </dd>
