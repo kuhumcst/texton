@@ -251,8 +251,8 @@ is equivalent to
 <dl>
   <dt>features</dt>
   <dd>
-    Input, output and the I/O specs of tools are described in terms of a set of values. Each value belongs to a dimension, e.g. 'type of content', 'language', 'file format', etc. The file called 'features' contains, for each dimension, a number of metadata fields. Some of these fields are optional. Here are the fields for the 'Type of Content' dimension.
-    <code>
+    Input, output and the I/O specs of tools are described in terms of a set of values. Each value belongs to a feature, e.g. 'type of content', 'language', 'file format', etc. The file called 'features' contains, for each feature, a number of metadata fields. Some of these fields are optional. Here are the fields for the 'Type of Content' feature.
+    <pre>
   ( (inDex.A)
     (name."Type of content" Annotationstype)
     (short.facet)
@@ -275,7 +275,25 @@ is equivalent to
         "Udfyld i de fleste sammenhænge. Du kan nogle gange vælge samme værdi som i inputtet, fx når formålet er at transformere filformatet, men ikke indholdstypen."
     )
   )      
-    </code>
+    </pre>
+    <dl>
+      <dt>inDex</dt>
+      <dd>Indicates the order in which features are shown to the user. A comes before B, B before C, etc. </dd>
+      <dt>name</dt>
+      <dd>The name of the feature, in one or two languages. As we also will see below, most of Text Tonsorium is bilingual. The first language is English and the second language is Danish. So in the example, "Type of content" is the English name of the feature and Annotationstype the Danish one. (The reason why "Type of content" is enclosed in quotation marks is that the enclosed string contains blanks.)</dd>
+      <dt>short</dt>
+      <dl>The internal name for the feature.</dl>
+      <dt>description</dt>
+      <dl>Some text, in two languages, that describe the featire.</dl>
+      <dt>table</dt>
+      <dl>The name of the table that lists the feature values from which the user can choose.</dl>
+      <dt>specificationTable</dt>
+      <dl>If there are values that can be subspecified, these values are listed together with their possible subspecifications in the table that has a name that is the value of the specificationTable field.</dl>
+      <dt>sourcehelp</dt>
+      <dl>Provides help text when the user specifies the input.</dl>
+      <dt>goalhelp</dt>
+      <dl>Provides help text when the user specifies the output.</dl>
+    </dl>    
   </dd>
   <dt>HTTP-status-codes</dt>
   <dd>
