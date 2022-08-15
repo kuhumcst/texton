@@ -167,6 +167,32 @@ In '/opt/texton/BASE/' you find the file called 'where' that tells where each ta
 ```
 
 #### What is in the files
+<dl>
+  <dt>AAA
+  </dt><dd>This file contains the file name of the dump file where this file (AAA) was extracted from.</dd>
+  <dt>changelog
+  </dt><dd>Here we tell end users about new features in tools and in Text Tonsorium itself.</dd>
+     <dt>footer
+  </dt><dd>If you want to customize the front page with e.g. logos and links in a footer, this is the place. This file is per default empty. The file can define some paragraphs (p), linebreaks (br), etc. Note that the format is not XML, but Bracmat. 
+```
+  ( p
+  .   (class.indent)
+    , ( small
+      .
+        , ( a
+          .   (href."/was")
+            , (span.(class.s),"Accessibility (Danish)")
+          )
+      )
+  )
+
+```
+  
+  </dd>
+  <dt>where
+  </dt><dd></dd>
+  </dl>
+ 
 
 
 
