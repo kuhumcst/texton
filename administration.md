@@ -234,13 +234,15 @@ is equivalent to
   </dd>
   <dt>ItemGroupsCache</dt>
   <dd>
-    If the user uploads files of different character (e.g. some PDF files and some HTML files), then Text Tonsorium groups them, so each group is homogeneous enough to be handled by the same workflow. It is up to the user to point out the group he or she wants to continue with. Before the user has made this choice, Text Tonsorium has to keep all possibilities in the air. This is the purpose of the ItemGroupsCache file.
+    If the user uploads files of different character (e.g. some PDF files and some HTML files), then Text Tonsorium groups them, so each group is homogeneous enough to be handled by the same workflow. It is up to the user to point out the group he or she wants to continue with. Before the user has made this choice, Text Tonsorium has to keep all possibilities in the air. This is the purpose of the ItemGroupsCache file. In addition, ItemGroupsCache, for each group of files, keeps record the bookmarked workflows that are compatible with those files. 
   </dd>
   <dt>recentTasks</dt>
   <dd>
+    Computation of workflow candidates can take relatively long time. To save time and CPU cycles, Text Tonsorium remembers the outcome of the last 30 or so workflow computation tasks, together with the input that went into the computation. If the Text Tonsorium for some reason is stopped and started again, it reads this file. It should be noted, though, that this file is best deleted before starting Text Tonsorium if the reason for restarting Text Tonsorium was that some improvement in the workflow computation had been made.
   </dd>
   <dt>wrkflws</dt>
   <dd>
+    Contains the bookmarked workflows, together with their input specs. When the user has uploaded input to the Text Tonsorium, it consults this file to see which bookmarked workflows can be proposed to the user.
   </dd>
 </dl>
 
