@@ -246,6 +246,75 @@ is equivalent to
   </dd>
 </dl>
 
+##### sundry metadata
+
+<dl>
+  <dt>features</dt>
+  <dd>
+    Input, output and the I/O specs of tools are described in terms of a set of values. Each value belongs to a dimension, e.g. 'type of content', 'language', 'file format', etc. The file called 'features' contains, for each dimension, a number of metadata fields. Some of these fields are optional. Here are the fields for the 'Type of Content' dimension.
+    <code>
+  ( (inDex.A)
+    (name."Type of content" Annotationstype)
+    (short.facet)
+    ( description
+    .   "Subtype of resource, e.g. basis text, tokenisation, alphabetic list."
+        "Subtype af resource, fx basistekst, tokens, alfabetisk liste."
+    )
+    (table.facets)
+    ( specificationTable
+    .   (pos.tagSets)
+        (mrf.morfSets)
+        (tok.tokenisationStyles)
+    )
+    ( sourcehelp
+    .   "The default type of content of the input is \"text\". Change it if necessary."
+        "Normalt antager Text Tonsorium at inputtet ikke er annoteret. Ændr til en anden værdi om nødvendigt."
+    )
+    ( goalhelp
+    .   "You fill this out in most use cases. Sometimes (e.g. if you are merely interested in a file format transformation), you choose the same value as in the input."
+        "Udfyld i de fleste sammenhænge. Du kan nogle gange vælge samme værdi som i inputtet, fx når formålet er at transformere filformatet, men ikke indholdstypen."
+    )
+  )      
+    </code>
+  </dd>
+  <dt>HTTP-status-codes</dt>
+  <dd>
+  </dd>
+  <dt>ISO-639</dt>
+  <dd>
+  </dd>
+  <dt>licences</dt>
+  <dd>
+  </dd>
+  <dt>subtype2facet</dt>
+  <dd>
+  </dd>
+  <dt>tooladm</dt>
+  <dd>
+  </dd>
+  <dt>toolprop</dt>
+  <dd>
+  </dd>
+  <dt>type2facet</dt>
+  <dd>
+  </dd>
+  <dt>Workflows</dt>
+  <dd>
+  </dd>
+  <dt>UIlanguage</dt>
+  <dd>
+  </dd>
+  <dt>SuperSets</dt>
+  <dd>
+  </dd>
+  <dt>TEImetadata</dt>
+  <dd>
+  </dd>
+  <dt>Typeface</dt>
+  <dd>
+  </dd>
+</dl>
+
 #### Editing selection lists
 
 #### Adding subspecifications
