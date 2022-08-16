@@ -127,11 +127,8 @@ In '/opt/texton/BASE/' you find the file called 'where' that tells where each ta
   (   features
       HTTP-status-codes
       ISO-639
-      subtype2facet
       tooladm
       toolprop
-      type2facet
-      Workflows
       UIlanguage
       SuperSets
       TEImetadata
@@ -306,11 +303,6 @@ is equivalent to
   </dd>
   <dt>ISO-639</dt>
   <dd>Two and three letter codes for languages</dd>
-  <dt>subtype2facet</dt>
-  <dd>
-    This file contains a mapping between generic tool names and some Type of content values. Those mappings are used to fill out the content of `TEI/teiHeader/encodingDesc/appInfo/application/@subtype` attributes in Clarin DK annotation files. However, `TEI/teiHeader/encodingDesc` elements are currently commentet out.
-    
-  </dd>
   <dt>tooladm</dt>
   <dd>
     Table that contains boiler plate metadata for all integrated tools. These data can be edited in the GUI. An example:
@@ -371,12 +363,6 @@ is equivalent to
   <dd>
     Contains for each incarnation for each tool the input/output specs for each feature that is relevant for the tool's proper working. This file can be edited using the GUI.
   </dd>
-  <dt>type2facet</dt>
-  <dd>
-  </dd>
-  <dt>Workflows</dt>
-  <dd>
-  </dd>
   <dt>UIlanguage</dt>
   <dd>
     A list with two elements: the ISO-639 codes for the default GUI language and for the second GUI language. Currently 'en' and 'da' respectively. The 'setLanguage' function is able to swap the order of the languages.
@@ -395,9 +381,28 @@ is equivalent to
   </dd>
 </dl>
 
+##### Selection lists
+
+There are two subfolders under '/opt/texton/BASE/meta', called 'feature' and 'style'. All files in these subdirectories have the same record structure:
+
+    ("English name" "dansk navn".internalName."English comment" "dansk kommentar")
+
+Some of the fields are optional: "dansk navn", "English comment" and "dansk kommentar". The purpose of these tables is to map internal names for feature values and for subspecifications of feature values to names that can be presented in 'human language' to English or Danish speakers. Whereas the human language names can contain any character, the internal names must be restricted to alphanumerical ASCII characters, since the are used in places that for historic reasons are best adapted to such characters, for example HTTP parameter names and their values.
+
 #### Editing selection lists
 
+One can edit the selection lists and for example change the English or Danish equivalent of some internal name. One can also add new records without further ado. The only thing one must be very careful with is deleting a record or changing an internal name. Before one does that, one should check in the 'toolsprop' and 'features' tables whether the involved internal name is used. Renaming internal names that are in use is a very bad idea, because one would not only have to edit the two or three involved tables, but also the PHP wrappers for the involved tools.
+
 #### Adding subspecifications
+
+As already hinted in the previous section, the 'features' table can mention feature values. Those are the feature values that can be subspecified. If you want to subspecify value 'meta' of feature 'socmed', then you have to first open the file 'features' and find the term that has a field `(short.socmed)`. Suppose you find that term, then you must find the field 'specificationTable'. If it isn't there, create the field `(specificationTable.(meta.facebMedia))` and save. Then create the file '/opt/texton/BASE/meta/style/facebMedia' and write e.g. 
+
+```
+  (WhatsApp.wa.)
+  (Facebook.fb.)
+  (Messenger.mes.)
+```
+From now on, the feature value 'faceb' of the feature 'socmed' can be subspecified as in `meta^wa`, `meta^fb` and `meta^mes`.
 
 ## Integrate a new tool
 Integration of an NLP (or other) tool
