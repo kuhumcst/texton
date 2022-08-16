@@ -209,7 +209,7 @@ is equivalent to
 <dl>
   <dt>CTBs</dt>
   <dd>
-    This file contains information that is needed to fill out the content of `ptr` elements in Clarin DK annotation files. Since the `ptr` element is in a section of such XML files that is currently commented out, one could consider removing this file and all code refering to it in the file 'toolsProg.bra'.
+    This file contains information that is needed to fill out the content of `TEI/teiHeader/fileDesc/publicationStmt/idno` elements in Clarin DK annotation files. 
   </dd>
   <dt>jobAbout</dt>
   <dd>
@@ -308,6 +308,8 @@ is equivalent to
   <dd>Two and three letter codes for languages</dd>
   <dt>subtype2facet</dt>
   <dd>
+    This file contains a mapping between generic tool names and some Type of content values. Those mappings are used to fill out the content of `TEI/teiHeader/encodingDesc/appInfo/application/@subtype` attributes in Clarin DK annotation files. However, `TEI/teiHeader/encodingDesc` elements are currently commentet out.
+    
   </dd>
   <dt>tooladm</dt>
   <dd>
