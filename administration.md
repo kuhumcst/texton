@@ -20,10 +20,10 @@ There are things that you sometimes need to do, but for which there is no web in
 Part of the code in toolsprog.bra is dedicated to the registration of tools. The administrative interface for registration of tools is in the upper part of [http://localhost/texton/admin/](http://localhost/texton/admin.html). (This is in a local setting, e.g. a development machine.)
 You can register new tools, change the metadata of existing ones and generate a PHP wrapper for a tool that extracts all the HTTP parameters that the tool needs.
 
-There are many metadata related files, but the only ones that are affected by the web based GUI are /opt/texton/BASE/meta/tooladm and /opt/texton/BASE/meta/toolprop.
-In the folder /opt/texton/BASE/meta/ and its subfolders are a number of files that contain the data with which drop down lists are filled in the GUI. If you think a value is missing in a dropdown list, then the corresponding metadata file has to be edited manually.
+There are many metadata related files, but the only ones that are affected by the web based GUI are '/opt/texton/BASE/meta/tooladm' and '/opt/texton/BASE/meta/toolprop'.
+In the folder '/opt/texton/BASE/meta/' and its subfolders are a number of files that contain the data with which drop down lists are filled in the GUI. If you think a value is missing in a dropdown list, then the corresponding metadata file has to be edited manually.
 
-To be able to add or change metadata in the web GUI, you need to know the password. Per default, the password is a zero length ('blank') string. For instances of Text Tonsorium that are visible to other people than you alone, you must set a good password. How to do that is described in texton-Java/README.md. 
+To be able to add or change metadata in the web GUI, you need to know the password. Per default, the password is a zero length ("blank") string. For instances of Text Tonsorium that are visible to other people than you alone, you must set a good password. How to do that is described in 'texton-Java/README.md'. 
 
 A second requirement for entering the registration web GUI is that you provide an email address. If you want to edit existing metadata, then the email address must be the same as that recorded in the metadata.
 
@@ -31,8 +31,8 @@ If your credentials are accepted, and you want to register a new tool, then you 
 If you want to update existing metadate, you will first have to choose a tool from a drop down list before being led to the input form. In the latter case, the input form is filled with the existing metadata.
 
 The registration form is divided in three parts.
-* The upper part is for boiler plate information: ToolID, Title, Description, Creator, Service URL of the tool, Inactive, etc. Of these fields, ToolID, Service URL of the tool and Inactive are the most 'technical' ones. ToolID is used as a unique key in the list of integrated tools. It is also used as part of a PHP variable. The Service URL of the tool is the address where the Text Tonsorium sends requests to each time it wants to activate the tool. Finally, if Inactive is checked, the tool is registered, but will not take part in any workflow. When registering a tool, Inactive is set per default. This flag can only be toggled when updating a tool.
-* Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. You may see one or two buttons with names that start with 'prev' or 'next' and end with a number. This is the case if you can browse back and forth between 'metadata incarnations'. Tool metadata can occur in multiple 'incarnations'. Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. The two incarnations cannot be combined into one, because it would imply that the lemmatizer also would work for Danish if the input is not POS-tagged. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
+* The upper part is for boiler plate information: ToolID, Title, Description, Creator, Service URL of the tool, Inactive, etc. Of these fields, ToolID, Service URL of the tool and Inactive are the most "technical" ones. ToolID is used as a unique key in the list of integrated tools. It is also used as part of a PHP variable. The Service URL of the tool is the address where the Text Tonsorium sends requests to each time it wants to activate the tool. Finally, if Inactive is checked, the tool is registered, but will not take part in any workflow. When registering a tool, Inactive is set per default. This flag can only be toggled when updating a tool.
+* Below the boiler plate information is the I/O (input and output) metadata that is used for knitting together tools in viable workflow designs. You may see one or two buttons with names that start with 'prev' or 'next' and end with a number. This is the case if you can browse back and forth between "metadata incarnations". Tool metadata can occur in multiple "incarnations". Incarnations are invented for keeping apart metadata sets that cannot be combined. For example, one incarnation of a lemmatizer tool can handle Danish and needs tokenised, part of speech tagged text as input, while another incarnation can handle Czech tokenised text that must be without part of speech tags. The two incarnations cannot be combined into one, because it would imply that the lemmatizer also would work for Danish if the input is not POS-tagged. You as administrator do not have to worry about the creation of incarnations. This is done automatically. Also, after editing and saving metadata, the system may decide that the collection of metadata in all incarnations must be divided in a different way into incarnations.
 * At the bottom of the registration form are five buttons:
   1. [Save metadata](#save-metadata)
   2. [Replace metadata](#replace-metadata)
@@ -67,9 +67,9 @@ Most of the program code is written in the Bracmat, a programming language with 
 Reloading is advisable after making a `git pull` of this repositorium that includes a new version of the file 'toolsProg.bra'. It is also advisable before and after reading a dump file containing metadata. (See below.)
 
 ## Export all metadata to a dump file
-As a way to make a backup of the metadata, and also as a way to distribute metadata to similar instances of Text Tonsorium, metadata can be saved to a file with the press of a button. The dump file - the file with the saved metadata - is not downloadable via the web interface, but resides in the same folder as the Bracmat program code, e.g. /opt/texton/BASE on the server from where the Text Tonsorium web application is served. You must have root (sudo) access rights to be able to see the contents of the file.
+As a way to make a backup of the metadata, and also as a way to distribute metadata to similar instances of Text Tonsorium, metadata can be saved to a file with the press of a button. The dump file - the file with the saved metadata - is not downloadable via the web interface, but resides in the same folder as the Bracmat program code, e.g. '/opt/texton/BASE' on the server from where the Text Tonsorium web application is served. You must have root (sudo) access rights to be able to see the contents of the file.
 
-When exporting, you can choose to also export metadata that is specific for the specific Text Tonsorium installation, such as information about jobs and about the whereabouts of the integrated tools and their 'inactivity' status. To export such metadata, place a checkmark in the checkbox.
+When exporting, you can choose to also export metadata that is specific for the specific Text Tonsorium installation, such as information about jobs and about the whereabouts of the integrated tools and their "inactivity" status. To export such metadata, place a checkmark in the checkbox.
 
 ## Import metadata from a dump file in another instance of Text Tonsorium
 The inverse of exporting metadata is of course importing such data. You can choose to overwrite the current production data with the production data in the dump file. This is in general not what you want.
@@ -83,15 +83,15 @@ If you want to know whether the Bracmat JNI (Java Native Interface) is the lates
 To make a clean start of the Text Tonsorium (the Bracmat part as well as the Java part), do the following
 
 * stop tomcat
-* remove /opt/texton/BASE/job/recentTasks
+* remove '/opt/texton/BASE/job/recentTasks'
 * start tomcat
 
 ## Copy a dump file
-Dump files are saved in the same folder as the toolsProg.bra" file, e.g. as /opt/texton/BASE/alltables.bra. Use a tool like scp to copy alltables.bra to another installation of Text Tonsorium.
+Dump files are saved in the same folder as the 'toolsProg.bra' file, e.g. as '/opt/texton/BASE/alltables.bra'. Use a tool like scp to copy 'alltables.bra' to another installation of Text Tonsorium.
 
 ## Expanding and editing metadata in the file system
 
-The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several 'tables'. (They are not really tables, but data structured in trees, like what you normally see expressed in XML and JSON.) Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
+The Text Tonsorium does not depend on a database management system like MySQL, yet it uses several "tables". (They are not really tables, but data structured in trees, like what you normally see expressed in XML and JSON.) Each table is in a separate file that can be edited in every plain text editor. So it is possible to change metadata if one has access to the files. Where are the files? Open the file 'properties_ubuntu.xml' (See [https://github.com/kuhumcst/texton-Java/blob/master/properties_ubuntu.xml]. There it is:
 
 ```xml
 <entry key="toolsHome">/opt/texton/BASE/</entry>
@@ -108,7 +108,7 @@ These are things you need to know about editing the tables:
 
 #### Finding the file you need to edit
 
-In '/opt/texton/BASE/' you find the file called 'where' that tells where each table is stored, including 'where' itself. Here are the contents of 'where' as they currently (August 2022) look like. What you see are a number of parenthesised expressions. Each of these has a dot '.' near the end. The part between the dot and the closing parenthesis is a path that starts at '/opt/texton/BASE/' (or whatever place the file toolsProg.bra is located). So the path '/' means '/opt/texton/BASE/' and the path 'meta/feature/' means '/opt/texton/BASE/meta/feature'. The part between the opening parenthesis and the dot is the list of filenames of the tables in the aforementioned file location. So `(AAA changelog footer where./)` means that there are files '/opt/texton/BASE/AAA', '/opt/texton/BASE/changelog', '/opt/texton/BASE/footer' and '/opt/texton/BASE/where'. Whether things are listed on a single line or over several lines makes no difference.
+In '/opt/texton/BASE/' you find the file called 'where' that tells where each table is stored, including 'where' itself. Here are the contents of 'where' as they currently (August 2022) look like. What you see are a number of parenthesised expressions. Each of these has a dot `.` near the end. The part between the dot and the closing parenthesis is a path that starts at `/opt/texton/BASE/` (or whatever place the file toolsProg.bra is located). So the path `/` refers to '/opt/texton/BASE/' and the path `meta/feature/` refers to '/opt/texton/BASE/meta/feature'. The part between the opening parenthesis and the dot is the list of filenames of the tables in the aforementioned file location. So `(AAA changelog footer where./)` means that there are files '/opt/texton/BASE/AAA', '/opt/texton/BASE/changelog', '/opt/texton/BASE/footer' and '/opt/texton/BASE/where'. Whether things are listed on a single line or over several lines makes no difference.
 
 
 ```
@@ -247,7 +247,7 @@ is equivalent to
 <dl>
   <dt>features</dt>
   <dd>
-    Input, output and the I/O specs of tools are described in terms of a set of values. Each value belongs to a feature, e.g. 'type of content', 'language', 'file format', etc. The file called 'features' contains, for each feature, a number of metadata fields. Some of these fields are optional. Here are the fields for the 'Type of Content' feature.
+    Input, output and the I/O specs of tools are described in terms of a set of values. Each value belongs to a feature, e.g. "type of content", "language", "file format", etc. The file called 'features' contains, for each feature, a number of metadata fields. Some of these fields are optional. Here are the fields for the "Type of Content" feature.
     <pre>
   ( (inDex.A)
     (name."Type of content" Annotationstype)
@@ -352,9 +352,9 @@ is equivalent to
       <dt>ExternalURI</dt>
       <dd>Link to another page where the tool can be tried out.</dd>
       <dt>XMLparms</dt>
-      <dd>If 'on', Text Tonsorium should send the parameters in some XML. Not implemented!</dd>
+      <dd>If `on`, Text Tonsorium should send the parameters in some XML. Not implemented!</dd>
       <dt>PostData</dt>
-      <dd>If 'on', input to a tool is sent alongside the parameters in a POST request. The default is GET, which means that input isn't pushed to the tool by pulled by the tool.</dd>
+      <dd>If `on`, input to a tool is sent alongside the parameters in a POST request. The default is GET, which means that input isn't pushed to the tool by pulled by the tool.</dd>
       <dt>Inactive</dt>
       <dd>'on' when a new tool is registered and also when later set to 'on'. The value 'on' makes the tool invisible to the workflow computation algorithm.</dd>
     </dl>
@@ -365,15 +365,15 @@ is equivalent to
   </dd>
   <dt>UIlanguage</dt>
   <dd>
-    A list with two elements: the ISO-639 codes for the default GUI language and for the second GUI language. Currently 'en' and 'da' respectively. The 'setLanguage' function is able to swap the order of the languages.
+    A list with two elements: the ISO-639 codes for the default GUI language and for the second GUI language. Currently `en` and `da` respectively. The 'setLanguage' function is able to swap the order of the languages.
   </dd>
   <dt>SuperSets</dt>
   <dd>
-    The user does not need to specify all features, and if a feature van be composed of several feature values, the user does not need to specify them all. To make the latter possible, the 'SuperSets' table lists how the value chosen by the user can be expanded to a multivalued, composite value. At the time of writing, the only feature for which this is relevant is the "Type of content" value ('facet' in internal speak).  
+    The user does not need to specify all features, and if a feature van be composed of several feature values, the user does not need to specify them all. To make the latter possible, the 'SuperSets' table lists how the value chosen by the user can be expanded to a multivalued, composite value. At the time of writing, the only feature for which this is relevant is the `Type of content` value (`facet` in internal speak).  
   </dd>
   <dt>TEImetadata</dt>
   <dd>
-    This file defines the XML fields and their positions in the XML tree that together constitute much of the 'metadata' of a Clarin-dk output file.
+    This file defines the XML fields and their positions in the XML tree that together constitute much of the metadata in a Clarin-dk output file.
   </dd>
   <dt>Typeface</dt>
   <dd>
@@ -387,7 +387,7 @@ There are two subfolders under '/opt/texton/BASE/meta', called 'feature' and 'st
 
     ("English name" "dansk navn".internalName."English comment" "dansk kommentar")
 
-Some of the fields are optional: "dansk navn", "English comment" and "dansk kommentar". The purpose of these tables is to map internal names for feature values and for subspecifications of feature values to names that can be presented in 'human language' to English or Danish speakers. Whereas the human language names can contain any character, the internal names must be restricted to alphanumerical ASCII characters, since the are used in places that for historic reasons are best adapted to such characters, for example HTTP parameter names and their values.
+Some of the fields are optional: "dansk navn", "English comment" and "dansk kommentar". The purpose of these tables is to map internal names for feature values and for subspecifications of feature values to names that can be presented in "human language" to English or Danish speakers. Whereas the human language names can contain any character, the internal names must be restricted to alphanumerical ASCII characters, since the are used in places that for historic reasons are best adapted to such characters, for example HTTP parameter names and their values.
 
 #### Editing selection lists
 
@@ -395,14 +395,14 @@ One can edit the selection lists and for example change the English or Danish eq
 
 #### Adding subspecifications
 
-As already hinted in the previous section, the 'features' table can mention feature values. Those are the feature values that can be subspecified. If you want to subspecify value 'meta' of feature 'socmed', then you have to first open the file 'features' and find the term that has a field `(short.socmed)`. Suppose you find that term, then you must find the field 'specificationTable'. If it isn't there, create the field `(specificationTable.(meta.facebMedia))` and save. Then create the file '/opt/texton/BASE/meta/style/facebMedia' and write e.g. 
+As already hinted in the previous section, the 'features' table can mention feature values. Those are the feature values that can be subspecified. If you want to subspecify value `meta` of feature `socmed`, then you have to first open the file 'features' and find the term that has a field `(short.socmed)`. Suppose you find that term, then you must find the field `specificationTable`. If it isn't there, create the field `(specificationTable.(meta.facebMedia))` and save. Then create the file '/opt/texton/BASE/meta/style/facebMedia' and write e.g. 
 
 ```
   (WhatsApp.wa.)
   (Facebook.fb.)
   (Messenger.mes.)
 ```
-From now on, the feature value 'faceb' of the feature 'socmed' can be subspecified as in `meta^wa`, `meta^fb` and `meta^mes`.
+From now on, the feature value  `faceb` of the feature `socmed` can be subspecified as in `meta^wa`, `meta^fb` and `meta^mes`.
 
 ## Integrate a new tool
 Integration of an NLP (or other) tool
@@ -452,7 +452,7 @@ The contents of index.php may seem overwhelming, but making the integration work
 
 Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file, in this case called `$myveryfirsttoolfile`. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! Your code will be commented out if you don't do this.
 
-Your code must use the input data that was sent in the HTTP request by the Text Tonsorium. Input files are always parameters with names that end with a capital 'F'. Scroll through the PHP code to find them. If the tool receives only a single file, then this parameter is always called simply 'F' and the wrapper has already saved that file and bound its name to the PHP variable `$F`. So a hypothetical 'do nothing' tool could just do
+Your code must use the input data that was sent in the HTTP request by the Text Tonsorium. Input files are always parameters with names that end with a capital `F`. Scroll through the PHP code to find them. If the tool receives only a single file, then this parameter is always called simply `F` and the wrapper has already saved that file and bound its name to the PHP variable `$F`. So a hypothetical "do nothing" tool could just do
 ");
 
 ```php
@@ -476,7 +476,7 @@ Here we have used `os.system`. Normally, however, we use `popen` instead of `sys
         pclose($cmd);
 ```
 
-Often, a tool needs two or more inputs. If that is the case, search for PHP variables that have names that start with a capital 'I' (for 'Input') and that end with 'F'. If your tool needs two different types of contents: tokens and PoS-tags, then these variables will be called `$IfacettokF` and `$IfacetposF`.
+Often, a tool needs two or more inputs. If that is the case, search for PHP variables that have names that start with a capital `I` (for "Input") and that end with `F`. If your tool needs two different types of contents: tokens and PoS-tags, then these variables will be called `$IfacettokF` and `$IfacetposF`.
 
 It is quite possible that your tool sometimes needs one input, and at other times needs more. This can be the case if the tool has more than one incarnation. So, for example, the CST lemmatizer sometimes runs with a single input file that contains both tokens, POS tags and perhaps even more types of contents. At other times it needs separate input files for tokens and for PoS tags. Therefore, the generated PHP-code says
 
@@ -490,7 +490,7 @@ The comments following the PHP variables try to help you. If the wrapper receive
 
 Per default, the PHP wrapper works synchronously, which means that it returns the result of the tool as the response to the HTTP request, accompanied by the return code 200. It is however possible to make it work asynchronously, which means that it returns 201 even before the tool is finished doing its thing. Then, when the tool is ready, the PHP code must POST the result to the Text Tonsorium. One should be careful with asynchronous tools; the Text Tonsorium will take advantage of the doubling of the interaction by sending two new requests, if there are enough jobs waiting to be run. Especially if the Text Tonsorium is fed with many uploaded texts (e.g. 100 text documents that all have to be syntactically annotated), a single asynchrounous tool will cause a broad fan of simultaneously running jobs. If the hardware can handle those, it's fine, and the results for all annotation tasks will be available rather quickly. But if there are not that many cores, the jobs will be plodding. The Text Tonsorium will try to restrict the number of running tasks to about 8, but there is no guarantee that will succeed.
 
-If the tool you want to integrate already is a web app, then the easiest way to integrate it is to still generate and use the PHP app. Instead of running the code with `system` or `popen`, the wrapper can forward the request to the web app. There are several examples of such tools in this repo. (Search for functions called `http'.)
+If the tool you want to integrate already is a web app, then the easiest way to integrate it is to still generate and use the PHP app. Instead of running the code with `system` or `popen`, the wrapper can forward the request to the web app. There are several examples of such tools in this repo. (Search for functions called `http`.)
 
 In case you need to debug the wrapper and the wrapper's communication with the tool, there is the function `logit`. There is also another function related to logging, called `loginit`. Both functions need to be edited a little bit before they become useful: the `return` statements at the start of the function bodies need to be commented out:
 
@@ -521,10 +521,10 @@ function logit($str) /* TODO You can use this function to write strings to the l
 ```
 
 #### Copy the PHP file
-All index.php files are in subfolders of the folder /opt/texton, as siblings of the folder `BASE' that, among many other things, contains the Bracmat code toolsProg.bra for the Text Tonsorium. You can name the subfolder as you like, but it is of course best to give it a name that reflects the tool's name. In this subfolder you can put other scripts (Python, Perl, etc.) that you want to activate from the index.php file.
+All index.php files are in subfolders of the folder '/opt/texton', as siblings of the folder 'BASE' that, among many other things, contains the Bracmat code toolsProg.bra for the Text Tonsorium. You can name the subfolder as you like, but it is of course best to give it a name that reflects the tool's name. In this subfolder you can put other scripts (Python, Perl, etc.) that you want to activate from the index.php file.
 
 #### Configuration
-You need to instruct the webserver where the new tool resides that requests directed at the [Service URL of the tool](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones) must be handled by the index.php file that wraps around your tool. To that end, in Apache, you can take inspiration from the file apache2-sites/texton.conf, which has entries like
+You need to instruct the webserver where the new tool resides that requests directed at the [Service URL of the tool](#Adding-metadata-for-new-tools-and-maintaining-metadata-for-existing-ones) must be handled by the index.php file that wraps around your tool. To that end, in Apache, you can take inspiration from the file 'apache2-sites/texton.conf', which has entries like
 
 ```
     Alias /CoreNLP /opt/texton/CoreNLP
@@ -535,4 +535,4 @@ You need to instruct the webserver where the new tool resides that requests dire
         Require all granted
     </Directory>
 ```
-In this example, /CoreNLP is the path after the domain name in the Service URL of the tool. /opt/texton/CoreNLP is the folder where the index.php file is installed.
+In this example, `/CoreNLP` is the path after the domain name in the Service URL of the tool. '/opt/texton/CoreNLP' is the folder where the index.php file is installed.
