@@ -228,13 +228,28 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         {
         $flexrulessubdir = "/1";
         }
+    else if($language == 'ast')
+        {
+        $flexrulessubdir = "/1";
+        $flexrules = "flexrules.lemmatization-ast.txt-51.swp-365-step6.2cole_ziggurat_XC";
+        }
     else if($language == 'bg')
         {
         $flexrulessubdir = "/1";
         }
+    else if($language == 'ca')
+        {
+        $flexrulessubdir = "/2";
+        $flexrules = "flexrules.lemmatization-ca.txt-52.swp-365-step7.2cole_ziggurat_XC";
+        }
     else if($language == 'cs')
         {
         $flexrulessubdir = "/1";
+        }
+    else if($language == 'cy')
+        {
+        $flexrulessubdir = "/1";
+        $flexrules = "flexrules.lemmatization-cy.txt-53.swp-365-step1.2cole_ziggurat_XD";
         }
     else if($language == 'da')
         {
@@ -330,6 +345,26 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         {
         $flexrulessubdir = "/1";
         $flexrules = "flexrules.frlexambi.uden.dubletter.ph_XC";
+        }
+    else if($language == 'ga')
+        {
+        $flexrulessubdir = "/0";
+        $flexrules = "flexrules.lemmatization-ga.txt-54.swp-365-step2.2cole_ziggurat_XD";
+        }
+    else if($language == 'gd')
+        {
+        $flexrulessubdir = "/0";
+        $flexrules = "flexrules.lemmatization-gd.txt-58.swp-366-step1.2cole_ziggurat_XD";
+        }
+    else if($language == 'gl')
+        {
+        $flexrulessubdir = "/1";
+        $flexrules = "flexrules.lemmatization-gl.txt-56.swp-365-step4.2cole_ziggurat_XC";
+        }
+    else if($language == 'gv')
+        {
+        $flexrulessubdir = "/1";
+        $flexrules = "flexrules.lemmatization-gv.txt-57.swp-365-step5.2cole_ziggurat_XC";
         }
     else if($language == 'hr')
         {
@@ -664,8 +699,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
+        $Ilangast = false;	/* Language in input is Asturian (asturisk) if true */
         $Ilangbg = false;	/* Language in input is Bulgarian (bulgarsk) if true */
+        $Ilangca = false;	/* Language in input is Catalan (katalansk) if true */
         $Ilangcs = false;	/* Language in input is Czech (tjekkisk) if true */
+        $Ilangcy = false;	/* Language in input is Welsh (walisisk) if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
         $Ilangel = false;	/* Language in input is Greek (græsk) if true */
@@ -675,6 +713,10 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Ilangfa = false;	/* Language in input is Persian (persisk) if true */
         $Ilangfo = false;	/* Language in input is Faroese (færøsk) if true */
         $Ilangfr = false;	/* Language in input is French (fransk) if true */
+        $Ilangga = false;	/* Language in input is Irish (irsk) if true */
+        $Ilanggd = false;	/* Language in input is Scottish Gaelic (skotsk gælisk) if true */
+        $Ilanggl = false;	/* Language in input is Galician (galicisk) if true */
+        $Ilanggv = false;	/* Language in input is Manx (mansk) if true */
         $Ilanghr = false;	/* Language in input is Croatian (kroatisk) if true */
         $Ilanghu = false;	/* Language in input is Hungarian (ungarsk) if true */
         $Ilangis = false;	/* Language in input is Icelandic (islandsk) if true */
@@ -710,8 +752,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangaf = false;	/* Language in output is Afrikaans (afrikaans) if true */
+        $Olangast = false;	/* Language in output is Asturian (asturisk) if true */
         $Olangbg = false;	/* Language in output is Bulgarian (bulgarsk) if true */
+        $Olangca = false;	/* Language in output is Catalan (katalansk) if true */
         $Olangcs = false;	/* Language in output is Czech (tjekkisk) if true */
+        $Olangcy = false;	/* Language in output is Welsh (walisisk) if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
         $Olangel = false;	/* Language in output is Greek (græsk) if true */
@@ -721,6 +766,10 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         $Olangfa = false;	/* Language in output is Persian (persisk) if true */
         $Olangfo = false;	/* Language in output is Faroese (færøsk) if true */
         $Olangfr = false;	/* Language in output is French (fransk) if true */
+        $Olangga = false;	/* Language in output is Irish (irsk) if true */
+        $Olanggd = false;	/* Language in output is Scottish Gaelic (skotsk gælisk) if true */
+        $Olanggl = false;	/* Language in output is Galician (galicisk) if true */
+        $Olanggv = false;	/* Language in output is Manx (mansk) if true */
         $Olanghr = false;	/* Language in output is Croatian (kroatisk) if true */
         $Olanghu = false;	/* Language in output is Hungarian (ungarsk) if true */
         $Olangis = false;	/* Language in output is Icelandic (islandsk) if true */
@@ -844,8 +893,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         if( hasArgument("Ilang") )
             {
             $Ilangaf = existsArgumentWithValue("Ilang", "af");
+            $Ilangast = existsArgumentWithValue("Ilang", "ast");
             $Ilangbg = existsArgumentWithValue("Ilang", "bg");
+            $Ilangca = existsArgumentWithValue("Ilang", "ca");
             $Ilangcs = existsArgumentWithValue("Ilang", "cs");
+            $Ilangcy = existsArgumentWithValue("Ilang", "cy");
             $Ilangda = existsArgumentWithValue("Ilang", "da");
             $Ilangde = existsArgumentWithValue("Ilang", "de");
             $Ilangel = existsArgumentWithValue("Ilang", "el");
@@ -855,6 +907,10 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $Ilangfa = existsArgumentWithValue("Ilang", "fa");
             $Ilangfo = existsArgumentWithValue("Ilang", "fo");
             $Ilangfr = existsArgumentWithValue("Ilang", "fr");
+            $Ilangga = existsArgumentWithValue("Ilang", "ga");
+            $Ilanggd = existsArgumentWithValue("Ilang", "gd");
+            $Ilanggl = existsArgumentWithValue("Ilang", "gl");
+            $Ilanggv = existsArgumentWithValue("Ilang", "gv");
             $Ilanghr = existsArgumentWithValue("Ilang", "hr");
             $Ilanghu = existsArgumentWithValue("Ilang", "hu");
             $Ilangis = existsArgumentWithValue("Ilang", "is");
@@ -873,7 +929,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
             $Ilangsv = existsArgumentWithValue("Ilang", "sv");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangbg=$Ilangbg " . "Ilangcs=$Ilangcs " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
+            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangast=$Ilangast " . "Ilangbg=$Ilangbg " . "Ilangca=$Ilangca " . "Ilangcs=$Ilangcs " . "Ilangcy=$Ilangcy " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilangga=$Ilangga " . "Ilanggd=$Ilanggd " . "Ilanggl=$Ilanggl " . "Ilanggv=$Ilanggv " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -918,8 +974,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         if( hasArgument("Olang") )
             {
             $Olangaf = existsArgumentWithValue("Olang", "af");
+            $Olangast = existsArgumentWithValue("Olang", "ast");
             $Olangbg = existsArgumentWithValue("Olang", "bg");
+            $Olangca = existsArgumentWithValue("Olang", "ca");
             $Olangcs = existsArgumentWithValue("Olang", "cs");
+            $Olangcy = existsArgumentWithValue("Olang", "cy");
             $Olangda = existsArgumentWithValue("Olang", "da");
             $Olangde = existsArgumentWithValue("Olang", "de");
             $Olangel = existsArgumentWithValue("Olang", "el");
@@ -929,6 +988,10 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $Olangfa = existsArgumentWithValue("Olang", "fa");
             $Olangfo = existsArgumentWithValue("Olang", "fo");
             $Olangfr = existsArgumentWithValue("Olang", "fr");
+            $Olangga = existsArgumentWithValue("Olang", "ga");
+            $Olanggd = existsArgumentWithValue("Olang", "gd");
+            $Olanggl = existsArgumentWithValue("Olang", "gl");
+            $Olanggv = existsArgumentWithValue("Olang", "gv");
             $Olanghr = existsArgumentWithValue("Olang", "hr");
             $Olanghu = existsArgumentWithValue("Olang", "hu");
             $Olangis = existsArgumentWithValue("Olang", "is");
@@ -947,7 +1010,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             $Olangsr = existsArgumentWithValue("Olang", "sr");
             $Olangsv = existsArgumentWithValue("Olang", "sv");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangaf=$Olangaf " . "Olangbg=$Olangbg " . "Olangcs=$Olangcs " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
+            $echos = $echos . "Olangaf=$Olangaf " . "Olangast=$Olangast " . "Olangbg=$Olangbg " . "Olangca=$Olangca " . "Olangcs=$Olangcs " . "Olangcy=$Olangcy " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olangga=$Olangga " . "Olanggd=$Olanggd " . "Olanggl=$Olanggl " . "Olanggv=$Olanggv " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
             }
         if( hasArgument("Operiod") )
             {
@@ -1043,8 +1106,11 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
             
         if(   $language == "" 
           || (  $language != "af" 
+             && $language != "ast" 
              && $language != "bg" 
+             && $language != "ca" 
              && $language != "cs" 
+             && $language != "cy" 
              && $language != "da" 
              && $language != "de" 
          
@@ -1056,6 +1122,10 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
          
              && $language != "fo"
              && $language != "fr" 
+             && $language != "ga" 
+             && $language != "gd" 
+             && $language != "gl" 
+             && $language != "gv" 
              && $language != "hu" 
              && $language != "is" 
              && $language != "it" 
