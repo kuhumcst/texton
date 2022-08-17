@@ -214,11 +214,11 @@ is equivalent to
   </dd>
   <dt>jobNr</dt>
   <dd>
-    This file contains nothing but a number, in plain text. Each time a user presses the 'submit' button to enact a workflow, this number is read from the jobNr file, used to identify the job, incremented, and finally saved to the jobNr file.
+    This file contains nothing but a number, in plain text. Each time a user presses the 'submit' button to enact a workflow, this number is read from the 'jobNr' file, used to identify the job, incremented, and finally saved to the 'jobNr' file.
   </dd>
   <dt>jobs</dt>
   <dd>
-    Contains the current status of jobs. Each job (identified by a job number, see above) consists one or more steps. <code>jobs</code> has information about the dependencies between the steps (whether they are waiting, running, done or aborted), about the tool that has to play out the step, its input(s) and output, and the parameters that have to be sent to the tool together with the input(s).
+    Contains the current status of jobs. Each job (identified by a job number, see above) consists one or more steps. 'jobs' has information about the dependencies between the steps (whether they are waiting, running, done or aborted), about the tool that has to play out the step, its input(s) and output, and the parameters that have to be sent to the tool together with the input(s).
   </dd>
   <dt>Uploads</dt>
   <dd>
@@ -230,7 +230,7 @@ is equivalent to
   </dd>
   <dt>ItemGroupsCache</dt>
   <dd>
-    If the user uploads files of different character (e.g. some PDF files and some HTML files), then Text Tonsorium groups them, so each group is homogeneous enough to be handled by the same workflow. It is up to the user to point out the group he or she wants to continue with. Before the user has made this choice, Text Tonsorium has to keep all possibilities in the air. This is the purpose of the ItemGroupsCache file. In addition, ItemGroupsCache, for each group of files, keeps record the bookmarked workflows that are compatible with those files. 
+    If the user uploads files of different character (e.g. some PDF files and some HTML files), then Text Tonsorium groups them, so each group is homogeneous enough to be handled by the same workflow. It is up to the user to point out the group he or she wants to continue with. Before the user has made this choice, Text Tonsorium has to keep all possibilities in the air. This is the purpose of the 'ItemGroupsCache' file. In addition, 'ItemGroupsCache', for each group of files, keeps record the bookmarked workflows that are compatible with those files. 
   </dd>
   <dt>recentTasks</dt>
   <dd>
