@@ -163,7 +163,7 @@ In '/opt/texton/BASE/' you find the file called 'where' that tells where each ta
 
 #### What is in the files
 
-##### self descriptive files
+##### self descriptive files:
 <dl>
   <dt>AAA
   </dt><dd>This file contains the file name of the dump file where this file (AAA) was extracted from.</dd>
@@ -201,12 +201,12 @@ is equivalent to
   </dd>
   </dl>
  
-##### job related files
+##### job related files:
 
 <dl>
   <dt>CTBs</dt>
   <dd>
-    This file contains information that is needed to fill out the content of `TEI/teiHeader/fileDesc/publicationStmt/idno` elements in Clarin DK annotation files. 
+    This file contains information that is needed to fill out the content of <code>TEI/teiHeader/fileDesc/publicationStmt/idno</code> elements in Clarin DK annotation files. 
   </dd>
   <dt>jobAbout</dt>
   <dd>
@@ -218,7 +218,7 @@ is equivalent to
   </dd>
   <dt>jobs</dt>
   <dd>
-    Contains the current status of jobs. Each job (identified by a job number, see above) consists one or more steps. `jobs` has information about the dependencies between the steps (whether they are waiting, running, done or aborted), about the tool that has to play out the step, its input(s) and output, and the parameters that have to be sent to the tool together with the input(s).
+    Contains the current status of jobs. Each job (identified by a job number, see above) consists one or more steps. <code>jobs</code> has information about the dependencies between the steps (whether they are waiting, running, done or aborted), about the tool that has to play out the step, its input(s) and output, and the parameters that have to be sent to the tool together with the input(s).
   </dd>
   <dt>Uploads</dt>
   <dd>
@@ -242,7 +242,7 @@ is equivalent to
   </dd>
 </dl>
 
-##### sundry metadata
+##### sundry metadata:
 
 <dl>
   <dt>features</dt>
@@ -352,9 +352,9 @@ is equivalent to
       <dt>ExternalURI</dt>
       <dd>Link to another page where the tool can be tried out.</dd>
       <dt>XMLparms</dt>
-      <dd>If `on`, Text Tonsorium should send the parameters in some XML. Not implemented!</dd>
+      <dd>If <code>on</code>, Text Tonsorium should send the parameters in some XML. Not implemented!</dd>
       <dt>PostData</dt>
-      <dd>If `on`, input to a tool is sent alongside the parameters in a POST request. The default is GET, which means that input isn't pushed to the tool by pulled by the tool.</dd>
+      <dd>If <code>on</code>, input to a tool is sent alongside the parameters in a POST request. The default is GET, which means that input isn't pushed to the tool by pulled by the tool.</dd>
       <dt>Inactive</dt>
       <dd>'on' when a new tool is registered and also when later set to 'on'. The value 'on' makes the tool invisible to the workflow computation algorithm.</dd>
     </dl>
@@ -365,11 +365,11 @@ is equivalent to
   </dd>
   <dt>UIlanguage</dt>
   <dd>
-    A list with two elements: the ISO-639 codes for the default GUI language and for the second GUI language. Currently `en` and `da` respectively. The 'setLanguage' function is able to swap the order of the languages.
+    A list with two elements: the ISO-639 codes for the default GUI language and for the second GUI language. Currently <code>en</code> and <code>da</code> respectively. The 'setLanguage' function is able to swap the order of the languages.
   </dd>
   <dt>SuperSets</dt>
   <dd>
-    The user does not need to specify all features, and if a feature van be composed of several feature values, the user does not need to specify them all. To make the latter possible, the 'SuperSets' table lists how the value chosen by the user can be expanded to a multivalued, composite value. At the time of writing, the only feature for which this is relevant is the `Type of content` value (`facet` in internal speak).  
+    The user does not need to specify all features, and if a feature van be composed of several feature values, the user does not need to specify them all. To make the latter possible, the 'SuperSets' table lists how the value chosen by the user can be expanded to a multivalued, composite value. At the time of writing, the only feature for which this is relevant is the <code>Type of content</code> value (<code>facet</code> in internal speak).  
   </dd>
   <dt>TEImetadata</dt>
   <dd>
@@ -381,7 +381,7 @@ is equivalent to
   </dd>
 </dl>
 
-##### Selection lists
+##### Selection lists:
 
 There are two subfolders under '/opt/texton/BASE/meta', called 'feature' and 'style'. All files in these subdirectories have the same record structure:
 
@@ -453,7 +453,6 @@ The contents of index.php may seem overwhelming, but making the integration work
 Where it says `//        TODO your code!`, you can start writing the PHP code that activates your tool. As the following comment shows, the output must be written to a very specific file, in this case called `$myveryfirsttoolfile`. And then you are almost done. The first line of the cited code above starts with two slashes (solidus = slash). Remove one of them! Your code will be commented out if you don't do this.
 
 Your code must use the input data that was sent in the HTTP request by the Text Tonsorium. Input files are always parameters with names that end with a capital `F`. Scroll through the PHP code to find them. If the tool receives only a single file, then this parameter is always called simply `F` and the wrapper has already saved that file and bound its name to the PHP variable `$F`. So a hypothetical "do nothing" tool could just do
-");
 
 ```php
         system("cp $F $myveryfirsttoolfile");
