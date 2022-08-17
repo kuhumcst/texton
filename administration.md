@@ -64,7 +64,7 @@ To leave the registration form, just enter another URL in the browser's address 
 ## Reload the non-Java part of the Text Tonsorium program
 Most of the program code is written in the Bracmat, a programming language with some programming constructs that make it equisitely apt to the task of "dynamic programming with memoization". The Bracmat code is interpreted rather than compiled, and can be replaced by an updated version while the Java-code of the Text Tonsorium is still running. Because many improvements of the Bracmat program code have to do with the computation of workflow candidates, we have chosen to reset memoized results when the Bracmat code is replaced. The computation of workflow candidates will therefore be slower for some time after reloading.
 
-Reloading is advisable after making a `git pull' of this repositorium that includes a new version of the file `toolsProg.bra'. It is also advisable before and after reading a dump file containing metadata. (See below.)
+Reloading is advisable after making a `git pull` of this repositorium that includes a new version of the file 'toolsProg.bra'. It is also advisable before and after reading a dump file containing metadata. (See below.)
 
 ## Export all metadata to a dump file
 As a way to make a backup of the metadata, and also as a way to distribute metadata to similar instances of Text Tonsorium, metadata can be saved to a file with the press of a button. The dump file - the file with the saved metadata - is not downloadable via the web interface, but resides in the same folder as the Bracmat program code, e.g. /opt/texton/BASE on the server from where the Text Tonsorium web application is served. You must have root (sudo) access rights to be able to see the contents of the file.
