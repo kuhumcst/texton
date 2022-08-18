@@ -427,12 +427,16 @@ try {
         if( hasArgument("Ilang") )
             {
             $lang = getArgument("Ilang");
+            logit("lang:" . $lang);
             switch($lang)
                 {
                 case "ast":
                 case "ca":
                 case "cy":
+                case "ga":
+                case "gd":
                 case "gl":
+                //case "gv": No abbreviations found for Manx
                     $abbr = "-a $res/$lang/tokeniser/$lang.dat ";
                     break;
                 case "nb":
