@@ -175,10 +175,11 @@ try {
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
-        $Ifacet_seg_tok = false;	/* Type of content in input is segments (Sætningssegmenter) and tokens (Tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (sætningssegmenter) and tokens (tokens) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
         $Ilangar = false;	/* Language in input is Arabic (arabisk) if true */
+        $Ilangast = false;	/* Language in input is Asturian (asturisk) if true */
         $Ilangbe = false;	/* Language in input is Belarusian (hviderussisk) if true */
         $Ilangbg = false;	/* Language in input is Bulgarian (bulgarsk) if true */
         $Ilangbs = false;	/* Language in input is Bosnian (bosnisk) if true */
@@ -202,6 +203,7 @@ try {
         $Ilanggd = false;	/* Language in input is Scottish Gaelic (skotsk gælisk) if true */
         $Ilanggl = false;	/* Language in input is Galician (galicisk) if true */
         $Ilanggot = false;	/* Language in input is Gothic (gotisk) if true */
+        $Ilanggv = false;	/* Language in input is Manx (mansk) if true */
         $Ilanghe = false;	/* Language in input is Hebrew (hebraisk) if true */
         $Ilanghi = false;	/* Language in input is Hindi (hindi) if true */
         $Ilanghr = false;	/* Language in input is Croatian (kroatisk) if true */
@@ -253,10 +255,11 @@ try {
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
         $Oappunn = false;	/* Appearance in output is unnormalised (ikke-normaliseret) if true */
-        $Ofacettok = false;	/* Type of content in output is tokens (Tokens) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangaf = false;	/* Language in output is Afrikaans (afrikaans) if true */
         $Olangar = false;	/* Language in output is Arabic (arabisk) if true */
+        $Olangast = false;	/* Language in output is Asturian (asturisk) if true */
         $Olangbe = false;	/* Language in output is Belarusian (hviderussisk) if true */
         $Olangbg = false;	/* Language in output is Bulgarian (bulgarsk) if true */
         $Olangbs = false;	/* Language in output is Bosnian (bosnisk) if true */
@@ -280,6 +283,7 @@ try {
         $Olanggd = false;	/* Language in output is Scottish Gaelic (skotsk gælisk) if true */
         $Olanggl = false;	/* Language in output is Galician (galicisk) if true */
         $Olanggot = false;	/* Language in output is Gothic (gotisk) if true */
+        $Olanggv = false;	/* Language in output is Manx (mansk) if true */
         $Olanghe = false;	/* Language in output is Hebrew (hebraisk) if true */
         $Olanghi = false;	/* Language in output is Hindi (hindi) if true */
         $Olanghr = false;	/* Language in output is Croatian (kroatisk) if true */
@@ -385,6 +389,7 @@ try {
             {
             $Ilangaf = existsArgumentWithValue("Ilang", "af");
             $Ilangar = existsArgumentWithValue("Ilang", "ar");
+            $Ilangast = existsArgumentWithValue("Ilang", "ast");
             $Ilangbe = existsArgumentWithValue("Ilang", "be");
             $Ilangbg = existsArgumentWithValue("Ilang", "bg");
             $Ilangbs = existsArgumentWithValue("Ilang", "bs");
@@ -408,6 +413,7 @@ try {
             $Ilanggd = existsArgumentWithValue("Ilang", "gd");
             $Ilanggl = existsArgumentWithValue("Ilang", "gl");
             $Ilanggot = existsArgumentWithValue("Ilang", "got");
+            $Ilanggv = existsArgumentWithValue("Ilang", "gv");
             $Ilanghe = existsArgumentWithValue("Ilang", "he");
             $Ilanghi = existsArgumentWithValue("Ilang", "hi");
             $Ilanghr = existsArgumentWithValue("Ilang", "hr");
@@ -452,7 +458,7 @@ try {
             $Ilangvi = existsArgumentWithValue("Ilang", "vi");
             $Ilangwo = existsArgumentWithValue("Ilang", "wo");
             $Ilangzh = existsArgumentWithValue("Ilang", "zh");
-            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangar=$Ilangar " . "Ilangbe=$Ilangbe " . "Ilangbg=$Ilangbg " . "Ilangbs=$Ilangbs " . "Ilangca=$Ilangca " . "Ilangcop=$Ilangcop " . "Ilangcs=$Ilangcs " . "Ilangcy=$Ilangcy " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilangeo=$Ilangeo " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangeu=$Ilangeu " . "Ilangfa=$Ilangfa " . "Ilangfi=$Ilangfi " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilangga=$Ilangga " . "Ilanggd=$Ilanggd " . "Ilanggl=$Ilanggl " . "Ilanggot=$Ilanggot " . "Ilanghe=$Ilanghe " . "Ilanghi=$Ilanghi " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilanghy=$Ilanghy " . "Ilangid=$Ilangid " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangja=$Ilangja " . "Ilangka=$Ilangka " . "Ilangkn=$Ilangkn " . "Ilangko=$Ilangko " . "Ilangku=$Ilangku " . "Ilangla=$Ilangla " . "Ilanglt=$Ilanglt " . "Ilanglv=$Ilanglv " . "Ilangmk=$Ilangmk " . "Ilangml=$Ilangml " . "Ilangmr=$Ilangmr " . "Ilangmt=$Ilangmt " . "Ilangnb=$Ilangnb " . "Ilangnl=$Ilangnl " . "Ilangnn=$Ilangnn " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangse=$Ilangse " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilangsw=$Ilangsw " . "Ilangta=$Ilangta " . "Ilangte=$Ilangte " . "Ilangtr=$Ilangtr " . "Ilangug=$Ilangug " . "Ilanguk=$Ilanguk " . "Ilangur=$Ilangur " . "Ilangvi=$Ilangvi " . "Ilangwo=$Ilangwo " . "Ilangzh=$Ilangzh ";
+            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangar=$Ilangar " . "Ilangast=$Ilangast " . "Ilangbe=$Ilangbe " . "Ilangbg=$Ilangbg " . "Ilangbs=$Ilangbs " . "Ilangca=$Ilangca " . "Ilangcop=$Ilangcop " . "Ilangcs=$Ilangcs " . "Ilangcy=$Ilangcy " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilangeo=$Ilangeo " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangeu=$Ilangeu " . "Ilangfa=$Ilangfa " . "Ilangfi=$Ilangfi " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilangga=$Ilangga " . "Ilanggd=$Ilanggd " . "Ilanggl=$Ilanggl " . "Ilanggot=$Ilanggot " . "Ilanggv=$Ilanggv " . "Ilanghe=$Ilanghe " . "Ilanghi=$Ilanghi " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilanghy=$Ilanghy " . "Ilangid=$Ilangid " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangja=$Ilangja " . "Ilangka=$Ilangka " . "Ilangkn=$Ilangkn " . "Ilangko=$Ilangko " . "Ilangku=$Ilangku " . "Ilangla=$Ilangla " . "Ilanglt=$Ilanglt " . "Ilanglv=$Ilanglv " . "Ilangmk=$Ilangmk " . "Ilangml=$Ilangml " . "Ilangmr=$Ilangmr " . "Ilangmt=$Ilangmt " . "Ilangnb=$Ilangnb " . "Ilangnl=$Ilangnl " . "Ilangnn=$Ilangnn " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangse=$Ilangse " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilangsw=$Ilangsw " . "Ilangta=$Ilangta " . "Ilangte=$Ilangte " . "Ilangtr=$Ilangtr " . "Ilangug=$Ilangug " . "Ilanguk=$Ilanguk " . "Ilangur=$Ilangur " . "Ilangvi=$Ilangvi " . "Ilangwo=$Ilangwo " . "Ilangzh=$Ilangzh ";
             }
         if( hasArgument("Iperiod") )
             {
@@ -491,6 +497,7 @@ try {
             {
             $Olangaf = existsArgumentWithValue("Olang", "af");
             $Olangar = existsArgumentWithValue("Olang", "ar");
+            $Olangast = existsArgumentWithValue("Olang", "ast");
             $Olangbe = existsArgumentWithValue("Olang", "be");
             $Olangbg = existsArgumentWithValue("Olang", "bg");
             $Olangbs = existsArgumentWithValue("Olang", "bs");
@@ -514,6 +521,7 @@ try {
             $Olanggd = existsArgumentWithValue("Olang", "gd");
             $Olanggl = existsArgumentWithValue("Olang", "gl");
             $Olanggot = existsArgumentWithValue("Olang", "got");
+            $Olanggv = existsArgumentWithValue("Olang", "gv");
             $Olanghe = existsArgumentWithValue("Olang", "he");
             $Olanghi = existsArgumentWithValue("Olang", "hi");
             $Olanghr = existsArgumentWithValue("Olang", "hr");
@@ -558,7 +566,7 @@ try {
             $Olangvi = existsArgumentWithValue("Olang", "vi");
             $Olangwo = existsArgumentWithValue("Olang", "wo");
             $Olangzh = existsArgumentWithValue("Olang", "zh");
-            $echos = $echos . "Olangaf=$Olangaf " . "Olangar=$Olangar " . "Olangbe=$Olangbe " . "Olangbg=$Olangbg " . "Olangbs=$Olangbs " . "Olangca=$Olangca " . "Olangcop=$Olangcop " . "Olangcs=$Olangcs " . "Olangcy=$Olangcy " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olangeo=$Olangeo " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangeu=$Olangeu " . "Olangfa=$Olangfa " . "Olangfi=$Olangfi " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olangga=$Olangga " . "Olanggd=$Olanggd " . "Olanggl=$Olanggl " . "Olanggot=$Olanggot " . "Olanghe=$Olanghe " . "Olanghi=$Olanghi " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olanghy=$Olanghy " . "Olangid=$Olangid " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangja=$Olangja " . "Olangka=$Olangka " . "Olangkn=$Olangkn " . "Olangko=$Olangko " . "Olangku=$Olangku " . "Olangla=$Olangla " . "Olanglt=$Olanglt " . "Olanglv=$Olanglv " . "Olangmk=$Olangmk " . "Olangml=$Olangml " . "Olangmr=$Olangmr " . "Olangmt=$Olangmt " . "Olangnb=$Olangnb " . "Olangnl=$Olangnl " . "Olangnn=$Olangnn " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangse=$Olangse " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olangsw=$Olangsw " . "Olangta=$Olangta " . "Olangte=$Olangte " . "Olangtr=$Olangtr " . "Olangug=$Olangug " . "Olanguk=$Olanguk " . "Olangur=$Olangur " . "Olangvi=$Olangvi " . "Olangwo=$Olangwo " . "Olangzh=$Olangzh ";
+            $echos = $echos . "Olangaf=$Olangaf " . "Olangar=$Olangar " . "Olangast=$Olangast " . "Olangbe=$Olangbe " . "Olangbg=$Olangbg " . "Olangbs=$Olangbs " . "Olangca=$Olangca " . "Olangcop=$Olangcop " . "Olangcs=$Olangcs " . "Olangcy=$Olangcy " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olangeo=$Olangeo " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangeu=$Olangeu " . "Olangfa=$Olangfa " . "Olangfi=$Olangfi " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olangga=$Olangga " . "Olanggd=$Olanggd " . "Olanggl=$Olanggl " . "Olanggot=$Olanggot " . "Olanggv=$Olanggv " . "Olanghe=$Olanghe " . "Olanghi=$Olanghi " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olanghy=$Olanghy " . "Olangid=$Olangid " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangja=$Olangja " . "Olangka=$Olangka " . "Olangkn=$Olangkn " . "Olangko=$Olangko " . "Olangku=$Olangku " . "Olangla=$Olangla " . "Olanglt=$Olanglt " . "Olanglv=$Olanglv " . "Olangmk=$Olangmk " . "Olangml=$Olangml " . "Olangmr=$Olangmr " . "Olangmt=$Olangmt " . "Olangnb=$Olangnb " . "Olangnl=$Olangnl " . "Olangnn=$Olangnn " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangse=$Olangse " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olangsw=$Olangsw " . "Olangta=$Olangta " . "Olangte=$Olangte " . "Olangtr=$Olangtr " . "Olangug=$Olangug " . "Olanguk=$Olanguk " . "Olangur=$Olangur " . "Olangvi=$Olangvi " . "Olangwo=$Olangwo " . "Olangzh=$Olangzh ";
             }
         if( hasArgument("Operiod") )
             {
