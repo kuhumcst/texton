@@ -248,7 +248,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         }
     else if($language == 'cy')
         {
-        $flexrulessubdir = "/1";
+        $flexrulessubdir = "/0";
         $flexrules = "flexrules.lemmatization-cy.txt.swp-73.sort-393-step1.2cole_ziggurat_XD";
         }
     else if($language == 'da')
