@@ -231,7 +231,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'ast')
         {
         $flexrulessubdir = "/1";
-        $flexrules = "flexrules.lemmatization-ast.txt-51.swp-365-step6.2cole_ziggurat_XC";
+        $flexrules = "flexrules.lemmatization-ast.txt.swp-79.sort-393-step6.2cole_ziggurat_XC";
         }
     else if($language == 'bg')
         {
@@ -239,8 +239,8 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         }
     else if($language == 'ca')
         {
-        $flexrulessubdir = "/2";
-        $flexrules = "flexrules.lemmatization-ca.txt-52.swp-365-step7.2cole_ziggurat_XC";
+        $flexrulessubdir = "/1";
+        $flexrules = "flexrules.lemmatization-ca.txt.swp-78.sort-393-step7.2cole_ziggurat_XD";
         }
     else if($language == 'cs')
         {
@@ -249,7 +249,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'cy')
         {
         $flexrulessubdir = "/1";
-        $flexrules = "flexrules.lemmatization-cy.txt-53.swp-365-step1.2cole_ziggurat_XD";
+        $flexrules = "flexrules.lemmatization-cy.txt.swp-73.sort-393-step1.2cole_ziggurat_XD";
         }
     else if($language == 'da')
         {
@@ -349,22 +349,22 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'ga')
         {
         $flexrulessubdir = "/0";
-        $flexrules = "flexrules.lemmatization-ga.txt-54.swp-365-step2.2cole_ziggurat_XD";
+        $flexrules = "flexrules.lemmatization-ga.txt.swp-77.sort-393-step2.2cole_ziggurat_XD";
         }
     else if($language == 'gd')
         {
         $flexrulessubdir = "/0";
-        $flexrules = "flexrules.lemmatization-gd.txt-58.swp-366-step1.2cole_ziggurat_XD";
+        $flexrules = "flexrules.lemmatization-gd.txt.swp-76.sort-393-step3.2cole_ziggurat_XD";
         }
     else if($language == 'gl')
         {
         $flexrulessubdir = "/1";
-        $flexrules = "flexrules.lemmatization-gl.txt-56.swp-365-step4.2cole_ziggurat_XC";
+        $flexrules = "flexrules.lemmatization-gl.txt.swp-75.sort-393-step4.2cole_ziggurat_XD";
         }
     else if($language == 'gv')
         {
         $flexrulessubdir = "/1";
-        $flexrules = "flexrules.lemmatization-gv.txt-57.swp-365-step5.2cole_ziggurat_XC";
+        $flexrules = "flexrules.lemmatization-gv.txt.swp-74.sort-393-step5.2cole_ziggurat_XC";
         }
     else if($language == 'hr')
         {
@@ -437,6 +437,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'sv')
         {
         $flexrulessubdir = "/1";
+        $flexrules = "flexrules.lemmatization-sv.txt.swp_swedishroottable_without_doubles.UTF8-72.sort-391-step1.2cole_ziggurat_XC";
         }
     else if($language == 'tr')
         {
