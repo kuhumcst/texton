@@ -6858,9 +6858,7 @@ try {
                     & selectCommonTracks$!incarnationpipes:?As
                     & log$selectCommonTracksDONE
                     & !As:?+[?NIncarnationPipes
-                    & log$(NIncarnationPipes !NIncarnationPipes)
                     & !NIncarnationPipes+!Npipes:?Npipes
-                    & log$(Npipes !Npipes)
                     & !Npipes:~>!MAXPIPES
                     & log$unfoldTree
                     &     mop
@@ -6890,7 +6888,6 @@ try {
                     & "The 1 is the initial stop list, which is formed as a product."
                     & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
                     & !pipesN:? [?NNN
-                    & log$(NNN !NNN)
                     & (   !parms:? (desiredtool.?restriction) ?
                         & !restriction:~
                         & filter$(!pipesN.!restriction):?pipesN
@@ -7519,26 +7516,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !maxjobID
       )
       ( tekstXML
-      =     OLACTITLE DATE EMAIL TBA AVAILABILITY Description
-          , OUTPUTFACET XMLID ITEMS TOOLURIS SPANGRP
+      =     DATE EMAIL TBA AVAILABILITY Description
+          , XMLID ITEMS TOOLURIS SPANGRP
           , ret linguae BODYCONTENT niceDate noColon
-          , ToolID Title ToolContentProvider Version toolURL full
-          , CTB LANGUAGE type appdesc
-        .     !arg
-            : ( ?OLACTITLE
-              . ?DATE
-              . ?EMAIL
-              . ?CTB
-              . ?TBA
-              . ?AVAILABILITY
-              . ?OUTPUTFACET
-              . ?XMLID
-              . ?ITEMS
-              . ?TOOLURIS
-              . ?SPANGRP
-              . ?toolURL
-              . ?LANGUAGE
-              )
+          , ToolID Title Version toolURL full
+          , CTBID LANGUAGE type appdesc
+        .   !arg:(?DATE.?EMAIL.?CTBID.?TBA.?AVAILABILITY.?XMLID.?ITEMS.?TOOLURIS.?SPANGRP.?toolURL.?LANGUAGE)
           & ( niceDate
             =   yyyy mm dd
               .     @(!arg:(% % % %:?yyyy) (% %:?mm) (% %:?dd))
@@ -7551,12 +7534,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & whl'(@(!arg:?A ":" ?Z)&str$(!A "_" !Z):?arg)
                 & !arg
             )
-          &   
-            : ?Title
-            : ?ToolContentProvider
-            : ?Version
-            : ?ToolID
-            : ?Description
+          & :?Title:?Version:?ToolID:?Description
           & (!SPANGRP:? ("?".@(?:? xml ? version ?)) ?SPANGRP|)
           & (     !SPANGRP
                 : ? (spanGrp.? (ana.@(?:"#" ?XMLID)) ?|?) ?
@@ -7572,7 +7550,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       + ( ? (ServiceURL.!TOOLURIS) ?
                         : ? (ToolID.?ToolID) ?
                         : ? (Title.?Title) ?
-                        : ? (ContentProvider.?ToolContentProvider) ?
                         : ? (Version.?Version) ?
                         : ? (Description.?Description) ?
                         )
@@ -7583,7 +7560,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 ". "
                 !Description
             : ?appdesc
-          & log$(ToolID !ToolID)
           &     ("?"."xml version='1.0' encoding='UTF-8'")
                 \n
                 ( TEI
@@ -7601,17 +7577,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             .   
                               ,   ( titleStmt
                                   .   
-                                    ,   (title.,!OLACTITLE ", TEI-format")
-                                        (sponsor.,DK-CLARIN)
-                                        ( respStmt
-                                        .   
-                                          ,   (resp.,"a_annotation")
-                                              ( name
-                                              .   
-                                                ,   (note.(type.method),!ToolID)
-                                                    (date.(when.niceDate$!DATE),)
-                                              )
-                                        )
+                                    , ( respStmt
+                                      .   
+                                        ,   (resp.,"a_annotation")
+                                            ( name
+                                            .   
+                                              ,   (note.(type.method),!ToolID)
+                                                  (date.(when.niceDate$!DATE),)
+                                            )
+                                      )
                                   )
                                   (   !type:text
                                     & (extent.,(num.(type.words),))
@@ -7619,25 +7593,27 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   )
                                   ( publicationStmt
                                   .   
-                                    ,   (distributor.,!EMAIL)
-                                        (idno.(type.ctb),!CTB)
+                                    ,   (idno.(type.ctb),!CTBID)
                                         ( availability
                                         . (status.free),(ab.(type.public),)
                                         )
                                   )
-                                  (notesStmt.,(note.,localized$!OUTPUTFACET))
                                   ( sourceDesc
                                   .   
                                     , ( biblStruct
                                       .   
                                         , ( monogr
                                           .   
-                                            ,   (title.("xml:lang".!LaNg),monogr)
+                                            ,   ( title
+                                                .   ("xml:lang".!LaNg)
+                                                  ,   "(provided by user)"
+                                                    & monogr
+                                                )
                                                 ( imprint
                                                 .   
                                                   ,   ( publisher
                                                       .   (n.n/a)
-                                                        , !ToolContentProvider
+                                                        , "(provided by user)"
                                                       )
                                                       (date.(when.niceDate$!DATE),)
                                                 )
@@ -7645,58 +7621,37 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                       )
                                   )
                             )
-                            ( "!--"
-                            .   toML
-                              $ ( encodingDesc
-                                .   
-                                  ,   (samplingDecl.,(ab.,samplingDecl))
-                                      (projectDesc.,(ab.,!TBA))
-                                      ( !type:text&
-                                      | ( appInfo
-                                        .   
-                                          , ( application
-                                            .     ( ident
-                                                  .   !ToolID
-                                                      ( !Version:
-                                                      | "_" !Version
-                                                      )
-                                                  )
-                                                  (type."a_annotation")
-                                                  (subtype.!OUTPUTFACET)
-                                                  (version.!Version)
-                                                  ("xml:id".!XMLID)
-                                              ,   (desc.,!appdesc)
-                                                  (ptr.(target.noColon$!ITEMS),)
-                                                  (ref.(target.!TOOLURIS),)
-                                            )
-                                        )
-                                      )
-                                )
-                            )
                             ( profileDesc
                             .   
                               ,   ( creation
                                   . ,(date.(cert.high) (when.niceDate$!DATE),)
                                   )
                                   ( !LANGUAGE:
-                                  | ( langUsage
-                                    .   
-                                      , ( language
-                                        .   (ident.!LANGUAGE)
-                                          ,     readTable$linguae
-                                              &   !linguae
-                                                : ? (?full.!LANGUAGE.?) ?
-                                              & localized$!full
-                                            | 
-                                        )
-                                    )
+                                  |   "Three problems with form field for language if it is required: 
+                                         1) element content must be full name of language 
+                                         2) @ident must be set to ISO code 
+                                         3) Can just as well be provided automatically"
+                                    & ( langUsage
+                                      .   
+                                        , ( language
+                                          .   (ident.!LANGUAGE)
+                                            ,     readTable$linguae
+                                                &   !linguae
+                                                  : ? (?full.!LANGUAGE.?) ?
+                                                & localized$!full
+                                              | 
+                                          )
+                                      )
                                   )
                                   ( textDesc
                                   .   
                                     ,   (channel.(mode.w),2)
                                         (constitution.,)
                                         (derivation.,)
-                                        (domain.(type.specific),general)
+                                        ( domain
+                                        .   (type.specific)
+                                          , "(provided by user)"&general
+                                        )
                                         (factuality.,)
                                         (interaction.,)
                                         (preparedness.,)
@@ -8283,7 +8238,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( NotFulfillable
       =   userInput goal
         .   !arg:(?arg.?userInput)
-          & log$(userInput !userInput)
           & !userInput:(?.?goal.?)
           &   str
             $ ( 404~~~
@@ -8414,19 +8368,18 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( NoNeedForMoreZoomingIn
       =   returnCode pipes,reorderedworkflowlist topologicalOrderedTools userInput
         .   !arg:(?returnCode.?pipes.?reorderedworkflowlist.?topologicalOrderedTools.?userInput)
+          & log$NoNeedForMoreZoomingIn
           & (   !returnCode:workflowsFound
               &   (     makeWorkflowsSequential$!pipes
                       : (?reorderedworkflowlist.?topologicalOrderedTools)
                     & allRight
                   |   0:?reorderedworkflowlist
                     & :?topologicalOrderedTools
-                    & log$"makeWorkflowsSequential3 tooComplex"
                     & tooComplex
                   )
                 : ?returnCode
             | 
             )
-          & log$(returnCode !returnCode)
           &   ShowAllPipesIfNotTooExpensive
             $ (!returnCode.!hiddenData.!userInput.!reorderedworkflowlist.!topologicalOrderedTools)
       )
@@ -10422,7 +10375,6 @@ function main2(evt) {
                         . ?returnCode
                         . ?msg
                         )
-                    & log$(returnCode !returnCode)
                     & "!returnCode:(allRight
                                    |triviallyFulfilled
                                    |tooComplex
@@ -10444,7 +10396,6 @@ function main2(evt) {
           & :?PIPE
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?tabind.?Tool.?parms.?BodyContainer)
-          & log$"(A) First build a list of items."
           & ( !Items:&getSingleItemOrNothing$!parms:?Items
             | 
             )
@@ -10670,23 +10621,21 @@ function main2(evt) {
  */"
       ( doneJob
       =     A Z JobNr jobID ZZ jobid2 a z files facet S
-          , prevTitle findOLACTITLEinPreviousSteps
+          , prevTitle
           , ctb ctbid CTBID filename status
           , toolURL parms file TITLE DATE SPANGRPS
-          , OLACTITLE DATE EMAIL TBA AVAILABILITY
+          , DATE EMAIL TBA AVAILABILITY
           , SPANGRP SPANGRPfil SPANGRPfilWithMetadata
-          , OUTPUTFACET XMLID ITEMS ZZ LANGUAGE
+          , XMLID ITEMS ZZ LANGUAGE
           , userProvidedMetadata autogenerated extent
-          , facets type2facet updateOLACTITLE
+          , facets
         .     readTable$jobs
             &   
               : ?TITLE
               : ?DATE
-              : ?OLACTITLE
               : ?EMAIL
               : ?TBA
               : ?AVAILABILITY
-              : ?OUTPUTFACET
               : ?XMLID
               : ?ITEMS
               : ?SPANGRP
@@ -10715,40 +10664,6 @@ function main2(evt) {
               )
             & readTable$Uploads
             & readTable$facets
-            & ( updateOLACTITLE
-              =   ELTIT TIT sam TITLE prevTitle OLACTITLE
-                .   !arg:(?TITLE.?prevTitle.?OLACTITLE)
-                  & (   rev$!TITLE:?ELTIT
-                      & @( rev$!prevTitle
-                         : ? (?sam&@(!ELTIT:?TIT !sam))
-                         )
-                      & ( !sam:
-                        | !TIT::?TITLE
-                        | str$("-" rev$!TIT):?TITLE
-                        )
-                    | 
-                    )
-                  & (!TITLE.(!OLACTITLE:|!OLACTITLE " ") !TITLE)
-              )
-            & ( findOLACTITLEinPreviousSteps
-              =   locJobs Uploads JobNr jobID files,file TITLE prevTitle OLACTITLE
-                .   !arg:(?locJobs.?Uploads.?JobNr.?jobID.?prevTitle.?OLACTITLE)
-                  & (   !locJobs:? (!JobNr.!jobID ?.?files.?) ?
-                      &   whl
-                        ' ( !files:%?file ?files
-                          & (     !Uploads
-                                : ? (?.?.!file.? (TITLE.?TITLE) ?.?) ?
-                              &   updateOLACTITLE$(!TITLE.!prevTitle.!OLACTITLE)
-                                : (?prevTitle.?OLACTITLE)
-                            |     findOLACTITLEinPreviousSteps
-                                $ (!locJobs.!Uploads.!JobNr.!file.!prevTitle.!OLACTITLE)
-                              : (?prevTitle.?OLACTITLE)
-                            )
-                          )
-                    | 
-                    )
-                  & (!prevTitle.!OLACTITLE)
-              )
             & :?toolURL
             &     map
                 $ ( ( 
@@ -10777,9 +10692,6 @@ function main2(evt) {
                         & :?prevTitle
                         &   whl
                           ' ( !files:%?file ?files
-                            &     findOLACTITLEinPreviousSteps
-                                $ (!jobs.!Uploads.!JobNr.!file.!prevTitle.!OLACTITLE)
-                              : (?prevTitle.?OLACTITLE)
                             & (   !CTBs:? (!JobNr.!file.?ctb.?ctbid) ?
                                 & ( !ITEMS:? !ctb "::" !ctbid ?
                                   |     !ITEMS
@@ -10792,15 +10704,6 @@ function main2(evt) {
                               | 
                               )
                             )
-                        & (   !parms:?+(O.?+(facet.?facet.?)+?)+?
-                            & (   readTable$subtype2facet
-                                & !subtype2facet:? (?OUTPUTFACET.!facet) ?
-                              |   readTable$type2facet
-                                & !type2facet:? (?OUTPUTFACET.!facet) ?
-                              | !facets:? (?OUTPUTFACET.!facet.?) ?
-                              )
-                          | 
-                          )
                         & (!parms:?+(O.?+(lang.?LANGUAGE.?)+?)+?|)
                         & !arg
                     )
@@ -10827,13 +10730,11 @@ function main2(evt) {
             & ( !SPANGRP:? (TEI.?) ?&!SPANGRPS:
               |   Filename$!SPANGRPfil:?SPANGRPfilWithMetadata
                 &     tekstXML
-                    $ ( !OLACTITLE|
-                      . !DATE|
+                    $ ( !DATE|
                       . !EMAIL
                       . !CTBID
                       . TBA
                       . AVAILABILITY
-                      . !OUTPUTFACET
                       . XMLID
                       . str$!ITEMS
                       . !toolURL
@@ -10842,6 +10743,7 @@ function main2(evt) {
                       . !LANGUAGE
                       )
                   : ?autogenerated
+                & log$(autogenerated !autogenerated)
                 &   put
                   $ (   str
                       $ ( toML
@@ -10866,6 +10768,7 @@ function main2(evt) {
                                                   ?
                                             )
                                             ?
+                                      & log$(SPANGRP !SPANGRP)
                                       & (fen.extent$!SPANGRP)
                                     | 
                                     )
@@ -11017,15 +10920,16 @@ function main2(evt) {
                                           )
                                       )
                                 )
-                                      ( div
-                                      . , ( h2
-                                          .   (class.smallmargin)
-                                            ,   localized
-                                              $ ( "A salon de beauté for Natural Language Processing"
-                                                  "En skønhedssalon for Sprogteknologi"
-                                                )
+                                ( div
+                                .   
+                                  , ( h2
+                                    .   (class.smallmargin)
+                                      ,   localized
+                                        $ ( "A salon de beauté for Natural Language Processing"
+                                            "En skønhedssalon for Sprogteknologi"
                                           )
-                                      )
+                                    )
+                                )
                                 ( div
                                 .   
                                   ,   ( p
@@ -14967,8 +14871,8 @@ function main2(evt) {
                   )
             )
           & ( add
-            =   fvs
-              .   !arg:(?arg.?fvs)
+            =   fvs calls
+              .   !arg:(?arg.?fvs.?calls)
                 &   map
                   $ ( ( 
                       =   f v
@@ -14978,7 +14882,7 @@ function main2(evt) {
                       )
                     . !arg
                     )
-                & !fvs
+                & (!fvs.1+!calls)
             )
           & ( ShowAllPipesIfNotTooExpensive
             =     returnCode reorderedworkflowlist
@@ -15001,7 +14905,7 @@ function main2(evt) {
                 | !returnCode:tooComplex&TooExpensive$
             )
           & ( ShowZoomedInForm
-            =   
+            =   nfvs userInput fixed orgarg
               .   ( makeValRows
                   =   name short description table,hide preselvalsrows nfvs
                     .   !arg:?nfvs
@@ -15043,7 +14947,7 @@ function main2(evt) {
                         : ?preselvalsrows
                       & !preselvalsrows
                   )
-                & log$createGoalPickLists
+                & !arg:(?nfvs.?userInput.?fixed.?orgarg)
                 &     createGoalPickLists
                     $ ( makeValRows$!nfvs
                       .   makeExpandedSelectLists
@@ -15123,60 +15027,88 @@ function main2(evt) {
               .   ( ZoomIn
                   =     returnCode pipes
                       , reorderedworkflowlist topologicalOrderedTools userInput
-                      , A B M Y f fixed
+                      , A B M Y f fixed addCalls
                       , fvs nfvs nvs output pipe pps rwl tool vs
                     .     !arg
                         : (?returnCode.?pipes.?reorderedworkflowlist.?topologicalOrderedTools.?userInput)
                       & 1:?fvs
+                      & 0:?addCalls
                       & (   !returnCode:workflowsFound
                           & !pipes:?pps
                           &   whl
                             ' ( !pps:%?pipe+?pps
                               &   ( 
-                                  =   userspec wfs tool output
-                                    .   !arg:(?userspec.?wfs)
+                                  =   wfs tool output
+                                    .   !arg:(?.?wfs)
                                       &   whl
                                         ' ( !wfs:(?tool,(?output.?))+?wfs
-                                          & add$(!output.!fvs):?fvs
+                                          & add$(!output.!fvs.!addCalls):(?fvs.?addCalls)
                                           )
                                   )
                                 $ !pipe
                               )
-                        |   log$(returnCode~workflowsFound !returnCode)
-                          & !reorderedworkflowlist:?rwl
+                        |   !reorderedworkflowlist:?rwl
                           &   whl
                             ' ( !rwl:(?,(?.? (?tool.?.?.?output)))+?rwl
-                              & add$(!output.!fvs):?fvs
+                              & add$(!output.!fvs.!addCalls):(?fvs.?addCalls)
                               )
                         )
+                      & "fvs is the union of feature values. Important to keep these, 
+                         as they make it possible to create a form for zooming in."
                       & "It is not unimportant how fvs is obtained.
-                             Reorderedworkflowlist outputs can have features
-                             that are not (yet) in the output of pipes."
-                      & 1:?nfvs:?fixed
-                      &   whl
-                        ' ( !fvs:%?f^%?vs*?fvs
-                          & (   !vs:%+%
-                              & 0:?nvs
-                              &   whl
-                                ' ( !vs:%?A+?vs
-                                  &   whl
-                                    ' (!A:?B*%?M^%*?Y&!B*!M*!Y:?A)
-                                  & !nvs+!A:?nvs
+                         Reorderedworkflowlist outputs can have features
+                         that are not (yet) in the output of pipes."
+                      & "Zooming in is useful if
+                         (>=1)  a feature can have one of several values 
+                         (0|1) a feature can, but need not be specified 
+                         (>=0)  a combination of the above"
+                      & 1:?fixed:?nfvs
+                      &   mop
+                        $ ( ( 
+                            =   count n
+                              .   !arg:%?f^%?vs
+                                & 0:?nvs
+                                &   whl
+                                  ' ( !vs:%?A+?vs
+                                    &   whl
+                                      ' ( !A:?B*%?M^%*?Y
+                                        & !B*!M*!Y:?A
+                                        )
+                                    & !nvs+!A:?nvs
+                                    )
+                                & 0:?count
+                                &   whl
+                                  ' ( !nvs:%?A+?nvs
+                                    &     !count
+                                        + ( !A:#%?n*?A&!n
+                                          | 1
+                                          )
+                                      : ?count
+                                    & !vs+!A:?vs
+                                    )
+                                & (   !count:!addCalls
+                                    & (   !vs:%+%
+                                        & "All workflows specify this feature, but in different ways."
+                                        & (   !userInput:(?.?.?.? !f ?)
+                                            & "And the user has specified that combinations are OK."
+                                            & !nfvs*!f^!vs:?nfvs
+                                          | 
+                                          )
+                                      |   "All workflows specify this feature with the same value."
+                                        & !fixed*!f^!vs:?fixed
+                                      )
+                                  |   !count:<!addCalls
+                                    & "Some workflows did not specify this feature. User can choose blank value."
+                                    & !nfvs*!f^!vs:?nfvs
                                   )
-                              & !nvs:%+%
-                              &   whl
-                                ' ( !nvs:%?A+?nvs
-                                  & (!A:#%*?A|)
-                                  & !vs+!A:?vs
-                                  )
-                              & !f^!vs*!nfvs:?nfvs
-                            | !fixed*!f^!vs:?fixed
                             )
+                          . !fvs
+                          . (=*)
                           )
                       & (   !nfvs:(1|sml^?)
                           &   NoNeedForMoreZoomingIn
                             $ (!returnCode.!pipes.!reorderedworkflowlist.!topologicalOrderedTools.!userInput)
-                        | ShowZoomedInForm$
+                        | ShowZoomedInForm$(!nfvs.!userInput.!fixed.!orgarg)
                         )
                   )
                 & !arg:(?returnCode.?pipes.?reorderedworkflowlist.?topologicalOrderedTools.?userInput)
@@ -16555,7 +16487,6 @@ function main2(evt) {
                             )
                         )
                       : ?hiddenData
-                    & log$(hiddenData !hiddenData)
                     &     map
                         $ ( ( 
                             =   
