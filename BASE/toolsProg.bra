@@ -129,6 +129,8 @@ toolsProg=
       (servicedSources=)
       (servicedGoals=)
       (goalPicklists=)
+      "Supergoals are goals that fulfil the user's goal, plus 
+       more. (If the user checks a box and thereby allows it.)"
       (servicedSuperGoals=)
       (updateAvailableWorkflows=update opdater)
       (helpmespecifymygoal="Next: zoom in on goal." "Zoom ind med flere detaljer")
@@ -1661,8 +1663,6 @@ toolsProg=
                           , ∴ (span.(class.tooltiptextL),inoutdesc$!o)
                         )
                   |   log$"It seems that the input already matches your goal"
-                    & log$(description !description)
-                    & log$(struct !struct)
                     &   localized
                       $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
                           "Det ser ud til at inputtet allerede opfylder dit mål. Eller vi har ikke fundet de nødvendige oplysninger om inputtet. Brug knappen \"Forrige\" for at ændre dine valg."
@@ -3025,7 +3025,7 @@ catch (SystemExit $e)
                       $ ( str
                         $ ( "Tool "
                             !toolid
-                            ": inputs differ on two features: "
+                            ": inputs differ in two features: "
                             !fname1
                             " and "
                             !fname2
@@ -4543,7 +4543,7 @@ try {
       )
       ( makeSuperGoals
       =   name os Os c o v vs ss s collector SuperSets,SimpleSets
-        .   "makeSuperGoals only returns value sets for features\r
+        .   "makeSuperGoals only returns value sets for features
              that have at least one composed feature value."
           & :?SuperSets:?SimpleSets
           & 0:?vs
@@ -4652,6 +4652,10 @@ try {
       ( createGoalPickLists
       =   preselvalsrows,expandedSelectLists including OP
         .   !arg:(?preselvalsrows.?expandedSelectLists.?including)
+          & "When called from sourcesAndGoals, including is set to 'including'.
+             When called from ShowZoomedInForm, including is empty.
+             So initially we create O parameters. When zooming in, P parameters.
+             e.g. first Ofacet=lem*tok and then, when zooming in, Pfacet=lem*pos*tok"
           & (!including:&P|O):?OP
           &   map
             $ ( ( 
@@ -4890,8 +4894,8 @@ try {
                         : ?+(? (short.!feature) ?:? (table.?table) ?)+?
                       & readTable$!table
                       &   !(&!table)
-                        : ? (?so.!sourceValue.) ?
-                        : ? (?go.!goalValue.) ?
+                        : ? (?so.!sourceValue.?) ?
+                        : ? (?go.!goalValue.?) ?
                       & (!so.!go)
                   )
                 & !arg:(?source.?goal.?.?)
@@ -4933,7 +4937,7 @@ try {
                           . !bridges
                           )
                       : ~
-                  |   "Failure reason 2: A specific feature value cannot cannot be transformed to or from any other value for that feature."
+                  |   "Failure reason 2: A specific feature value cannot be transformed to or from any other value for that feature."
                     &     map
                         $ ( ( 
                             =   
@@ -5455,8 +5459,8 @@ try {
                       & (getGoals$!allios.!restrictedTools)
                   )
                 & "N21: Mark the argument as feature values all found in a single
-             file. If the argument is atomic, just return the argument. Else,
-             embed the product of feature values a, b and c in (a*b*c.OnE)."
+                   file. If the argument is atomic, just return the argument. Else,
+                   embed the product of feature values a, b and c in (a*b*c.OnE)."
                 & (N21=.!arg:@|(!arg.OnE))
                 & ( getSuperGoals
                   =   goal nwg
@@ -5590,6 +5594,9 @@ try {
                 & log$("Calling fulfil" !goal)
                 & (fulfil$(!activeTools.!source.!goal.0.!restriction)|!Calls)
             )
+          & "+-----------+
+             | Pipelines |
+             +-----------+"
           & !arg:(?arg:?parms.?nth)
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
@@ -5604,6 +5611,8 @@ try {
                 . !arg
                 )
             : ?superset
+          & "superset lists the features where the user has a check mark saying
+             that more than just the specified values are acceptable."
           & readTable$features
           & extractIOfeaturesFromHTTParg$(!features.I.!arg):?i
           & extractIOfeaturesFromHTTParg$(!features.O.!arg):?o
@@ -5626,7 +5635,7 @@ try {
             )
           & "If there is a filled Pxyz, remove it from superset. Additional
              user data is supposed to be exactly what the user wants. (There
-             is no checkbox for the user to allow more complex values.)"
+             is no checkbox for the user to allow more compounded values.)"
           &     map
               $ ( ( 
                   =   
@@ -5637,7 +5646,18 @@ try {
                 )
             : ?superset
           & "P values come from a subset of select boxes, when the user has
-             asked for assistance to fill out the remaining fields."
+             asked for assistance to fill out the remaining fields.
+             Example: If the user initially chooses the compound facet value 
+                     lem*tok
+             this will create a parameter 
+              Ofacet=lem*tok
+             The Text Tonsorium will propose a value from a list of compound
+             values that all contain lem and tok. Suppose the user chooses
+                      lem*pos*tok
+             This will then give rise to a new parameter
+               Pfacet=lem*pos*tok
+             The original Ofacet parameter is still there.
+             "
           & !o-SUpPLEMENT:?pp
           & "Make pp a list of Pxyz features that do not occur as Oxyz. At the
              same time, make oo a list of Oxyz with elements replaced by Pxyz,
@@ -5687,8 +5707,7 @@ try {
                                     & 
                                   |   !output:~(? (!uf,?) ?)
                                     & log$(LACKING !uf)
-                                    & "The feature may be missing when
-                                         looking at unpruned, raw pipes"
+                                    & "The feature may be missing when looking at unpruned, raw pipes"
                                     & ( !uf:sml&
                                       | STOP
                                       )
@@ -6548,11 +6567,11 @@ try {
                             & !nres
                         )
                       & "harmonizeSubspecsOnSimilarFeatures: 
-               enrich first argument using second argument, 
-	 enrich and update second argumemt using first argument.
-	 In the output, the second argument is hoisted to the level of the first.
-	 This function is used in both directions, downstream and upstream.
-	 "
+                         enrich first argument using second argument, 
+	                     enrich and update second argumemt using first argument.
+	                     In the output, the second argument is hoisted to the level of the first.
+	                     This function is used in both directions, downstream and upstream.
+	                     "
                       & ( harmonizeSubspecsOnSimilarFeatures
                         =   
                           .   ( !Mem:? (!arg.?arg) ?
@@ -6941,9 +6960,13 @@ try {
                      memoized trees. So each output feature in a memoized tree
                      must occur in the userInput's output specs."
                   & ( o2o
-                    =   FP nFP ou wf uou uiou
-                      .   !arg:(?FP.?uiou)
-                        & "o-SUpPLEMENT  (facet,lem*mrf*ner*pos*seg*stx*tok)"
+                    =   FP nFP ou wf uou uiou superset
+                      .   !arg:(?FP.?uiou.?superset)
+                        & "Remember: o-SUpPLEMENT is the list of P features e.g. Pfacet,
+                           where P features are those that the user specifies when zooming
+                           in. P features do not allow being a subset of a larger set of
+                           compound values; they must match exactly, except for subspecs.
+                           o-SUpPLEMENT  (facet,lem*mrf*ner*pos*seg*stx*tok)"
                         & 0:?nFP
                         &   whl
                           ' ( !FP:(?ou.?wf)+?FP
@@ -6960,8 +6983,12 @@ try {
                                         =   ft us nus u Vs,A Z a z V
                                           .   !arg:(?ft,?V)
                                             & (   !uou:?a (!ft,?us) ?z
+                                                & "The user has specified this recorded feature.
+                                                   Check that all that the user wants of this 
+                                                   feature is also satisfied by the record."
                                                 & !a !z:?uou
                                                 & (   !V:!us^?
+                                                    & "MATCH (modulo subspec, which the user cannot specify)"
                                                     & 
                                                   |   !V:(?Vs.OnE)
                                                     &   whl
@@ -6971,14 +6998,16 @@ try {
                                                         & !nus:?us
                                                         )
                                                     & !us:1
-                                                    & "all user specs were found"
+                                                    & "all user specs were found. All good."
                                                     & (     !o-SUpPLEMENT
                                                           : ~(? (!ft,?) ?)
-                                                        & "User says nothing about feature ft"
+                                                        & "User says nothing about feature "
+                                                        & !superset:? !ft ?
+                                                        & "User has marked that compounder outputs are ok for feature "
                                                       |   !Vs:1
                                                         & "Exact match between compound feature values.
-                                                           No need to supplement this feature with a superset.
-                                                          "
+                                                           No need to supplement this feature with a superset,
+                                                           (WHO DECIDES THAT?) so remove it if it is there."
                                                         & (   !superset:?A !ft ?Z
                                                             & !A !Z:?superset
                                                           | 
@@ -6987,16 +7016,27 @@ try {
                                                     & 
                                                   | !arg
                                                   )
-                                              | 
+                                              |   "The user didn't say anything about this feature. Then it must be OK.
+                                                   (Is this branch at all reachable? We said that 
+                                                   'all recorded specs must also be user specs'.
+                                                   Yes: before we talked about the user specs that had been recorded,
+                                                   but here we look at the actual specs of each of the recorded workflows.
+                                                   The latter are in general much more complete than the recorded user
+                                                   specs and can easily contain features that users never gave a thought.)"
+                                                & 
                                               )
                                         )
                                       . !ou
                                       )
                                   : 
-                                & ( !uou:
-                                  | furtherCheck$(!wf.!uou):?wf
-                                  )
-                                & !nFP+(!ou !uou.!wf):?nFP
+                                &     !nFP
+                                    + ( !uou:&(!ou.!wf)
+                                      |   "Not all user specs were found in workflow output.
+                                           Find them in the output of the last tool in the workflow.
+                                           (An example would be nice.)"
+                                        & (sort$(!ou !uou).furtherCheck$(!wf.!uou))
+                                      )
+                                  : ?nFP
                               | 
                               )
                             )
@@ -7005,6 +7045,17 @@ try {
                   &   !memoizedTrees
                     :   ?
                         (   (!uiin.?ou.?restr.?supers)
+                          & "We have something that matches the input knowns.
+                             Now check whether all output specs in this record correspond to a user spec.
+                             So there may be fewer recorded specs than user specs, but all recorded specs
+                             must also be user specs.
+                             (NOT)FISHY. The following says that if facet x is recorded and also specified by the user,
+                             then all values (factors) in the record must accur in the user spec. What if the user
+                             spec is lem*pos*tok and the record has only lem*tok? Shouldn't that be the other way
+                             around?
+                             No. The user who asked for lem*tok and allowed compound outputs containing lem and tok
+                             got many more workflows to choose from, also the ones that contain lem and pos and tok.
+                             "
                           &     map
                               $ ( ( 
                                   =   vs f nvs V v
@@ -7033,7 +7084,7 @@ try {
                              output specs. So we have to filter away all
                              memoized trees that conflict with the current
                              specs."
-                          & o2o$(!FP.!uiou):?nFP
+                          & o2o$(!FP.!uiou.!superset):?nFP
                         )
                         ?
                   & log$SUCCESS
@@ -7072,17 +7123,17 @@ try {
                   & !FP:~#
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
-                  & ( !FP:(?,?) ?
+                  & ( !FP:((?,?) ?|~(?+(?.?)+?))
                     |   prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
                       & !Npipes:~>!MAXPIPES
+                      & log$"Calling prunePipes success"
+                      & (!userInput.!FP) !memoizedTrees:?memoizedTrees
+                      & (!memoizedTrees:?memoizedTrees [100 ?|)
                     )
-                  & log$"Calling prunePipes success"
-                  & (!userInput.!FP) !memoizedTrees:?memoizedTrees
-                  & (!memoizedTrees:?memoizedTrees [100 ?|)
                 )
               & ( !parms
                 . !userInput
-                .     !FP:(?,?) ?
+                .     !FP:((?,?) ?|~(?+(?.?)+?))
                     & ((!FP.).triviallyFulfilled.)
                   |   !FP:?+[>!MAXPIPES
                     & !FP:?+[?NNNN
@@ -8034,7 +8085,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( getSingleItemOrNothing
       =   item Items
         .     !arg:? (Item.?item) ?
-            & log$(getSingleItemOrNothing !arg)
             & (@(!item:\" ?item \")|)
             & (Item.get$(!item,X ML,MEM))
           | 
@@ -10399,11 +10449,9 @@ function main2(evt) {
           & ( !Items:&getSingleItemOrNothing$!parms:?Items
             | 
             )
-          & log$(Items !Items)
           & analyzeInput$(!Items.!errors):(?Items.?presels.?errors)
           & ( !errors:~
             |   supplementParmsAndHiddenData$(!parms.!hiddenData):(?parms.?Submit.?hiddenData.?batch)
-              & log$("The user has selected a workflow." parms !parms Submit !Submit hiddenData !hiddenData)
               & "The user has selected a workflow."$(!parms.!Submit.!hiddenData.!batch.!Items.!mail2)
             )
       )
@@ -10743,7 +10791,6 @@ function main2(evt) {
                       . !LANGUAGE
                       )
                   : ?autogenerated
-                & log$(autogenerated !autogenerated)
                 &   put
                   $ (   str
                       $ ( toML
@@ -10768,7 +10815,6 @@ function main2(evt) {
                                                   ?
                                             )
                                             ?
-                                      & log$(SPANGRP !SPANGRP)
                                       & (fen.extent$!SPANGRP)
                                     | 
                                     )
@@ -12826,12 +12872,10 @@ function main2(evt) {
                     $ ( ( 
                         =   files status
                           .     !arg:(!JobNr.?status.?files.?.?.?)
-                              & log$(status !status files !files)
                               &   map
                                 $ ( ( 
                                     =   
                                       .     !('($Uploads:? (?.?.$arg.?) ?))
-                                          & log$(FOUNDinUploads !arg)
                                           & (   !seenInputs:? !arg ?
                                               & log$seen
                                               & 
@@ -12850,7 +12894,7 @@ function main2(evt) {
                                         | !arg:(?,?)&
                                         |   !arg:@:@(!arg:step ?)
                                           & 
-                                        | log$(NOTfoundInUploads !arg)&
+                                        | 
                                     )
                                   . !files
                                   )
@@ -14325,7 +14369,6 @@ function main2(evt) {
           & "Body of Register starts here"
           & (|log$NEW)
           & log$REGISTER
-          & lst$(arg,path$"log.txt",APP RAW)
           & log$
           &   
             : ?servicedSources
@@ -15117,9 +15160,11 @@ function main2(evt) {
                 & (   ( localized$!"show workflows":!Submit
                       | localized$!"skip zoom":!Submit
                       )
+                    & log$GoingToNoNeedForMoreZoomingIn
                     &   NoNeedForMoreZoomingIn
                       $ (!returnCode.!pipes.!reorderedworkflowlist.!topologicalOrderedTools.!userInput)
                   |   localized$!helpmespecifymygoal:!Submit
+                    & log$GoingToZoomIn
                     & ZoomIn$(!returnCode.!pipes.!reorderedworkflowlist.!topologicalOrderedTools.!userInput)
                   )
             )
@@ -15130,9 +15175,8 @@ function main2(evt) {
           & :?PIPE
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?tabind.?Tool.?parms.?BodyContainer)
-          & log$"(B) First build a list of items."
+          & "(B) First build a list of items."
           & getSingleItemOrNothing$!parms:?Items
-          & log$(Items !Items)
           & analyzeInput$(!Items.!errors):(?Items.?presels.?errors)
           & ( !errors:~
             |   supplementParmsAndHiddenData$(!parms.!hiddenData):(?parms.?Submit.?hiddenData.?batch)
@@ -15174,7 +15218,6 @@ function main2(evt) {
                     & saveTable$Uploads
                 )
               & (   localized$!updateAvailableWorkflows:!Submit
-                  & log$(Call specifyGoal !parms)
                   & specifyGoal$!parms
                 |   updateUploads$!parms
                   & 0:?allpipes
@@ -15185,7 +15228,7 @@ function main2(evt) {
                   & (     Pipelines$(!parms.)
                         : (?.(?sources.?):?userInput.?2or3things.?returnCode.?msg)
                       & (   !returnCode:allRight
-                          & log$"returnCode:allRight"
+                          & "returnCode:allRight"
                           & !2or3things:(?reorderedworkflowlist.?topologicalOrderedTools)
                         | !2or3things:(?pipes.?parms)
                         )
