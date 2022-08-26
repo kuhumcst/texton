@@ -1,0 +1,208 @@
+{data.bra
+
+Analyse texton/lempos/index.php, find paths to flexrules and traindata, 
+copy all needed files from shared drive to a new or existing folder structure.}
+
+X=
+  ( DOS
+  =   (ls="dir /B")
+      (slash="\\")
+      ( slashit
+      =   
+        .   vap$((=."\\" !arg).!arg."/"):"\\" ?arg
+          & str$!arg
+      )
+      (cp=copy)
+  )
+  ( Linux
+  =   (ls=ls)
+      (slash="/")
+      ( slashit
+      =   
+        .   vap$((=."/" !arg).!arg."\\"):"/" ?arg
+          & str$!arg
+      )
+      (cp=cp)
+  )
+  (OS=Linux)
+  ( do
+  =   
+    .   ( exists
+        =   ls
+          .     sys
+              $ ( str
+                $ ( !(its.!(its.OS).ls)
+                    " "
+                    !arg
+                    " > ls.txt 2>&1"
+                  )
+                )
+            & get$("ls.txt",STR):?ls
+            & out$(ls !ls)
+            & @( !ls
+               : ~("ls: cannot access" ?|"File Not Found" ?)
+               )
+        )
+      & ( exists
+        =   ls
+          .     sys
+              $ ( str
+                $ ( !(its.!(its.OS).ls)
+                    " "
+                    !arg
+                    " > ls.txt 2>&1"
+                  )
+                )
+            & get$("ls.txt",STR):?ls
+            & out$(ls !ls)
+            & @( !ls
+               : ~("ls: cannot access" ?|"File Not Found" ?)
+               )
+        )
+      & ( ensure
+        =   
+          .   out$!arg&exists$!arg
+            |   sys$(str$("mkdir " !arg))
+              & (exists$!arg|out$(FAAL !arg))
+        )
+      & ( have-folder
+        =   root subs sub
+          .   !arg:%@?root ?subs
+            &   whl
+              ' ( !subs:%@?sub ?subs
+                &     str
+                    $ (!root !(its.!(its.OS).slash) !sub)
+                  : ?root
+                & ensure$!root
+                )
+            & !root
+        )
+      & (sp=.vap$((=.!arg).!arg." "):)
+      &   (   sys$(str$"ls > ls.txt 2>&1")
+            & @(get$("ls.txt",STR):"'ls'" ?)
+            & DOS
+          | Linux
+          )
+        : ?(its.OS)
+      & !arg:(?index.?sourceDir.?destinationDir)
+      & (its.!(its.OS).slashit)$!sourceDir:?sourceDir
+      &   (its.!(its.OS).slashit)$!destinationDir
+        : ?destinationDir
+      & get$(!index,STR):?php
+      &     vap
+          $ ( ( 
+              =   
+                .     @( !arg
+                       : (     ?s1
+                               "$flexrules"
+                               ?s2
+                               "="
+                               ?s3
+                               "\"$res/"
+                               ?path
+                               "\";"
+                               ?
+                           & flexrules:?what
+                         |     ?s1
+                               "$traindata"
+                               ?s2
+                               "="
+                               ?s3
+                               "\"$res/"
+                               ?path
+                               "\";"
+                               ?
+                           & traindata:?what
+                         )
+                       )
+                    & sp$!s1
+                    & sp$!s2
+                    & sp$!s3
+                    &   vap$((=.!arg).!path."/")
+                      : ?path %@?file
+                    & (!what.!path.!file)
+                  | 
+              )
+            . !php
+            . \n
+            )
+        : ?paths
+      & lst$paths
+      & 0:?count
+      & put$(,"copytext.txt",NEW)
+      &   map
+        $ ( ( 
+            =   
+              .     1+!count:<500:?count
+                  & !arg:(?what.?path.?file)
+                  & have-folder$(!destinationDir !path)
+                  &     str
+                      $ ( !destinationDir
+                            map
+                          $ ( ( 
+                              =   
+                                .   !(its.!(its.OS).slash)
+                                    !arg
+                              )
+                            . !path !file
+                            )
+                        )
+                    : ?destination
+                  & put$(str$(!destination \n),"copytext.txt",APP)
+                  &   sys
+                    $ ( str
+                      $ ( !(its.!(its.OS).cp)
+                          " "
+                          ( !sourceDir
+                              map
+                            $ ( ( 
+                                =   
+                                  .   !(its.!(its.OS).slash)
+                                      !arg
+                                )
+                              . !path !file
+                              )
+                          )
+                          " "
+                          !destination
+                          " >> copytext.txt 2>&1"
+                        )
+                      )
+                | 
+            )
+          . !paths
+          )
+      & out$(count !count)
+  )
+  ( new
+  =   
+    .   ~
+      |   (its.do)
+        $ ( "C:/gitprojects/texton/lempos/index.php"
+          . "N:/HUM-NORS-cst-projekter/lemmatiserresurser/languages/"
+          . "C:/lemposres/"
+          )
+  );
+
+r=
+  get'("data.bra",TXT)
+& rmv$(str$(data ".bak"))
+& ren$("data.bra".str$(data ".bak"))
+&   put
+  $ ( "{data.bra
+
+Analyse texton/lempos/index.php, find paths to flexrules and traindata, 
+copy all needed files from shared drive to a new or existing folder structure.}
+
+"
+    , "data.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"data.bra",APP)
+& put'(\n,"data.bra",APP,BIN)
+& lst'(r,"data.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"data.bra",APP,BIN)
+& ;
+
+new'X;
