@@ -649,7 +649,6 @@ toolsProg=
                 =   A Z L p S x y shrtlst
                   .   !arg:(?p,?arg:?L)
                     & 0:?S
-                    & log$shorting
                     & :?shrtlst
                     & whl'(!L:#*(?x.?y)+?L&!x+!y+!S:?S)
                     & "Edges with node(s) occurring in that edge only are not
@@ -671,7 +670,6 @@ toolsProg=
                       | (!p,0)
                       )
                 )
-              & log$sofarsogood
               & (0,!pairs):?shrtlst:?nshrtlst
               & :?kahn
               &   whl
@@ -8048,7 +8046,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( doneAllJobSub
       =   JobNr
         .   readTable$jobs
-          & log$("doneAllJobSub " !arg)
           & @(!arg:? #?JobNr)
           & readTable$CTBs
           & readTable$jobAbout
@@ -10686,15 +10683,13 @@ function main2(evt) {
               : ?AVAILABILITY
               : ?XMLID
               : ?ITEMS
-              : ?SPANGRP
               : ?LANGUAGE
             & !arg:(@(?:? #?JobNr).%@?jobID ?.?SPANGRPfil.?DATE)
+            & "SPANGRPfil is empty string if job step did not produce TEI output."
             & -1+!runningThreads:?runningThreads
             & log$(str$("doneJob:runningThreads:" !runningThreads " maxRunningThreads:" !maxRunningThreads))
             & str$(!DATE "-" !JobNr "-" !jobID):?CTBID
             & (readTable$CTBs|:?CTBs)
-            & (!SPANGRPfil:|get$(!SPANGRPfil,X ML)):?SPANGRP
-            & nestML$!SPANGRP:?SPANGRP
             & ( extent
               =   n recur
                 .   0:?n
@@ -10769,14 +10764,20 @@ function main2(evt) {
                 )
             & saveTable$CTBs
             & saveTable$jobs
-            & (     !SPANGRP
-                  : ? (TEI.?,? (teiHeader.,) ? (text.,?SPANGRPS) ?) ?
+            & (     ( !SPANGRPfil:
+                    | nestML$(get$(!SPANGRPfil,X ML))
+                    | 
+                    )
+                  : ?SPANGRP
+                &   !SPANGRP
+                  : ( ? (TEI.?,? (teiHeader.,) ? (text.,?SPANGRPS) ?) ?
+                    |   ? (text.?,? (body.?,?) ?) ?
+                      & :?SPANGRPS
+                    | ? (spanGrp.?,?) ?:?SPANGRPS
+                    )
                 & "If a tool produces more than 1 spanGrp, it is obliged to wrap the spanGrps in another element. 
                    If the TEI doc has an empty teiHeader, it has the function of a wrapper."
-              | :?SPANGRPS
-              )
-            & ( !SPANGRP:? (TEI.?) ?&!SPANGRPS:
-              |   Filename$!SPANGRPfil:?SPANGRPfilWithMetadata
+                & Filename$!SPANGRPfil:?SPANGRPfilWithMetadata
                 &     tekstXML
                     $ ( !DATE|
                       . !EMAIL
@@ -10829,6 +10830,7 @@ function main2(evt) {
                     , NEW
                     )
                 & !SPANGRPfilWithMetadata
+              | 
               )
           | 
       )
@@ -12572,7 +12574,14 @@ function main2(evt) {
                                   | !stage:LAST
                                   )
                                 &   ( !type:TEI&
-                                    | Filename$!filename
+                                    |   
+                                      &   !format
+                                        : ( txtbasis
+                                          | teip5
+                                          | txtann
+                                          )
+                                      & Filename$!filename
+                                    | 
                                     )
                                   : ?Href2
                                 & FilenameNoMetadata$!filename:?Href2nometa
