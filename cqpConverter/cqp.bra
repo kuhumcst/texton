@@ -16,22 +16,27 @@ X=
   ( doit
   =   
     .   !arg:(?tok.?seg.?pos.?lem.?segtok.?outp.?today)
-      & :?past:?lbpb
+      & :?past
       &   (!segtok:|get$(!segtok,X ML TRM))
         : ?ST
-      &   whl
-        ' ( !ST:%?A ?ST
-          & (   !A:((lb|pb):?A.?)
-              & (!A.!past) !lbpb:?lbpb
-              & :?past
-            |     !A
-                : (c|w.? ("xml:id".?idA) ?)
-              & !idA !past:?past
-            | 
+      & "segtok: This file is the original TEI P5 text. The file is read without nesting it afterwards!
+         It is scanned for <lb> and <pb> markings, so they can be reproduced in the output."
+      &     map
+          $ ( ( 
+              =   
+                .     !arg:((lb|pb):?arg.?)
+                    & (!arg.!past):?arg
+                    & :?past
+                    & !arg
+                  |     !arg
+                      : (c|w.? ("xml:id".?arg) ?)
+                    & !arg !past:?past
+                    & 
+                  | 
+              )
+            . !ST
             )
-          )
-      & :?lpb
-      & whl'(!lbpb:%?A ?lbpb&!A !lpb:?lpb)
+        : ?lpb
       & lst$(lpb,lpb,NEW)
       & put$(,fid,NEW)
       & ( !tok:

@@ -75,15 +75,7 @@ X=
                       & (H..find)$!C
                     )
                   : (?key.?val) ?
-                & ~(   Ned
-                       Vi
-                       Paa
-                       Saa
-                       Dag
-                       Hold
-                       Ting
-                       Land
-                       Andre
+                & ~( Ned Vi Paa Saa Dag Hold Ting Land Andre
                    : ? !key ?
                    )
                 & str$(!key !S)
@@ -231,6 +223,8 @@ X=
   ( doit
   =   normalizeYesOrNo
     .   !arg:(?arg.?normalizeYesOrNo)
+      & out$(arg !arg)
+      & out$(normalizeYesOrNo !normalizeYesOrNo)
       & nestML$(get$(!arg,X ML)):?xml
       &   !xml
         : ( ? (TEI.?,? (text.?,?xml) ?) ?
@@ -252,60 +246,59 @@ X=
                 )
               )
         )
+      & ( content
+        =   
+          .   map
+            $ ( ( 
+                =   c
+                  .     !arg:(del|fw.?,?)
+                      & 
+                    |   !arg:(c.? (type.s) ?,?)
+                      & " "
+                    |   !arg:(c.? (type.p) ?,?c)
+                      & !c
+                    |   !arg:(w.?,?c)
+                      & (!c:@|content$!c)
+                    | 
+                )
+              . !arg
+              )
+        )
       & 0:?id
       & (ID="xml:id".str$(t (1+!id:?id)))
-      & ( combine
-        =   O T S from to h
-          .   :?O
-            &   whl
-              ' (   !arg
-                  :   ( span
-                      .     (S.?S)
-                            (T.?T)
-                            (from.?from:?to)
-                        , ?h
-                      )
-                      ?arg
-                &   whl
-                  ' (   !arg
-                      :   ( span
-                          .   (S.!S) (T.!T) (from.?to)
-                            , ?H
-                          )
-                          ?arg
-                    & !h !H:?h
-                    )
-                &     ( span
-                      .     !from:!to
-                          & ((from.str$("#" !from)) !ID,!h)
-                        | (   (from.str$("#" !from))
-                              (to.str$("#" !to))
-                              !ID
-                          , str$!h
-                          )
-                      )
-                      !O
-                  : ?O
-                )
-            & :?OO
-            & whl'(!O:%?A ?O&!A !OO:?OO)
-            & !OO
-        )
       & ( recur
         =   
           .   map
             $ ( ( 
-                =   att h S T from
-                  .     !arg:(?.?att,?h)
-                      & (     !att
-                            : ? (S.?S) ?
-                            : ? (T.?T) ?
-                            : ? ("xml:id".?from) ?
-                          & ( span
-                            .     (S.!S)
-                                  (T.!T)
-                                  (from.!from)
-                              , concat$!h
+                =   att h S T from e
+                  .     !arg:(?e.?att,?h)
+                      & (   !e:(w|c)
+                          & (   !h:@% ?
+                              & out$(atomic !h)
+                              & !att:? ("xml:id".?from) ?
+                              & ( span
+                                . !ID (from.str$("#" !from)),!h
+                                )
+                            |   out$molecule
+                              & (     !h
+                                    :   @
+                                        ( w|c
+                                        .   ? ("xml:id".?from) ?
+                                          , ?
+                                        )
+                                        ?
+                                        ( w|c
+                                        . ? ("xml:id".?to) ?,?
+                                        )
+                                        @
+                                  & ( span
+                                    .     !ID
+                                          (from.str$("#" !from))
+                                          (to.str$("#" !to))
+                                      , str$(content$!h)
+                                    )
+                                | out$(NOMATCH !h)&
+                                )
                             )
                         | recur$!h
                         )
@@ -314,8 +307,8 @@ X=
               . !arg
               )
         )
-      &   (spanGrp.(ana.token),combine$(recur$!xml))
-        : ?ret
+      & (spanGrp.(ana.token),recur$!xml):?ret
+      & lst$ret
       & (   @(low$!normalizeYesOrNo:y ?)
           & (its.normalize)$!ret:?ret
         | 
@@ -325,6 +318,13 @@ X=
   ( new
   =   
     .   ~
+      |   ~
+        &   put
+          $ (   toML
+              $ ((its.doit)$("C:\\gitprojects\\texton\\plainD2cbf\\maak.xml".y))
+            , "maak.out2.xml"
+            , NEW
+            )
       |   ~
         &   put
           $ (   toML

@@ -18,36 +18,31 @@ X=
                       . ,
                       )
                       ( !x:
-                      | (w.!wid (S.!seg) (T.!tok),!x)
+                      | (w.(S.!seg) (T.!tok),!x)
                       )
                       !y
                   : ?y
                 & 1+!tok:?tok
                 )
             &   ( !arg:
-                | (w.!wid (S.!seg) (T.!tok),!arg)
+                | (w.(S.!seg) (T.!tok),!arg)
                 )
                 !y
         )
       & ( cut
-        =   W a wid
+        =   W a
           .   :?W
             &   whl
               ' ( @(!arg:?a "." ?arg)
-                & !ID:?wid
                 & FF$!a:?a
                 &     ( c
-                      .     !ID
-                            (S.!seg)
-                            (T.!tok)
-                            (type.p)
+                      .   (S.!seg) (T.!tok) (type.p)
                         , "."
                       )
                       !a
                       !W
                   : ?W
                 )
-            & !ID:?wid
             & FF$!arg !W
         )
       & ( CUT
@@ -103,8 +98,7 @@ X=
                     & cut$(str$!A):?A
                   )
                 &     ( c
-                      .     !ID
-                            (S.!seg)
+                      .     (S.!seg)
                             (T.1+!tok:?tok)
                             (type.p)
                         , str$!x
@@ -121,6 +115,117 @@ X=
             & whl'(!O:%?A ?O&!A !OO:?OO)
             & !OO
         )
+      & ( makeValidTEI
+        =   E1 E2 S Sn
+          .   ( reindex
+              =   tok prefix i
+                .   0:?tok
+                  & !arg:(?arg.?prefix)
+                  & 0:?i
+                  &   map
+                    $ ( ( 
+                        =   e a c
+                          .     !arg:(?e.?a,?c)
+                              & (   !e:(w|c)
+                                  &     map
+                                      $ ( ( 
+                                          =   
+                                            .       !arg
+                                                  : (   "xml:id"
+                                                      | T
+                                                      | S
+                                                    . ?
+                                                    )
+                                                & 
+                                              | !arg
+                                          )
+                                        . !a
+                                        )
+                                    : ?a
+                                  &     ( "xml:id"
+                                        .   str
+                                          $ (!prefix (1+!tok:?tok))
+                                        )
+                                        !a
+                                    : ?a
+                                  & (!e.!a,reindex$(!c.!prefix !tok "."))
+                                | ( !e
+                                  .     (   !e:p
+                                          & (n.1+!par:?par)
+                                        | 
+                                        )
+                                        !a
+                                    ,   reindex
+                                      $ ( !c
+                                        .   !prefix
+                                            (   !e:s
+                                              & (1+!sen:?sen) "."
+                                            | 
+                                            )
+                                        )
+                                  )
+                                )
+                            | !arg
+                        )
+                      . !arg
+                      )
+              )
+            & ( glue
+              =   E1 E2 T E1s
+                .     :?E1:?E1s
+                    &   whl
+                      ' ( !arg:%?E1 ?arg
+                        & (   !E1:(?.? (T.?T) ?,?)
+                            &   whl
+                              ' (   !arg
+                                  :   %( (?.? (T.!T) ?,?)
+                                       : ?E2
+                                       )
+                                      ?arg
+                                & !E2 !E1:?E1
+                                )
+                          | 
+                          )
+                        &     ( !E1:% %&(w.,!E1)
+                              | !E1
+                              )
+                              !E1s
+                          : ?E1s
+                        )
+                    & !E1s
+                  | fishy!!!!!!!!!!!!!!!!!!!!!!!
+              )
+            & :?Sn:?E1
+            &   whl
+              ' ( !arg:%?E1 ?arg
+                & (   !E1:(?.? (S.?S) ?,?)
+                    &   whl
+                      ' (   !arg
+                          :   %( ( (?.? (S.!S) ?,?)
+                                 | ~(?.? (S.?) ?,?)
+                                 )
+                               : ?E2
+                               )
+                              ?arg
+                        & !E2 !E1:?E1
+                        )
+                  | 
+                  )
+                & (.glue$!E1) !Sn:?Sn
+                )
+            &   map
+              $ ( ( 
+                  = .!arg:(.?arg)&(s.,!arg)
+                  )
+                . !Sn
+                )
+        )
+      & ( inv
+        =   L a
+          .   :?L
+            & whl'(!arg:%?a ?arg&!a !L:?L)
+            & !L
+        )
       & ( text
         .   
           , ( body
@@ -131,18 +236,14 @@ X=
                           .   1+!seg:?seg
                             & 0:?tok
                             & 0:?id
-                            & ( ID
-                              =   "xml:id"
-                                . str$(i !seg "." (1+!id:?id))
-                              )
                             & (@(!arg:?arg \r)|)
                             & ( p
-                              .   (n.!seg)
+                              .   
                                 ,       vap
                                       $ ( ( 
                                           =   
                                             .   vap$(CUT.!arg.!DEL)
-                                                (c.!ID (type.s),)
+                                                (c.(type.s),)
                                           )
                                         . !arg
                                         . " "
@@ -150,6 +251,7 @@ X=
                                     : ?SEG
                                   & ( !SEG:
                                     |   !SEG:?SEG (c.?)
+                                      & makeValidTEI$!SEG:?SEG
                                       & !SEG
                                     )
                               )
@@ -159,7 +261,23 @@ X=
                       )
                   : ?P
                 & (!P:?P (p.?,)|)
-                & !P
+                & lst$P
+                & :?Q
+                &   whl
+                  ' ( !P:(p.?a,?c) ?P
+                    & ( !c:
+                      |     whl
+                          ' (   !P
+                              :   (p.?a,?d&!d:~)
+                                  ?P
+                            & !d !c:?c
+                            )
+                        & (p.!a,inv$!c) !Q:?Q
+                      )
+                    & !Q
+                    )
+                & 0:?sen:?par
+                & reindex$(inv$!Q.i)
             )
         )
   )
@@ -169,7 +287,11 @@ X=
       |   ~
         & put$(toML$((its.doit)$"FF.je"),"FF.je.xml",NEW)
       |   ~
-        & put$(toML$((its.doit)$"maak.txt"),"maak.xml",NEW)
+        &   put
+          $ ( toML$((its.doit)$"text-216-437-step1.bis.plainD")
+            , "maak.xml"
+            , NEW
+            )
       | put$(toML$((its.doit)$(arg$)),arg$,NEW)
   );
 

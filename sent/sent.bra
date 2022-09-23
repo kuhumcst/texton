@@ -12,102 +12,45 @@ X=
       & 0:?id
       & (ID="xml:id".str$(Z (1+!id:?id)))
       & ( content
-        =   A c e
-          .     !arg:?A (?e.?,?c) ?arg
-              &   !A
-                  ( !e:(del|fw)&
-                  | !c
-                  )
-                  content$!arg
-            | !arg
-        )
-      & ( collectST
         =   
           .   map
             $ ( ( 
-                =   
-                  .     !arg
-                      : ( (c|lb|space.?,?)
-                        | (?.? (S.?) ?,?)
-                        )
-                    |   !arg:(?.?,?arg)
-                      & collectST$!arg
+                =   c
+                  .     !arg:(del|fw.?,?)
+                      & 
+                    |   !arg:(c.? (type.s) ?,?)
+                      & " "
+                    |   !arg:(c.? (type.p) ?,?c)
+                      & !c
+                    |   !arg:(w.?,?c)
+                      & (!c:@|content$!c)
                     | 
                 )
               . !arg
               )
         )
-      & ( Span
-        =   from to
-          .       whl
-                ' ( !arg
-                  : (?.~(? (T.?) ?),?) ?arg
-                  )
-              &   whl
-                ' ( !arg:?narg (?.~(? (T.?) ?),?)
-                  & !narg:?arg
-                  )
-              &   !arg
-                : (?.? ("xml:id".?from) ?,?) ?
-                : ? (?.? ("xml:id".?to) ?,?)
-              & ( span
-                .     (from.str$("#" !from))
-                      ( !from:!to&
-                      | (to.str$("#" !to))
-                      )
-                      (type.Ssent)
-                      !ID
-                  ,   -1:?sp
-                    &   str
-                      $ ( map
-                        $ ( ( 
-                            =   h
-                              .       !arg
-                                    : (?.? (T.?) ?,?h)
-                                  & (     str$(content$!h)
-                                        : ~
-                                        : ?h
-                                      & 0:?sp
-                                      & !h
-                                    | !sp:-1&
-                                    | 1:?sp&" "
-                                    )
-                                |   !sp+1:1:?sp
-                                  & " "
-                                | 
-                            )
-                          . !arg
-                          )
-                        )
-                )
-            | 
-        )
       & ( par
-        =   ST S Snt Nxt
-          .   map$(collectST.!arg):?ST
-            & !ST:? (?.? (S.?S) ?,?) ?
-            & :?Snts
-            &   whl
-              ' (   !ST
-                  :   ?Snt
-                      ( (?.? (S.~!S:?S) ?,?)
-                      : ?Nxt
-                      )
-                      ?ST
-                & !Nxt !ST:?ST
-                & Span$!Snt !Snts:?Snts
-                )
-            & Span$!ST:?spans
-            &   whl
-              ' ( !Snts:%?Snt ?Snts
-                & !Snt !spans:?spans
-                )
-            & !spans
+        =   from to
+          .     !arg
+              :   @
+                  (?.? ("xml:id".?from) ?,?)
+                  ( &!from:?to
+                  | ? (?.? ("xml:id".?to) ?,?) @
+                  )
+            & ( span
+              .     (from.str$("#" !from))
+                    ( !to:!from&
+                    | (to.str$("#" !to))
+                    )
+                    (type.Ssent)
+                    !ID
+                , content$!arg
+              )
         )
       & ( snt
         =   
           .     !arg:(?.?,?arg)
-              & (   !arg:? ((w|c).?,?) ?
+              & (   !arg:? (w|c.?,?) ?
                   & par$!arg
                 | map$(snt.!arg)
                 )
@@ -118,6 +61,13 @@ X=
   ( new
   =   
     .   ~
+      |   ~
+        &   put
+          $ (   toML
+              $ ((its.doit)$"C:\\gitprojects\\texton\\plainD2cbf\\maak.xml")
+            , "maak.out2.xml"
+            , NEW
+            )
       |   ~
         &   put
           $ (   toML
