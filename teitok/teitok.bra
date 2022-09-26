@@ -6,13 +6,11 @@ X=
   ( teitok
   =   input abbreviations style language,SentenceEndingAbbrSeen
     .   !arg:(?input.?style.?abbreviations.?language)
-      & out$A
       & :?SentenceEndingAbbrSeen
       & new$hash:?Mabbr
       & new$hash:?Eabbr
       & (Mabbr..ISO)$
       & (Eabbr..ISO)$
-      & out$B
       &   map
         $ ( ( 
             =   
@@ -23,9 +21,7 @@ X=
             )
           . !abbreviations
           )
-      & out$C
       & nestML$(get$(!input,X ML)):?xml
-      & out$D
       & !xml:?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
       & 0:?tok:?sen:?IS
       & ( Sen
@@ -131,9 +127,7 @@ X=
             & fnd$!arg
             & !IDs
         )
-      & out$E
       & findIDs$!text:?IDs
-      & out$F
       & 0:?ID
       & ( IDgen
         =   id
@@ -977,20 +971,13 @@ X=
                 | !acc
                 )
         )
-      & out$G
       & trav$(!text..):?nbody
-      & out$H
       & contractwadddel$!nbody:?nbody2
       &   (!style:PT&rcontr$!nbody2|!nbody2)
         : ?nmbody2
-      & out$I
       & assignIDs$!nmbody2:?nnbody
-      & out$J
       & renumber$!nnbody:?nrbody
-      & out$K
-      & lst$(nrbody,nrbody1,NEW,WYD,BIN)
       & get$(toML$!nrbody,X ML MEM):?serial
-      & lst$(serial,serial,NEW,BIN,WYD)
       & ( inverse
         =   L e
           .   :?L
@@ -1000,47 +987,30 @@ X=
       & ( reverseAndProvideMissingOpeningTags
         =   el intra tnes closed sent artni e
           .   !arg:(?artni.?tnes)
-            & out$VOOR
-            & lst$(artni,RAW,LIN)
-            & out$
             & inverse$!tnes:?SeNt
-            & lst$(SeNt,RAW,LIN)
-            & out$
             & :?sent:?intra:?closed
             &   whl
               ' ( !tnes:%?el ?tnes
                 & ( !el:(.?.)&!el !closed:?closed
-                  |   !el:(?e.?)
-                    & !closed:(.!e.) ?closed
-                    & out$(DIDGOOD !e)
+                  | !el:(?e.?)&!closed:(.!e.) ?closed
                   | 
                   )
                 & !el !sent:?sent
                 )
-            & lst$(closed,RAW,LIN)
-            & out$
             &   whl
               ' ( !closed:~
                 & !artni:%?el ?artni
-                & (   !el:(?e.?)
-                    & !closed:(.!e.) ?closed
-                    & out$(DIDVERYGOOD !e closed !closed)
+                & ( !el:(?e.?)&!closed:(.!e.) ?closed
                   | 
                   )
                 & !el !sent:?sent
                 )
-            & out$NAAAAA
-            & lst$(artni,RAW,LIN)
-            & out$
-            & lst$(sent,RAW,LIN)
-            & get'
             & (!artni.!sent)
         )
       & ( constructAsentence
         =   open intra tnes sents artni sent
           .   !arg:(?open.?intra.?tnes.?sents)
             & "Now 'open' should be empty."
-            & out$constructAsentence
             & (   !open:
                 & inverse$!intra:?artni
                 & reverseAndProvideMissingOpeningTags$(!artni.!tnes):(?artni.?sent)
@@ -1054,66 +1024,51 @@ X=
         =   tnes open theS intra sents closed ort sent artni
           .   :?tnes:?open:?theS:?intra:?sents
             & !arg:?intra ((?.? (S.?theS) ?) ?:?arg)
-            & out$(theS !theS)
             &   whl
               ' ( !arg:%?el ?arg
                 & (   !el:(@|(?.?,?)|("!--".?))
-                    & put$!el
                     & (   !open:
+                        & !arg:~(? (?.? (S.!theS) ?) ?)
                         & "atom or empty element not required in sentence"
-                        & out$AAAAAAAAAAAA
                         & constructAsentence$(!open.!intra.!tnes.!sents):(?open.?intra.?tnes.?sents)
                         & !arg:?intra ((?.? (S.?theS) ?) ?:?arg)
                         & !el !intra:?intra
-                      |   "sentence atom has to wait for closing tag"
+                      |   "sentence atom has to wait for closing tag or end of sentence"
                         & !el !tnes:?tnes
                       )
                   |   !el:(.?e.)
-                    & put$"\\"
                     & (   ( !open:(!e.?) ?open
                           | !arg:? (?.? (S.!theS) ?) ?
                           )
                         & "'el' belongs to sentence."
                         & !el !tnes:?tnes
                       |   "'el' is outside the sentence for now."
-                        & out$BBBBBBBBBBBBBBB
-                        & lst$(intra,LIN)
-                        & out$
-                        & lst$(open,LIN)
-                        & get'
                         & constructAsentence$(!open.!intra.!tnes.!sents):(?open.?intra.?tnes.?sents)
                         & !arg:?intra ((?.? (S.?theS) ?) ?:?arg)
-                        & out$(theS !theS intra !intra tothier)
                         & !el !intra:?intra
                       )
                   |   !el:(?e.?a)
-                    & put$"/"
                     & (   !a:? (S.?S) ?
                         & (   !S:~!theS:?theS
-                            & out$CCCCCCCCCCCCCCCC
                             &   constructAsentence$(!open.!intra.!tnes.!sents)
                               : (?open.?intra.?tnes.?sents)
-                          | !el !open:?open&!el !tnes:?tnes
+                          | 
                           )
+                        & !el !open:?open
+                        & !el !tnes:?tnes
                       |   !el !open:?open
-                        & out$(OPEN !el NEPO)
                         & (   !arg:? (?.? (S.?) ?) ?
-                            & out$TNES
                             & !el !tnes:?tnes
-                          |   out$SLUT
-                            & !el !arg:?intra
-                            & :?arg
+                          | !el !arg:?intra&:?arg
                           )
                       )
                   )
                 )
             & inverse$!intra !sents:?sents
             & inverse$!sents:?sents
-            & lst$(sents,sents,NEW,BIN,WYD)
             & !sents
         )
       & ser$!serial:?nrbody
-      & lst$(nrbody,nrbody2,NEW)
       & !XXX (TEI.!teiatt,!AAA (text.!textatt,!nrbody) !DDD) !YYY
   )
   ( new
