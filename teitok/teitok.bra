@@ -971,13 +971,6 @@ X=
                 | !acc
                 )
         )
-      & trav$(!text..):?nbody
-      & contractwadddel$!nbody:?nbody2
-      &   (!style:PT&rcontr$!nbody2|!nbody2)
-        : ?nmbody2
-      & assignIDs$!nmbody2:?nnbody
-      & renumber$!nnbody:?nrbody
-      & get$(toML$!nrbody,X ML MEM):?serial
       & ( inverse
         =   L e
           .   :?L
@@ -1021,34 +1014,50 @@ X=
             & (!open.!intra.!tnes.!sents)
         )
       & ( ser
-        =   tnes open theS intra sents closed ort sent artni
+        =   tnes open theS intra sents closed ort sent artni SorT
           .   :?tnes:?open:?theS:?intra:?sents
-            & !arg:?intra ((?.? (S.?theS) ?) ?:?arg)
+            & !arg:(?arg.?SorT)
+            & !('($arg:?intra ((?.? ($SorT.?theS) ?) ?:?arg)))
             &   whl
               ' ( !arg:%?el ?arg
                 & (   !el:(@|(?.?,?)|("!--".?))
+                    & (   !el:("!--".?FGH)
+                        & out$(comment !FGH)
+                        & out$(open !open theS !theS)
+                      | 
+                      )
                     & (   !open:
-                        & !arg:~(? (?.? (S.!theS) ?) ?)
+                        & !('($arg:~(? (?.? ($SorT.$theS) ?) ?)))
                         & "atom or empty element not required in sentence"
                         & constructAsentence$(!open.!intra.!tnes.!sents):(?open.?intra.?tnes.?sents)
-                        & !arg:?intra ((?.? (S.?theS) ?) ?:?arg)
+                        & !( 
+                           ' ( $arg
+                             : ?intra ((?.? ($SorT.?theS) ?) ?:?arg)
+                             )
+                           )
                         & !el !intra:?intra
                       |   "sentence atom has to wait for closing tag or end of sentence"
                         & !el !tnes:?tnes
                       )
                   |   !el:(.?e.)
                     & (   ( !open:(!e.?) ?open
-                          | !arg:? (?.? (S.!theS) ?) ?
+                          | !('($arg:? (?.? ($SorT.$theS) ?) ?))
                           )
                         & "'el' belongs to sentence."
                         & !el !tnes:?tnes
                       |   "'el' is outside the sentence for now."
                         & constructAsentence$(!open.!intra.!tnes.!sents):(?open.?intra.?tnes.?sents)
-                        & !arg:?intra ((?.? (S.?theS) ?) ?:?arg)
-                        & !el !intra:?intra
+                        & (   !( 
+                               ' ( $arg
+                                 : ?intra ((?.? ($SorT.?theS) ?) ?:?arg)
+                                 )
+                               )
+                            & !el !intra:?intra
+                          | inverse$(!el !intra):?intra&:?arg
+                          )
                       )
                   |   !el:(?e.?a)
-                    & (   !a:? (S.?S) ?
+                    & (   !('($a:? ($SorT.?S) ?))
                         & (   !S:~!theS:?theS
                             &   constructAsentence$(!open.!intra.!tnes.!sents)
                               : (?open.?intra.?tnes.?sents)
@@ -1057,18 +1066,23 @@ X=
                         & !el !open:?open
                         & !el !tnes:?tnes
                       |   !el !open:?open
-                        & (   !arg:? (?.? (S.?) ?) ?
+                        & (   !('($arg:? (?.? ($SorT.?) ?) ?))
                             & !el !tnes:?tnes
                           | !el !arg:?intra&:?arg
                           )
                       )
                   )
                 )
-            & inverse$!intra !sents:?sents
-            & inverse$!sents:?sents
-            & !sents
+            & inverse$(!intra !sents)
         )
-      & ser$!serial:?nrbody
+      & trav$(!text..):?nbody
+      & contractwadddel$!nbody:?nbody2
+      &   (!style:PT&rcontr$!nbody2|!nbody2)
+        : ?nmbody2
+      & assignIDs$!nmbody2:?nnbody
+      & renumber$!nnbody:?nrbody
+      & get$(toML$!nrbody,X ML MEM):?serial
+      & ser$(!serial.S):?nrbody
       & !XXX (TEI.!teiatt,!AAA (text.!textatt,!nrbody) !DDD) !YYY
   )
   ( new
