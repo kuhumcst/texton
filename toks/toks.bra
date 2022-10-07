@@ -257,24 +257,6 @@ X=
               ?
           | ? (text.?,?xml) ?
           )
-      & ( concat
-        =   
-          .   str
-            $ ( map
-              $ ( ( 
-                  =   sub
-                    .     vap$((=.!arg).!arg." ")
-                        : ?arg
-                      |   !arg:(del|fw.?)
-                        & 
-                      |   !arg:(?.?,?sub)
-                        & concat$!sub
-                      | 
-                  )
-                . !arg
-                )
-              )
-        )
       & ( content
         =   
           .   map
@@ -288,9 +270,9 @@ X=
                     |     !arg
                         : (c.? (type.p) ?,?c)
                       & !c
-                    |   !arg:(w.?,?c)
+                    |   !arg:(?.?,?c)
                       & (!c:@|content$!c)
-                    | 
+                    | !arg
                 )
               . !arg
               )
@@ -331,7 +313,12 @@ X=
                                       (to.str$("#" !to))
                                   , str$(content$!h)
                                 )
-                            | 
+                            |     !att
+                                : ? ("xml:id".?from) ?
+                              & ( span
+                                .   !ID (from.str$("#" !from))
+                                  , str$(content$!h)
+                                )
                             )
                         | recur$!h
                         )
@@ -350,6 +337,15 @@ X=
   ( new
   =   
     .   ~
+      |   ~
+        &   put
+          $ (   toML
+              $ ( (its.doit)
+                $ ("C:\\gitprojects\\texton\\teitok\\test\\JEB-058.out.xml".y)
+                )
+            , "JEB-058.toks.xml"
+            , NEW
+            )
       |   ~
         &   put
           $ (   toML
