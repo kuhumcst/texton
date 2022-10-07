@@ -14,7 +14,8 @@ X=
       &   map
         $ ( ( 
             =   
-              .   ( @(!arg:" " ?arg)&(Eabbr..insert)$(!arg.)
+              .   (   @(!arg:" " ?arg)
+                    & (Eabbr..insert)$(!arg.)
                   | (Mabbr..insert)$(!arg.)
                   )
                 & !arg
@@ -22,10 +23,12 @@ X=
           . !abbreviations
           )
       & nestML$(get$(!input,X ML)):?xml
-      & !xml:?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
+      &   !xml
+        : ?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
       & 0:?tok:?sen:?IS
       & ( Sen
-        = R.  !IS:?R
+        =   R
+          .   !IS:?R
             & 0:?IS
             & !R+!sen:?sen
         )
@@ -33,17 +36,20 @@ X=
         =   
           .     whl
               ' @( !arg
-                 : (" "|\t|\n|\r) ?arg
+                 :   (" "|\t|\n|\r)
+                     ?arg
                  )
             &   whl
               ' @( !arg
-                 : ?arg (" "|\t|\n|\r)
+                 :   ?arg
+                     (" "|\t|\n|\r)
                  )
             & !arg
         )
       & ( trim
         =   A B
-          . !arg:?A %@?B ?arg&!A trm$!B trim$!arg|!arg
+          .   !arg:?A %@?B ?arg&!A trm$!B trim$!arg
+            | !arg
         )
       & ( trq
         =   att sub nm A Z a z w,wa W ad XX ad
@@ -51,24 +57,34 @@ X=
               ' (   !arg
                   :   ?A
                       (w.?wa,?W)
-                      ( (add|del|ex):?ad
-                      . ?att,~(? (c.? (type.p) ?,?) ?):?XX
+                      (   (add|del|ex)
+                        : ?ad
+                      .   ?att
+                        ,   ~(? (c.? (type.p) ?,?) ?)
+                          : ?XX
                       )
                       ?Z
                 &     !A
                       (w.!wa,trim$!W (!ad.!att,content$!XX))
-                      (!ad:del&!Z|tok-1$(!Z.!wa))
+                      ( !ad:del&!Z
+                      | tok-1$(!Z.!wa)
+                      )
                   : ?arg
                 )
             &   whl
               ' (   !arg
                   :   ?A
-                      ((add|del|ex):?ad.?att,?XX)
+                      (   (add|del|ex)
+                        : ?ad
+                      . ?att,?XX
+                      )
                       (w.?wa,?W)
                       ?Z
                 &     !A
                       (w.!wa,(!ad.!att,content$!XX) trim$!W)
-                      (!ad:del&!Z|tok-1$(!Z.!wa))
+                      ( !ad:del&!Z
+                      | tok-1$(!Z.!wa)
+                      )
                   : ?arg
                 )
             &   whl
@@ -80,7 +96,8 @@ X=
                 & !A (w.!wa,trim$(!W !XX)) tok-1$(!Z.!wa):?arg
                 )
             &   whl
-              ' ( !arg:?A (lb.(break.no),) (w.?wb,?W) ?Z
+              ' (   !arg
+                  : ?A (lb.(break.no),) (w.?wb,?W) ?Z
                 & :?L
                 &   whl
                   ' ( !A:?A (?e.?I)
@@ -92,13 +109,16 @@ X=
                     )
                 & !e:w
                 & !I:(?wa,?V)
-                &   !A (w.!wa,trim$(!V !L (lb.(break.no),) !W)) tok-1$(!Z.!wa)
+                &     !A
+                      (w.!wa,trim$(!V !L (lb.(break.no),) !W))
+                      tok-1$(!Z.!wa)
                   : ?arg
                 )
             &   map
               $ ( ( 
                   =   
-                    .   !arg:(?e.?att,?sub)&(!e.!att,trq$!sub)
+                    .     !arg:(?e.?att,?sub)
+                        & (!e.!att,trq$!sub)
                       | !arg
                   )
                 . !arg
@@ -131,12 +151,13 @@ X=
       & 0:?ID
       & ( IDgen
         =   id
-          .     whl
-              ' ( 1+!ID:?ID
-                & str$(i !ID):?id
-                & (IDs..find)$!id
-                )
-            & !id
+          .   !arg:? ("xml:id".?) ?&
+            |     whl
+                ' ( 1+!ID:?ID
+                  & str$(i !ID):?id
+                  & (IDs..find)$!id
+                  )
+              & !id
         )
       & ( renumber
         =   rbr S T ot nt s t
@@ -151,7 +172,9 @@ X=
                               | 
                               )
                             & (   !e:(w|c)
-                                & !att:? (S.?s) ?:?a (T.?t) ?z
+                                &   !att
+                                  : ? (S.?s) ?
+                                  : ?a (T.?t) ?z
                                 & ( !s:!S
                                   |   !s:?S
                                     & 1:?T
@@ -166,7 +189,8 @@ X=
                                             )
                                         & ( !e
                                           .   !a (T.!nt) !z
-                                            ,   !e:w&trim$!sub
+                                            ,     !e:w
+                                                & trim$!sub
                                               | !sub
                                           )
                                       )
@@ -202,11 +226,12 @@ X=
                                           ?z
                                     & ( !e
                                       .   !a ("xml:id".!id) !z
-                                        ,   !e:w&trim$!sub
+                                        ,     !e:w
+                                            & trim$!sub
                                           | !sub
                                       )
                                   | ( !e
-                                    .   ("xml:id".IDgen$) !att
+                                    .   !att
                                       ,   !e:w&trim$!sub
                                         | !sub
                                     )
@@ -434,7 +459,8 @@ X=
                           ,   trim$(str$!A):?A
                             & (   upp$!A:!A
                                 & ( low$!A:!A
-                                  | @(!A:? [>1)&1:?it
+                                  |   @(!A:? [>1)
+                                    & 1:?it
                                   )
                               | 
                               )
@@ -621,15 +647,25 @@ X=
             & getAll$(!A."."):(?A.?P)
             & (   ( !abb:abbr
                   |   !language:da
-                    & !A:~(? (%@:~(#|"."|",")) ?)
+                    &   !A
+                      : ~( ?
+                           (%@:~(#|"."|","))
+                           ?
+                         )
                   |     !arg
-                      : ? ((%@?kar&~(upp$!kar:low$!kar)) ?:?kars)
+                      :   ?
+                          ( (%@?kar&~(upp$!kar:low$!kar)) ?
+                          : ?kars
+                          )
                     & str$!kars:?KRS
                     & ( (Mabbr..find)$!KRS
                       |   (Eabbr..find)$!KRS:? (!KRS.?) ?
                         & !KRS:?SentenceEndingAbbrSeen
                       |   upp$!KRS:!KRS
-                        & !kars:? (%@?kar&upp$!kar:low$!kar) ?Z
+                        &   !kars
+                          :   ?
+                              (%@?kar&upp$!kar:low$!kar)
+                              ?Z
                         & !Z:
                       | !nxt:(","|";"|":") ?
                       )
@@ -641,7 +677,8 @@ X=
                   .     (type.p)
                         ( S
                         .   1+!tok:?TOK
-                          & ( !tok:0&1+!sen:?sen
+                          & (   !tok:0
+                              & 1+!sen:?sen
                             |   0:?tok
                               & 1:?IS
                               & !sen
@@ -672,7 +709,12 @@ X=
                       : ?A ((","|";"|":"):?P)
                     & getAll$(!A.!P):(?A.?P)
                     &   (considerAbbrev$(!A.!P)|Split$!A)
-                        (c.(type.p) (S.Sen$) (T.1+!tok:?tok),!P)
+                        ( c
+                        .     (type.p)
+                              (S.Sen$)
+                              (T.1+!tok:?tok)
+                          , !P
+                        )
                   |   !chars:?A (("!"|"?"):?P)
                     & getAll$(!A.!P):(?A.?P)
                     &   (considerAbbrev$(!A.!P)|Split$!A)
@@ -680,7 +722,8 @@ X=
                         .     (type.p)
                               ( S
                               .   1+!tok:?TOK
-                                & ( !tok:0&1+!sen:?sen
+                                & (   !tok:0
+                                    & 1+!sen:?sen
                                   |   0:?tok
                                     & 1:?IS
                                     & !sen
@@ -712,14 +755,27 @@ X=
                         )
                       : ?sep
                     &   !chars
-                      : @(?F:("-"|–|!sep)) ?A
+                      :   @( ?F
+                           : ("-"|–|!sep)
+                           )
+                          ?A
                     & llAteg$(!A.!F):(?A.?F)
-                    &   (c.(type.p) (S.Sen$) (T.1+!tok:?tok),!F)
+                    &   ( c
+                        .     (type.p)
+                              (S.Sen$)
+                              (T.1+!tok:?tok)
+                          , !F
+                        )
                         toksplit$(str$!A.!abb)
                   |   !('($chars:%?A @(?F:$sep)))
                     & getAll$(!A.!F):(?A.?F)
                     &   toksplit$(str$!A.!abb)
-                        (c.(type.p) (S.Sen$) (T.1+!tok:?tok),!F)
+                        ( c
+                        .     (type.p)
+                              (S.Sen$)
+                              (T.1+!tok:?tok)
+                          , !F
+                        )
                   | Split$!chars
                   )
               )
@@ -753,7 +809,8 @@ X=
                                       . !arg
                                       . " "
                                       )
-                                  : (c.(type.s) ?,?) ?arg
+                                  :   (c.(type.s) ?,?)
+                                      ?arg
                                 & !arg
                               )
                       )
@@ -769,20 +826,30 @@ X=
                     ' ( !arg:~
                       & :?S
                       &   whl
-                        ' ( !arg:(c.(type.s) ?,?A) ?arg
+                        ' (   !arg
+                            : (c.(type.s) ?,?A) ?arg
                           & !A !S:?S
                           )
                       &     (   !S:
                               & !arg:%?A ?arg
                               & !A
                             |   :?s
-                              & whl'(!S:%?A ?S&!A !s:?s)
+                              &   whl
+                                ' ( !S:%?A ?S
+                                  & !A !s:?s
+                                  )
                               & (     !før
-                                    : (c|lb|space)
+                                    : ( c
+                                      | lb
+                                      | space
+                                      )
                                   & 
                                 |   !arg:
                                   &   !efter
-                                    : (c|lb|space)
+                                    : ( c
+                                      | lb
+                                      | space
+                                      )
                                   & 
                                 | (c.(type.s),str$!s)
                                 )
@@ -791,7 +858,10 @@ X=
                         : ?SER
                       & :?før
                       )
-                  & whl'(!SER:%?res ?SER&!res !RES:?RES)
+                  &   whl
+                    ' ( !SER:%?res ?SER
+                      & !res !RES:?RES
+                      )
                   & !RES
               )
             & concS$!arg
@@ -800,7 +870,12 @@ X=
         =   
           .       !arg
                 :   @( ?
-                     : (" "|\n|\r|\t) ?
+                     :   ( " "
+                         | \n
+                         | \r
+                         | \t
+                         )
+                         ?
                      )
                     (~(c|lb|space).?)
                     ?
@@ -811,7 +886,12 @@ X=
         =   før B
           .       !arg
                 : ( @( ?
-                     : ?B (" "|\n|\r|\t)
+                     :   ?B
+                         ( " "
+                         | \n
+                         | \r
+                         | \t
+                         )
                      )
                   . ?før
                   )
@@ -835,20 +915,29 @@ X=
                                 & !aS:(?a,?S)
                                 &   ecaps$(!A.!før)
                                     ( w
-                                    .   !a (S.Sen$) (T.1+!tok:?tok)
+                                    .     !a
+                                          (S.Sen$)
+                                          (T.1+!tok:?tok)
                                       , trim$!S
                                     )
                                     space$!B
                               |   !e:c
                                 & !aS:(?a,?S)
-                                &   (c.!a (S.Sen$) (T.1+!tok:?tok),!S)
-                                    ( !a:? (type.s) ?&
+                                &   ( c
+                                    .     !a
+                                          (S.Sen$)
+                                          (T.1+!tok:?tok)
+                                      , !S
+                                    )
+                                    (   !a:? (type.s) ?
+                                      & 
                                     | space$!B
                                     )
                               |   !e:(add|ex)
                                 &   ecaps$(!A.!før)
                                     ( !e
-                                    .   !aS:(?a,?S)&(!a,trav$(!S.!abb.))
+                                    .     !aS:(?a,?S)
+                                        & (!a,trav$(!S.!abb.))
                                       | !aS
                                     )
                                     space$!B
@@ -890,7 +979,13 @@ X=
                                     | ?
                                     )
                                 .     !aS:(?a,?S)
-                                    & (!a,trav$(!S.!e:abbr|!abb.))
+                                    & ( !a
+                                      ,   trav
+                                        $ ( !S
+                                          . !e:abbr|!abb
+                                          . 
+                                          )
+                                      )
                                   | !aS
                                 )
                               )
@@ -904,7 +999,10 @@ X=
               & !arg:~(? (?.?) ?)
               & (.Tx$(!arg.!abb.!før,)) !LIST:?LIST
               & :?B
-              & whl'(!LIST:(.?A) ?LIST&!A !B:?B)
+              &   whl
+                ' ( !LIST:(.?A) ?LIST
+                  & !A !B:?B
+                  )
               & !B
             | 
         )
@@ -912,7 +1010,8 @@ X=
         =   content
           .   ( content
               =   A c
-                .   !arg:?A (w.?,?c) ?arg&str$(!A !c content$!arg)
+                .     !arg:?A (w.?,?c) ?arg
+                    & str$(!A !c content$!arg)
                   | !arg
               )
             & ( tok-1
@@ -957,7 +1056,9 @@ X=
                           &     !sent
                                 (   !acc
                                   : % %
-                                  : ? (?.? (S.?) ?,?) ?(s.,!acc)
+                                  :   ?
+                                      (?.? (S.?) ?,?)
+                                      ?(s.,!acc)
                                 | !acc
                                 )
                             : ?sent
@@ -967,7 +1068,9 @@ X=
                     )
                 )
             &   !sent
-                ( !acc:% %:? (?.? (S.?) ?,?) ?(s.,!acc)
+                (   !acc
+                  : % %
+                  : ? (?.? (S.?) ?,?) ?(s.,!acc)
                 | !acc
                 )
         )
@@ -984,8 +1087,10 @@ X=
             & :?sent:?intra:?closed
             &   whl
               ' ( !tnes:%?el ?tnes
-                & ( !el:(.?.)&!el !closed:?closed
-                  | !el:(?e.?)&!closed:(.!e.) ?closed
+                & (   !el:(.?.)
+                    & !el !closed:?closed
+                  |   !el:(?e.?)
+                    & !closed:(.!e.) ?closed
                   | 
                   )
                 & !el !sent:?sent
@@ -993,7 +1098,8 @@ X=
             &   whl
               ' ( !closed:~
                 & !artni:%?el ?artni
-                & ( !el:(?e.?)&!closed:(.!e.) ?closed
+                & (   !el:(?e.?)
+                    & !closed:(.!e.) ?closed
                   | 
                   )
                 & !el !sent:?sent
@@ -1001,75 +1107,209 @@ X=
             & (!artni.!sent)
         )
       & ( constructAsentence
-        =   open intra tnes sents artni sent
-          .   !arg:(?open.?intra.?tnes.?sents)
-            & "Now 'open' should be empty."
-            & (   !open:
-                & inverse$!intra:?artni
-                & reverseAndProvideMissingOpeningTags$(!artni.!tnes):(?artni.?sent)
-                & (s.,!sent) !artni !sents:?sents
-                & :?tnes:?intra
-              | out$(STRANGE !el open !open)&get'
-              )
-            & (!open.!intra.!tnes.!sents)
+        =   intra tnes sents artni sent SorT
+          .   !arg:(?intra.?tnes.?sents.?SorT.?AT)
+            & inverse$!intra:?artni
+            & reverseAndProvideMissingOpeningTags$(!artni.!tnes):(?artni.?sent)
+            &   (   !SorT:S
+                  & ( s
+                    .   |(where.!AT)
+                      ,   map
+                        $ ( ( 
+                            =   a z
+                              .     !arg:(w.?,?a (w.?) ?z)
+                                  &   !a !z
+                                    : ? (w|c.?) ?
+                                  & !arg
+                                | !arg:(w.?,?arg)&!arg
+                                | !arg
+                            )
+                          . ser$(!sent.T)
+                          )
+                    )
+                | (w.|(where.!AT),!sent)
+                )
+                !artni
+                !sents
         )
       & ( ser
         =   tnes open theS intra sents closed ort sent artni SorT
-          .   :?tnes:?open:?theS:?intra:?sents
+          .     
+              : ?tnes
+              : ?open
+              : ?theS
+              : ?intra
+              : ?sents
             & !arg:(?arg.?SorT)
-            & !('($arg:?intra ((?.? ($SorT.?theS) ?) ?:?arg)))
+            & !( 
+               ' ( $arg
+                 : ?intra ((?.? ($SorT.?theS) ?) ?:?arg)
+                 )
+               )
             &   whl
               ' ( !arg:%?el ?arg
-                & (   !el:(@|(?.?,?)|("!--".?))
-                    & (   !el:("!--".?FGH)
-                        & out$(comment !FGH)
-                        & out$(open !open theS !theS)
-                      | 
-                      )
+                & (     !el
+                      : (@|(?.?,?)|("!--".?))
+                    & "Element is string, empty or comment."
                     & (   !open:
-                        & !('($arg:~(? (?.? ($SorT.$theS) ?) ?)))
-                        & "atom or empty element not required in sentence"
-                        & constructAsentence$(!open.!intra.!tnes.!sents):(?open.?intra.?tnes.?sents)
-                        & !( 
-                           ' ( $arg
-                             : ?intra ((?.? ($SorT.?theS) ?) ?:?arg)
-                             )
-                           )
-                        & !el !intra:?intra
-                      |   "sentence atom has to wait for closing tag or end of sentence"
+                        & (   !( 
+                               ' ( $arg
+                                 : ? (?.? ($SorT.?S) ?) ?
+                                 )
+                               )
+                            & (   !theS:!S
+                                & "Sequence continues."
+                                & !el !tnes:?tnes
+                              |   "'el' not required in sentence"
+                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.A)
+                                  : ?sents
+                                & :?intra:?tnes
+                                & "Continue from start of next sequence."
+                                & !( 
+                                   ' ( $arg
+                                     :   ?intra
+                                         (   (?.? ($SorT.?theS) ?)
+                                             ?
+                                         : ?arg
+                                         )
+                                     )
+                                   )
+                                & !el !intra:?intra
+                              )
+                          |   "No more sequences."
+                            &   constructAsentence$(!intra.!tnes.!sents.!SorT.B)
+                              : ?sents
+                            & !el !arg:?intra
+                            & :?arg
+                          )
+                      |   "Some sequence element is still open. Wait for closing tag or end of sentence"
                         & !el !tnes:?tnes
                       )
                   |   !el:(.?e.)
-                    & (   ( !open:(!e.?) ?open
-                          | !('($arg:? (?.? ($SorT.$theS) ?) ?))
+                    & "Closing tag."
+                    & (   !open:(!e.?) ?open
+                        & "Tag belongs to sequence."
+                        & (   !open:
+                            & (   !( 
+                                   ' ( $arg
+                                     : ? (?.? ($SorT.?S) ?) ?
+                                     )
+                                   )
+                                & (   !theS:!S
+                                    & "Sequence continues."
+                                    & !el !tnes:?tnes
+                                  |   "'el' required in sequence"
+                                    & !el !tnes:?tnes
+                                    &   constructAsentence$(!intra.!tnes.!sents.!SorT.AA)
+                                      : ?sents
+                                    & :?intra:?tnes
+                                    & "Continue from start of next sequence."
+                                    & !( 
+                                       ' ( $arg
+                                         :   ?intra
+                                             (   (?.? ($SorT.?theS) ?)
+                                                 ?
+                                             : ?arg
+                                             )
+                                         )
+                                       )
+                                  )
+                              |   "No more sequences."
+                                & !el !tnes:?tnes
+                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.BB)
+                                  : ?sents
+                                & inverse$!arg:?intra
+                                & :?arg
+                              )
+                          | !el !tnes:?tnes
                           )
-                        & "'el' belongs to sentence."
-                        & !el !tnes:?tnes
-                      |   "'el' is outside the sentence for now."
-                        & constructAsentence$(!open.!intra.!tnes.!sents):(?open.?intra.?tnes.?sents)
-                        & (   !( 
+                      |   !( 
+                           ' ( $arg
+                             : ? (?.? ($SorT.?S) ?) ?
+                             )
+                           )
+                        & (   !S:!theS
+                            & "Tag belongs to sequence."
+                            & !el !tnes:?tnes
+                          |   "Tag not needed in sequence, it seems."
+                            &   constructAsentence$(!intra.!tnes.!sents.!SorT.C)
+                              : ?sents
+                            & :?intra:?tnes
+                            & !( 
                                ' ( $arg
-                                 : ?intra ((?.? ($SorT.?theS) ?) ?:?arg)
+                                 :   ?intra
+                                     ( (?.? ($SorT.?theS) ?) ?
+                                     : ?arg
+                                     )
                                  )
                                )
                             & !el !intra:?intra
-                          | inverse$(!el !intra):?intra&:?arg
                           )
+                      |   "No more sequences."
+                        & !open:
+                        & constructAsentence$(!intra.!tnes.!sents.!SorT.D):?sents
+                        & !el !arg:?intra
+                        & :?arg
+                      | 
                       )
                   |   !el:(?e.?a)
                     & (   !('($a:? ($SorT.?S) ?))
+                        & "Open tag with T and S attributes."
                         & (   !S:~!theS:?theS
-                            &   constructAsentence$(!open.!intra.!tnes.!sents)
-                              : (?open.?intra.?tnes.?sents)
-                          | 
-                          )
-                        & !el !open:?open
-                        & !el !tnes:?tnes
-                      |   !el !open:?open
-                        & (   !('($arg:? (?.? ($SorT.?) ?) ?))
+                            & "New sequence"
+                            & (   !open:
+                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.E)
+                                  : ?sents
+                                & :?intra:?tnes
+                                & !el !open:?open
+                                & !el !tnes:?tnes
+                              |     "A New sequence started, but previous sequence has elements that are not closed."
+                                    !el
+                                    OPEN
+                                    !open
+                                & 
+                              )
+                          |   "Old seqence"
+                            & !el !open:?open
                             & !el !tnes:?tnes
-                          | !el !arg:?intra&:?arg
                           )
+                      |   "Open tag not carrying T and S attributes."
+                        & !( 
+                           ' ( $arg
+                             : ? (?.? ($SorT.?S) ?) ?
+                             )
+                           )
+                        & "Still sequence(s) to do."
+                        & (   !S:~!theS:?theS
+                            & "New sequence"
+                            & (   !open:
+                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.F)
+                                  : ?sents
+                                & !( 
+                                   ' ( $arg
+                                     :   ?intra
+                                         (   (?.? ($SorT.?theS) ?)
+                                             ?
+                                         : ?arg
+                                         )
+                                     )
+                                   )
+                                & !el !intra:?intra
+                              |     "B New sequence started, but previous sequence has elements that are not closed."
+                                    !el
+                                    OPEN
+                                    !open
+                                & 
+                              )
+                          |   "Old seqence"
+                            & !el !open:?open
+                            & !el !tnes:?tnes
+                          )
+                      |   "No more sequences hereafter."
+                        & !open:
+                        & constructAsentence$(!intra.!tnes.!sents.!SorT.G):?sents
+                        & !el !arg:?intra
+                        & :?arg
                       )
                   )
                 )
@@ -1083,27 +1323,97 @@ X=
       & renumber$!nnbody:?nrbody
       & get$(toML$!nrbody,X ML MEM):?serial
       & ser$(!serial.S):?nrbody
-      & !XXX (TEI.!teiatt,!AAA (text.!textatt,!nrbody) !DDD) !YYY
+      & 0:?ID
+      & ( removeOutliers
+        =   
+          .   map
+            $ ( ( 
+                =   e a c
+                  .   !arg:(s.?,?)
+                    |   !arg:(w|c.?,?)
+                      & 
+                    |   !arg:(?e.?a,?c)
+                      & (!e.!a,removeOutliers$!c)
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      & ( vlooi
+        =   
+          .   map
+            $ ( ( 
+                =   e a c
+                  .     !arg:((w|c):?e.?a,?c)
+                      &     map
+                          $ ( ( 
+                              =   
+                                .     !arg:(S|T.?)
+                                    & 
+                                  | !arg
+                              )
+                            . !a
+                            )
+                        : ?a
+                      & (!e.("xml:id".IDgen$!a) !a,vlooi$!c)
+                    |   !arg:(?e.?a,?c)
+                      &     map
+                          $ ( ( 
+                              =   
+                                .     !arg:(S|T.?)
+                                    & 
+                                  | !arg
+                              )
+                            . !a
+                            )
+                        : ?a
+                      & (!e.!a,vlooi$!c)
+                    |   !arg:((w|c):?e.?a)
+                      &     map
+                          $ ( ( 
+                              =   
+                                .     !arg:(S|T.?)
+                                    & 
+                                  | !arg
+                              )
+                            . !a
+                            )
+                        : ?a
+                      & (!e.("xml:id".IDgen$!a) !a)
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      &   !XXX
+          ( TEI
+          .   !teiatt
+            , !AAA (text.!textatt,vlooi$(removeOutliers$(nestML$!nrbody))) !DDD
+          )
+          !YYY
   )
   ( new
   =   input abbr style
     .   ~
-      |   
+      |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
-        &   ( get$(nabbr,STR):?nabbr&vap$((=.!arg).!nabbr.\n)
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
             | 
             )
           : ?nabbr
         & (its.teitok)$("test\\JEB-040.xml".simple.!nabbr !abbr.da):?XMLL
         & toML$!XMLL:?XMLLL
-        & put$(!XMLLL,"test\\ParlaMint...shorter.out.xml",NEW)
+        & put$(!XMLLL,"test\\JEB-040.out.xml",NEW)
       |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
-        &   ( get$(nabbr,STR):?nabbr&vap$((=.!arg).!nabbr.\n)
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
             | 
             )
           : ?nabbr
-        & (its.teitok)$("test\\ParlaMint...shorter.xml".simple.!nabbr !abbr.da):?XMLL
+        &   (its.teitok)$("test\\ParlaMint...shorter.xml".simple.!nabbr !abbr.da)
+          : ?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"test\\ParlaMint...shorter.out.xml",NEW)
       |   arg$:?input
@@ -1116,12 +1426,14 @@ X=
             | 
             )
           : ?abbr
-        &   ( get$(nabbr,STR):?nabbr&vap$((=.!arg).!nabbr.\n)
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
             | 
             )
           : ?nabbr
         & (!language:~"-"|):?lang
-        & put$(toML$((its.teitok)$(!input.!style.!nabbr !abbr.!lang)),!output,NEW)
+        &   put
+          $ (toML$((its.teitok)$(!input.!style.!nabbr !abbr.!lang)),!output,NEW)
   );
 
 r=
