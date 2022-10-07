@@ -1,4 +1,4 @@
-{sent.braput
+{sent.bra
 Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
 
 X=
@@ -6,7 +6,9 @@ X=
   =   
     .   nestML$(get$(!arg,X ML)):?xml
       &   !xml
-        : ( ? (TEI.?,? (text.?,?xml) ?) ?
+        : (   ?
+              (TEI.?,? (text.?,?xml) ?)
+              ?
           | ? (text.?,?xml) ?
           )
       & 0:?id
@@ -18,41 +20,76 @@ X=
                 =   c
                   .     !arg:(del|fw.?,?)
                       & 
-                    |   !arg:(c.? (type.s) ?,?)
+                    |     !arg
+                        : (c.? (type.s) ?,?)
                       & " "
-                    |   !arg:(c.? (type.p) ?,?c)
+                    |     !arg
+                        : (c.? (type.p) ?,?c)
                       & !c
                     |   !arg:(w.?,?c)
                       & (!c:@|content$!c)
+                    |   !arg:(?.?,?c)
+                      & content$!c
                     | 
                 )
               . !arg
               )
         )
+      & ( From
+        =   c
+          .     !arg:@ (?.?,?c) ?
+              & From$!c
+            |     !arg
+                :   @
+                    (?.? ("xml:id".?arg) ?,?)
+                    ?
+              & !arg
+        )
+      & ( To
+        =   c
+          .     !arg:? (?.?,?c) @
+              & To$!c
+            |     !arg
+                :   ?
+                    (?.? ("xml:id".?arg) ?,?)
+                    @
+              & !arg
+        )
       & ( par
         =   from to
           .     !arg
-              :   @
-                  (?.? ("xml:id".?from) ?,?)
-                  ( &!from:?to
-                  | ? (?.? ("xml:id".?to) ?,?) @
+              : (   @
+                    ((?.?,?):?F)
+                    ?
+                    ((?.?,?):?T)
+                    @
+                | ?F:?T
+                )
+            & (   From$!F:?from
+                & (   To$!T:?to
+                    & ( span
+                      .     (from.str$("#" !from))
+                            ( !to:!from&
+                            | (to.str$("#" !to))
+                            )
+                            (type.Ssent)
+                            !ID
+                        , content$!arg
+                      )
+                  | out$(T !T)
                   )
-            & ( span
-              .     (from.str$("#" !from))
-                    ( !to:!from&
-                    | (to.str$("#" !to))
-                    )
-                    (type.Ssent)
-                    !ID
-                , content$!arg
+              | out$(F !F)
               )
         )
       & ( snt
-        =   
-          .     !arg:(?.?,?arg)
-              & (   !arg:? (w|c.?,?) ?
-                  & par$!arg
-                | map$(snt.!arg)
+        =   e a c
+          .     !arg:(?e.?,?c)
+              & (   ( !e:s
+                    |   !c
+                      : ? (w|c.?,?) ?
+                    )
+                  & par$!c
+                | map$(snt.!c)
                 )
             | 
         )
@@ -64,6 +101,13 @@ X=
       |   ~
         &   put
           $ (   toML
+              $ ((its.doit)$"C:\\projects\\teitok\\test\\JEB-040.out.xml")
+            , "JEB-040.out2.xml"
+            , NEW
+            )
+      |   ~
+        &   put
+          $ (   toML
               $ ((its.doit)$"C:\\gitprojects\\texton\\plainD2cbf\\maak.xml")
             , "maak.out2.xml"
             , NEW
@@ -71,7 +115,9 @@ X=
       |   ~
         &   put
           $ (   toML
-              $ ((its.doit)$"C:\\projects\\csttools\\teitok\\adl_brandes.out.xml")
+              $ ( (its.doit)
+                $ "C:\\projects\\csttools\\teitok\\adl_brandes.out.xml"
+                )
             , "adl_brandes.out2.xml"
             , NEW
             )
@@ -93,7 +139,8 @@ X=
             , "adl_brandes.out3.xml"
             , NEW
             )
-      | put$(toML$((its.doit)$(arg$)),arg$,NEW)
+      |   put
+        $ (toML$((its.doit)$(arg$)),arg$,NEW)
   );
 
 r=
@@ -101,7 +148,7 @@ r=
 & rmv$(str$(sent ".bak"))
 & ren$("sent.bra".str$(sent ".bak"))
 &   put
-  $ ( "{sent.braput
+  $ ( "{sent.bra
 Create token annotation from Clarin Base Format file that already has token info indicated by T attributes.}
 
 "
