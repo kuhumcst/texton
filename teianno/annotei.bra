@@ -81,67 +81,68 @@ program-annotei=
       &     map
           $ ( ( 
               =   
-                .     !arg
-                    : ( span
-                      .     ? (from.@(?:"#" ?teiid)) ?
-                          : ( ? (to.@(?:"#" ?toid)) ?
-                            | ?&!teiid:?toid
+                .       !arg
+                      : ( span
+                        .     ? (from.@(?:"#" ?teiid)) ?
+                            : ( ? (to.@(?:"#" ?toid)) ?
+                              | ?&!teiid:?toid
+                              )
+                            : ? ("xml:id".?tokid) ?
+                          , ?tok
+                        )
+                    & str$("#" !tokid):?tokid
+                    & (     !lem
+                          :   ?
+                              (span.? (from.!tokid) ?,?LS)
+                              ?lem
+                        &   whl
+                          ' (   !lem
+                              :   (span.? (from.!tokid) ?,?L)
+                                  ?lem
+                            & !LS !L:?LS
                             )
-                          : ? ("xml:id".?tokid) ?
-                        , ?tok
+                      | :?LS
                       )
-                  & str$("#" !tokid):?tokid
-                  & (     !lem
-                        :   ?
-                            (span.? (from.!tokid) ?,?LS)
-                            ?lem
-                      &   whl
-                        ' (   !lem
-                            :   (span.? (from.!tokid) ?,?L)
-                                ?lem
-                          & !LS !L:?LS
-                          )
-                    | :?LS
-                    )
-                  & (     !pos
-                        :   ?
-                            (span.? (from.!tokid) ?,?PS)
-                            ?pos
-                      &   whl
-                        ' (   !pos
-                            :   (span.? (from.!tokid) ?,?P)
-                                ?pos
-                          & !PS !P:?PS
-                          )
-                    | :?PS
-                    )
-                  & (     !mrf
-                        :   ?
-                            (span.? (from.!tokid) ?,?MS)
-                            ?mrf
-                      &   whl
-                        ' (   !mrf
-                            :   (span.? (from.!tokid) ?,?M)
-                                ?mrf
-                          & !MS !M:?MS
-                          )
-                    | :?MS
-                    )
-                  & "Remove doublets"
-                  & (   !PS:? [1
-                      &   whl
-                        ' ( !LS:?a %@?b ?c !b ?d
-                          & !a !b !c !d:?LS
-                          )
-                    |   !LS:? [1
-                      &   whl
-                        ' ( !PS:?a %@?b ?c !b ?d
-                          & !a !b !c !d:?PS
-                          )
-                    | 
-                    )
-                  & "Length of PS and LS must be the same or 1."
-                  & (!teiid.!toid.!PS.!MS.!LS.!tokid)
+                    & (     !pos
+                          :   ?
+                              (span.? (from.!tokid) ?,?PS)
+                              ?pos
+                        &   whl
+                          ' (   !pos
+                              :   (span.? (from.!tokid) ?,?P)
+                                  ?pos
+                            & !PS !P:?PS
+                            )
+                      | :?PS
+                      )
+                    & (     !mrf
+                          :   ?
+                              (span.? (from.!tokid) ?,?MS)
+                              ?mrf
+                        &   whl
+                          ' (   !mrf
+                              :   (span.? (from.!tokid) ?,?M)
+                                  ?mrf
+                            & !MS !M:?MS
+                            )
+                      | :?MS
+                      )
+                    & "Remove doublets"
+                    & (   !PS:? [1
+                        &   whl
+                          ' ( !LS:?a %@?b ?c !b ?d
+                            & !a !b !c !d:?LS
+                            )
+                      |   !LS:? [1
+                        &   whl
+                          ' ( !PS:?a %@?b ?c !b ?d
+                            & !a !b !c !d:?PS
+                            )
+                      | 
+                      )
+                    & "Length of PS and LS must be the same or 1."
+                    & (!teiid.!toid.!PS.!MS.!LS.!tokid)
+                  | 
               )
             . !tok
             )
@@ -262,7 +263,8 @@ program-annotei=
                 )
               .   map
                 $ ( ( 
-                    =   M Z aa alts excludes ids len theMWU tokid zz
+                    =     M Z aa alts excludes ids len theMWU tokid zz
+                        , e a s id to P M L
                       .   !arg:@
                         |   !arg:(?e.?a,?s)
                           & (     !e
@@ -611,7 +613,7 @@ program-annotei=
         = .str$(reverseList$(vap$((=.!arg).str$!arg)))
         )
       & ( insertStxEasyWay
-        =   A B M E P Q id to,linkGrp x parentID tsil
+        =   A B M E P Q id to linkGrp x parentID tsil
           .     
               : ?A
               : ?B
@@ -639,25 +641,47 @@ program-annotei=
                       : ?B
                       )
                       ?M
-                      ((?.? ("xml:id".!to) ?,?):?E)
-                      ?arg
-                & !listOfMissedLinkGrp !Q:?listOfMissedLinkGrp
-                & !P:?ListOfLinkGrp
-                &     ( s
-                      .   ( "xml:id"
-                          .   str
-                            $ ( !parentID
-                                ( !parentID:&div-
-                                | "."
-                                )
-                                (1+!Id:?Id)
+                & (   !id:!to
+                    & !M:?arg
+                    & !listOfMissedLinkGrp !Q:?listOfMissedLinkGrp
+                    & !P:?ListOfLinkGrp
+                    &     ( s
+                          .   ( "xml:id"
+                              .   str
+                                $ ( !parentID
+                                    ( !parentID:&div-
+                                    | "."
+                                    )
+                                    (1+!Id:?Id)
+                                  )
                               )
+                            , !B !linkGrp
                           )
-                        , !B !M !E !linkGrp
-                      )
-                      reverseList$!A
-                      !tsil
-                  : ?tsil
+                          reverseList$!A
+                          !tsil
+                      : ?tsil
+                  |     !M
+                      :   ?M
+                          ((?.? ("xml:id".!to) ?,?):?E)
+                          ?arg
+                    & !listOfMissedLinkGrp !Q:?listOfMissedLinkGrp
+                    & !P:?ListOfLinkGrp
+                    &     ( s
+                          .   ( "xml:id"
+                              .   str
+                                $ ( !parentID
+                                    ( !parentID:&div-
+                                    | "."
+                                    )
+                                    (1+!Id:?Id)
+                                  )
+                              )
+                            , !B !M !E !linkGrp
+                          )
+                          reverseList$!A
+                          !tsil
+                      : ?tsil
+                  )
                 )
             & reverseList$!tsil !arg
         )
@@ -667,7 +691,7 @@ program-annotei=
             &   map
               $ ( ( 
                   =   e a c d
-                    .   !arg:@
+                    .   !arg:(@|("!--".?))
                       |   !arg:(?e.?a,?c)
                         & (     !a
                               : ? ("xml:id"|id.?parentID) ?
@@ -680,6 +704,7 @@ program-annotei=
                           | !e:s&!d
                           | (!e.!a,!d)
                           )
+                      | PROBLEM !arg
                   )
                 . !arg
                 )
