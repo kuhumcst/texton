@@ -181,28 +181,27 @@ program-annotei=
                 )
         )
       & ( join
-        =   A L M e a w
+        =   A L M e a w XX E A C jr
           .   :?L
             &   whl
               ' ( !arg:%?A ?arg
                 &     (   !A:(?e.?a,?w)
-                        & ( !e
-                          .     !a
-                                (     !e
-                                    : ( w
-                                      |   c
-                                        & !a:? (type.p) ?
-                                      )
-                                  &   !arg
-                                    :   @
-                                        ( (w.?,?)
-                                        | (c.? (type.p) ?,?)
-                                        )
-                                        ?
-                                  & (join.right)
-                                | 
-                                )
-                            , !w
+                        &   !e
+                          : ( w
+                            |   c
+                              & !a:? (type.p) ?
+                            )
+                        &   !arg
+                          :   @
+                              ( (w.?,?)
+                              | (c.? (type.p) ?,?)
+                              | (lb.? (break.no) ?,?)
+                              )
+                              ?
+                        & (join.right):?jr
+                        & (   !w:?XX (?E.?A,?C)
+                            & (!e.!a,!XX (!E.!A !jr,!C))
+                          | (!e.!a !jr,!w)
                           )
                       | !A
                       )
@@ -264,8 +263,8 @@ program-annotei=
               .   map
                 $ ( ( 
                     =     M Z aa alts excludes ids len theMWU tokid zz
-                        , e a s id to P M L
-                      .   !arg:@
+                        , e a s id to P M L save
+                      .   !arg:?save&!arg:@
                         |   !arg:(?e.?a,?s)
                           & (     !e
                                 : ( w
@@ -291,7 +290,7 @@ program-annotei=
                                                     )
                                                     ?PML
                                               & "The 'c' elements that are spaces don't get here.
-                                                 Current TEI element is w or pc"
+                                                       Current TEI element is w or pc"
                                               &   AmbiguousPosOrLemma$(!lenPS.!lenLS.!ID)
                                                 : (?ids.?excludes.?ID)
                                               & (   !to:!id
@@ -416,6 +415,19 @@ program-annotei=
                                                   , ?
                                                 )
                                                 ?
+                                          &   (     !mwu
+                                                  :   ?
+                                                      ( ?
+                                                      .     ?
+                                                            (join.right)
+                                                            ?
+                                                        , ?
+                                                      )
+                                                      @
+                                                & (join.right)
+                                              | 
+                                              )
+                                            : ?jr
                                           & flattenMWU$(getMWU$):?theMWU
                                           &   getSP$()
                                               (     !excludes
@@ -424,6 +436,7 @@ program-annotei=
                                                   .     (lemma.!LS)
                                                         (!POS.msd$(!PS.!MS))
                                                         ("xml:id".!iD)
+                                                        !jr
                                                     , !theMWU
                                                   )
                                               |   "not tested"
@@ -438,6 +451,7 @@ program-annotei=
                                                         | 
                                                         )
                                                         !a
+                                                        !jr
                                                     ,   map
                                                       $ ( ( 
                                                           =   
@@ -483,7 +497,10 @@ program-annotei=
                                   & join$!s:?s
                                 | 
                                 )
-                              & getSP$() (!e.!a,anno$!s)
+                              & getSP$() (!e.!a,anno$!s):?temp
+                              & ( !mwu:&!temp
+                                | !mwu !temp:?mwu&
+                                )
                             )
                         | getSP$() !arg
                     )
