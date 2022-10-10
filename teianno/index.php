@@ -470,8 +470,10 @@ try {
                )
             {
             logit("Ofacet lem-mrf-ner-pos-tok");
-            $rmsa = " && rm $IfacetnerF ";
-            //copy($IfacetnerF,"IfacetnerF");
+	    $rmsa = " && rm $IfacetnerF ";
+/*
+	    copy($IfacetnerF,"IfacetnerF");
+//*/
             $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML $xmllint";
             $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             }
