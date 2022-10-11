@@ -75,8 +75,19 @@ program-annotei=
       & ( !seg:"*"&:?seg
         | nestML$(get$(!seg,X ML)):? (spanGrp.?,?seg) ?
         )
-      & ( !ner:"*"&:?ner
-        | nestML$(get$(!ner,X ML)):? (spanGrp.?,?ner) ?
+      & ( !ner:"*"&:?nerH
+        |   nestML$(get$(IfacetnerF,X ML)):? (spanGrp.?,?ner) ?
+          & new$hash:?nerH
+          &   map
+            $ ( ( 
+                =   id A Z cat to
+                  .     !arg:(span.?A (from.?id) ?Z,?cat)
+                      & (!A !Z:? (to.?to)|:?to)
+                      & (nerH..insert)$(!id.!to,!cat)
+                    | 
+                )
+              . !ner
+              )
         )
       &     map
           $ ( ( 
@@ -896,8 +907,8 @@ program-annotei=
               )
         )
       & ( insertNER
-        =   tei ner to att cat from,A E Z F M stuw to
-          .   !arg:(?tei.?ner.?to)
+        =   tei to To cat from,A E Z F M stuw to
+          .   !arg:(?tei.?to)
             & :?stuw:?cat
             & (   map
                 $ ( ( 
@@ -909,13 +920,8 @@ program-annotei=
                                 , ?c
                               )
                           & (   !to:
-                              & (     !ner
-                                    :   ?
-                                        ( span
-                                        .   ? (from.!id) ?:?att
-                                          , ?cat
-                                        )
-                                        ?ner
+                              & (     (nerH..find)$!id
+                                    : (?.?To,?cat) ?
                                   & (     (organization.ORG)
                                           (person.PER)
                                           (misc.MISC)
@@ -923,7 +929,7 @@ program-annotei=
                                       : ? (? ~<>!cat ?.?cat) ?
                                     | 
                                     )
-                                  & (   !att:? (to.?to) ?
+                                  & (   !To:~:?to
                                       & !stuw !arg:?stuw
                                       & 
                                     |   :?to
@@ -945,7 +951,7 @@ program-annotei=
                         | !arg:(head|note.?,?)
                         |     !arg
                             : (?e.?a,? (?.?,?) ?:?c)
-                          & insertNER$(!c.!ner.!to):(?tei.?ner.?carry)
+                          & insertNER$(!c.!to):(?tei.?carry)
                           & (   !carry:(,)
                               & ( !to:&(!e.!a,!tei)
                                 |     (name.(type.!cat),Camel$(!stuw !arg))
@@ -961,11 +967,10 @@ program-annotei=
                     )
                   . !tei
                   )
-              . !ner
               . !to,!cat
               )
         )
-      & (!ner:|insertNER$(!tei.!ner.):(?tei.?))
+      & (!nerH:|insertNER$(!tei.):(?tei.?))
       & ( rm#
         =   
           .   map
