@@ -15,7 +15,9 @@ X=
         |   get$(IfacettokF,X ML,TRM):?XMLtok
           &     map
               $ ( ( 
-                  = .!arg:" "&|!arg
+                  =   
+                    .   !arg:" "&
+                      | !arg
                   )
                 . !XMLtok
                 )
@@ -28,10 +30,12 @@ X=
       & 99999999999:?snold
       & ( sentNo
         =   sent
-          .   @(!arg:? #%?sent "." ?)&str$(!sent ".")
+          .     @(!arg:? #%?sent "." ?)
+              & str$(!sent ".")
             | 
         )
-      & vap$((=.!arg).!ner."["):%?first ?ner
+      &   vap$((=.!arg).!ner."[")
+        : %?first ?ner
       & (   @( !first
              :   ?
                  ","
@@ -50,7 +54,8 @@ X=
           .   vap
             $ ( ( 
                 =   
-                  .   whl'@(!arg:(\n|\r) ?arg)
+                  .     whl
+                      ' @(!arg:(\n|\r) ?arg)
                     & (!arg:|(!arg.O))
                 )
               . !arg
@@ -83,7 +88,11 @@ X=
                         | 
                         )
                       & 1+!ID:?ID
-                      &   vap$((=.!arg.!NE.!ID).!toks." ")
+                      &     vap
+                          $ ( (=.!arg.!NE.!ID)
+                            . !toks
+                            . " "
+                            )
                           notting$!arg
                     | notting$(str$("[" !arg))
                 )
@@ -94,7 +103,9 @@ X=
           $ ( ( 
               =   
                 .   vap
-                  $ ( (=.vap$((=.!arg).!arg." "))
+                  $ ( ( 
+                      = .vap$((=.!arg).!arg." ")
+                      )
                     . !arg
                     . \r
                     )
@@ -107,17 +118,23 @@ X=
       & !tokens:?toks
       &   whl
         ' ( !toks:%?tok ?toks
-          & !ner:(?w.?c) ?ner
+          & !ner:(?w.?c) ?nern
           & !tok:?T
           &   whl
             ' ( @(!T:!w ?t)
               & !t:~
-              &   !ner
-                : (?w2&@(!t:!w2 ?T).?) ?ner
+              &   !nern
+                :   (?w2&@(!t:!w2 ?T).?)
+                    ?nern
               & str$(!w !w2):?w
               )
-          & !w:!tok
-          & (!w.!c) !ren:?ren
+          & (   !w:!tok
+              & (!w.!c) !ren:?ren
+              & !nern:?ner
+            |   !ner:? [?nerL
+              & !toks:? [~<!nerL
+              & (!w.O) !ren:?ren
+            )
           )
       & :?ner
       &   whl
@@ -147,7 +164,10 @@ X=
                     .       @(low$!A:? !w ?oldA)
                           & (from.str$("#" !t))
                         |   @(low$!oldA:? !w ?oldA)
-                          &   (!e.!a) !A (.!e.) !XMLtok
+                          &     (!e.!a)
+                                !A
+                                (.!e.)
+                                !XMLtok
                             : ?XMLtok
                           & (from.str$("#" !oldt))
                         | (from.str$("#" !t))
@@ -174,7 +194,8 @@ X=
                             & !Is:?Ie
                             &   whl
                               ' ( !arg
-                                : ((!e.?,!NE):(?.?Ie,?)) ?arg
+                                :   ((!e.?,!NE):(?.?Ie,?))
+                                    ?arg
                                 )
                             & !Is:? (from.?from) ?
                             &   !Ie
@@ -185,7 +206,8 @@ X=
                             & (   !from:!to
                                 & (!e.(from.!from),!NE)
                               | ( !e
-                                . (from.!to) (to.!from),!NE
+                                .   (from.!to) (to.!from)
+                                  , !NE
                                 )
                               )
                           | !g
@@ -203,7 +225,9 @@ X=
               =   
                 .     !arg:(span.?at,?NE)
                     & ( span
-                      .     ("xml:id".str$(ne (1+!nr:?nr)))
+                      .     ( "xml:id"
+                            . str$(ne (1+!nr:?nr))
+                            )
                             !at
                         , !NE
                       )
@@ -225,10 +249,11 @@ Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and
 "
     , "bracstnerf.bra"
     , NEW
+    , BIN
     )
-& lst'(X,"bracstnerf.bra",APP)
-& put'(\n,"bracstnerf.bra",APP)
-& lst'(r,"bracstnerf.bra",APP)
-& put$(str$("\nnew'" X ";\n"),"bracstnerf.bra",APP);
+& lst'(X,"bracstnerf.bra",APP,BIN)
+& put'(\n,"bracstnerf.bra",APP,BIN)
+& lst'(r,"bracstnerf.bra",APP,BIN)
+& put$(str$("\nnew'" X ";\n"),"bracstnerf.bra",APP,BIN);
 
 new'X;
