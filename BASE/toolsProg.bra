@@ -3965,28 +3965,34 @@ try {
                   )
             )
           & ( recur
-            =   OUT WAY sum term result Term sums isum
+            =   OUT WAY WAYS sum term result Term sums isum
               .   0:?result
                 &   whl
-                  ' ( !arg:#*(?OUT.?WAY)+?arg
-                    & (   1:?sums
-                        & spotSums$!WAY
-                        & "Sums that have a Q in the exponent are children of another sum. 
+                  ' ( !arg:#*(?OUT.?WAYS)+?arg
+                    &   whl
+                      ' ( !WAYS:%?WAY+?WAYS
+                        & (   1:?sums
+                            & spotSums$!WAY
+                            & "Sums that have a Q in the exponent are children of another sum. 
                            We only want unshielded sums, working out way down."
-                        &   !sums
-                          : (?*(%+%:?sum)*?|?*(%+%:?sum)^#*?)
-                        & !sum:?isum
-                        &   whl
-                          ' ( !isum:%?term+?isum
-                            & (   eliminate$((!OUT.!WAY).!sum.!term):?Term
-                                & recur$!Term:?Term
-                                & !result+!Term:?result
-                              | !result+!term:?result
-                              )
-                            & len$!result:~>1001
-                            )
-                      | !result+(!OUT.!WAY):?result
-                      )
+                            &   !sums
+                              : ( ?*(%+%:?sum)*?
+                                | ?*(%+%:?sum)^#*?
+                                )
+                            & !sum:?isum
+                            &   whl
+                              ' ( !isum:%?term+?isum
+                                & (     eliminate$((!OUT.!WAY).!sum.!term)
+                                      : ?Term
+                                    & recur$!Term:?Term
+                                    & !result+!Term:?result
+                                  | !result+!term:?result
+                                  )
+                                & len$!result:~>1001
+                                )
+                          | !result+(!OUT.!WAY):?result
+                          )
+                        )
                     & len$!result:~>1001
                     )
                 & !result
