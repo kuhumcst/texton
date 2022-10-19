@@ -479,6 +479,10 @@ Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton
 
 Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
 
+### Stanford CoreNLP
+
+See the readme file in the CoreNLP folder for install instructions. (The instructions assume installation in a system with systemd.)
+
 ### Tesseract OCR
 
 ```bash
