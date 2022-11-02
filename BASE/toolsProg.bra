@@ -618,8 +618,8 @@ toolsProg=
       )
       ( topologicalOrder
       =     edges workflow A Z ABC XYZ
-          , 2p Kahn edg pr shorting
-          , pairs shrtlst nshrtlst kahn
+          , 2p Kahn edg pr shorting singles
+          , pairs shrtlst nshrtlst kahn Edgs Thing
         .   ( edg
             =   a b
               .   !arg:%?a %?b&edg$!b edg$!a
@@ -665,7 +665,28 @@ toolsProg=
           & (   !edges:@
               & log$"There is only one step."
               & !edges
-            |   pr$(0..!edges):?pairs
+            |   !edges:?Edgs
+              & 0:?edges
+              & :?singles
+              &   whl
+                ' ( !Edgs:#*%?Thing+?Edgs
+                  & (   !Thing:@
+                      & !singles !Thing:?singles
+                    | !edges+!Thing:?edges
+                    )
+                  )
+              &     map
+                  $ ( ( 
+                      =   
+                        .       !edges
+                              : (?+(!arg.?)+?|?+(?.!arg)+?)
+                            & 
+                          | !arg
+                      )
+                    . !singles
+                    )
+                : ?singles
+              & pr$(0..!edges):?pairs
               & ( 2p
                 =   a b
                   .   !arg:%@?a %@?b ?arg&(!a.!b)+2p$(!b !arg)
@@ -750,7 +771,7 @@ toolsProg=
                       & shorting$(!ABC,!XYZ) !shrtlst:?shrtlst
                       )
                   )
-              & !kahn
+              & !singles !kahn
             )
       )
       ( set
@@ -9322,6 +9343,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (   !returnCode:workflowsFound
               &   (     makeWorkflowsSequential$!pipes
                       : (?reorderedworkflowlist.?topologicalOrderedTools)
+                    & log$(topologicalOrderedToolsA !topologicalOrderedTools)
                     & allRight
                   |   0:?reorderedworkflowlist
                     & :?topologicalOrderedTools
