@@ -5209,17 +5209,17 @@ try {
                   )
             )
           & ( extractIOfeaturesFromHTTParg
-            =   fs IorO f short p A v Z,feat spec io V a z
+            =   fs IorOorP f short p A v Z,feat spec io V a z
               .   "Collects features of the input(s) or of the output. Each feature
                    is mentioned once. If there are more than one input, one feature
                    will have more than one value. These values are the factors in a
                    product."
-                & !arg:(?fs.?IorO.?arg)
+                & !arg:(?fs.?IorOorP.?arg)
                 & :?io
                 &   whl
                   ' ( !fs:%?f+?fs
                     & !f:? (short.?short) ?
-                    & str$(!IorO !short):?p
+                    & str$(!IorOorP !short):?p
                     &   whl
                       ' ( !arg:?A (!p.?v) ?Z
                         & !A !Z:?arg
@@ -6237,36 +6237,40 @@ try {
               )
             : ?userInput
           & ( furtherCheck
-            =   uiou wfs output nwfs wf
-              .   log$furtherCheck1
-                & !arg:(?wfs.?uiou)
+            =   uiou wfs output nwfs wf A B
+              .   !arg:(?wfs.?uiou)
                 & 0:?nwfs
                 &   whl
-                  ' ( !wfs:((?,(?output.?)):?wf)+?wfs
+                  ' ( !wfs:((?A,(?output.?B)):?wf)+?wfs
                     & (     map
                           $ ( ( 
                               =   uf uv wv len u
-                                .     !arg:(?uf,?uv)
-                                    &   !output
-                                      :   ?
-                                          (!uf,(?wv.OnE)|?wv)
-                                          ?
-                                    & !uv:?*[?len
-                                    & !wv:?*[!len
-                                    &   whl
-                                      ' ( !uv:%?u*?uv
-                                        & !wv:!u^?*?wv
+                                .   !arg:(?uf,?uv)
+                                  & (     !output
+                                        :   ?
+                                            (!uf,(?wv.OnE)|?wv)
+                                            ?
+                                      & !uv:?*[?len
+                                      & !wv:?*[!len
+                                      &   whl
+                                        ' ( !uv:%?u*?uv
+                                          & !wv:!u^?*?wv
+                                          )
+                                      & !wv:1
+                                      & !uv:1
+                                      & 
+                                    |   !output:~(? (!uf,?) ?)
+                                      & log$(LACKING !uf)
+                                      & "The feature may be missing when looking at unpruned, raw pipes"
+                                      & ( !uf:sml&
+                                        | 
+                                        |     (!A,(!arg !output.!B))
+                                            : ?wf
+                                          & 
+                                        | STOP
                                         )
-                                    & !wv:1
-                                    & !uv:1
-                                    & 
-                                  |   !output:~(? (!uf,?) ?)
-                                    & log$(LACKING !uf)
-                                    & "The feature may be missing when looking at unpruned, raw pipes"
-                                    & ( !uf:sml&
-                                      | STOP
-                                      )
-                                  | !arg
+                                    | !arg
+                                    )
                               )
                             . !uiou
                             )
@@ -6946,54 +6950,54 @@ try {
                         bundles."
                       & signatureDotSep$!sig:?Nsig
                       & "In Nsig, parameter sets that are equal if all subspecs are ignored,
-	                     are combined in space separated lists "
+                         are combined in space separated lists "
                       & "Discard solutions that contain steps that are
                         equal (or at least compatible) at the un-
                         subspecified level, but clash at the spec level.
                         Such solutions are not 'wrong', but unlikely what
                         the user wants."
                       & "Clashing example:
-		                ...
-	                            * ( RTFread
-		                .   (   (app,nrm)
-		                        (facet,seg*tok^PT)
-		                        (format,plainD)
-		                    .   (app,ocr)
-		                        (facet,txt)
-		                        (format,flat)
-		                    )
-		                    (   (app,nrm)
-		                        (facet,seg*tok^simple)
-		                        (format,plainD)
-		                    .   (app,ocr)
-		                        (facet,txt)
-		                        (format,flat)
-		                    )
-		                )
-	                            * ...
+                        ...
+                        * ( RTFread
+                        .   (   (app,nrm)
+                            (facet,seg*tok^PT)
+                            (format,plainD)
+                            .   (app,ocr)
+                            (facet,txt)
+                            (format,flat)
+                            )
+                            (   (app,nrm)
+                            (facet,seg*tok^simple)
+                            (format,plainD)
+                            .   (app,ocr)
+                            (facet,txt)
+                            (format,flat)
+                            )
+                        )
+                        * ...
 
 
-                                  Not Clashing example:
+                        Not Clashing example:
 
-		                ...
-	                            * ( RTFread
-		                .   (   (app,nrm)
-		                        (facet,seg*tok^PT)
-		                        (format,plainD)
-		                    .   (app,ocr)
-		                        (facet,txt)
-		                        (format,flat)
-		                    )
-		                    (   (app,nrm)
-		                        (facet,seg*tok)
-		                        (format,plainD)
-		                    .   (app,ocr)
-		                        (facet,txt)
-		                        (format,flat)
-		                    )
-		                )
-	                            * ...
-        	            "
+                        ...
+                        * ( RTFread
+                        .   (   (app,nrm)
+                            (facet,seg*tok^PT)
+                            (format,plainD)
+                            .   (app,ocr)
+                            (facet,txt)
+                            (format,flat)
+                            )
+                            (   (app,nrm)
+                            (facet,seg*tok)
+                            (format,plainD)
+                            .   (app,ocr)
+                            (facet,txt)
+                            (format,flat)
+                            )
+                        )
+                        * ...
+                        "
                       & ( Clashing$!Nsig&0
                         |   unifySignaturesAtSpecLevel$!Nsig:?nsig
                           & "nsig is a product of maximally compressed
@@ -7100,7 +7104,7 @@ try {
                               ' ( !results:%?result*?results
                                 & Sig$!result:?SR
                                 & "'SR' is (feature,value*value*...) (feature,value*value*...) ...,
-	                               also if (some of) the values are in a 'OnE' group in 'result'."
+                                   also if (some of) the values are in a 'OnE' group in 'result'."
                                 &     map
                                     $ ( ( 
                                         =   
@@ -7115,12 +7119,12 @@ try {
                                         & !A*!methods:?methods
                                         & !result
                                       |   "Each {feature,value} pair in the SR (signature of the result) must
-	                                                 either be (smell,new smell)
-	                                                 or occur in the same factor of SM (the signature of one of the methods).
-		                                   So we must find a method for which we can prove that there are
-		                                       no features different from (sml,nsl) in SR
-		                                       that are not represented in the signature of that method SM.
-		                                   "
+                                                     either be (smell,new smell)
+                                                     or occur in the same factor of SM (the signature of one of the methods).
+                                           So we must find a method for which we can prove that there are
+                                               no features different from (sml,nsl) in SR
+                                               that are not represented in the signature of that method SM.
+                                           "
                                         &   !methods
                                           :   ?A
                                             * `%( ?method
@@ -7195,10 +7199,10 @@ try {
                         )
                       & "harmonizeSubspecsOnSimilarFeatures: 
                          enrich first argument using second argument, 
-	                     enrich and update second argumemt using first argument.
-	                     In the output, the second argument is hoisted to the level of the first.
-	                     This function is used in both directions, downstream and upstream.
-	                     "
+                         enrich and update second argumemt using first argument.
+                         In the output, the second argument is hoisted to the level of the first.
+                         This function is used in both directions, downstream and upstream.
+                         "
                       & ( harmonizeSubspecsOnSimilarFeatures
                         =   
                           .   ( !Mem:? (!arg.?arg) ?
@@ -7607,12 +7611,7 @@ try {
               & log$(windFW !nth)
               & windFW$(!reorderedworkflowlist.!nth):?reorderedworkflowlist
               & log$woundFW
-              & ( !parms
-                . !userInput
-                . (!reorderedworkflowlist.!topologicalOrderedTools)
-                . allRight
-                . 
-                )
+              & (!userInput.(!reorderedworkflowlist.!topologicalOrderedTools).allRight.)
             |   log$"Not in recentTasks"
               & "memoizedTrees: global variable"
               & (!memoizedTrees|:?memoizedTrees)
@@ -7802,8 +7801,7 @@ try {
                       & (!memoizedTrees:?memoizedTrees [100 ?|)
                     )
                 )
-              & ( !parms
-                . !userInput
+              & ( !userInput
                 .       !FP
                       : ((?,?) ?|~(?+(?.?)+?))
                     & ((!FP.).triviallyFulfilled.)
@@ -7846,12 +7844,12 @@ try {
                 )
             |   !FP:#:<0
               & log$"!FP:#:<0 gives tooMany"
-              & (!parms.!userInput.(0.).tooMany.)
+              & (!userInput.(0.).tooMany.)
             |   !Npipes:0
               & log$(NOTFULFILLABLE FP !FP)
-              & (!parms.!userInput.(0.).notFulfillable.noPathReason$!userInput)
+              & (!userInput.(0.).notFulfillable.noPathReason$!userInput)
             |   log$(Npipes !Npipes ">" !MAXPIPES)
-              & (!parms.!userInput.(0.).tooMany.)
+              & (!userInput.(0.).tooMany.)
             )
       )
       ( composeValueString
@@ -11384,7 +11382,7 @@ function main2(evt) {
                   )
             )
           & ( "The user has selected a workflow."
-            =     Submit hiddenData
+            =     Submit hiddenData o-SUpPLEMENT
                 , parms nth batch Items mail2 ERR
                 , allpipes ViewDetails
                 , returnCode struct whichButton
@@ -11460,8 +11458,7 @@ function main2(evt) {
                 & :?msg
                 & (   !nth:#
                     &   Pipelines$(!parms.!nth)
-                      : ( ?
-                        . (?sources.?goals.?)
+                      : ( (?sources.?goals.?)
                         . ( (?.?.?.?.?),(?.?struct)
                           . ?topologicalOrderedTools
                           )
@@ -16377,7 +16374,7 @@ function main2(evt) {
           , val allpipes batch returnCode restriction sources
           , ShowAllPipesIfNotTooExpensive add makeValRows
           , B M Y f fixed formFields fvs nfvs nvs output
-          , ZoomInOrShowWorkflows
+          , ZoomInOrShowWorkflows o-SUpPLEMENT
           , pipes pps rwl superset tool updatedArg userInput vs
         .   ( ShowAllPipes
             =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct
@@ -16620,14 +16617,24 @@ function main2(evt) {
                                           )
                                         (   !nfvs:?*[>1
                                           &   localized
-                                            $ ( "Here you can supply more specifiations for the output. It is advisable to do this one specification at a time. In that way, you do not run the risk of selecting a combination of values for which no workflow exists."
-                                                "På denne side kan du vælge flere specifikationer, men det er bedst at vælge fra én liste ad gangen. På den måde undgår du at du kommer til at selektere en kombination af værdier som ikke resulterer i nogen arbejdsgangkandidater."
+                                            $ ( "Here you can supply more specifiations for the output."
+                                                "På denne side kan du vælge flere specifikationer."
                                               )
                                         |   localized
                                           $ ( "Here you can supply the missing specification and thereby reduce the number of proposed workflow candidates."
                                               "På denne side kan du give den manglende specifikation og på den måde reducere antallet af foreslåede arbejdsgange."
                                             )
                                         )
+                                  )
+                                  (   !nfvs:?*[>1
+                                    & ( p
+                                      .   
+                                        ,   localized
+                                          $ ( "It is advisable to choose just one value at a time. In that way, you do not run the risk of selecting a combination of values for which no workflow exists."
+                                              "Det er bedst at vælge præcis én værdi ad gangen. På den måde undgår du at du kommer til at selektere en kombination af værdier som ikke resulterer i nogen arbejdsgangkandidater."
+                                            )
+                                      )
+                                  | 
                                   )
                                   ( 
                                   & !userInput:(?.?.?.?superset)
@@ -16673,7 +16680,7 @@ function main2(evt) {
                     )
             )
           & ( ZoomInOrShowWorkflows
-            =     returnCode pipes
+            =     returnCode pipes Pfeats
                 , reorderedworkflowlist topologicalOrderedTools userInput ZoomIn
               .   ( ZoomIn
                   =     returnCode pipes
@@ -16746,8 +16753,11 @@ function main2(evt) {
                                 & (   !count:!addCalls
                                     & (   !vs:%+%
                                         & "All workflows specify this feature, but in different ways."
-                                        & (   !userInput:(?.?.?.? !f ?)
-                                            & "And the user has specified that combinations are OK."
+                                        & (   ( 
+                                              |     !userInput
+                                                  : (?.?.?.? !f ?)
+                                                & "And the user has specified that combinations are OK."
+                                              )
                                             & !nfvs*!f^!vs:?nfvs
                                           | 
                                           )
@@ -16755,8 +16765,14 @@ function main2(evt) {
                                         & !fixed*!f^!vs:?fixed
                                       )
                                   |   !count:<!addCalls
-                                    & "Some workflows did not specify this feature. User can choose blank value."
-                                    & !nfvs*!f^!vs:?nfvs
+                                    & (   !vs:%+%
+                                        & "Some workflows did not specify this feature. User can choose blank value."
+                                        & !nfvs*!f^!vs:?nfvs
+                                      | "If there is only one non-blank value, then choosing between that value
+                                         and blank is hard to understand for a user, since blank means:
+                                         Any value goes, even the non-blank value that is the other choice."
+                                      )
+                                  | 
                                   )
                             )
                           . !fvs
@@ -16774,11 +16790,18 @@ function main2(evt) {
                         )
                   )
                 &   !arg
-                  : (?returnCode.?pipes.?reorderedworkflowlist.?topologicalOrderedTools.?userInput)
+                  : ( ?returnCode
+                    . ?pipes
+                    . ?reorderedworkflowlist
+                    . ?topologicalOrderedTools
+                    . ?userInput
+                    . ?Pfeats
+                    )
                 & log$(Submit !Submit)
                 & log$(zubmit localized$!helpmespecifymygoal)
                 & (   ( localized$!"show workflows":!Submit
                       | localized$!"skip zoom":!Submit
+                      | !Pfeats:~:~(? (?.~) ?)
                       )
                     & log$GoingToNoNeedForMoreZoomingIn
                     &   NoNeedForMoreZoomingIn
@@ -16863,27 +16886,54 @@ function main2(evt) {
                   & log$CALL-Pipelines
                   & :?msg
                   & (     Pipelines$(!parms.)
-                        : (?.(?sources.?):?userInput.?2or3things.?returnCode.?msg)
+                        : ((?sources.?):?userInput.?2or3things.?returnCode.?msg)
                       & (   !returnCode:allRight
                           & "returnCode:allRight"
                           & !2or3things:(?reorderedworkflowlist.?topologicalOrderedTools)
                         | !2or3things:(?pipes.?parms)
                         )
                       & log$("back from Pipelines" !returnCode)
+                      & ( extractPfeaturesFromHTTParg
+                        =   short p v parms
+                          .   "Collects features having prefix 'P' in the HTTP parameter list."
+                            & !arg:?parms
+                            & readTable$features
+                            &   mop
+                              $ ( ( 
+                                  =   
+                                    .   !arg:? (short.?short) ?
+                                      & str$(P !short):?p
+                                      &   map
+                                        $ ( ( 
+                                            =   
+                                              .   !arg:(!p.?v)
+                                                | 
+                                            )
+                                          . !parms
+                                          )
+                                  )
+                                . !features
+                                . (=+)
+                                )
+                        )
                       & "allRight
-                     onlyWithoutRestriction
-                     triviallyFulfilled
-                     tooComplex
-                     workflowsFound
-                     tooMany"
+                         onlyWithoutRestriction
+                         triviallyFulfilled
+                         tooComplex
+                         workflowsFound
+                         tooMany"
                       & (   !returnCode:(workflowsFound|allRight)
-                          &   ZoomInOrShowWorkflows
-                            $ ( !returnCode
-                              . !pipes
-                              . !reorderedworkflowlist
-                              . !topologicalOrderedTools
-                              . !userInput
-                              )
+                          & extractPfeaturesFromHTTParg$!parms:?Pfeats
+                          & (   ZoomInOrShowWorkflows
+                              $ ( !returnCode
+                                . !pipes
+                                . !reorderedworkflowlist
+                                . !topologicalOrderedTools
+                                . !userInput
+                                . !Pfeats
+                                )
+                            | 
+                            )
                         |   !returnCode:onlyWithoutRestriction
                           & !parms:? (desiredtool.?restriction) ?
                           & FulfillableWithoutRestriction$!restriction
@@ -17908,30 +17958,30 @@ function main2(evt) {
                       )
                   : ?preselvalsrows
                 & "'preselvalsrows' is a list of all features and their possible values.
-	                 The first field is filled with pairs of {feature value,item name}, if available.
-	                 e.g.  (txt.pictureA)
-                                     (txt.pictureB)
-                                     (txt.myPlainText)
+                     The first field is filled with pairs of {feature value,item name}, if available.
+                     e.g.  (txt.pictureA)
+                           (txt.pictureB)
+                           (txt.myPlainText)
 
-	                 and   (img^png.pictureA)
-                                     (img^png.pictureB)
-                                     (flat.myPlainText)
-	                 Otherwise this field is empty."
+                     and   (img^png.pictureA)
+                           (img^png.pictureB)
+                           (flat.myPlainText)
+                     Otherwise this field is empty."
                 & "'prod' is a product of input item names, each with an exponent that is the sum of features guessed by the system.
-	                 E.g.
-	                      myPlainText^(flat+nrm+txt+una)
-	                    * pictureA^(rom+txt+una+img^png)
-	                    * pictureB^(rom+txt+una+img^png)
-	                "
+                     E.g.
+                          myPlainText^(flat+nrm+txt+una)
+                        * pictureA^(rom+txt+una+img^png)
+                        * pictureB^(rom+txt+una+img^png)
+                    "
                 &   whl
                   ' ( !prod:?A*%?B^%?x*?C*%?D^!x*?E
                     & !A*(!B !D)^!x*!C*!E:?prod
                     )
                 & "'prod' now lists item names together if they have the same feature values.
-	                 E.g.
-	                      myPlainText^(flat+nrm+txt+una)
-	                    * (pictureA pictureB)^(rom+txt+una+img^png)
-	                "
+                     E.g.
+                          myPlainText^(flat+nrm+txt+una)
+                        * (pictureA pictureB)^(rom+txt+una+img^png)
+                    "
                 & :?items
                 & !prod:?p
                 & 0:?R
@@ -17946,8 +17996,8 @@ function main2(evt) {
                     & (.!itms) !items:?items
                     )
                 & "items is a list of lists of item names, most numerous list first. E.g.
-	                 (.pictureA pictureB) (.myPlainText)
-	                "
+                     (.pictureA pictureB) (.myPlainText)
+                    "
                 & 0:?nt
                 &     map
                     $ ( ( 
@@ -17990,12 +18040,12 @@ function main2(evt) {
                       )
                   : ?preselvalsrows
                 & "The first field in 'preselvalsrows' now groups items that are similar in all features.
-	                 e.g.  (txt.pictureA pictureB)
+                     e.g.  (txt.pictureA pictureB)
                                      (txt.myPlainText)
 
-	                 and   (img^png.pictureA pictureB)
+                     and   (img^png.pictureA pictureB)
                                      (flat.myPlainText)
-	                 Otherwise this field is empty."
+                     Otherwise this field is empty."
                 & "Notice: this function does not have local variable 'abbr' !"
                 & log$CreateSourcePicklists
                 & readTable$toolprop
