@@ -569,7 +569,7 @@ try {
             else if($Ilangfa)
                 {
                 $lang = "fa";
-                $flexrules = "$res/fa/lemmatiser/notags/0/flexrules.pretty.bra.2";
+                $flexrules = "$res/fa/lemmatiser/notags/0/flexrules.bra";
                 $traindata = "$res/fa/lemmatiser/training/wfl-fa.txt.ph";
                 $TorC = "C";
                 }

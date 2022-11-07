@@ -334,7 +334,7 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
         }
     else if($language == 'fa')
         {
-        $flexrulessubdir = "/3";
+        $flexrulessubdir = "/1";
         }
     else if($language == 'fo')
         {
