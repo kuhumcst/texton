@@ -463,6 +463,37 @@ toolsProg=
                   | ?&:?required
                   )
               )
+          &   ( label
+              .   
+                ,   !text
+                    ( !required:
+                    | " " (span.(class.requiblue),!required)
+                    )
+              )
+              \r\n
+              ( textarea
+              .     (tabindex.1+!tabind:?tabind)
+                    (name.!parm)
+                    (rows.2)
+                    (cols.60)
+                    (!desc:|(title.!desc))
+                , trim$!val
+              )
+              \r\n
+      )
+      ( makeTextAreaFormFieldInv
+      =   text parm val required desc
+        .     !arg
+            : ( ?text
+              . ?parm
+              .   ? (val.?val) ?
+                : ( ? (desc.?desc) ?
+                  | ?&:?desc
+                  )
+                : ( ? (required.?required) ?
+                  | ?&:?required
+                  )
+              )
           &   ( textarea
               .     (tabindex.1+!tabind:?tabind)
                     (name.!parm)
@@ -9317,7 +9348,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( UserMsg
       =   fb err
         .   !arg:(?fb.?err)
-          &     makeTextAreaFormField
+          &     makeTextAreaFormFieldInv
               $ ( 
                 . fb
                 .   (val.!fb)
@@ -17260,6 +17291,44 @@ function main2(evt) {
                                   )
                               )
                         )
+                      & ( anateip5
+                        =   xml att msd
+                          .       get$(str$(!DestinationDir !LocalFileName),X ML)
+                                : ?xml
+                              &     (   !xml:? (s.?) ?xml
+                                      & seg
+                                    | 1
+                                    )
+                                  * (   !xml:? (w.?att) ?xml
+                                      & tok
+                                    | 1
+                                    )
+                                  * (   !att:? (lemma.?) ?
+                                      & lem
+                                    | 1
+                                    )
+                                  * (   !att:? (msd.?msd) ?
+                                      &   mrf
+                                        * (   @(!msd:UPosTag ?)
+                                            & pos
+                                          | 1
+                                          )
+                                    | 1
+                                    )
+                                  * (   !xml:? (name.?) ?xml
+                                      & ner
+                                    | 1
+                                    )
+                                  * (     !xml
+                                        :   ?
+                                            (linkGrp.? (type.UD-SYN) ?)
+                                            ?
+                                      & stx
+                                    | 1
+                                    )
+                                : ~1
+                            | txt
+                        )
                       &   !ct
                         : (   application/pdf
                             &     (   !nofonts:true
@@ -17466,14 +17535,14 @@ function main2(evt) {
                                       )
                                   : ? (TEI.?) ?
                                 &     (app.nrm)
-                                      (facet.txt)
+                                      (facet.anateip5$)
                                       (format.teip5)
                                   : ?R
                               | (format.xm):?R
                               )
                           |   "application/tei+xml"
                             &     (app.nrm)
-                                  (facet.txt)
+                                  (facet.anateip5$)
                                   (format.teip5)
                               : ?R
                           | :?R
