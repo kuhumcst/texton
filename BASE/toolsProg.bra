@@ -5405,6 +5405,34 @@ try {
                             )
                           )
                   )
+                & ( valueSeq
+                  =   selected stable fulls
+                    .   !arg:(?selected.?stable)
+                      & !( 
+                         ' (     mop
+                               $ ( ( 
+                                   =   sel spc full
+                                     .   !arg:%?sel^?spc
+                                       & (     $stable
+                                             : ? (?full.!sel.?) ?
+                                           &   ", "
+                                               !full
+                                               (   !spc:1
+                                                 & 
+                                               | "[" !spc "]"
+                                               )
+                                         | 
+                                         )
+                                   )
+                                 . $selected
+                                 . (=*)
+                                 )
+                             : ", " ?fulls
+                           | :?fulls
+                           )
+                         )
+                      & !fulls
+                  )
                 & ( getFullNames
                   =   feature sourceValue goalValue table so go
                     .   !arg:(?feature,?sourceValue,?goalValue.?)
@@ -5415,9 +5443,8 @@ try {
                             )
                           + ?
                       & readTable$!table
-                      &   !(&!table)
-                        : ? (?so.!sourceValue.?) ?
-                        : ? (?go.!goalValue.?) ?
+                      & valueSeq$(!sourceValue.!(&!table)):?so
+                      & valueSeq$(!goalValue.!(&!table)):?go
                       & (!so.!go)
                   )
                 & !arg:(?source.?goal.?.?)
@@ -5466,33 +5493,37 @@ try {
                         $ ( ( 
                             =   
                               .     !arg
-                                  : (?feature,?sourceValue,?goalValue.?edges)
-                                & getFullNames$!arg:(?so.?go)
-                                & (   !edges:~(? (!sourceValue.?) ?)
-                                    &   str
-                                      $ (   localized
-                                          $ ( "There is no tool that can transform feature \""
-                                              "Der er ikke noget værktøj der kan tranformere \""
+                                  : (?feature,?sourceValue^?,?goalValue.?edges)
+                                & (   getFullNames$!arg:(?so.?go)
+                                    & (     !edges
+                                          : ~(? (!sourceValue.?) ?)
+                                        &   str
+                                          $ (   localized
+                                              $ ( "There is no tool that can transform feature \""
+                                                  "Der er ikke noget værktøj der kan tranformere \""
+                                                )
+                                              getFeatName$!feature
+                                              "\" = \""
+                                              localized$!so
+                                                localized
+                                              $ ("\" to another value." "\" til en anden værdi.")
                                             )
-                                          getFeatName$!feature
-                                          "\" = \""
-                                          localized$!so
-                                            localized
-                                          $ ("\" to another value." "\" til en anden værdi.")
-                                        )
-                                  |   !edges:~(? (?.!goalValue) ?)
-                                    &   str
-                                      $ (   localized
-                                          $ ( "There is no tool that can produce feature \""
-                                              "Der er ikke noget værktøj der kan producere \""
+                                      |     !edges
+                                          : ~(? (?.!goalValue) ?)
+                                        &   str
+                                          $ (   localized
+                                              $ ( "There is no tool that can produce feature \""
+                                                  "Der er ikke noget værktøj der kan producere \""
+                                                )
+                                              getFeatName$!feature
+                                              "\" = \""
+                                              localized$!go
+                                                localized
+                                              $ ("\" from another value." "\" fra en anden værdi.")
                                             )
-                                          getFeatName$!feature
-                                          "\" = \""
-                                          localized$!go
-                                            localized
-                                          $ ("\" from another value." "\" fra en anden værdi.")
-                                        )
-                                  | 
+                                      | 
+                                      )
+                                  | getFullNamesFAILED
                                   )
                             )
                           . !bridges
@@ -17404,7 +17435,8 @@ function main2(evt) {
                                       & stx
                                     | 1
                                     )
-                                : ~1:~ner
+                                : ~1
+                                : ~ner
                             | txt
                         )
                       &   !ct
@@ -18294,14 +18326,13 @@ function main2(evt) {
                                                               )
                                                           )
                                                     )
-                                                |   log$(!short NotPredefinedFor !arg)
-                                                  &   makeSelectFormField
-                                                    $ ( 
-                                                      . str$(I !short !exr)
-                                                      . options
-                                                      .   makeOptionList
-                                                        $ (!servicedSourcesTable.)
-                                                      )
+                                                |   makeSelectFormField
+                                                  $ ( 
+                                                    . str$(I !short !exr)
+                                                    . options
+                                                    .   makeOptionList
+                                                      $ (!servicedSourcesTable.)
+                                                    )
                                                 )
                                         )
                                       . !items
