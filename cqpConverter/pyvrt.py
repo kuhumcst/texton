@@ -12,13 +12,13 @@ Take output from lemmatiser that already resembles VRT format, but
 
 e.g.
 
-<text title="Murværk opmulet med vådmørtel august" date= "20170830" datefrom="20170830" dateto="20170830" timefrom="000000" timeto="235959" >
+<text title="Murværk opmulet med vådmørtel" date= "20170830" datefrom="20170830" dateto="20170830" timefrom="000000" timeto="235959" >
 <p idp ="1">
 <sentence id ="1">
-Murværk         N         N.IND.SING  Murværk
-opmuret           V         V.PARTC.PAST        opmure
-med     PREP  PREP  med
-vådmørtler       N         N.IND.PLU    vådmørtel
+Murværk         N         N.IND.SING    Murværk
+opmuret         V         V.PARTC.PAST  opmure
+med	            PREP      PREP	        med
+vådmørtler      N         N.IND.PLU     vådmørtel
 </sentence>
 
 
