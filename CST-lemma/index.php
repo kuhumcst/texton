@@ -335,6 +335,8 @@ function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTa
     else if($language == 'fa')
         {
         $flexrulessubdir = "/1";
+        $flexrules = "flexrules.fa-764.3col-734-step1.3cole_ziggurat_XS";
+        $dict = "/dict.fa";
         }
     else if($language == 'fo')
         {
