@@ -17,19 +17,44 @@ X=
         & :?Lines
         & :?containsSpace
         & :?containsNonAlpha
+        & ( split?
+          =   L R C bst nbs
+            .   !arg:(?L.?R.?C)
+              & 0:?nbs
+              & :?bst
+              &   vap
+                $ ( ( 
+                    =   
+                      .     sim$(!L,!arg):>!nbs:?nbs
+                          & !arg:?bst
+                        | 
+                    )
+                  . !R
+                  . "#"
+                  )
+              & (!L.!bst.!C)
+          )
         & ( reverse
           =   a R
             .   :?R
-              & whl'(!arg:%?a ?arg&!a !R:?R)
+              &   whl
+                ' ( !arg:%?a ?arg
+                  & !a !R:?R
+                  )
               & !R
           )
         & !arg:(?in.?ou.?keep)
+        & put$(,!ou,NEW,BIN)
         & ( 
           |   put
-            $ (str$("in:" !in " ou:" !ou " keep:" !keep),"log.txt",APP)
+            $ ( str$("in:" !in " ou:" !ou " keep:" !keep)
+              , "log.txt"
+              , APP
+              )
           )
         & fil$(!in,r)
         & fil$(,STR,\n)
+        & chu$(x2d$200C):?200C
         &   whl
           ' ( fil$:(?line.?)
             & 1+!NN:?NN
@@ -44,33 +69,49 @@ X=
                   )
                 &   (!left.!right.!other) !containsSpace
                   : ?containsSpace
-              |   ( @( !left
-                     :   ?
-                         ( %?c
-                         & utf$!c
-                         & upp$!c:low$!c
-                         )
-                         ?
-                     )
-                  | @( !right
-                     :   ?
-                         ( %?c
-                         & utf$!c
-                         & upp$!c:low$!c
-                         )
-                         ?
-                     )
+              |   (     vap
+                      $ ( ( 
+                          =   
+                            .     ( @( ugc$!arg
+                                     : (L|M) ?
+                                     )
+                                  | !arg:!200C
+                                  )
+                                & 
+                              | !arg
+                          )
+                        . !left
+                        )
+                    : ~
+                  |     vap
+                      $ ( ( 
+                          =   
+                            .     ( @( ugc$!arg
+                                     : (L|M) ?
+                                     )
+                                  | !arg:("#"|!200C)
+                                  )
+                                & 
+                              | !arg
+                          )
+                        . !right
+                        )
+                    : ~
                   )
                 &   (!left.!right.!other) !containsNonAlpha
                   : ?containsNonAlpha
-              | (!left.!right.!other) !Lines:?Lines
+              |   split?$(!left.!right.!other) !Lines
+                : ?Lines
               )
             )
         & (fil$(!in,SET,-1)|)
         & !Lines:?Mines
         & reverse$!Lines:?Lines
         & reverse$!containsSpace:?containsSpace
-        & reverse$!containsNonAlpha:?containsNonAlpha
+        & ( 
+          |   reverse$!containsNonAlpha:?containsNonAlpha
+            & lst$(containsNonAlpha,containsNonAlpha,NEW,BIN)
+          )
         & !Mines:?Lines
         & !Lines:?lines
         &   whl
@@ -82,14 +123,19 @@ X=
         & ( adapt
           =   ll rr q cc dd
             .   !arg:(?ll.?rr)
-              & ( low$!rr:!rr&low$!ll:?ll
+              & (   low$!rr:!rr
+                  & low$!ll:?ll
                 |   @(!rr:? [>1:~(? "'" ?))
                   & upp$!rr:!rr
                   & upp$!ll:?ll
                 |   :?q
                   &   whl
-                    ' ( @(!ll:(%?cc&utf$!cc) ?ll)
-                      & (   @(!rr:(%?dd&utf$!dd) ?rr)
+                    ' ( @( !ll
+                         : (%?cc&utf$!cc) ?ll
+                         )
+                      & (   @( !rr
+                             : (%?dd&utf$!dd) ?rr
+                             )
                           & low$!cc:low$!dd
                           & !dd !q:?q
                         | !cc !q:?q&~
@@ -117,12 +163,15 @@ X=
             & (   (wrd..find)$!left:(?.?L)
                 & (   (wrd..find)$!right:(?.?R)
                     & ( !L:!R
-                      |   (clp..find)$!L:(?.?lw+[?LL)
-                        & (clp..find)$!R:(?.?rw+[?RL)
+                      |     (clp..find)$!L
+                          : (?.?lw+[?LL)
+                        &   (clp..find)$!R
+                          : (?.?rw+[?RL)
                         & (clp..remove)$!L
                         & (clp..remove)$!R
                         & (   !LL:<!RL
-                            & (!rw.!lw.!L.!R):(?lw.?rw.?R.?L)
+                            &   (!rw.!lw.!L.!R)
+                              : (?lw.?rw.?R.?L)
                           | 
                           )
                         & (clp..insert)$(!L.!rw+!lw)
@@ -173,58 +222,49 @@ X=
               )
             )
         & 0:?nc
-        & (   
-            & ( 
-              | put$(str$("lines read: " !NN \n),!ou,NEW BIN)
-              )
-            &   (clp..forall)
-              $ ( 
-                =   
-                  .   !arg:(?.?arg)
-                    &   put
-                      $ (   str
-                          $ (   mop
-                              $ ( ( 
-                                  =   
-                                    .   !arg:?*%@?arg
-                                      & !arg \n
-                                  )
-                                . !arg
-                                . (=+)
+        & (   (clp..forall)
+            $ ( 
+              =   
+                .   !arg:(?.?arg)
+                  &   put
+                    $ (   str
+                        $ (   mop
+                            $ ( ( 
+                                =   
+                                  .   !arg:?*%@?arg
+                                    & !arg \n
                                 )
-                              \n
-                            )
-                        , !ou
-                        , APP BIN
-                        )
-                )
-          |   
-            & ( 
-              | put$(str$("lines read: " !NN \n),!ou,NEW BIN)
+                              . !arg
+                              . (=+)
+                              )
+                            \n
+                          )
+                      , !ou
+                      , APP BIN
+                      )
               )
-            &   (clp..forall)
-              $ ( 
-                =   B T S l r c
-                  .   !arg:(?.?*%@?S+?B)
-                    & @(!S:?l \t ?r)
-                    & (!l.!r):?c
-                    &   whl
-                      ' ( !B:?*%@?T+?B
-                        & !S \n !T:?S
-                        & @(!T:?l \t ?r)
-                        & (!l.!r) !c:?c
-                        )
-                    &   (1+!nc:?nc.!c) !braclumps
-                      : ?braclumps
-                    & put$(str$(!S \n\n),!ou,APP BIN)
-                )
+          |   (clp..forall)
+            $ ( 
+              =   B T S l r c
+                .   !arg:(?.?*%@?S+?B)
+                  & @(!S:?l \t ?r)
+                  & (!l.!r):?c
+                  &   whl
+                    ' ( !B:?*%@?T+?B
+                      & !S \n !T:?S
+                      & @(!T:?l \t ?r)
+                      & (!l.!r) !c:?c
+                      )
+                  &   (1+!nc:?nc.!c) !braclumps
+                    : ?braclumps
+                  & put$(str$(!S \n\n),!ou,APP BIN)
+              )
           )
       | 
   )
   ( new
-  =   
-    .     ~
-        & (its.doit)$("albanian-word-lemma-pos.txt".uit.no)
+  =   ~
+    .   &(its.doit)$(F.uit.yes)
       | (its.doit)$(arg$.arg$.arg$)
   );
 
