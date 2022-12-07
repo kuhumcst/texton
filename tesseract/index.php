@@ -674,7 +674,7 @@ try {
           //else if($Olangzh)           $lang ="chi_sim";  
           //else if($Olangzh_vert)      $lang ="chi_sim_vert";  
             else                        $lang ="eng";
-`           $script = "tessdata_best";
+            $script = "tessdata_best";
             }
 
         $TesseractOCRfile = tempFileName("tesseract-results");
