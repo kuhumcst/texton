@@ -570,7 +570,7 @@ try {
                 {
                 $lang = "fa";
                 $flexrules = "$res/fa/lemmatiser/notags/0/flexrules.bra";
-                $traindata = "$res/fa/lemmatiser/training/wfl-fa.txt.ph";
+                $traindata = "$res/fa/lemmatiser/training/fa-20.3col-96-step1.3cole";
                 $TorC = "C";
                 }
             else if($Ilangfo)
