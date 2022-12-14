@@ -135,6 +135,7 @@ toolsProg=
       (updateAvailableWorkflows=update opdater)
       (helpmespecifymygoal="Next: zoom in on goal." "Zoom ind med flere detaljer")
       (Bookmark=Bookmark Marker)
+      (Dryrun="Test workflow" "Test arbejdsgang")
       (Usermsg="Send feed back")
       ("show workflows"="Show available workflows" "Vis mulige arbejdsgange")
       ( "skip zoom"
@@ -7976,7 +7977,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           , inputs moreinputs firstinput other fh oh
           , compact compatible simpleInput someinputs
           , getDepsAndAddInputsToRequestString
-          , distillInputsFromRequestString
+          , distillInputsFromRequestString dryORrun
         .   "getDisFe establishes the feature that the given tool has to look
              for among the input Items, if it needs an item from that list.
              It is not useful for steps that only take input from earlier
@@ -8266,7 +8267,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$features
           & readTable$tooladm
           & readTable$toolprop
-          & !arg:(?jobNr.?jobIDoffset.?JobStack.?base.?post2.?Items)
+          & !arg:(?jobNr.?jobIDoffset.?JobStack.?base.?post2.?Items.?dryORrun)
           & readTable$Uploads
           & :?newJobs
           & (readTable$jobs|:?jobs)
@@ -8348,7 +8349,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & !files
                     )
                 : ?inputs
-              & compact$!requestString:?requestString
+              & compact$!requestString+(dryORrun.!dryORrun):?requestString
               &     !newJobs
                     ( !jobNr
                     . !jobID
@@ -10903,6 +10904,10 @@ function main2(evt) {
                                   (br.,)
                                   (br.,)
                                   BookMark$(!bm.!err)
+                                  (br.,)
+                                  (br.,)
+                                  submit$(localized$!Dryrun)
+                                  (br.,)
                                   !formFields
                               : ?formFields
                             )
@@ -11206,8 +11211,8 @@ function main2(evt) {
             =     struct batch jobIDoffset parms
                 , retrieveMetadataFromParms
                 , Items item subjobs mail2 JobId metadataType
-                , toolsdataURL toolsUploadURL
-              .   !arg:(?metadataType.?struct.?batch.?Items.?mail2.?parms)
+                , toolsdataURL toolsUploadURL dryORrun
+              .   !arg:(?metadataType.?struct.?batch.?Items.?mail2.?parms.?dryORrun)
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
                     .   !arg:(?metadataType.?parms)
@@ -11259,12 +11264,13 @@ function main2(evt) {
                               . toolsdataURL$
                               . toolsUploadURL$
                               . !item
+                              . !dryORrun
                               )
                           : ?subjobs
                         & !subjobs+!jobIDoffset:?jobIDoffset
                         )
                   |   convert2URLs
-                    $ (!jobNr..!JobStack.toolsdataURL$.toolsUploadURL$.!Items)
+                    $ (!jobNr..!JobStack.toolsdataURL$.toolsUploadURL$.!Items.!dryORrun)
                   )
                 & (readTable$jobAbout|:?jobAbout)
                 &     ( !JobNr
@@ -11512,8 +11518,11 @@ function main2(evt) {
                                 )
                               & AddMetadata$(TEImetadata.!nth.!parms.!ERR.!hiddenData)
                             |   ApplyThePipelineToTheInput
-                              $ (TEImetadata.!struct.!batch.!Items.!mail2.!parms)
+                              $ (TEImetadata.!struct.!batch.!Items.!mail2.!parms.run)
                             )
+                        |   localized$!Dryrun:!Submit
+                          &   ApplyThePipelineToTheInput
+                            $ (TEImetadata.!struct.!batch.!Items.!mail2.!parms.dry)
                         )
                   )
                 & !arg:(?parms.?Submit.?hiddenData.?batch.?Items.?mail2)
