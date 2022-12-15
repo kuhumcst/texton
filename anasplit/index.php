@@ -61,6 +61,28 @@ function logit($str) /* TODO You can use this function to write strings to the l
         }
     }
     
+function scripinit()  /* Initialises outputfile. */
+    {
+    global $fscrip, $anasplitfile;
+    $fscrip = fopen($anasplitfile,'w');
+    if($fscrip)
+        {
+        fwrite($fscrip,"cd " . getcwd() . "\n");
+        fclose($fscrip);
+        }
+    }
+    
+function scrip($str) /* TODO send comments and command line instructions. Don't forget to terminate string with new line character, if needed.*/
+    {
+    global $fscrip, $anasplitfile;
+    $fscrip = fopen($anasplitfile,'a');
+    if($fscrip)
+        {
+        fwrite($fscrip,$str);
+        fclose($fscrip);
+        }
+    }
+    
 class SystemExit extends Exception {}
 try {
     function hasArgument ($parameterName)
@@ -150,6 +172,7 @@ try {
 
     function do_anasplit()
         {
+        global $anasplitfile;
         global $dodelete;
         global $tobedeleted;
 /***************
@@ -168,15 +191,16 @@ try {
         $base = "";	/* URL from where this web service downloads input. The generated script takes care of that, so you can ignore this variable. */
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
+        $mode = "";	/* If the value is 'dry', the wrapper is expected to return a script of what will be done if the value is not 'dry', but 'run'. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacet_lem_mrf_pos_stx = false;	/* Type of content in input is lemmas (Lemma) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ifacet_lem_mrf_pos_stx = false;	/* Type of content in input is lemmas (lemmaer) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ifacet_mrf_pos = false;	/* Type of content in input is morphological features (morfologiske træk) and PoS-tags (PoS-tags) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
-        $Ofacetlem = false;	/* Type of content in output is lemmas (Lemma) if true */
+        $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
-        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (Syntaks (dependensstruktur)) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
 
         if( hasArgument("base") )
@@ -191,7 +215,11 @@ try {
             {
             $post2 = getArgument("post2");
             }
-        $echos = "base=$base job=$job post2=$post2 ";
+        if( hasArgument("mode") )
+            {
+            $mode = getArgument("mode");
+            }
+        $echos = "base=$base job=$job post2=$post2 mode=$mode ";
 
 /*********
 * input  *
@@ -258,24 +286,34 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
     //    logit($echos);
+        if($mode == 'dry')
+            scripinit();
         $anasplitfile = tempFileName("anasplit-results");
         logit("anasplitfile $anasplitfile");
         if(hasArgument("Ofacet"))
             {
             $Ofacet = getArgument("Ofacet");
-            $command = "../bin/bracmat \"get'\\\"anasplit.bra\\\"\" $F $anasplitfile $Ofacet";
-            logit($command);
-
-            if(($cmd = popen($command, "r")) == NULL)
+            if($mode == 'dry')
                 {
-                throw new SystemExit();
+                $command = "../bin/bracmat \"get'\\\"anasplit.bra\\\"\" \$F \$anasplitfile $Ofacet";
+                scrip($command);
                 }
-
-            while($read = fgets($cmd))
+            else
                 {
-                }
+                $command = "../bin/bracmat \"get'\\\"anasplit.bra\\\"\" $F $anasplitfile $Ofacet";
+                logit($command);
 
-            pclose($cmd);
+                if(($cmd = popen($command, "r")) == NULL)
+                    {
+                    throw new SystemExit();
+                    }
+
+                while($read = fgets($cmd))
+                    {
+                    }
+
+                pclose($cmd);
+                }
             }
 
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $anasplitfile
