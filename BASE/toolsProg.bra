@@ -3167,9 +3167,9 @@ toolsProg=
  */"
       ( wrapper
       =     combineToolIncarnations getBoilerPlate specTable
-          , getFeatSpecTable getFeatTable listAlts
+          , getFeatSpecTable getFeatTable listAlts outputFileName
           , makeName DATA DATATEXT FEATURES FEATURETEXT Features
-          , IO STYLES STYLETEXT basejobpost2 boilerPlate
+          , IO STYLES STYLETEXT basejobpost2mode boilerPlate
           , boolfunc boolvar data declarations ech featname fname
           , fname1 fname2 fval helperFunctions httpparm iolist
           , lastWord mainfunc name o sptable stringfunc stringvar
@@ -3481,6 +3481,7 @@ catch (SystemExit $e)
                     : (?DATA.?FEATURES.?STYLES)
                   )
               )
+          & str$(!var makeName$!toolid file):?outputFileName
           &     "/*
 ToolID         : "
                 !toolid
@@ -3565,6 +3566,36 @@ function logit($str) /* TODO You can use this function to write strings to the l
         {
         fwrite($ftemp,$str . \"\\n\");
         fclose($ftemp);
+        }
+    }
+    
+function scripinit()  /* Initialises outputfile. */
+    {
+    global $fscrip, "
+                !outputFileName
+                ";
+    $fscrip = fopen("
+                !outputFileName
+                ",'w');
+    if($fscrip)
+        {
+        fwrite($fscrip,\"cd \" . getcwd() . \"\\n\");
+        fclose($fscrip);
+        }
+    }
+    
+function scrip($str) /* TODO send comments and command line instructions. Don't forget to terminate string with new line character, if needed.*/
+    {
+    global $fscrip, "
+                !outputFileName
+                ";
+    $fscrip = fopen("
+                !outputFileName
+                ",'a');
+    if($fscrip)
+        {
+        fwrite($fscrip,$str);
+        fclose($fscrip);
         }
     }
     
@@ -3713,6 +3744,11 @@ try {
                 "/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
         "
                 !stringvar
+                "mode = \"\";"
+                \t
+                "/* If the value is 'dry', the wrapper is expected to return a script of what will be done if the value is not 'dry', but 'run'. */
+        "
+                !stringvar
                 "echos = \"\";"
                 \t
                 "/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
@@ -3738,11 +3774,17 @@ try {
                 !var
                 "post2 = getArgument(\"post2\");
             }
+        if( hasArgument(\"mode\") )
+            {
+            "
+                !var
+                "mode = getArgument(\"mode\");
+            }
         "
                 !var
-                "echos = \"base=$base job=$job post2=$post2 \";
+                "echos = \"base=$base job=$job post2=$post2 mode=$mode \";
 "
-            : ?basejobpost2
+            : ?basejobpost2mode
           & "
 /*********
 * input  *
@@ -3982,25 +4024,26 @@ try {
                 (str$("do_" makeName$!toolid):?mainfunc)
                 "()
         {
+        global "
+                !outputFileName
+                ";
         global $dodelete;
         global $tobedeleted;"
                 !declarations
-                !basejobpost2
+                !basejobpost2mode
                 !DATATEXT
                 !FEATURETEXT
                 !STYLETEXT
                 \n
                 "//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)"
                 "\n        "
-                !stringvar
-                makeName$!toolid
-                "file = tempFileName(\""
+                !outputFileName
+                " = tempFileName(\""
                 makeName$!toolid
                 "-results\");
         $command = \"echo $echos >> "
-                !stringvar
-                makeName$!toolid
-                "file\";
+                !outputFileName
+                "\";
         logit($command);
 
         if(($cmd = popen($command, \"r\")) == NULL)
@@ -4016,15 +4059,22 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN "
-                !var
+        "
+                !outputFileName
+                " = tempFileName(\""
                 makeName$!toolid
-                "file
+                "-results\");
+        if("
+                !var
+                "mode == 'dry')
+            scripinit();
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN "
+                !outputFileName
+                "
 //*/
         $tmpf = fopen("
-                !var
-                makeName$!toolid
-                "file,'r');
+                !outputFileName
+                ",'r');
 
         if($tmpf)
             {
@@ -8349,7 +8399,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     & !files
                     )
                 : ?inputs
-              & compact$!requestString+(dryORrun.!dryORrun):?requestString
+              & compact$!requestString+(mode.!dryORrun):?requestString
               &     !newJobs
                     ( !jobNr
                     . !jobID
@@ -16601,6 +16651,10 @@ function main2(evt) {
                                       (br.,)
                                       BookMark$(.)
                                       helplink$()
+                                      (br.,)
+                                      (br.,)
+                                      submit$(localized$!Dryrun)
+                                      (br.,)
                                       (br.,)
                                       makeHiddenFields$!hiddenData
                                       !"visualizedWorkFlow(s)"
