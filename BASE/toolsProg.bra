@@ -3480,20 +3480,37 @@ catch (SystemExit $e)
                   )
               )
           & str$(!var makeName$!toolid file):?outputFileName
-          &     "/*
-ToolID         : "
+          & ( escape
+            =   
+              .   str
+                $ ( vap
+                  $ ( ( 
+                      =   
+                        .   (   !arg:("\\"|\")
+                              & "\\"
+                            | 
+                            )
+                            !arg
+                      )
+                    . !arg
+                    )
+                  )
+            )
+          &     "/*"
+                \n
+                "ToolID         : "
                 !toolid
-                "
-PassWord       : "
+                \n
+                "PassWord       : "
                 getBoilerPlate$(!toolid.PassWord)
-                "
-Version        : "
+                \n
+                "Version        : "
                 getBoilerPlate$(!toolid.Version)
-                "
-Title          : "
+                \n
+                "Title          : "
                 getBoilerPlate$(!toolid.Title)
-                "
-Path in URL    : "
+                \n
+                "Path in URL    : "
                   ( 
                   =   path
                     .   @( str$(getBoilerPlate$(!arg.ServiceURL))
@@ -3503,35 +3520,36 @@ Path in URL    : "
                   )
                 $ !toolid
                 \t
-                "*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
-Publisher      : "
+                "*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***"
+                \n
+                "Publisher      : "
                 getBoilerPlate$(!toolid.Publisher)
-                "
-ContentProvider: "
+                \n
+                "ContentProvider: "
                 getBoilerPlate$(!toolid.ContentProvider)
-                "
-Creator        : "
+                \n
+                "Creator        : "
                 getBoilerPlate$(!toolid.Creator)
-                "
-InfoAbout      : "
+                \n
+                "InfoAbout      : "
                 getBoilerPlate$(!toolid.InfoAbout)
-                "
-Description    : "
+                \n
+                "Description    : "
                 getBoilerPlate$(!toolid.Description)
-                "
-ExternalURI    : "
+                \n
+                "ExternalURI    : "
                 getBoilerPlate$(!toolid.ExternalURI)
-                "
-XMLparms       : "
+                \n
+                "XMLparms       : "
                 getBoilerPlate$(!toolid.XMLparms)
-                "
-PostData       : "
+                \n
+                "PostData       : "
                 getBoilerPlate$(!toolid.PostData)
-                "
-Inactive       : "
+                \n
+                "Inactive       : "
                 getBoilerPlate$(!toolid.Inactive)
-                "
-*/
+                \n
+                "*/
 
 /*******************
 * helper functions *
@@ -3576,11 +3594,46 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
                 !outputFileName
                 ",'w');
     if($fscrip)
-        {
-        fwrite($fscrip,\"# inputF \" . $inputF . \"\\n\");
-        fwrite($fscrip,\"# input  \" . $input  . \"\\n\");
-        fwrite($fscrip,\"# output \" . $output . \"\\n\");
-        fwrite($fscrip,\"\\ncd \" . getcwd() . \"\\n\");
+        {"
+                \n
+                "        fwrite($fscrip,\"/*\\n\");"
+                \n
+                "        fwrite($fscrip,\" * ToolID           : "
+                escape$!toolid
+                "\\n\");"
+                \n
+                  map
+                $ ( ( 
+                    =   L
+                      .       str
+                            $ ( "        fwrite($fscrip,\" * "
+                                !arg
+                                "                                                         "
+                              )
+                          : ?L
+                        & @(!L:?L [44 ?)
+                        & !L ": " escape$(getBoilerPlate$(!toolid.!arg)) "\\n\");" \n
+                    )
+                  .   (|PassWord)
+                      Version
+                      Title
+                      ServiceURL
+                      Publisher
+                      ContentProvider
+                      Creator
+                      InfoAbout
+                      Description
+                      ExternalURI
+                  )
+                "        fwrite($fscrip,\" * inputF \" . $inputF . \"\\n\");"
+                \n
+                "        fwrite($fscrip,\" * input  \" . $input  . \"\\n\");"
+                \n
+                "        fwrite($fscrip,\" * output \" . $output . \"\\n\");"
+                \n
+                "        fwrite($fscrip,\" */\\n\");"
+                \n
+                "        fwrite($fscrip,\"\\ncd \" . getcwd() . \"\\n\");
         fclose($fscrip);
         }
     }

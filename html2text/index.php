@@ -71,9 +71,21 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
     $fscrip = fopen($html2textfile,'w');
     if($fscrip)
         {
-        fwrite($fscrip,"# inputF " . $inputF . "\n");
-        fwrite($fscrip,"# input  " . $input  . "\n");
-        fwrite($fscrip,"# output " . $output . "\n");
+        fwrite($fscrip,"/*\n");
+        fwrite($fscrip," * ToolID           : html2text\n");
+        fwrite($fscrip," * Version          : 28.2.18\n");
+        fwrite($fscrip," * Title            : html2text\n");
+        fwrite($fscrip," * ServiceURL       : http://localhost/html2text/\n");
+        fwrite($fscrip," * Publisher        : Jevon Wright\n");
+        fwrite($fscrip," * ContentProvider  : https://github.com/soundasleep/html2text/blob/master/src/Html2Text.php\n");
+        fwrite($fscrip," * Creator          : Jevon Wright\n");
+        fwrite($fscrip," * InfoAbout        : https://github.com/soundasleep/html2text\n");
+        fwrite($fscrip," * Description      : A very simple script that loads from HTML, and then iterates over the DOM to correctly output plain text.\n");
+        fwrite($fscrip," * ExternalURI      : -\n");
+        fwrite($fscrip," * inputF " . $inputF . "\n");
+        fwrite($fscrip," * input  " . $input  . "\n");
+        fwrite($fscrip," * output " . $output . "\n");
+        fwrite($fscrip," */\n");
         fwrite($fscrip,"\ncd " . getcwd() . "\n");
         fclose($fscrip);
         }
