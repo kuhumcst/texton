@@ -97,7 +97,7 @@ function scrip($str) /* TODO send comments and command line instructions. Don't 
     $fscrip = fopen($html2textfile,'a');
     if($fscrip)
         {
-        fwrite($fscrip,$str);
+        fwrite($fscrip,$str . "\n");
         fclose($fscrip);
         }
     }
