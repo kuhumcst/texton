@@ -478,7 +478,7 @@ try {
         else if($language == 'sv')
         {
             $flexrulessubdir = "/1";
-            $flexrules = "flexrules.lemmatization-sv.txt.swp_swedishroottable_without_doubles.UTF8-72.sort-391-step1.2cole_ziggurat_XC";
+            $flexrules = "flexrules.lemmatization-sv-swedishroottable_without_doubles-UD.ph_ziggurat_XC";
         }
         else if($language == 'tr')
         {
