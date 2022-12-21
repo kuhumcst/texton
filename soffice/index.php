@@ -41,7 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -300,6 +300,7 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
+        logit("mode $mode");
         if($mode == 'dry')
             {
             $sofficefile = tempFileName("soffice-results");
@@ -362,28 +363,31 @@ try {
                 {
                 //logit("read:" . $read);
                 }
-            $tmpf = fopen($sofficefile,'r');
+            }
+       // unlink($copied);
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $sofficefile
+//*/
+        $tmpf = fopen($sofficefile,'r');
 
-            if($tmpf)
+        if($tmpf)
+            {
+            while($line = fgets($tmpf))
                 {
-                while($line = fgets($tmpf))
-                    {
-                    print $line;
-                    }
-                fclose($tmpf);
+                print $line;
                 }
+            fclose($tmpf);
+            }
 
-            if($dodelete)
+        if($dodelete)
+            {
+            foreach ($tobedeleted as $filename => $dot)
                 {
-                foreach ($tobedeleted as $filename => $dot)
-                    {
-                    if($dot)
-                        unlink($filename);
-                    }
-                unlink($copied);
-                unlink($sofficefile);
-                unset($tobedeleted);
+                if($dot)
+                    unlink($filename);
                 }
+            unlink($copied);
+            unlink($sofficefile);
+            unset($tobedeleted);
             }
         }
     loginit();
