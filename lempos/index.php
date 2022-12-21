@@ -748,7 +748,7 @@ try {
                 $TorC = "C";
                 }
             else if($Ilangsv)
-                {\
+                {
                 $lang = "sv";
                 $flexrules = "$res/sv/lemmatiser/notags/0/flexrules.lemmatization-sv-swedishroottable_without_doubles-UD.ph_ziggurat_XC.bra";//"flexrules.bra";
                 $traindata = "$res/sv/lemmatiser/training/svUDdictWordLemmaPos.sort2";//"suc2.training.tab";

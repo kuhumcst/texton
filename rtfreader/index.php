@@ -587,12 +587,13 @@ try {
 
             if($dodelete)
                 {
-            foreach ($tobedeleted as $filename => $dot)
-                {
-                if($dot)
-                unlink($filename);
+                foreach ($tobedeleted as $filename => $dot)
+                    {
+                    if($dot)
+                        unlink($filename);
+                    }
+                unset($tobedeleted);
                 }
-            unset($tobedeleted);
             }
         else
             {
