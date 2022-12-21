@@ -656,8 +656,8 @@ try {
                 }
             $command .= " && curl -v -F job=$job -F name=\$udpipefile -F data=@\$udpipefile $post2 && rm \$tmp1 && rm \$tmp2 " . $rms  . " && rm \$udpipefile >> ../log/udpipe.log 2>&1 &";
             scrip($command);
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $udpipefile
-//*/
+            // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $udpipefile
+            //*/
             $tmpf = fopen($udpipefile,'r');
 
             if($tmpf)
@@ -679,12 +679,12 @@ try {
             }
         else
             {
-            //logit("F:" . $F);
             $lang = getArgument("Olang");
             if( hasArgument("Operiod") )
                 $period = getArgument("Operiod");
             else
                 $period = "c21";
+
             logit("Lang: " . $lang);
             logit("Period: " . $period);
             if($Ifacettok) // and also $Ifacetseg!
@@ -697,12 +697,14 @@ try {
                 $command = "../bin/bracmat \"get'\\\"udpipex.bra\\\"\" $lang $period $IfacettokF $IfacetsegF $udpipefile $tmp1 $tmp2";
                 $rms = "&& rm $IfacettokF && rm $IfacetsegF ";
                 }
+
             $command .= " && curl -v -F job=$job -F name=$udpipefile -F data=@$udpipefile $post2 && rm $tmp1 && rm $tmp2 " . $rms  . " && rm $udpipefile >> ../log/udpipe.log 2>&1 &";
             logit($command);
             exec($command);
 
             logit('RETURN 202');
             header("HTTP/1.0 202 Accepted");
+            }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $udpipefile
 //*/
         }
