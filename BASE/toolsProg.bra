@@ -14513,7 +14513,7 @@ function main2(evt) {
  */"
       ( poll
       =     n step secs steplinks links
-          , serviceurl title DOWNLOAD
+          , serviceurl title DOWNLOAD steptexts
           , runningParagraphs JobNr hours minutes
         .   ( steplinks
             =   links locJobs file step outp ServiceURL JobNr,seenInputs Title
@@ -14529,76 +14529,78 @@ function main2(evt) {
                      )
                    )
                 & :?seenInputs
-                &     map
-                    $ ( ( 
-                        =   files status
-                          .     !arg:(!JobNr.?status.?files.?.?.?)
-                              &   map
-                                $ ( ( 
-                                    =   
-                                      .     !( 
-                                             ' ( $Uploads
-                                               : ? (?.?.$arg.?) ?
+                &       map
+                      $ ( ( 
+                          =   files status
+                            .     !arg:(!JobNr.?status.?files.?.?.?)
+                                &   map
+                                  $ ( ( 
+                                      =   
+                                        .     !( 
+                                               ' ( $Uploads
+                                                 : ? (?.?.$arg.?) ?
+                                                 )
                                                )
-                                             )
-                                          & (   !seenInputs:? !arg ?
-                                              & log$seen
-                                              & 
-                                            |   !arg !seenInputs:?seenInputs
-                                              &   paragraph
-                                                $ ( "input:"
-                                                    ( a
-                                                    .     ( href
-                                                          .   str
-                                                            $ ( !wwwServer
-                                                                "/texton/data/"
-                                                                !arg
-                                                              )
-                                                          )
-                                                          (tabindex.0)
-                                                      , !arg
+                                            & (   !seenInputs:? !arg ?
+                                                & log$seen
+                                                & 
+                                              |   !arg !seenInputs:?seenInputs
+                                                &   paragraph
+                                                  $ ( "input:"
+                                                      ( a
+                                                      .     ( href
+                                                            .   str
+                                                              $ ( !wwwServer
+                                                                  "/texton/data/"
+                                                                  !arg
+                                                                )
+                                                            )
+                                                            (tabindex.0)
+                                                        , !arg
+                                                      )
                                                     )
-                                                  )
-                                            )
-                                        | !arg:(?,?)&
-                                        |     !arg
-                                            : @
-                                            : @(!arg:step ?)
-                                          & 
-                                        | 
+                                              )
+                                          |   !arg:(?,?)
+                                            & 
+                                          |     !arg
+                                              : @
+                                              : @(!arg:step ?)
+                                            & 
+                                          | 
+                                      )
+                                    . !files
                                     )
-                                  . !files
-                                  )
-                            | 
-                        )
-                      . !locJobs
-                      )
-                  : ?links
-                &   whl
-                  ' (   !locJobs
-                      :   ?
-                          (!JobNr.?step done.?.?ServiceURL.?.?file)
-                          ?locJobs
-                    &   !tooladm
-                      :   ?
-                        + ( ? (ServiceURL.!ServiceURL) ?
-                          : ? (Title.?Title) ?
+                              | 
                           )
-                        + ?
-                    &     !links
-                            paragraph
-                          $ ( str$(!step ":")
-                              ( a
-                              .     (href.str$(!wwwServer "/texton/data/" !file))
-                                    (tabindex.0)
-                                , !file
-                              )
-                              " ("
-                              !Title
-                              ")"
-                            )
-                      : ?links
-                    )
+                        . !locJobs
+                        )
+                        map
+                      $ ( ( 
+                          =   
+                            .       !arg
+                                  : (!JobNr.?step done.?.?ServiceURL.?.?file)
+                                &   !tooladm
+                                  :   ?
+                                    + ( ? (ServiceURL.!ServiceURL) ?
+                                      : ? (Title.?Title) ?
+                                      )
+                                    + ?
+                                &   paragraph
+                                  $ ( str$(!step ":")
+                                      ( a
+                                      .     (href.str$(!wwwServer "/texton/data/" !file))
+                                            (tabindex.0)
+                                        , !file
+                                      )
+                                      " ("
+                                      !Title
+                                      ")"
+                                    )
+                              | 
+                          )
+                        . !locJobs
+                        )
+                  : ?links
                 & ( !links:% %
                   | !locJobs:? (!JobNr.?) ?
                   |     !links
@@ -14607,6 +14609,117 @@ function main2(evt) {
                             (a.(href.str$(!wwwServer "/texton/data/" !file)),!outp)
                           )
                     : ?links
+                  )
+                & !links
+            )
+          & " ( I
+              .   (ambig.una.0)
+                + (app.nrm.0)
+                + ( facet
+                  .   (seg.F.\"text-1-905-step5.xml\")
+                    + (tok.(F.\"text-1-905-step4.xml\")+(PT.0))
+                  )
+                + (format.txtann.0)
+                + (lang.en.0)
+                + (period.c21.0)
+                + (pres.nml.0)
+              )
+            + ( O
+              .   (ambig.una.0)
+                + (app.nrm.0)
+                + (facet.pos.PT)
+                + (format.txtann.0)
+                + (lang.en.0)
+                + (period.c21.0)
+                + (pres.nml.0)
+              )
+            + (base.\"http://localhost/texton/data/\")
+            + (job.905-step6)
+            + (mode.dry)
+            + (post2.\"http://localhost/texton/upload\")"
+          & ( steptexts
+            =   links locJobs file step outp ServiceURL JobNr Title
+              .   !arg:(?JobNr.?locJobs)
+                & log$steptexts
+                & log$(JobNr !JobNr)
+                & !( 
+                   ' ( $locJobs
+                     :   ?
+                         ( ($JobNr.step1 ?.?file.?.?.?outp) ?
+                         : ?locJobs
+                         )
+                     )
+                   )
+                &     map
+                    $ ( ( 
+                        =   src I
+                          .       !arg
+                                : ( !JobNr
+                                  . ?step done
+                                  . ?src
+                                  . ?ServiceURL
+                                  . ?+(I.?I)+?
+                                  . ?file
+                                  )
+                              &   !tooladm
+                                :   ?
+                                  + ( ? (ServiceURL.!ServiceURL) ?
+                                    : ? (Title.?Title) ?
+                                    )
+                                  + ?
+                              & get$(str$(data/ !file),STR):?rapport
+                              &   paragraph$(str$(!step ":") " (" !Title ")")
+                                    paragraph
+                                  $ ( str
+                                    $ ( "source:"
+                                        (   !src:% %
+                                          &   !I
+                                            : ?+(?feat.%+%:?vals)+?
+                                          & 0:?inputs
+                                          &   map
+                                            $ ( ( 
+                                                =   
+                                                  .     !vals
+                                                      :   ?
+                                                        + ( ?val
+                                                          .   ?
+                                                            + ( F
+                                                              . @( ?
+                                                                 : ? !arg ?
+                                                                 )
+                                                              )
+                                                            + ?
+                                                          )
+                                                        + ?
+                                                    &     (str$(!feat !val).!arg)
+                                                        + !inputs
+                                                      : ?inputs
+                                                )
+                                              . !src
+                                              )
+                                          &   mop
+                                            $ ( ( 
+                                                =   
+                                                  .   !arg:(?fv.?stp)
+                                                    & " " !stp "($I" !fv "F)"
+                                                )
+                                              . !inputs
+                                              . '$inputs
+                                              )
+                                        | " " !src
+                                        )
+                                      )
+                                    )
+                                  (pre.,!rapport)
+                                  (br.,)
+                            | 
+                        )
+                      . !locJobs
+                      )
+                  : ?links
+                & ( !links:% %
+                  | !locJobs:? (!JobNr.?) ?
+                  | 
                   )
                 & !links
             )
@@ -14619,154 +14732,159 @@ function main2(evt) {
             | readTable$tooladm&readTable$Uploads
             )
           & div$(!deleteAfterMillisec*86400000^-1*24*60.1):?minutes
-          &   toML
-            $ (   steplinks$(!JobNr.!jobs):?links
-                &     ( 
-                      =   locJobs n JobNr
-                        .   0:?n
-                          & !arg:(?locJobs.?JobNr)
-                          &   whl
-                            ' ( !locJobs:? (!JobNr.?) ?locJobs
-                              & 1+!n:?n
+          & ( !jobs:? (!JobNr.?.?.?.?+(mode.?mode)+?.?) ?
+            | niks:?mode
+            )
+          & log$(MODE !mode)
+          &   ( !mode:dry&steptexts$(!JobNr.!jobs)
+              | steplinks$(!JobNr.!jobs)
+              )
+            : ?links
+          &     ( 
+                =   locJobs n JobNr
+                  .   0:?n
+                    & !arg:(?locJobs.?JobNr)
+                    &   whl
+                      ' ( !locJobs:? (!JobNr.?) ?locJobs
+                        & 1+!n:?n
+                        )
+                    & !n
+                )
+              $ (!jobs.!JobNr)
+            : ?n
+          &     map
+              $ ( ( 
+                  =   serviceurl title step
+                    .       !arg
+                          : ( !JobNr
+                            .   %@?step
+                                (|starting|waiting)
+                            . ~(? (?,pending) ?)
+                            . ?serviceurl
+                            . ?
+                            . ?
+                            )
+                        &   !tooladm
+                          :   ?
+                            + ( ? (ServiceURL.!serviceurl) ?
+                              : ? (Title.?title) ?
                               )
-                          & !n
-                      )
-                    $ (!jobs.!JobNr)
-                  : ?n
-                &     map
-                    $ ( ( 
-                        =   serviceurl title step
-                          .       !arg
-                                : ( !JobNr
-                                  .   %@?step
-                                      ( 
-                                      | starting
-                                      | waiting
-                                      )
-                                  . ~(? (?,pending) ?)
-                                  . ?serviceurl
-                                  . ?
-                                  . ?
-                                  )
-                              &   !tooladm
-                                :   ?
-                                  + ( ? (ServiceURL.!serviceurl) ?
-                                    : ? (Title.?title) ?
-                                    )
-                                  + ?
-                              &   paragraph
-                                $ ( localized$("Currently running " "I øjeblikket kører ")
-                                    !step
-                                    " "
-                                    localized$(of af)
-                                    " "
-                                    !n
-                                    " ("
-                                    !title
-                                    ")"
-                                  )
-                            | 
-                        )
-                      . !jobs
-                      )
-                  : ?runningParagraphs
-                & ( DOWNLOAD
-                  =   
-                    .   ( a
-                        .     (href.!wwwServer "/texton/zipresults?shortletter=n&amp;JobNr=" !arg)
-                              (tabindex.0)
-                          ,   localized
-                            $ ("Download input and all results" "Download input og alle resultater")
-                        )
-                        localized$(" OR " " ELLER ")
-                        ( a
-                        .     (href.!wwwServer "/texton/zipresults?shortletter=y&amp;JobNr=" !arg)
-                              (tabindex.0)
-                          , localized$("Download final results" "Download slutresultater")
-                        )
+                            + ?
+                        &   paragraph
+                          $ ( localized$("Currently running " "I øjeblikket kører ")
+                              !step
+                              " "
+                              localized$(of af)
+                              " "
+                              !n
+                              " ("
+                              !title
+                              ")"
+                            )
+                      | 
                   )
-                & (   !runningParagraphs:
-                    &   !HTMLbodyContainer
-                      $ ( div
-                        .   (class.canvasdiv)
-                          ,   ( h1
-                              .   (class.smallmargin)
-                                , localized$("Done! " "Færdig! ")
-                              )
-                              paragraph$(DOWNLOAD$!JobNr)
-                              !links
-                                paragraph
-                              $ ( (br.,)
-                                    localized
-                                  $ ( "To download the results, see the links at the top of this page."
-                                      "Se links øverst på denne side hvis du vil downloade resultaterne."
-                                    )
-                                  (br.,)
-                                    localized
-                                  $ ( "Click the following link to immediately DELETE your input and the results from the workflow from the server. "
-                                      "Tryk på næste link for at fjerne din input og arbejdsgangens resultater fra serveren. "
-                                    )
-                                  ( a
-                                  .     (href.!wwwServer "/texton/cleanup?JobNr=" !JobNr)
-                                        (tabindex.0)
-                                    ,   localized
-                                      $ ( "DELETE input and results from server"
-                                          "FJERN input og resultaterne fra serveren"
-                                        )
-                                  )
-                                  (br.,)
-                                  ( a
-                                  .   (href.!wwwServer "/texton/") (tabindex.0)
-                                    , localized$(Home Forside)
-                                  )
-                                  (br.,)
-                                  ( a
-                                  .   (href.!wwwServer "/texton/") (tabindex.0)
-                                    , ( img
-                                      .   (src."texton.png") (alt.start)
-                                        , 
-                                      )
-                                  )
-                                )
-                                paragraph
-                              $ ( (h2.,"Feedback to the developer")
-                                  ( p
-                                  .   
-                                    ,   localized
-                                      $ ( "Help us improve the Text Tonsorium."
-                                          "Hjælp os med at forbedre Text Tonsorium."
-                                        )
-                                  )
-                                    form
-                                  $ ( usermsg
-                                    .   UserMsg$(localized$!suggestions.)
-                                        (br.,)
-                                        makeHiddenFields$!hiddenData
-                                    )
-                                )
-                        )
-                  |   refreshingXHTMLbodyContainer
-                    $ ( !secs str$(!wwwServer "/texton/mypoll?job=" !JobNr)
-                      . div
+                . !jobs
+                )
+            : ?runningParagraphs
+          & ( DOWNLOAD
+            =   
+              .   ( a
+                  .     (href.!wwwServer "/texton/zipresults?shortletter=n&amp;JobNr=" !arg)
+                        (tabindex.0)
+                    , localized$("Download input and all results" "Download input og alle resultater")
+                  )
+                  localized$(" OR " " ELLER ")
+                  ( a
+                  .     (href.!wwwServer "/texton/zipresults?shortletter=y&amp;JobNr=" !arg)
+                        (tabindex.0)
+                    , localized$("Download final results" "Download slutresultater")
+                  )
+            )
+          &   toML
+            $ ( (   !runningParagraphs:
+                  &   !HTMLbodyContainer
+                    $ ( div
                       .   (class.canvasdiv)
                         ,   ( h1
-                            .   (class.smallmargin)
-                              , localized$("Running... " "Kører... ")
+                            . (class.smallmargin),localized$("Done! " "Færdig! ")
+                            )
+                            (   !mode:dry
+                              & log$(Done! !arg str$!links)
+                              & !links
+                            |   paragraph$(DOWNLOAD$!JobNr)
+                                !links
+                                  paragraph
+                                $ ( (br.,)
+                                      localized
+                                    $ ( "To download the results, see the links at the top of this page."
+                                        "Se links øverst på denne side hvis du vil downloade resultaterne."
+                                      )
+                                  )
                             )
                               paragraph
-                            $ ( str
-                              $ (   localized
-                                  $ ( "Reload this page to track the status of your job. Or wait. This page auto-reloads after "
-                                      "Genindlæs denne side hvis du vil følge status på arbejdsgangen. Eller vent. Siden genindlæses automatisk efter "
-                                    )
-                                  !secs
-                                  localized$(" seconds." " sekunder.")
+                            $ (   localized
+                                $ ( "Click the following link to immediately DELETE your input and the results from the workflow from the server. "
+                                    "Tryk på næste link for at fjerne din input og arbejdsgangens resultater fra serveren. "
+                                  )
+                                ( a
+                                .     (href.!wwwServer "/texton/cleanup?JobNr=" !JobNr)
+                                      (tabindex.0)
+                                  ,   localized
+                                    $ ( "DELETE input and results from server"
+                                        "FJERN input og resultaterne fra serveren"
+                                      )
                                 )
                               )
-                            !links
-                            !runningParagraphs
+                              paragraph
+                            $ ( a
+                              .   (href.!wwwServer "/texton/") (tabindex.0)
+                                , localized$(Home Forside)
+                              )
+                              paragraph
+                            $ ( a
+                              .   (href.!wwwServer "/texton/") (tabindex.0)
+                                , ( img
+                                  . (src."texton.png") (alt.start),
+                                  )
+                              )
+                              paragraph
+                            $ ( (h2.,"Feedback to the developer")
+                                ( p
+                                .   
+                                  ,   localized
+                                    $ ( "Help us improve the Text Tonsorium."
+                                        "Hjælp os med at forbedre Text Tonsorium."
+                                      )
+                                )
+                                  form
+                                $ ( usermsg
+                                  .   UserMsg$(localized$!suggestions.)
+                                      (br.,)
+                                      makeHiddenFields$!hiddenData
+                                  )
+                              )
                       )
-                  )
+                |   refreshingXHTMLbodyContainer
+                  $ ( !secs str$(!wwwServer "/texton/mypoll?job=" !JobNr)
+                    . div
+                    .   (class.canvasdiv)
+                      ,   ( h1
+                          . (class.smallmargin),localized$("Running... " "Kører... ")
+                          )
+                            paragraph
+                          $ ( str
+                            $ (   localized
+                                $ ( "Reload this page to track the status of your job. Or wait. This page auto-reloads after "
+                                    "Genindlæs denne side hvis du vil følge status på arbejdsgangen. Eller vent. Siden genindlæses automatisk efter "
+                                  )
+                                !secs
+                                localized$(" seconds." " sekunder.")
+                              )
+                            )
+                          !links
+                          !runningParagraphs
+                    )
+                )
               |   !HTMLbodyContainer
                 $ (     ( 
                         =   zippedresults zipfile
