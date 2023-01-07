@@ -448,7 +448,7 @@ try {
             {
             logit("F:" . $F);
             if($mode == 'dry')
-                scrip("daner(\$F)");
+                scrip("daner/daner \$F > \$danerfile");
             else
                 $danerfile = daner($F);
             }
@@ -460,9 +460,9 @@ try {
                     {
                     if($mode == 'dry')
                         {
-                        scrip("\$plaintext = combine(\$IfacettokF,\$IfacetsegF)");
-                        scrip("\$nerfileRAW = daner(\$plaintext)");
-                        scrip("NERannotation(\$IfacettokF,\$nerfileRAW,\$plaintext)");
+                        combine($IfacettokF,$IfacetsegF);
+                        scrip("daner/daner \$plaintext > \$nerfileRAW");
+                        NERannotation($IfacettokF,"\$nerfileRAW","\$plaintext");
                         }
                     else
                         {
@@ -504,14 +504,21 @@ try {
         global $mode;
         logit( "combine(" . $IfacettokF . "," . $IfacetsegF . ")\n");
         $nerfile = tempFileName("combine-tokseg-attribute");
-        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$nerfile\") (lowercase=\"no\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
-        logit($command);
-        if(($cmd = popen($command, "r")) == NULL)
-            exit(1);
+        if($mode == 'dry')
+        {
+            scrip("../bin/bracmat '(inputTok=\"\$IfacettokF\") (inputSeg=\"\$IfacetsegF\") (output=\"\$plaintext\") (lowercase=\"no\") (get\$\"../shared_scripts/tokseg2sent.bra\")'");
+        }
+        else
+        {
+            $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$nerfile\") (lowercase=\"no\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
+            logit($command);
+            if(($cmd = popen($command, "r")) == NULL)
+                exit(1);
 
-        while($read = fgets($cmd))
+            while($read = fgets($cmd))
             {
             }
+        }
         return $nerfile;
         }
 
@@ -522,7 +529,7 @@ try {
         if($mode == 'dry')
             {
             $nerfile = "NERannotation-nerf-attribute";
-            scrip("../bin/bracmat '(inputTok=\"\$IfacettokF\") (inputNER=\"\$nerfileRAW\") (uplo\adfileTokens=\"\$plaintext\") (output=\"\$nerfile\") (get\$\"bradanerf.bra\")'");
+            scrip("../bin/bracmat '(inputTok=\"\$IfacettokF\") (inputNER=\"\$nerfileRAW\") (uploadfileTokens=\"\$plaintext\") (output=\"\$danerfile\") (get\$\"bradanerf.bra\")'");
             }
         else
             {
