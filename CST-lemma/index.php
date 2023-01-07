@@ -356,10 +356,15 @@ try {
         else if($language == 'en')
         {
             if($pos=='n')
+            {
                 $flexrulessubdir = "/2";
+                $flexrules = "flexrules.dict_en_without_doubles_github_node-lemmatizer_additions-24-942-step1.2cole_XC";
+            }
             else
+            {
                 $flexrulessubdir = "/links";
-            $flexrules = "flexrules";
+                $flexrules = "flexrules";
+            }
             if($toptarg == '')
                 $x = "-x'$toolres/en/lemmatiser/tags/translation'";
         }
