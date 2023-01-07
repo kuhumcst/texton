@@ -337,7 +337,7 @@ try {
 
             pclose($cmd);
             }
-	
+    
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $clusterfile
 //*/
         $tmpf = fopen($clusterfile,'r');
