@@ -8198,9 +8198,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 &   whl
                   ' ( !items:(Item.%?item ?) ?items
                     & !Uploads:? (?.!item.?file.?) ?
-                    &     !requestString
-                        + (!files !file:?files&(F.!file))
-                      : ?requestString
+                    & ( !dep !files:? !file ?
+                      | !files !file:?files
+                      )
+                    & !requestString+(F.!file):?requestString
                     )
                 & !requestString
             )
@@ -8453,6 +8454,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !in:?In
               &   getDepsAndAddInputsToRequestString$(!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
+              & log$(dep !dep)
               &     !dep
                     ( :?files
                     & ( !requestString:?+(F.?)+?
@@ -8470,7 +8472,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                   ?
                             &     !requestString
                                 + (   !discerningFeature:
-                                    & !files !file:?files
+                                    & ( !dep !files:? !file ?
+                                      | !files !file:?files
+                                      )
                                     & (F.!file)
                                   |     !feats
                                       : ? (!discerningFeature.?v) ?
@@ -8490,23 +8494,31 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                           )
                                           ?
                                     & !v:%@?v^?
-                                    & !files !file:?files
+                                    & ( !dep !files:? !file ?
+                                      | !files !file:?files
+                                      )
                                     & (I.!discerningFeature.!v.F.!file)
                                   | 0
                                   )
                               : ?requestString
                             )
                       )
+                    & log$(files !files)
+                    & log$(dep2 !dep)
                     & (     !requestString
                           : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
                             | ?+(F.?)+?
                             )
+                        & log$simpleInput
                         & simpleInput$!requestString:?requestString
-                      | !requestString+forceFeed$!Items:?requestString
+                      |   log$forceFeed
+                        & !requestString+forceFeed$!Items:?requestString
                       )
+                    & log$(files2 !files)
                     & !files
                     )
                 : ?inputs
+              & log$(IJNPUTS !inputs)
               & compact$!requestString+(mode.!dryORrun):?requestString
               &     !newJobs
                     ( !jobNr
@@ -14668,35 +14680,38 @@ function main2(evt) {
                                     )
                                   + ?
                               & get$(str$(data/ !file),STR):?rapport
-                              &   paragraph$(str$(!step ":") " (" !Title ")")
+                              &   paragraph$(str$(!step ":") " " !Title)
                                     paragraph
                                   $ ( str
                                     $ ( "source:"
                                         (   !src:% %
+                                          & log$"multiple sources"
                                           &   !I
                                             : ?+(?feat.%+%:?vals)+?
                                           & 0:?inputs
                                           &   map
                                             $ ( ( 
                                                 =   
-                                                  .     !vals
-                                                      :   ?
-                                                        + ( ?val
-                                                          .   ?
-                                                            + ( F
-                                                              . @( ?
-                                                                 : ? !arg ?
-                                                                 )
-                                                              )
-                                                            + ?
-                                                          )
-                                                        + ?
-                                                    &     (str$(!feat !val).!arg)
-                                                        + !inputs
-                                                      : ?inputs
+                                                  .       !vals
+                                                        :   ?
+                                                          + ( ?val
+                                                            .   ?
+                                                              + ( F
+                                                                . @( ?
+                                                                   : ? !arg ?
+                                                                   )
+                                                                )
+                                                              + ?
+                                                            )
+                                                          + ?
+                                                      &     (str$(!feat !val).!arg)
+                                                          + !inputs
+                                                        : ?inputs
+                                                    | 
                                                 )
                                               . !src
                                               )
+                                          & log$(inputs !inputs)
                                           &   mop
                                             $ ( ( 
                                                 =   
@@ -14706,7 +14721,9 @@ function main2(evt) {
                                               . !inputs
                                               . '$inputs
                                               )
-                                        | " " !src
+                                        |   log$"single input"
+                                          & log$(src !src)
+                                          & " " !src
                                         )
                                       )
                                     )
