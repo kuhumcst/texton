@@ -562,7 +562,7 @@ try {
                 }
             else
                 {
-                $command = "$tool $nopt -EUTF8 -w- $tokentype -i $F $abbr -t \$RTFreadfile $DEL";
+                $command = "$tool $nopt -EUTF8 -w- $tokentype -i \$F $abbr -t \$RTFreadfile $DEL";
 
                 if($Ofacetpar)
                     {

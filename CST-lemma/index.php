@@ -189,18 +189,27 @@ try {
 
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
     {
-        $lemfile = tempFileName("split-".$attribute);
-        $command = "python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem";
-
-        logit($command);
-
-        if(($cmd = popen($command, "r")) == NULL)
+        global $mode;
+        if($mode == 'dry')
         {
-            throw new SystemExit(); // instead of exit()
+            $lemfile = "\$CSTLemfile";
+            scrip("python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem");
         }
-
-        while($read = fgets($cmd))
+        else
         {
+            $lemfile = tempFileName("split-".$attribute);
+            $command = "python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem";
+
+            logit($command);
+
+            if(($cmd = popen($command, "r")) == NULL)
+            {
+                throw new SystemExit(); // instead of exit()
+            }
+
+            while($read = fgets($cmd))
+            {
+            }
         }
         return $lemfile;
     }
@@ -209,7 +218,10 @@ try {
     {
         global $fscrip, $CSTLemfile,$mode;
 
-        $tmpno = tempFileName("lemma-results");
+        if($mode == 'dry')
+            $tmpno = '$CSTLemfile';
+        else
+            $tmpno = tempFileName("lemma-results");
         $dict = "/dict";
         $periodsubdir = "";
         $Uminus = "-";
@@ -660,18 +672,26 @@ try {
 
     function merge($toolbin,$uploadfile,$uploadfileAnnotation,$mergeattribute,$emptyattribute)
     {
-        $posfile = tempFileName("merge");
-        $command = "python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute";
-
-        logit($command);
-
-        if(($cmd = popen($command, "r")) == NULL)
+        global $mode;
+        if($mode == 'dry')
         {
-            throw new SystemExit(); // instead of exit()
+            $posfile = "\$lemmainputfile";
+            scrip("python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute");
         }
-
-        while($read = fgets($cmd))
+        else
         {
+            $posfile = tempFileName("merge");
+            $command = "python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute";
+            logit($command);
+
+            if(($cmd = popen($command, "r")) == NULL)
+            {
+                throw new SystemExit(); // instead of exit()
+            }
+
+            while($read = fgets($cmd))
+            {
+            }
         }
         return $posfile;
     }
@@ -680,38 +700,45 @@ try {
     function add($toolbin,$uploadfile,$attribute,$element,$idprefix,$ancestor)
     {
         global $ERROR;
+        global $mode;
         $posfile = tempFileName("add-" . $attribute . "-attribute");
-        if($idprefix == '')
+        if($mode == 'dry')
         {
-            $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element -";
+            if($idprefix == '')
+                scrip("python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element - > \$lemmainputfile");
+            else
+                scrip("python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id > \$lemmainputfile");
         }
         else
         {
-            $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id";
-        }
-        logit($command);
-        if(($cmd = popen($command, "r")) == NULL)
-        {
-            throw new SystemExit(); // instead of exit()
-        }
-
-        while($read = fgets($cmd))
-        {
-        }
-        $handle = @fopen("$posfile", "r");
-        if ($handle)
-        {
-            if(($buffer = fgets($handle, 4096)) !== false)
+            if($idprefix == '')
+                $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element -";
+            else
+                $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id";
+            logit($command);
+            if(($cmd = popen($command, "r")) == NULL)
             {
-                //logit("buffer:[" . $buffer . "]");
-                if(strncmp($buffer,"ERROR",5) == 0)
-                {
-                    fclose($handle);
-                    $ERROR = $buffer;
-                    throw new SystemExit(); // instead of exit()
-                }
+                throw new SystemExit(); // instead of exit()
             }
-            fclose($handle);
+
+            while($read = fgets($cmd))
+            {
+            }
+            $handle = @fopen("$posfile", "r");
+            if ($handle)
+            {
+                if(($buffer = fgets($handle, 4096)) !== false)
+                {
+                    //logit("buffer:[" . $buffer . "]");
+                    if(strncmp($buffer,"ERROR",5) == 0)
+                    {
+                        fclose($handle);
+                        $ERROR = $buffer;
+                        throw new SystemExit(); // instead of exit()
+                    }
+                }
+                fclose($handle);
+            }
         }
         return $posfile;
     }
@@ -1290,8 +1317,7 @@ try {
                 if($mode == 'dry')
                 {
                     $uploadfileAnnotation = '$IfacetposF';
-                    scrip("\$lemmainputfile = merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma')");
-                    scrip("lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',\$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20)");
+                    merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma');
                     lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',"\$lemmainputfile",'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
                 }
                 else
@@ -1308,10 +1334,7 @@ try {
                 {
                     logit('lemmatise flat text that has pos tags embedded');
                     if($mode == 'dry')
-                    {
-                        scrip("lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20)");
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
-                    }
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
                 }
@@ -1319,10 +1342,7 @@ try {
                 {
                     logit('lemmatise TEI-P5 (not an annotation file)');
                     if($mode == 'dry')
-                    {
-                        scrip("lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20)");
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
-                    }
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
                 }
@@ -1337,8 +1357,7 @@ try {
                 logit('add lemma attribute');
                 if($mode == 'dry')
                 {
-                    scrip("\$lemmainputfile = add($toolbin,$uploadfile,'lemma',$element,$idprefix,$ancestor)");
-                    scrip("lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',\$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20)");
+                    add($toolbin,$uploadfile,'lemma',$element,$idprefix,$ancestor);
                     lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',"\$lemmainputfile",'n','','lemma','j',$Iperiodc13,$Iperiodc20);
                 }
                 else
@@ -1354,10 +1373,7 @@ try {
                 {
                     logit('lemmatise flat text');
                     if($mode == 'dry')
-                    {
-                        scrip("lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20)");
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
-                    }
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
                 }
@@ -1365,10 +1381,7 @@ try {
                 {
                     logit('lemmatise TEI-P5 (not an annotation file)');
                     if($mode == 'dry')
-                    {
-                        scrip("lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20)                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20)");
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
-                    }
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
                 }
@@ -1379,7 +1392,7 @@ try {
         if($Oformat == "txtann")
         {
             if($mode == 'dry')
-                scrip("splits($toolbin,\$CSTLemfile,'lemma',$annotation,$idprefix,$ancestor,$element)");
+                splits($toolbin,"\$CSTLemfile",'lemma',$annotation,$idprefix,$ancestor,$element);
             else
                 $CSTLemfile = splits($toolbin,$CSTLemfile,'lemma',$annotation,$idprefix,$ancestor,$element);
         }
