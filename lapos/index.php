@@ -192,6 +192,7 @@ try {
         global $Laposfile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -430,11 +431,11 @@ try {
                 else if($Olangda)
                 {
                     if($Operiodc13)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c13 < \$F");
+                        scrip("../bin/lapos -m $toolres/da/lapos/c13 < \$F > \$Laposfile");
                     else if($Operiodc20)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$F");
+                        scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$F > \$Laposfile");
                     else if($Operiodc21)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$F");
+                        scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$F > \$Laposfile");
                 }
             }
             else
@@ -473,42 +474,41 @@ try {
         { /*Code inspired by OpenNLPtagger service, uses stand off annotations. */
             if($mode == 'dry')
             {
-                scrip("\$filename = combine(\$IfacettokF,\$IfacetsegF)");
-                scrip("\$LaposfileRaw = tempFileName(\"Lapos-raw\")");
+                combine($IfacettokF,$IfacetsegF);
 
                 if($Olangla)
-                    scrip("../bin/lapos -m $toolres/la/lapos < \$filename > \$LaposfileRaw");
+                    scrip("../bin/lapos -m $toolres/la/lapos < \$plainfile > \$LaposfileRaw");
                 else if($Olangda)
                 {
                     if($Operiodc13)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c13 < \$filename > \$LaposfileRaw");
+                        scrip("../bin/lapos -m $toolres/da/lapos/c13 < \$plainfile > \$LaposfileRaw");
                     else if($Operiodc20)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$filename > \$LaposfileRaw");
+                        scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$plainfile > \$LaposfileRaw");
                     else if($Operiodc21)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$filename > \$LaposfileRaw");
+                        scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$plainfile > \$LaposfileRaw");
                 }
 
-                scrip("postagannotation(\$IfacettokF,\$LaposfileRaw,\$filename)");
+                postagannotation("\$IfacettokF","\$LaposfileRaw","\$plainfile");
             }
             else
             {
                 logit("Lapos($IfacetsegF,$IfacettokF)");
-                $filename = combine($IfacettokF,$IfacetsegF);
+                $plainfile = combine($IfacettokF,$IfacetsegF);
                 $LaposfileRaw = tempFileName("Lapos-raw");
 
                 logit("runit");
                 logit("runit la $Olangla da $Olangda");
                 $command = "NIKS";
                 if($Olangla)
-                    $command = "../bin/lapos -m $toolres/la/lapos < $filename";
+                    $command = "../bin/lapos -m $toolres/la/lapos < $plainfile";
                 else if($Olangda)
                 {
                     if($Operiodc13)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c13 < $filename";
+                        $command = "../bin/lapos -m $toolres/da/lapos/c13 < $plainfile";
                     else if($Operiodc20)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c20 < $filename";
+                        $command = "../bin/lapos -m $toolres/da/lapos/c20 < $plainfile";
                     else if($Operiodc21)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c21 < $filename";
+                        $command = "../bin/lapos -m $toolres/da/lapos/c21 < $plainfile";
                 }
 
                 logit($command);
@@ -527,7 +527,7 @@ try {
                 fclose($tmpf);
                 pclose($cmd);
 
-                $Laposfile = postagannotation($IfacettokF,$LaposfileRaw,$filename);
+                $Laposfile = postagannotation($IfacettokF,$LaposfileRaw,$plainfile);
                 logit('filename:'.$Laposfile);
             }
         }
@@ -562,31 +562,47 @@ try {
 
     function combine($IfacettokF,$IfacetsegF)
         {
+        global $mode;
         logit( "combine(" . $IfacettokF . "," . $IfacetsegF . ")\n");
-        $posfile = tempFileName("combine-tokseg-attribute");
-        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$posfile\") (lowercase=\"yes\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
-        logit($command);
-        if(($cmd = popen($command, "r")) == NULL)
-            exit(1);
+        $plainfile = tempFileName("combine-tokseg-attribute");
+        if($mode == 'dry')
+        {
+            scrip("../bin/bracmat '(inputTok=\"\$IfacettokF\") (inputSeg=\"\$IfacetsegF\") (output=\"\$plainfile\") (lowercase=\"yes\") (get\$\"../shared_scripts/tokseg2sent.bra\")'");
+        }
+        else
+        {
+            $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$plainfile\") (lowercase=\"yes\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
+            logit($command);
+            if(($cmd = popen($command, "r")) == NULL)
+                exit(1);
 
-        while($read = fgets($cmd))
+            while($read = fgets($cmd))
             {
             }
-        return $posfile;
+        }
+        return $plainfile;
         }
 
     function postagannotation($IfacettokF,$Laposfile,$uploadfileTokens)
         {
+        global $mode;
         logit( "postagannotation(" . $IfacettokF . "," . $Laposfile . "," . $uploadfileTokens . ")\n");
         $posfile = tempFileName("postagannotation-posf-attribute");
-        $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputPos=\"$Laposfile\") (uploadfileTokens=\"$uploadfileTokens\") (output=\"$posfile\") (get\$\"braposf.bra\")'";
-        logit($command);
-        if(($cmd = popen($command, "r")) == NULL)
-            exit(1);
+        if($mode == 'dry')
+        {
+            scrip("../bin/bracmat '(inputTok=\"$IfacettokF\") (inputPos=\"$Laposfile\") (uploadfileTokens=\"$uploadfileTokens\") (output=\"\$Laposfile\") (get\$\"braposf.bra\")'");
+        }
+        else
+        {
+            $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputPos=\"$Laposfile\") (uploadfileTokens=\"$uploadfileTokens\") (output=\"$posfile\") (get\$\"braposf.bra\")'";
+            logit($command);
+            if(($cmd = popen($command, "r")) == NULL)
+                exit(1);
 
-        while($read = fgets($cmd))
+            while($read = fgets($cmd))
             {
             }
+        }
         return $posfile;
         }
 
