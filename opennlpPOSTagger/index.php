@@ -385,8 +385,7 @@ try {
             {
             $opennlpPOStaggerfile = tempFileName("opennlpPOStagger-results");
             scripinit($inputF,$input,$output);
-            scrip("opennlpPOSTagger(\$IfacetsegF,\$IfacettokF,$lang)");
-            opennlpPOSTagger($IfacetsegF,$IfacettokF,$lang);
+            opennlpPOSTagger("\$IfacetsegF","\$IfacettokF",$lang);
             }
         else
             $opennlpPOStaggerfile = opennlpPOSTagger($IfacetsegF,$IfacettokF,$lang);
@@ -423,15 +422,10 @@ try {
 
         if($mode == 'dry')
             {
-            scrip("\$filename = combine(\$uploadfileTok,\$uploadfileSeg)");
-            $filename = combine($uploadfileTok,$uploadfileSeg);
+            combine($uploadfileTok,$uploadfileSeg);
 
-            scrip("\$opennlpPOSTaggerfileRaw = tempFileName(\"opennlpPOSTagger-raw\")");
-            $opennlpPOSTaggerfileRaw = tempFileName("opennlpPOSTagger-raw");
-            scrip("http(\$filename,\$opennlpPOSTaggerfileRaw,$lang)");
-            http($filename,$opennlpPOSTaggerfileRaw,$lang);
-            scrip("postagannotation(\$uploadfileTok,\$opennlpPOSTaggerfileRaw,\$filename)");
-            $filename = postagannotation($uploadfileTok,$opennlpPOSTaggerfileRaw,$filename);
+            http("\$filename","\$opennlpPOSTaggerfileRaw",$lang);
+            $filename = postagannotation($uploadfileTok,"\$opennlpPOSTaggerfileRaw","\$filename");
             }
         else
             {
@@ -452,7 +446,7 @@ try {
         logit( "combine(" . $uploadfileTok . "," . $uploadfileSeg . ")\n");
         $posfile = tempFileName("combine-tokseg-attribute");
         if($mode == 'dry')
-            scrip("../bin/bracmat '(inputTok=\"\$uploadfileTok\") (inputSeg=\"\$uploadfileSeg\") (output=\"\$posfile\") (get\$\"tokseg2sent.bra\")'");
+            scrip("../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"\$filename\") (get\$\"tokseg2sent.bra\")'");
         else
             {
             $command = "../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"$posfile\") (get\$\"tokseg2sent.bra\")'";
@@ -473,7 +467,7 @@ try {
         $posfile = tempFileName("postagannotation-posf-attribute");
         if($mode == 'dry')
             {
-            scrip("../bin/bracmat '(inputTok=\"\$uploadfileTok\") (inputPos=\"\$opennlpPOSTaggerfile\") (uploadfileTokens=\"\$uploadfileTokens\") (output=\"\$posfile\") (get\$\"braposf.bra\")'");
+            scrip("../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputPos=\"\$opennlpPOSTaggerfile\") (uploadfileTokens=\"$uploadfileTokens\") (output=\"\opennlpPOSTaggerfileRaw\") (get\$\"braposf.bra\")'");
             }
         else
             {
@@ -494,7 +488,7 @@ try {
         // see https://www.whatsmyip.org/lib/php-curl-option-guide/
         if($mode == 'dry')
             {
-            scrip("curl -k -X POST -L -F \"lang=$lang\" -F \"inputFile=@filename\" http://localhost:8080/opennlpPOSTagger/");
+            scrip("curl -k -X POST -L -F \"lang=$lang\" -F \"inputFile=@$input\" http://localhost:8080/opennlpPOSTagger/ > $output");
             }
         else
             {

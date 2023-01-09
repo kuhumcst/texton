@@ -195,7 +195,7 @@ try {
         $col2file = tempFileName("twocol-results");
         if($mode == 'dry')
         {
-            scrip("../bin/bracmat 'get\$\"twocol.bra\"' \$col2file $Ifacettok $Ifacetseg $Ifacetpos $Ifacetlem");
+            scrip("../bin/bracmat 'get\$\"twocol.bra\"' \$col2 $Ifacettok $Ifacetseg $Ifacetpos $Ifacetlem");
         }
         else
         {
@@ -224,7 +224,7 @@ try {
         $tmpo = tempFileName("np-genkender-raw");
         if($mode == 'dry')
         {
-            scrip("  CASS/bin/cass -g ../texton-linguistic-resources/da/np_genkender/UTF8/web_np_pp_gram.fsc -o \$tmpo \$filename");
+            scrip("  CASS/bin/cass -g ../texton-linguistic-resources/da/np_genkender/UTF8/web_np_pp_gram.fsc -o \$CSTNPrfile $filename");
         }
         else
         {
@@ -482,10 +482,13 @@ try {
             {
             $CSTNPrfile = tempFileName("CSTNPr-results");
             scripinit($inputF,$input,$output);
-            scrip("\$col2 = twocol(\$IfacettokF,\$IfacetsegF,\$IfacetposF,\$IfacetlemF)");
-            $col2 = twocol($IfacettokF,$IfacetsegF,$IfacetposF,$IfacetlemF);
-            scrip("NPgenkender(\$col2)");
-            NPgenkender($col2);
+            //scrip("\$col2 = twocol(\$IfacettokF,\$IfacetsegF,\$IfacetposF,\$IfacetlemF)");
+            if($IfacetlemF == "")
+                twocol("\$IfacettokF","\$IfacetsegF","\$IfacetposF","");
+            else
+                twocol("\$IfacettokF","\$IfacetsegF","\$IfacetposF","\$IfacetlemF");
+            //scrip("NPgenkender(\$col2)");
+            NPgenkender("\$col2");
             }
         else
             {

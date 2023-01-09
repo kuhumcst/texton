@@ -189,30 +189,40 @@ try {
 
     function dapipe($filename)
         {
-        chdir('dapipe');
-        $command = './dapipe ' . $filename;
-
-        logit("command: $command");
-
+        global $mode;
         $tmpo = tempFileName("DAPIPE");
-
-        logit("$tmpo");
-
-        $fpo = fopen($tmpo,"w");
-        if(!$fpo)
-            exit(1);
-
-        if(($cmd = popen($command, "r")) == NULL)
-            exit(1);
-
-        while($read = fgets($cmd))
+        if($mode == 'dry')
             {
-            fwrite($fpo, $read);
+            scrip("cd dapipe");
+            scrip("./dapipe $filename > \$dapipefile");
+            }
+        else 
+            {
+            chdir('dapipe');
+            $command = './dapipe ' . $filename;
+
+            logit("command: $command");
+
+
+            logit("$tmpo");
+
+            $fpo = fopen($tmpo,"w");
+            if(!$fpo)
+                exit(1);
+
+            if(($cmd = popen($command, "r")) == NULL)
+                exit(1);
+
+            while($read = fgets($cmd))
+                {
+                fwrite($fpo, $read);
+                }
+
+            fclose($fpo);
+
+            pclose($cmd);
             }
 
-        fclose($fpo);
-
-        pclose($cmd);
         return $tmpo;
         }
 
@@ -221,6 +231,7 @@ try {
         global $dapipefile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -462,7 +473,7 @@ try {
             $dapipefile = tempFileName("dapipe-results");
             scripinit($inputF,$input,$output);
             if($Iformatflat)
-                scrip("dapipe(\$F)");
+                dapipe("\$F");
             else
                 {
                 if($Ifacettok) // and also $Ifacetseg!

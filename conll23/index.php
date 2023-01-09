@@ -351,7 +351,7 @@ try {
         if($mode == 'dry')
         {
             scripinit($inputF,$input,$output);
-            scrip("/* All processing in idex.php */");
+            scrip("/* All processing in index.php */");
         }
         else
         {
