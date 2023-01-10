@@ -14116,19 +14116,10 @@ function main2(evt) {
  * Called from zipresults.java
  */"
       ( letter
-      =     workflow
-            steps
-            resources
-            files
-            inps
-            Steps
-            html
-            metadata
-            explain
-            type
-            shortletter
-            jobMetaData
-        .   ( inps
+      =     workflow steps resources files inps Steps
+          , html metadata explain type shortletter jobMetaData
+        .   log$(letter !arg)
+          & ( inps
             =   a
               .     !arg:%?a ?arg
                   & (a.(href.!a),!a) (br.,) inps$!arg
@@ -14412,24 +14403,26 @@ function main2(evt) {
                 | (.)
             )
           & !arg:(?arg.?shortletter)
-          & "shortletter: y or n"
-          &   ( 
-              =   zippedresults zipfile
-                .   (readTable$zippedresults|:?zippedresults)
-                  &     str
-                      $ ( !arg
-                          ( !shortletter:y&"-final"
-                          | "-all"
+          & "shortletter: y or n or c (code 20230110)"
+          & ( !shortletter:c
+            |   ( 
+                =   zippedresults zipfile
+                  .   (readTable$zippedresults|:?zippedresults)
+                    &     str
+                        $ ( !arg
+                            ( !shortletter:y&"-final"
+                            | "-all"
+                            )
+                            ".zip"
                           )
-                          ".zip"
-                        )
-                    : ?zipfile
-                  & ( !zippedresults:? !zipfile ?
-                    | !zipfile !zippedresults:?zippedresults
-                    )
-                  & saveTable$zippedresults
-              )
-            $ !arg
+                      : ?zipfile
+                    & ( !zippedresults:? !zipfile ?
+                      | !zipfile !zippedresults:?zippedresults
+                      )
+                    & saveTable$zippedresults
+                )
+              $ !arg
+            )
           & jobMetaData$!arg:(?metadata.?type)
           & "type == () | TEI | UserProvided"
           & readTable$fileFormats
@@ -14457,7 +14450,8 @@ function main2(evt) {
                                 (p.,!workflow)
                                 (h2.,localized$(Steps Trin))
                                 (dl.,Steps$(!steps.!shortletter.!type))
-                                ( !shortletter:y&
+                                (   !shortletter:(c|y)
+                                  & 
                                 |   ( h2
                                     .   
                                       , localized$("Input to the workflow:" "Workflowets input:")
@@ -14469,6 +14463,7 @@ function main2(evt) {
                       )
                 )
             : ?html
+          & log$(NUfiles !files)
           & str$(!files !html)
       )
       "
@@ -14524,7 +14519,7 @@ function main2(evt) {
  * Called from poll.java
  */"
       ( poll
-      =     n step secs steplinks links
+      =     n step secs steplinks links DOWNLOADPSEUDOCODE
           , serviceurl title DOWNLOAD steptexts
           , runningParagraphs JobNr hours minutes
         .   ( steplinks
@@ -14682,7 +14677,7 @@ function main2(evt) {
                                   + ?
                               & log$(Title !Title)
                               &   ( get$(str$(data/ !file),STR)
-                                  | str$("Cannot read " data/ !file)
+                                  | str$("Received " !file)
                                   )
                                 : ?rapport
                               & log$(rapport !rapport)
@@ -14824,6 +14819,13 @@ function main2(evt) {
                     , localized$("Download final results" "Download slutresultater")
                   )
             )
+          & ( DOWNLOADPSEUDOCODE
+            =   
+              . a
+              .     (href.!wwwServer "/texton/zipresults?shortletter=c&amp;JobNr=" !arg)
+                    (tabindex.0)
+                , localized$("Download workflow as (pseudo-)code" "Download arbejdsgangen som (pseudo-)kode")
+            )
           &   toML
             $ ( (   !runningParagraphs:
                   &   !HTMLbodyContainer
@@ -14834,7 +14836,7 @@ function main2(evt) {
                             )
                             (   !mode:dry
                               & log$(Done! !arg str$!links)
-                              & !links
+                              & paragraph$(DOWNLOADPSEUDOCODE$!JobNr)
                             |   paragraph$(DOWNLOAD$!JobNr)
                                 !links
                                   paragraph
