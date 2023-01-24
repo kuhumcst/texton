@@ -419,7 +419,7 @@ try {
             if($OfacettokPT)
                 scrip("../bin/bracmat \"get'\\\"teitok.bra\\\"\" \$F \$teitokfile PT $abbr $lang");
             else
-                scrip("../bin/bracmat \"get'\\\"teitok.bra\\\"\" \$F \$teitokfile simple $abbr $lang)";
+                scrip("../bin/bracmat \"get'\\\"teitok.bra\\\"\" \$F \$teitokfile simple $abbr $lang");
             }
         else
             {
