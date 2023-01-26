@@ -613,8 +613,8 @@ try {
             else if($Ilangen)
                 {
                 $lang = "en";
-                $flexrules = "$res/en/lemmatiser/notags/0/flexrules.pretty.bra.2";
-                $traindata = "$res/en/lemmatiser/training/dict_en_without_doubles.ph";
+                $flexrules = "$res/en/lemmatiser/notags/0/flexrules.bra";
+                $traindata = "$res/en/lemmatiser/training/dict_en_without_doubles_github_node-lemmatizer_additions";
                 }
             else if($Ilanges)
                 {

@@ -369,8 +369,8 @@ try {
         {
             if($pos=='n')
             {
-                $flexrulessubdir = "/2";
-                $flexrules = "flexrules.dict_en_without_doubles_github_node-lemmatizer_additions-24-942-step1.2cole_XC";
+                $flexrulessubdir = "/1";
+                $flexrules = "flexrules.dict_en_without_doubles_github_node-lemmatizer_additions-2-1070-step1.2cole_XC";
             }
             else
             {
@@ -460,6 +460,7 @@ try {
         {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
+            $dict = "";
         }
         else if($language == 'pt')
         {
@@ -615,8 +616,11 @@ try {
 
         logit("commandA:" . $command);
 
-        $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict' -i $filename -o $tmpno " . $command;
+        if($dict != "")
+            $command = $command . " -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict'";
 
+        $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
+        
         logit("commandB:" . $command);
 
         if($XMLinput == 'j')
