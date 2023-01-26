@@ -100,7 +100,7 @@ $> sudo a2enmod php7.4
 $> sudo service apache2 restart
 ```
 
-Note "php7.4" is an example. Use the php version that you saw being installed in the presvious step. 
+Note "php7.4" is an example. Use the php version that you saw being installed in the previous step. 
 Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
 
 Some php scripts use the CURLFile class. To make that work
