@@ -486,8 +486,8 @@ try {
         }
         else if($language == 'sq')
         {
-            $flexrulessubdir = "/2";
-            $flexrules = "flexrules";
+            $flexrulessubdir = "/3";
+            $flexrules = "flexrules.verbs_tagged_plus_albanian-everything-3.conllu-1072-step1.3col-4.txt-1075-step1.2cole_XE";
         }
         else if($language == 'sr')
         {
