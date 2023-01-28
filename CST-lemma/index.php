@@ -27,11 +27,11 @@ ExternalURI    : https://nlpweb01.nors.ku.dk/tools/
 XMLparms       :
 PostData       :
 Inactive       :
- */
+*/
 
 /*******************
- * helper functions *
- *******************/
+* helper functions *
+*******************/
 $toollog = '../log/CSTLem.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
@@ -40,35 +40,33 @@ $tobedeleted = array();
 
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
-{
-    return;
+    {
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
-    {
+        {
         fwrite($ftemp,$toollog . "\n");
         fclose($ftemp);
+        }
     }
-}
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
-{
-    return;
+    {
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
-    {
+        {
         fwrite($ftemp,$str . "\n");
         fclose($ftemp);
+        }
     }
-}
 
 function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
-{
+    {
     global $fscrip, $CSTLemfile;
     $fscrip = fopen($CSTLemfile,'w');
     if($fscrip)
-    {
+        {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : CST-Lem\n");
         fwrite($fscrip," * Version          : 5.06.2014.0809\n");
@@ -86,65 +84,65 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         fwrite($fscrip," */\n");
         fwrite($fscrip,"\ncd " . getcwd() . "\n");
         fclose($fscrip);
+        }
     }
-}
 
 function scrip($str) /* TODO send comments and command line instructions. Don't forget to terminate string with new line character, if needed.*/
-{
+    {
     global $fscrip, $CSTLemfile;
     $fscrip = fopen($CSTLemfile,'a');
     if($fscrip)
-    {
+        {
         fwrite($fscrip,$str . "\n");
         fclose($fscrip);
+        }
     }
-}
 
 class SystemExit extends Exception {}
 try {
     function hasArgument ($parameterName)
-    {
+        {
         return isset($_REQUEST["$parameterName"]);
-    }
+        }
 
     function getArgument ($parameterName)
-    {
+        {
         return isset($_REQUEST["$parameterName"]) ? $_REQUEST["$parameterName"] : "";
-    }
+        }
 
     function existsArgumentWithValue ($parameterName, $parameterValue)
-    {
+        {
         /* Check whether there is an argument <parameterName> that has value
-        <parameterValue>.
-        There may be any number of arguments with name <parameterName> !
-         */
+           <parameterValue>.
+           There may be any number of arguments with name <parameterName> !
+        */
         $query  = explode('&', $_SERVER['QUERY_STRING']);
 
         foreach( $query as $param )
-        {
+            {
             list($name, $value) = explode('=', $param);
             if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
                 return true;
-        }
+            }
         return false;
-    }
+        }
 
     function tempFileName($suff) /* TODO Use this to create temporary files, if needed. */
-    {
+        {
         global $dodelete;
         global $tobedeleted;
         $tmpno = tempnam('/tmp', $suff);
         if($dodelete)
             $tobedeleted[$tmpno] = true;
         return $tmpno;
-    }
+        }
 
     function requestFile($requestParm) // e.g. "IfacettokF"
-    {
+        {
         logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
-        {
+            {
             $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
@@ -156,66 +154,66 @@ try {
 
             $handle = fopen($url, "r");
             if($handle == false)
-            {
+                {
                 logit("Cannot open url[$url]");
                 return "";
-            }
+                }
             else
-            {
+                {
                 $tempfilename = tempFileName("CSTLem_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
-                {
+                    {
                     fclose($handle);
                     logit("handle closed. Cannot open $tempfilename");
                     return "";
-                }
+                    }
                 else
-                {
-                    while (!feof($handle))
                     {
+                    while (!feof($handle))
+                        {
                         $read = fread($handle, 8192);
                         fwrite($temp_fh, $read);
-                    }
+                        }
                     fclose($temp_fh);
                     fclose($handle);
                     return $tempfilename;
+                    }
                 }
             }
-        }
         logit("empty");
         return "";
     }
 
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
-    {
+        {
         global $mode;
         if($mode == 'dry')
-        {
+            {
             $lemfile = "\$CSTLemfile";
             scrip("python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem");
-        }
+            }
         else
-        {
+            {
             $lemfile = tempFileName("split-".$attribute);
             $command = "python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem";
 
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
-            {
+                {
                 throw new SystemExit(); // instead of exit()
-            }
+                }
 
             while($read = fgets($cmd))
-            {
+                {
+                }
             }
-        }
         return $lemfile;
-    }
+        }
 
-    function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,$toptarg,$foptarg,$filename,$pos,$posattribute,$emptyattribute,$XMLinput,$Iperiodc13,$Iperiodc20)
-    {
+    function lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,$toptarg,$foptarg,$filename,$pos,$posattribute,$emptyattribute,$XMLinput,$Iperiodc13,$Iperiodc20)
+        {
         global $fscrip, $CSTLemfile,$mode;
 
         if($mode == 'dry')
@@ -248,27 +246,52 @@ try {
         /* $Ofacetlem */
         if($Ofacetlem && !$Ofacetseg)
             $eind = "\\n";
-
-        if($i)
-        {
-            if($Opresnml && !$ShowTag)
-                $c = "$wt\$b[[\$b?]0\$B]\\t\$i$eind";
-            else if($toptarg == '-')
-                $c = "$wt\$b[[\$b?]0\$B]\\t\$i$eind";
+        if($OOV)
+            {
+            if($i)
+                {
+                if($Opresnml && !$ShowTag)
+                    $c = "[[\$b?]0$wt\$b\$B\\t\$i$eind]";
+                else if($toptarg == '-')
+                    $c = "[[\$b?]0$wt\$b\$B\\t\$i$eind]";
+                else
+                    //$c = "$wt\$t\\t\$b[[\$b?]0\$B]\\t\$i$eind"; // word tag lemma info
+                    $c = "[[\$b?]0$wt\$b\$B\\t\$t\\t\$i$eind]"; // word lemma tag info
+                }
             else
-                //$c = "$wt\$t\\t\$b[[\$b?]0\$B]\\t\$i$eind"; // word tag lemma info
-                $c = "$wt\$b[[\$b?]0\$B]\\t\$t\\t\$i$eind"; // word lemma tag info
-        }
-        else
-        {
-            if($Opresnml && !$ShowTag)
-                $c = "$wt\$b[[\$b?]0\$B]$eind";
-            else if($toptarg == '-')
-                $c = "$wt\$b[[\$b?]0\$B]$eind";
+                {
+                if($Opresnml && !$ShowTag)
+                    $c = "[[\$b?]0$wt\$b\$B$eind]";
+                else if($toptarg == '-')
+                    $c = "[[\$b?]0$wt\$b\$B$eind]";
+                else
+                    //$c = "$wt\$t\\t\$b[[\$b?]0\$B]$eind"; // word tag lemma
+                    $c = "[[\$b?]0$wt\$b\$B\\t\$t$eind]"; // word lemma tag
+                }
+            }
+        else // $OOV == false;
+            {
+            if($i)
+                {
+                if($Opresnml && !$ShowTag)
+                    $c = "$wt\$b[[\$b?]0\$B]\\t\$i$eind";
+                else if($toptarg == '-')
+                    $c = "$wt\$b[[\$b?]0\$B]\\t\$i$eind";
+                else
+                    //$c = "$wt\$t\\t\$b[[\$b?]0\$B]\\t\$i$eind"; // word tag lemma info
+                    $c = "$wt\$b[[\$b?]0\$B]\\t\$t\\t\$i$eind"; // word lemma tag info
+                }
             else
-                //$c = "$wt\$t\\t\$b[[\$b?]0\$B]$eind"; // word tag lemma
-                $c = "$wt\$b[[\$b?]0\$B]\\t\$t$eind"; // word lemma tag
-        }
+                {
+                if($Opresnml && !$ShowTag)
+                    $c = "$wt\$b[[\$b?]0\$B]$eind";
+                else if($toptarg == '-')
+                    $c = "$wt\$b[[\$b?]0\$B]$eind";
+                else
+                    //$c = "$wt\$t\\t\$b[[\$b?]0\$B]$eind"; // word tag lemma
+                    $c = "$wt\$b[[\$b?]0\$B]\\t\$t$eind"; // word lemma tag
+                }
+            }
 
         logit("c=" . $c);
 
@@ -276,343 +299,407 @@ try {
         $flexrules = "flexrules";
 
         if($language == 'af')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'ast')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-ast.txt.swp-79.sort-393-step6.2cole_ziggurat_XC";
-        }
+            }
         else if($language == 'bg')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'ca')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-ca.txt.swp-78.sort-393-step7.2cole_ziggurat_XD";
-        }
+            }
         else if($language == 'cs')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'cy')
-        {
+            {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.lemmatization-cy.txt.swp-73.sort-393-step1.2cole_ziggurat_XD";
-        }
+            }
         else if($language == 'da')
-        {
-            if($Iperiodc20)
             {
-                if($Iappnrm)
+            if($Iperiodc20)
                 {
+                if($Iappnrm)
+                    {
                     $periodsubdir = "/c20n";
                     $flexrules = "flexrules.ods_170412.csv.corrected-lems.txt.ph_12_XC";
                     if($pos == 'n')
                         $flexrulessubdir = "/0";
                     else
-                    {
+                        {
                         $flexrules = "flexrules";
                         $flexrulessubdir = "/links";
                         $x = "-x'$toolres/da/lemmatiser/tags/c20n/translationTable'";
+                        }
                     }
-                }
                 else
-                {
+                    {
                     $periodsubdir = "/c19n";
                     $flexrules = "flexrules.ods_170412.csv.corrected.ph_12_XC";
                     if($pos == 'n')
                         $flexrulessubdir = "/0";
                     else
-                    {
+                        {
                         $flexrules = "flexrules";
                         $flexrulessubdir = "/links";
                         $x = "-x'$toolres/da/lemmatiser/tags/c19n/translationTable'";
+                        }
                     }
                 }
-            }
             else if($Iperiodc13)
-            {
+                {
                 $periodsubdir = "/c13-c18";
                 if($pos == 'n')
                     $flexrulessubdir = "/1";
                 else // Not the case, currently (May 2018)
-                {
+                    {
                     $flexrulessubdir = "/links";
                     $x = "-x'$toolres/da/lemmatiser/tags/c13-c18/translationTable'";
+                    }
                 }
-            }
             else
-            {
+                {
                 $periodsubdir = "/c21";
                 if($pos == 'n')
                     $flexrulessubdir = "/0";
                 else
-                {
+                    {
                     $flexrulessubdir = "/links";
                     $x = "-x'$toolres/da/lemmatiser/tags/c21/translationTable'";
+                    }
                 }
             }
-        }
         else if($language == 'de')
-        {
+            {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.dict_de_without_doubles.ph_ziggurat_XC";
-        }
+            }
         else if($language == 'el')
-        {
-            $flexrulessubdir = "/1";
-        }
-        else if($language == 'en')
-        {
-            if($pos=='n')
             {
+            $flexrulessubdir = "/1";
+            }
+        else if($language == 'en')
+            {
+            if($pos=='n')
+                {
                 $flexrulessubdir = "/1";
                 $flexrules = "flexrules.dict_en_without_doubles_github_node-lemmatizer_additions-2-1070-step1.2cole_XC";
-            }
+                }
             else
-            {
+                {
                 $flexrulessubdir = "/links";
                 $flexrules = "flexrules";
-            }
+                }
             if($toptarg == '')
                 $x = "-x'$toolres/en/lemmatiser/tags/translation'";
-        }
+            }
         else if($language == 'es')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'et')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'fa')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.fa-817.3col-752-step1.2cole_prefixed_XD";
             $dict = "/dict.fa";
-        }
+            }
         else if($language == 'fo')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.WrdLem-20220412_edfm2-599.tsv-308-step2.3cole_XC";
-        }
+            }
         else if($language == 'fr')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.frlexambi.uden.dubletter.ph_XC";
-        }
+          }
         else if($language == 'ga')
-        {
+            {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.lemmatization-ga.txt.swp-77.sort-393-step2.2cole_ziggurat_XD";
-        }
+            }
         else if($language == 'gd')
-        {
+            {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.lemmatization-gd.txt.swp-76.sort-393-step3.2cole_ziggurat_XD";
-        }
+            }
         else if($language == 'gl')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-gl.txt.swp-75.sort-393-step4.2cole_ziggurat_XD";
-        }
+            }
         else if($language == 'gv')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-gv.txt.swp-74.sort-393-step5.2cole_ziggurat_XC";
-        }
+            }
         else if($language == 'hr')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'hu')
-        {
+            {
             $flexrulessubdir = "/0";
-        }
+            }
         else if($language == 'is')
-        {
+            {
             $flexrules = "icelandic.flexrules";
-        }
+            }
         else if($language == 'it')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'la')
-        {
+            {
             $flexrulessubdir = "/2";
-        }
+            }
         else if($language == 'mk')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'nl')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'no')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'pl')
-        {
+            {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
             $dict = "";
-        }
+            }
         else if($language == 'pt')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'ro')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'ru')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.ru-lemma.tabru-msd-ru-lemma-cleaned.ph_XC";
-        }
+            }
         else if($language == 'sk')
-        {
+            {
             $flexrulessubdir = "/0";
-        }
+            }
         else if($language == 'sl')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.clearedFile-40.sort-349-step1.2cole_ziggurat_XC";
-        }
+            }
         else if($language == 'sq')
-        {
+            {
             $flexrulessubdir = "/3";
             $flexrules = "flexrules.verbs_tagged_plus_albanian-everything-3.conllu-1072-step1.3col-4.txt-1075-step1.2cole_XE";
-        }
+            }
         else if($language == 'sr')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'sv')
-        {
+            {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-sv-swedishroottable_without_doubles-UD.ph_ziggurat_XC";
-        }
+            }
         else if($language == 'tr')
-        {
+            {
             $flexrulessubdir = "/1";
-        }
+            }
         else if($language == 'uk')
-        {
+            {
             $flexrulessubdir = "";
-        }
+            }
         else
-        {
+            {
             $flexrulessubdir = "";
-        }
+            }
 
         if($toptarg == '')
         // input is tagged
-        {
+            {
             $Iflat = ''; // Important! '$w/$t\\s' does not find last occurrence of slash
             // Default is that slash separates word from tag. This uses different code.
-        }
+            }
         else
         // input is not tagged
-        {
+            {
             $Iflat = "-I'\$w\\s'";
-        }
+            }
         logit("language $language");
         if($Oambiguna)
-        {
+            {
             $Uminus = "";
             $uminus = "";
             $H = "0";
             logit("Uminus $Uminus");
-        }
+            }
 
         if($Ipresnml && !$Opresnml || $ShowTag)
-        {
+            {
             if($Opresalf)
-            {
-                if($Ofacetlem)
                 {
-                    if(!$Ofacettok && !$ShowTag)
+                if($OOV)
                     {
-                        $command =             "-qwft -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
-                    }
-                    else if($ShowTag)
-                    {
-                        $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' $Iflat";
-                    }
+                    if($Ofacetlem)
+                        {
+                        if(!$Ofacettok && !$ShowTag)
+                            {
+                            $command =             "-qwft -B'\$f\\t\$w\\n'       -b''                                       $Iflat";
+                            }
+                        else if($ShowTag)
+                            {
+                            $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b''                   -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b''                   -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
                     else
+                        {
+                        if($ShowTag)
+                            {
+                            $command =             "-qwft -B'\$W\\n'             -b''                   -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qwft -B'\$W\\n'             -b''                   -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
+                    }
+                else 
                     {
-                        $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w'       $Iflat";
+                    if($Ofacetlem)
+                        {
+                        if(!$Ofacettok && !$ShowTag)
+                            {
+                            $command =             "-qwft -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
+                            }
+                        else if($ShowTag)
+                            {
+                            $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qwft -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
+                    else
+                        {
+                        if($ShowTag)
+                            {
+                            $command =             "-qwft -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qwft -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
                     }
                 }
-                else
-                {
-                    if($ShowTag)
-                    {
-                        $command =             "-qwft -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w\\t\$t' $Iflat";
-                    }
-                    else
-                    {
-                        $command =             "-qwft -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w'       $Iflat";
-                    }
-                }
-            }
             else if($Opresfrq )
-            {
-                if($Ofacetlem)
                 {
-                    if(!$Ofacettok && !$ShowTag)
+                if($OOV)
                     {
-                        $command =             "-qfwt -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
-                    }
-                    else if($ShowTag)
-                    {
-                        $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' $Iflat";
-                    }
+                    if($Ofacetlem)
+                        {
+                        if(!$Ofacettok && !$ShowTag)
+                            {
+                            $command =             "-qfwt -B'\$f\\t\$w\\n'       -b''                                       $Iflat";
+                            }
+                        else if($ShowTag)
+                            {
+                            $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b''                   -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b''                   -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
                     else
-                    {
-                        $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w'       $Iflat";
+                        {
+                        if($ShowTag)
+                            {
+                            $command =             "-qfwt -B'\$W\\n'             -b''                   -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qfwt -B'\$W\\n'             -b''                   -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
                     }
-                }
                 else
-                {
-                    if($ShowTag)
                     {
-                        $command =             "-qfwt -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w\\t\$t' $Iflat";
-                    }
+                    if($Ofacetlem)
+                        {
+                        if(!$Ofacettok && !$ShowTag)
+                            {
+                            $command =             "-qfwt -B'\$f\\t\$w\\n'       -b'\$f\\t\$w\\n'                           $Iflat";
+                            }
+                        else if($ShowTag)
+                            {
+                            $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qfwt -B'\$f\\t\$w\\t\$W\\n' -b'\$f\\t\$w\\t\$W\\n' -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
                     else
-                    {
-                        $command =             "-qfwt -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w'       $Iflat";
+                        {
+                        if($ShowTag)
+                            {
+                            $command =             "-qfwt -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w\\t\$t' $Iflat";
+                            }
+                        else
+                            {
+                            $command =             "-qfwt -B'\$W\\n'             -b'\$W\\n'             -W'\$f\\t\$w'       $Iflat";
+                            }
+                        }
                     }
                 }
-            }
             else
-            {
+                {
                 $command =             "-q-   -B'\$w'                -b'\$w'                -c'$c'              $Iflat";
+                }
             }
-        }
         else if($emptyattribute != "")
             if($posattribute != "")
-            {
+                {
                 $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'                        -Xl$emptyattribute -Xp$posattribute";
-            }
+                }
             else
-            {
+                {
                 $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'             -I'\$w\\s' -Xl$emptyattribute";
-            }
+                }
         else if($XMLinput == 'j')
-        {
+            {
             $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'             $Iflat -X";
-        }
+            }
         else
-        {
+            {
             $command =             "-q-   -B'\$w'                -b'\$w'                -c'$c'              $Iflat";
-        }
+            }
 
         logit("commandA:" . $command);
 
@@ -624,26 +711,26 @@ try {
         logit("commandB:" . $command);
 
         if($XMLinput == 'j')
-        {
+            {
             if($pos != 'n')
-            {
+                {
                 $command = $command . " -Xppos";
-            }
+                }
             if($ancestor != '')
-            {
+                {
                 $command = $command . ' -Xa' . $ancestor;
-            }
+                }
             if($element != '')
-            {
+                {
                 $command = $command . ' -Xe' . $element;
+                }
             }
-        }
 
         if($language == 'en')
             if($toptarg == '')
-            {
+                {
                 $command = $command . " -z'$toolres/en/lemmatiser/tags/lemmatags' -v'$toolres/en/lemmatiser/tags/friends'";
-            }
+                }
 
         if($x != "")
             $command = $command . " " . $x;
@@ -660,95 +747,95 @@ try {
         else
             {
             if(($cmd = popen($command, "r")) == NULL)
-            {
+                {
                 throw new SystemExit(); // instead of exit()
-            }
+                }
 
             while($read = fgets($cmd))
-            {
-            }
+                {
+                }
 
             pclose($cmd);
             }
         return $tmpno;
-    }
+        }
 
 
     function merge($toolbin,$uploadfile,$uploadfileAnnotation,$mergeattribute,$emptyattribute)
-    {
+        {
         global $mode;
         if($mode == 'dry')
-        {
+            {
             $posfile = "\$lemmainputfile";
             scrip("python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute");
-        }
+            }
         else
-        {
+            {
             $posfile = tempFileName("merge");
             $command = "python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
-            {
+                {
                 throw new SystemExit(); // instead of exit()
-            }
+                }
 
             while($read = fgets($cmd))
-            {
+                {
+                }
             }
-        }
         return $posfile;
-    }
+        }
 
 
     function add($toolbin,$uploadfile,$attribute,$element,$idprefix,$ancestor)
-    {
+        {
         global $ERROR;
         global $mode;
         $posfile = tempFileName("add-" . $attribute . "-attribute");
         if($mode == 'dry')
-        {
+            {
             if($idprefix == '')
                 scrip("python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element - > \$lemmainputfile");
             else
                 scrip("python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id > \$lemmainputfile");
-        }
+            }
         else
-        {
+            {
             if($idprefix == '')
                 $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element -";
             else
                 $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
-            {
+                {
                 throw new SystemExit(); // instead of exit()
-            }
+                }
 
             while($read = fgets($cmd))
-            {
-            }
+                {
+                }
             $handle = @fopen("$posfile", "r");
             if ($handle)
-            {
-                if(($buffer = fgets($handle, 4096)) !== false)
                 {
+                if(($buffer = fgets($handle, 4096)) !== false)
+                    {
                     //logit("buffer:[" . $buffer . "]");
                     if(strncmp($buffer,"ERROR",5) == 0)
-                    {
+                        {
                         fclose($handle);
                         $ERROR = $buffer;
                         throw new SystemExit(); // instead of exit()
+                        }
                     }
-                }
                 fclose($handle);
+                }
             }
-        }
         return $posfile;
-    }
+        }
 
     function do_CSTLem()
-    {
+        {
         global $CSTLemfile;
         global $dodelete;
         global $tobedeleted;
@@ -885,6 +972,8 @@ try {
         $Opresalf = false;	/* Assemblage in output is alphabetic list (alfabetisk liste) if true */
         $Opresfrq = false;	/* Assemblage in output is frequency list (frekvensliste) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Opresuaf = false;	/* Assemblage in output is alphabetic list, OOV only (alfabetisk liste, kun ukendte ord) if true */
+        $Opresufq = false;	/* Assemblage in output is frequency list, OOV only (frekvensliste, kun ukendte ord) if true */
         $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
         $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
         $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
@@ -903,79 +992,79 @@ try {
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
 
         if( hasArgument("base") )
-        {
+            {
             $base = getArgument("base");
-        }
+            }
         if( hasArgument("job") )
-        {
+            {
             $job = getArgument("job");
-        }
+            }
         if( hasArgument("post2") )
-        {
+            {
             $post2 = getArgument("post2");
-        }
+            }
         if( hasArgument("mode") )
-        {
+            {
             $mode = getArgument("mode");
-        }
+            }
         $echos = "base=$base job=$job post2=$post2 mode=$mode ";
 
-        /*********
-         * input  *
-         *********/
+/*********
+* input  *
+*********/
         if( hasArgument("F") )
-        {
+            {
             $F = requestFile("F");
             if($F == '')
-            {
+                {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "F=$F ";
             $inputF = $inputF . " \$F ";
-        }
+            }
         if( hasArgument("IfacetposF") )
-        {
+            {
             $IfacetposF = requestFile("IfacetposF");
             if($IfacetposF == '')
-            {
+                {
                 header("HTTP/1.0 404 Input with type of content 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "IfacetposF=$IfacetposF ";
             $inputF = $inputF . " \$IfacetposF ";
-        }
+            }
         if( hasArgument("IfacettokF") )
-        {
+            {
             $IfacettokF = requestFile("IfacettokF");
             if($IfacettokF == '')
-            {
+                {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "IfacettokF=$IfacettokF ";
             $inputF = $inputF . " \$IfacettokF ";
-        }
+            }
 
-        /************************
-         * input/output features *
-         ************************/
+/************************
+* input/output features *
+************************/
         if( hasArgument("Iambig") )
-        {
+            {
             $Iambigamb = existsArgumentWithValue("Iambig", "amb");
             $Iambiguna = existsArgumentWithValue("Iambig", "una");
             $echos = $echos . "Iambigamb=$Iambigamb " . "Iambiguna=$Iambiguna ";
             $input = $input . ($Iambigamb ? " \$Iambigamb" : "")  . ($Iambiguna ? " \$Iambiguna" : "") ;
-        }
+            }
         if( hasArgument("Iapp") )
-        {
+            {
             $Iappnrm = existsArgumentWithValue("Iapp", "nrm");
             $Iappunn = existsArgumentWithValue("Iapp", "unn");
             $echos = $echos . "Iappnrm=$Iappnrm " . "Iappunn=$Iappunn ";
             $input = $input . ($Iappnrm ? " \$Iappnrm" : "")  . ($Iappunn ? " \$Iappunn" : "") ;
-        }
+            }
         if( hasArgument("Ifacet") )
-        {
+            {
             $Ifacet_par_pos_seg_tok = existsArgumentWithValue("Ifacet", "_par_pos_seg_tok");
             $Ifacet_par_seg_tok = existsArgumentWithValue("Ifacet", "_par_seg_tok");
             $Ifacet_pos_seg_tok = existsArgumentWithValue("Ifacet", "_pos_seg_tok");
@@ -984,16 +1073,16 @@ try {
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
             $echos = $echos . "Ifacet_par_pos_seg_tok=$Ifacet_par_pos_seg_tok " . "Ifacet_par_seg_tok=$Ifacet_par_seg_tok " . "Ifacet_pos_seg_tok=$Ifacet_pos_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetpos=$Ifacetpos " . "Ifacettok=$Ifacettok ";
             $input = $input . ($Ifacet_par_pos_seg_tok ? " \$Ifacet_par_pos_seg_tok" : "")  . ($Ifacet_par_seg_tok ? " \$Ifacet_par_seg_tok" : "")  . ($Ifacet_pos_seg_tok ? " \$Ifacet_pos_seg_tok" : "")  . ($Ifacet_seg_tok ? " \$Ifacet_seg_tok" : "")  . ($Ifacetpos ? " \$Ifacetpos" : "")  . ($Ifacettok ? " \$Ifacettok" : "") ;
-        }
+            }
         if( hasArgument("Iformat") )
-        {
+            {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
             $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
             $echos = $echos . "Iformatflat=$Iformatflat " . "Iformattxtann=$Iformattxtann ";
             $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
-        }
+            }
         if( hasArgument("Ilang") )
-        {
+            {
             $Ilangaf = existsArgumentWithValue("Ilang", "af");
             $Ilangast = existsArgumentWithValue("Ilang", "ast");
             $Ilangbg = existsArgumentWithValue("Ilang", "bg");
@@ -1033,37 +1122,37 @@ try {
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
             $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangast=$Ilangast " . "Ilangbg=$Ilangbg " . "Ilangca=$Ilangca " . "Ilangcs=$Ilangcs " . "Ilangcy=$Ilangcy " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilangga=$Ilangga " . "Ilanggd=$Ilanggd " . "Ilanggl=$Ilanggl " . "Ilanggv=$Ilanggv " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
             $input = $input . ($Ilangaf ? " \$Ilangaf" : "")  . ($Ilangast ? " \$Ilangast" : "")  . ($Ilangbg ? " \$Ilangbg" : "")  . ($Ilangca ? " \$Ilangca" : "")  . ($Ilangcs ? " \$Ilangcs" : "")  . ($Ilangcy ? " \$Ilangcy" : "")  . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangde ? " \$Ilangde" : "")  . ($Ilangel ? " \$Ilangel" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilanges ? " \$Ilanges" : "")  . ($Ilanget ? " \$Ilanget" : "")  . ($Ilangfa ? " \$Ilangfa" : "")  . ($Ilangfo ? " \$Ilangfo" : "")  . ($Ilangfr ? " \$Ilangfr" : "")  . ($Ilangga ? " \$Ilangga" : "")  . ($Ilanggd ? " \$Ilanggd" : "")  . ($Ilanggl ? " \$Ilanggl" : "")  . ($Ilanggv ? " \$Ilanggv" : "")  . ($Ilanghr ? " \$Ilanghr" : "")  . ($Ilanghu ? " \$Ilanghu" : "")  . ($Ilangis ? " \$Ilangis" : "")  . ($Ilangit ? " \$Ilangit" : "")  . ($Ilangla ? " \$Ilangla" : "")  . ($Ilangmk ? " \$Ilangmk" : "")  . ($Ilangnl ? " \$Ilangnl" : "")  . ($Ilangno ? " \$Ilangno" : "")  . ($Ilangpl ? " \$Ilangpl" : "")  . ($Ilangpt ? " \$Ilangpt" : "")  . ($Ilangro ? " \$Ilangro" : "")  . ($Ilangru ? " \$Ilangru" : "")  . ($Ilangsk ? " \$Ilangsk" : "")  . ($Ilangsl ? " \$Ilangsl" : "")  . ($Ilangsq ? " \$Ilangsq" : "")  . ($Ilangsr ? " \$Ilangsr" : "")  . ($Ilangsv ? " \$Ilangsv" : "")  . ($Ilanguk ? " \$Ilanguk" : "") ;
-        }
+            }
         if( hasArgument("Iperiod") )
-        {
+            {
             $Iperiodc13 = existsArgumentWithValue("Iperiod", "c13");
             $Iperiodc20 = existsArgumentWithValue("Iperiod", "c20");
             $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
             $echos = $echos . "Iperiodc13=$Iperiodc13 " . "Iperiodc20=$Iperiodc20 " . "Iperiodc21=$Iperiodc21 ";
             $input = $input . ($Iperiodc13 ? " \$Iperiodc13" : "")  . ($Iperiodc20 ? " \$Iperiodc20" : "")  . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
-        }
+            }
         if( hasArgument("Ipres") )
-        {
+            {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
             $echos = $echos . "Ipresnml=$Ipresnml ";
             $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
-        }
+            }
         if( hasArgument("Oambig") )
-        {
+            {
             $Oambigamb = existsArgumentWithValue("Oambig", "amb");
             $Oambiguna = existsArgumentWithValue("Oambig", "una");
             $echos = $echos . "Oambigamb=$Oambigamb " . "Oambiguna=$Oambiguna ";
             $output = $output . ($Oambigamb ? " \$Oambigamb" : "")  . ($Oambiguna ? " \$Oambiguna" : "") ;
-        }
+            }
         if( hasArgument("Oapp") )
-        {
+            {
             $Oappnrm = existsArgumentWithValue("Oapp", "nrm");
             $Oappunn = existsArgumentWithValue("Oapp", "unn");
             $echos = $echos . "Oappnrm=$Oappnrm " . "Oappunn=$Oappunn ";
             $output = $output . ($Oappnrm ? " \$Oappnrm" : "")  . ($Oappunn ? " \$Oappunn" : "") ;
-        }
+            }
         if( hasArgument("Ofacet") )
-        {
+            {
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
             $Ofacetpar = existsArgumentWithValue("Ofacet", "par");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
@@ -1071,17 +1160,17 @@ try {
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
             $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetpar=$Ofacetpar " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             $output = $output . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetpar ? " \$Ofacetpar" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
-        }
+            }
         if( hasArgument("Oformat") )
-        {
+            {
             $Oformatcols = existsArgumentWithValue("Oformat", "cols");
             $Oformatflat = existsArgumentWithValue("Oformat", "flat");
             $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
             $echos = $echos . "Oformatcols=$Oformatcols " . "Oformatflat=$Oformatflat " . "Oformattxtann=$Oformattxtann ";
             $output = $output . ($Oformatcols ? " \$Oformatcols" : "")  . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformattxtann ? " \$Oformattxtann" : "") ;
-        }
+            }
         if( hasArgument("Olang") )
-        {
+            {
             $Olangaf = existsArgumentWithValue("Olang", "af");
             $Olangast = existsArgumentWithValue("Olang", "ast");
             $Olangbg = existsArgumentWithValue("Olang", "bg");
@@ -1121,63 +1210,65 @@ try {
             $Olanguk = existsArgumentWithValue("Olang", "uk");
             $echos = $echos . "Olangaf=$Olangaf " . "Olangast=$Olangast " . "Olangbg=$Olangbg " . "Olangca=$Olangca " . "Olangcs=$Olangcs " . "Olangcy=$Olangcy " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olangga=$Olangga " . "Olanggd=$Olanggd " . "Olanggl=$Olanggl " . "Olanggv=$Olanggv " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
             $output = $output . ($Olangaf ? " \$Olangaf" : "")  . ($Olangast ? " \$Olangast" : "")  . ($Olangbg ? " \$Olangbg" : "")  . ($Olangca ? " \$Olangca" : "")  . ($Olangcs ? " \$Olangcs" : "")  . ($Olangcy ? " \$Olangcy" : "")  . ($Olangda ? " \$Olangda" : "")  . ($Olangde ? " \$Olangde" : "")  . ($Olangel ? " \$Olangel" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olanges ? " \$Olanges" : "")  . ($Olanget ? " \$Olanget" : "")  . ($Olangfa ? " \$Olangfa" : "")  . ($Olangfo ? " \$Olangfo" : "")  . ($Olangfr ? " \$Olangfr" : "")  . ($Olangga ? " \$Olangga" : "")  . ($Olanggd ? " \$Olanggd" : "")  . ($Olanggl ? " \$Olanggl" : "")  . ($Olanggv ? " \$Olanggv" : "")  . ($Olanghr ? " \$Olanghr" : "")  . ($Olanghu ? " \$Olanghu" : "")  . ($Olangis ? " \$Olangis" : "")  . ($Olangit ? " \$Olangit" : "")  . ($Olangla ? " \$Olangla" : "")  . ($Olangmk ? " \$Olangmk" : "")  . ($Olangnl ? " \$Olangnl" : "")  . ($Olangno ? " \$Olangno" : "")  . ($Olangpl ? " \$Olangpl" : "")  . ($Olangpt ? " \$Olangpt" : "")  . ($Olangro ? " \$Olangro" : "")  . ($Olangru ? " \$Olangru" : "")  . ($Olangsk ? " \$Olangsk" : "")  . ($Olangsl ? " \$Olangsl" : "")  . ($Olangsq ? " \$Olangsq" : "")  . ($Olangsr ? " \$Olangsr" : "")  . ($Olangsv ? " \$Olangsv" : "")  . ($Olanguk ? " \$Olanguk" : "") ;
-        }
+            }
         if( hasArgument("Operiod") )
-        {
+            {
             $Operiodc13 = existsArgumentWithValue("Operiod", "c13");
             $Operiodc20 = existsArgumentWithValue("Operiod", "c20");
             $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
             $echos = $echos . "Operiodc13=$Operiodc13 " . "Operiodc20=$Operiodc20 " . "Operiodc21=$Operiodc21 ";
             $output = $output . ($Operiodc13 ? " \$Operiodc13" : "")  . ($Operiodc20 ? " \$Operiodc20" : "")  . ($Operiodc21 ? " \$Operiodc21" : "") ;
-        }
+            }
         if( hasArgument("Opres") )
-        {
+            {
             $Opresalf = existsArgumentWithValue("Opres", "alf");
             $Opresfrq = existsArgumentWithValue("Opres", "frq");
             $Opresnml = existsArgumentWithValue("Opres", "nml");
-            $echos = $echos . "Opresalf=$Opresalf " . "Opresfrq=$Opresfrq " . "Opresnml=$Opresnml ";
-            $output = $output . ($Opresalf ? " \$Opresalf" : "")  . ($Opresfrq ? " \$Opresfrq" : "")  . ($Opresnml ? " \$Opresnml" : "") ;
-        }
+            $Opresuaf = existsArgumentWithValue("Opres", "uaf");
+            $Opresufq = existsArgumentWithValue("Opres", "ufq");
+            $echos = $echos . "Opresalf=$Opresalf " . "Opresfrq=$Opresfrq " . "Opresnml=$Opresnml " . "Opresuaf=$Opresuaf " . "Opresufq=$Opresufq ";
+            $output = $output . ($Opresalf ? " \$Opresalf" : "")  . ($Opresfrq ? " \$Opresfrq" : "")  . ($Opresnml ? " \$Opresnml" : "")  . ($Opresuaf ? " \$Opresuaf" : "")  . ($Opresufq ? " \$Opresufq" : "") ;
+            }
 
-        /*******************************
-         * input/output features styles *
-         *******************************/
+/*******************************
+* input/output features styles *
+*******************************/
         if( hasArgument("Ifacet_par_pos_seg_tok") )
-        {
+            {
             $Ifacet_par_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_DSL");
             $Ifacet_par_pos_seg_tok__pos_PT = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_PT");
             $Ifacet_par_pos_seg_tok__pos_Par = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_Par");
             $Ifacet_par_pos_seg_tok__pos_Uni = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_Uni");
             $echos = $echos . "Ifacet_par_pos_seg_tok__pos_DSL=$Ifacet_par_pos_seg_tok__pos_DSL " . "Ifacet_par_pos_seg_tok__pos_PT=$Ifacet_par_pos_seg_tok__pos_PT " . "Ifacet_par_pos_seg_tok__pos_Par=$Ifacet_par_pos_seg_tok__pos_Par " . "Ifacet_par_pos_seg_tok__pos_Uni=$Ifacet_par_pos_seg_tok__pos_Uni ";
             $input = $input . ($Ifacet_par_pos_seg_tok__pos_DSL ? " \$Ifacet_par_pos_seg_tok__pos_DSL" : "")  . ($Ifacet_par_pos_seg_tok__pos_PT ? " \$Ifacet_par_pos_seg_tok__pos_PT" : "")  . ($Ifacet_par_pos_seg_tok__pos_Par ? " \$Ifacet_par_pos_seg_tok__pos_Par" : "")  . ($Ifacet_par_pos_seg_tok__pos_Uni ? " \$Ifacet_par_pos_seg_tok__pos_Uni" : "") ;
-        }
+            }
         if( hasArgument("Ifacet_pos_seg_tok") )
-        {
+            {
             $Ifacet_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_DSL");
             $Ifacet_pos_seg_tok__pos_PT = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_PT");
             $Ifacet_pos_seg_tok__pos_Par = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_Par");
             $Ifacet_pos_seg_tok__pos_Uni = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_Uni");
             $echos = $echos . "Ifacet_pos_seg_tok__pos_DSL=$Ifacet_pos_seg_tok__pos_DSL " . "Ifacet_pos_seg_tok__pos_PT=$Ifacet_pos_seg_tok__pos_PT " . "Ifacet_pos_seg_tok__pos_Par=$Ifacet_pos_seg_tok__pos_Par " . "Ifacet_pos_seg_tok__pos_Uni=$Ifacet_pos_seg_tok__pos_Uni ";
             $input = $input . ($Ifacet_pos_seg_tok__pos_DSL ? " \$Ifacet_pos_seg_tok__pos_DSL" : "")  . ($Ifacet_pos_seg_tok__pos_PT ? " \$Ifacet_pos_seg_tok__pos_PT" : "")  . ($Ifacet_pos_seg_tok__pos_Par ? " \$Ifacet_pos_seg_tok__pos_Par" : "")  . ($Ifacet_pos_seg_tok__pos_Uni ? " \$Ifacet_pos_seg_tok__pos_Uni" : "") ;
-        }
+            }
         if( hasArgument("Ifacetpos") )
-        {
+            {
             $IfacetposDSL = existsArgumentWithValue("Ifacetpos", "DSL");
             $IfacetposPT = existsArgumentWithValue("Ifacetpos", "PT");
             $IfacetposPar = existsArgumentWithValue("Ifacetpos", "Par");
             $IfacetposUni = existsArgumentWithValue("Ifacetpos", "Uni");
             $echos = $echos . "IfacetposDSL=$IfacetposDSL " . "IfacetposPT=$IfacetposPT " . "IfacetposPar=$IfacetposPar " . "IfacetposUni=$IfacetposUni ";
             $input = $input . ($IfacetposDSL ? " \$IfacetposDSL" : "")  . ($IfacetposPT ? " \$IfacetposPT" : "")  . ($IfacetposPar ? " \$IfacetposPar" : "")  . ($IfacetposUni ? " \$IfacetposUni" : "") ;
-        }
+            }
         if( hasArgument("Ofacetpos") )
-        {
+            {
             $OfacetposDSL = existsArgumentWithValue("Ofacetpos", "DSL");
             $OfacetposPT = existsArgumentWithValue("Ofacetpos", "PT");
             $OfacetposPar = existsArgumentWithValue("Ofacetpos", "Par");
             $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
             $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposPT=$OfacetposPT " . "OfacetposPar=$OfacetposPar " . "OfacetposUni=$OfacetposUni ";
             $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposPT ? " \$OfacetposPT" : "")  . ($OfacetposPar ? " \$OfacetposPar" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
-        }
+            }
 
         /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $CSTLemfile = tempFileName("CSTLem-results");
@@ -1185,42 +1276,55 @@ try {
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
-        {
-        throw new SystemExit(); // instead of exit()
-        }
+            {
+            throw new SystemExit(); // instead of exit()
+            }
 
         while($read = fgets($cmd))
-        {
-        }
+            {
+            }
 
         pclose($cmd);
         /*/
         // YOUR CODE STARTS HERE.
         //        TODO your code!
+        $OOV = false;
+
+        if($Opresuaf)
+            {
+            $Opresalf = true;
+            $OOV = true;
+            }
+        else if($Opresufq)
+            {
+            $Opresfrq = true;
+            $OOV = true;
+            }
+        
         if($mode == 'dry')
-        {
+            {
             $CSTLemfile = tempFileName("CSTLem-results");
             scripinit($inputF,$input,$output);
-        }
+            }
         $toolbin = '../bin';
         $currdir = getcwd();
         $toolres = '../texton-linguistic-resources';
 
         if(hasArgument("Ilang"))
-        {
+            {
             $language = getArgument("Ilang");
-        }
+            }
         else if(hasArgument("Olang"))
-        {
+            {
             $language = getArgument("Olang");
-        }
+            }
         else
             $language = "";
 
         if(hasArgument("Oformat"))
-        {
+            {
             $Oformat = getArgument("Oformat");
-        }
+            }
         else
             $Oformat = "flat";
 
@@ -1292,114 +1396,114 @@ try {
         $filename = '';
 
         if($mode == 'dry')
-        {
+            {
             $uploadfile = "\$F";
             if($F == "")
                 $uploadfile = "\$IfacettokF";
-        }
+            }
         else
-        {
+            {
             $uploadfile = $F;
             if($uploadfile == "")
                 $uploadfile = $IfacettokF;
-        }
+            }
         if($uploadfile == '')
-        {
+            {
             header("HTTP/1.0 404 Input tokens not found (F or IfacettokF parameter). ");
             return;
-        }
+            }
 
         logit("uploadfile = $uploadfile");
 
         if($Ifacetpos || $Ifacet_pos_seg_tok)
-        { // lemmatise with pos input
+            { // lemmatise with pos input
             logit("Input has tags");
             $ShowTag = $Ofacetpos;
             logit("ShowTag=$ShowTag");
             if($Iformattxtann)
-            {
-                if($mode == 'dry')
                 {
+                if($mode == 'dry')
+                    {
                     $uploadfileAnnotation = '$IfacetposF';
                     merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma');
-                    lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',"\$lemmainputfile",'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
-                }
+                    lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',"\$lemmainputfile",'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
+                    }
                 else
-                {
+                    {
                     $uploadfileAnnotation = $IfacetposF;
                     $lemmainputfile = merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma');
                     logit("lemmatise with pos in stand off annotation.");
-                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$lemmainputfile,'j','pos','lemma','j',$Iperiodc13,$Iperiodc20);
+                    }
                 }
-            }
             else
-            {
-                if($Iformatflat)
                 {
+                if($Iformatflat)
+                    {
                     logit('lemmatise flat text that has pos tags embedded');
                     if($mode == 'dry')
-                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
+                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
                     else
-                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
-                }
+                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
+                    }
                 else
-                {
+                    {
                     logit('lemmatise TEI-P5 (not an annotation file)');
                     if($mode == 'dry')
-                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
+                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
                     else
-                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
+                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
+                    }
                 }
             }
-        }
         else
-        {
+            {
             logit("No tags in input");
             $ShowTag = false;
             if($Iformattxtann)
-            {
+                {
                 logit('add lemma attribute');
                 if($mode == 'dry')
-                {
+                    {
                     add($toolbin,$uploadfile,'lemma',$element,$idprefix,$ancestor);
-                    lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',"\$lemmainputfile",'n','','lemma','j',$Iperiodc13,$Iperiodc20);
-                }
+                    lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',"\$lemmainputfile",'n','','lemma','j',$Iperiodc13,$Iperiodc20);
+                    }
                 else
-                {
+                    {
                     $lemmainputfile = add($toolbin,$uploadfile,'lemma',$element,$idprefix,$ancestor);
                     logit('lemmatise without pos, stand off tokens');
-                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20);
+                    $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$lemmainputfile,'n','','lemma','j',$Iperiodc13,$Iperiodc20);
+                    }
                 }
-            }
             else
-            {
-                if($Iformatflat)
                 {
+                if($Iformatflat)
+                    {
                     logit('lemmatise flat text');
                     if($mode == 'dry')
-                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
+                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
                     else
-                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
-                }
+                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
+                    }
                 else
-                {
+                    {
                     logit('lemmatise TEI-P5 (not an annotation file)');
                     if($mode == 'dry')
-                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
+                        lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
                     else
-                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf,$Opresfrq,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
+                        $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
+                    }
                 }
             }
-        }
 
         logit("CSTLemfile $CSTLemfile");
         if($Oformat == "txtann")
-        {
+            {
             if($mode == 'dry')
                 splits($toolbin,"\$CSTLemfile",'lemma',$annotation,$idprefix,$ancestor,$element);
             else
                 $CSTLemfile = splits($toolbin,$CSTLemfile,'lemma',$annotation,$idprefix,$ancestor,$element);
-        }
+            }
 
         //chdir($currdir);
         // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTLemfile
@@ -1407,34 +1511,35 @@ try {
         $tmpf = fopen($CSTLemfile,'r');
 
         if($tmpf)
-        {
+            {
             //logit('output from CSTLem:');
             while($line = fgets($tmpf))
-            {
+                {
                 //logit($line);
                 print $line;
-            }
+                }
             fclose($tmpf);
-        }
+            }
 
         if($dodelete)
-        {
-            foreach ($tobedeleted as $filename => $dot)
             {
+            foreach ($tobedeleted as $filename => $dot)
+                {
                 if($dot)
                     unlink($filename);
-            }
+                }
             unset($tobedeleted);
+            }
         }
-    }
+    
     loginit();
     do_CSTLem();
-}
+    }
 catch (SystemExit $e)
-{
+    {
     header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
-}
+    }
 ?>
 
