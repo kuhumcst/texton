@@ -483,7 +483,6 @@ try {
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
-            $dict = "";
             }
         else if($language == 'pt')
             {
@@ -702,6 +701,12 @@ try {
             }
 
         logit("commandA:" . $command);
+
+        if(file_exists("$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict.gz"))
+            {
+            logit("gunzip $toolres/$language/lemmatiser/$foptarg$periodsubdir$dict.gz");
+            system("gunzip $toolres/$language/lemmatiser/$foptarg$periodsubdir$dict.gz");
+            }
 
         if($dict != "")
             $command = $command . " -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict'";
