@@ -1,4 +1,5 @@
 {teitok.bra
+𝕌𝕋𝔽-𝟠
 Takes a TEI P5 document and creates <w> and <c> elements.
 Get the casing right for Danish TEI P5 texts}
 
@@ -172,53 +173,6 @@ X=
                   & (IDs..find)$!id
                   )
               & !id
-        )
-      & ( renumber
-        =   rbr S T ot nt s t
-          .   ( rbr
-              =   att sub nm A Z a z e
-                .   map
-                  $ ( ( 
-                      =   
-                        .     !arg:(?e.?att,?sub)
-                            & (   !att:?a (PTB.?) ?z
-                                & (!e.!a !z,!sub):?arg
-                              | 
-                              )
-                            & (   !e:(w|c)
-                                &   !att
-                                  : ? (S.?s) ?
-                                  : ?a (T.?t) ?z
-                                & ( !s:!S
-                                  |   !s:?S
-                                    & 1:?T
-                                    & 0:?ot
-                                  )
-                                & ( !T:!t&!arg
-                                  |   !T+1:?T
-                                    & ( !t:!T&!arg
-                                      |     !t
-                                          : ( !ot
-                                            | ?ot&!T:?nt
-                                            )
-                                        & ( !e
-                                          .   !a (T.!nt) !z
-                                            ,     !e:w
-                                                & trim$!sub
-                                              | !sub
-                                          )
-                                      )
-                                  )
-                              | (!e.!att,rbr$!sub)
-                              )
-                          | !arg
-                      )
-                    . !arg
-                    )
-              )
-            & 0:?S
-            & 0:?ot
-            & rbr$!arg
         )
       & ( assignIDs
         =   asn
@@ -607,14 +561,22 @@ X=
                                 & (   !arg:
                                     & "If nothing follows after punct, increase token id."
                                     & 1+!tok:?tok
-                                  |     !K
-                                      : ( "'"
-                                        | "-"
-                                        | "/"
-                                        | ":"
+                                  |   "These characters can be inside a token, but not at the end. So if there is something
+                                         directly after, the previous, this and the next something all have the same token id.
+                                         But we need to know whether there was something before this thing! (Not start of sentence, not space.)"
+                                    & ( rep
+                                      =   pat
+                                        .   !arg:(=?pat)
+                                          &   !sjt
+                                            : %@!pat (|rep$!arg)
+                                      )
+                                    &   !K
+                                      : ( rep$(="'")
+                                        | rep$(="-")
+                                        | rep$(="/")
+                                        | rep$(=":")
                                         | …
-                                        | "."
-                                        | "." "." "."
+                                        | rep$(=".")
                                         )
                                     & !tok
                                   | 2+!tok:?tok&-1+!tok
@@ -667,19 +629,13 @@ X=
                            ?
                          )
                   |     !arg
-                      :   ?
-                          ( (%@?kar&let$!kar) ?
-                          : ?kars
-                          )
+                      : ? ((%@?kar&let$!kar) ?:?kars)
                     & str$!kars:?KRS
                     & ( (Mabbr..find)$!KRS
                       |   (Eabbr..find)$!KRS:? (!KRS.?) ?
                         & !KRS:?SentenceEndingAbbrSeen
                       |   upp$!KRS:!KRS
-                        &   !kars
-                          :   ?
-                              (%@?kar&~(let$!kar))
-                              ?Z
+                        & !kars:? (%@?kar&~(let$!kar)) ?Z
                         & !Z:
                       | !nxt:(","|";"|":") ?
                       )
@@ -807,7 +763,9 @@ X=
                               |       vap
                                     $ ( ( 
                                         =   T
-                                          .   (c.(type.s)," ")
+                                          .   ( 1+!tok:?tok
+                                              & (c.(type.s)," ")
+                                              )
                                               ( !arg:
                                               |   vap
                                                 $ ( ( 
@@ -1327,8 +1285,7 @@ X=
       &   (!style:PT&rcontr$!nbody2|!nbody2)
         : ?nmbody2
       & assignIDs$!nmbody2:?nnbody
-      & renumber$!nnbody:?nrbody
-      & get$(toML$!nrbody,X ML MEM):?serial
+      & get$(toML$!nnbody,X ML MEM):?serial
       & ser$(!serial.S):?nrbody
       & 0:?ID
       & ( removeOutliers
@@ -1435,6 +1392,11 @@ X=
           : ?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"test\\ParlaMint...shorter.out.xml",NEW)
+      |   ~
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        & (its.teitok)$("ParlaMint-DK_2022-03-03-20211-M71.xml".simple.!abbr.da):?XMLL
+        & toML$!XMLL:?XMLLL
+        & put$(!XMLLL,"ParlaMint-DK_tokenerror.out.xml",NEW)
       |   arg$:?input
         & arg$:?output
         & arg$:(PT|simple):?style
@@ -1461,6 +1423,7 @@ r=
 & ren$("teitok.bra".str$(teitok ".bak"))
 &   put
   $ ( "{teitok.bra
+𝕌𝕋𝔽-𝟠
 Takes a TEI P5 document and creates <w> and <c> elements.
 Get the casing right for Danish TEI P5 texts}
 
