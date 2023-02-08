@@ -478,6 +478,7 @@ try {
         else if($language == 'no')
             {
             $flexrulessubdir = "/1";
+            $flexrules = "flexrules.trainingpairs_-172.plus_scarrie-16-step1.2cole_zigguratC_XC";
             }
         else if($language == 'pl')
             {
