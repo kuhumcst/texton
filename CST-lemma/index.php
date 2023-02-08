@@ -477,8 +477,7 @@ try {
             }
         else if($language == 'no')
             {
-            $flexrulessubdir = "/0";
-            $flexrules = "flexrules.trainingpairs_-172.plus_scarrie-16-step1.2cole_SUFFIX_suffix_suf_XS";
+            $flexrulessubdir = "/1";
             }
         else if($language == 'pl')
             {
