@@ -420,7 +420,7 @@ try {
         else if($language == 'fo')
             {
             $flexrulessubdir = "/1";
-            $flexrules = "flexrules.edfm-WrdLemTag-Storasnid-179.srt-29-step1.2cole_XC";
+            $flexrules = "flexrules.edfm-WrdLemTag-Storasnid-196.sorted-39-step1.2cole_XC";
             }
         else if($language == 'fr')
             {
