@@ -223,7 +223,7 @@ try {
         $dict = "/dict";
         $periodsubdir = "";
         $Uminus = "-";
-        $H = "0";
+        $H = "1";
         //$c = "\$b1[[\$b~1]?\$B]";
         //$c = "\$b[[\$b0]?(\$B)]";
         $cx = "\$b1[[\$b?]~1\$B]";
@@ -550,7 +550,7 @@ try {
             {
             $Uminus = "";
             $uminus = "";
-            $H = "2";
+            $H = "0";
             logit("Uminus $Uminus");
             }
 
