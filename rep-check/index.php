@@ -392,7 +392,7 @@ try {
             }
         else
             {
-    `       logit("F:" . $F);
+            logit("F:" . $F);
             $CSTRepfile = gentagelseschecker($F);
             }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRepfile
