@@ -17449,14 +17449,111 @@ function main2(evt) {
                 , DestinationDir LocalFileName
                 , language date analyseContentType
               .   ( analyseContentType
-                  =     R spec nofonts ct DestinationDir LocalFileName
+                  =     R spec nofonts ct DestinationDir LocalFileName asTtext
                       , asDiplom input getInput asTabSeparated asConll
                     .   !arg:(?arg.?nofonts.?DestinationDir.?LocalFileName)
                       & @( !arg
                          : ((%? "/" %?:?ct) ";" ?|?ct)
                          )
                       & ( getInput
-                        = .@(get$(str$(!DestinationDir !LocalFileName),STR))
+                        = .get$(str$(!DestinationDir !LocalFileName),STR)
+                        )
+                      & ( asText
+                        =     TOT DOT WHT COM CIF SEM
+                            , VTB FFE BEL CTL SYM txt
+                            , BM1 BM2 UT8
+                          .   str$(chr$255 chr$254):?BM1
+                            & str$(chr$254 chr$255):?BM2
+                            &     str
+                                $ (chr$(x2d$ef) chr$(x2d$bb) chr$(x2d$bf))
+                              : ?UT8
+                            & !arg:?txt
+                            & ( 
+                              | !( 
+                                 ' @( !txt
+                                    : ~($BM1 ?|$BM2 ?)
+                                    )
+                                 )
+                              )
+                            & log$notUTF16
+                            & (   !('@(!txt:$UT8 ?txt))
+                                & log$HASBOM
+                              | log$NOBOM
+                              )
+                            &   0
+                              : ?TOT
+                              : ?DOT
+                              : ?WHT
+                              : ?COM
+                              : ?CIF
+                              : ?SEM
+                              : ?VTB
+                              : ?FFE
+                              : ?BEL
+                              : ?CTL
+                              : ?SYM
+                            &   vap
+                              $ ( ( 
+                                  =   
+                                    .   1+!TOT:?TOT
+                                      &   !arg
+                                        : (   "."
+                                            & 1+!DOT:?DOT
+                                          |   ( " "
+                                              | \t
+                                              | \n
+                                              )
+                                            & 1+!WHT:?WHT
+                                          |   ","
+                                            & 1+!COM:?COM
+                                          |   ~<0:~>9
+                                            & 1+!CIF:?CIF
+                                          |   ";"
+                                            & 1+!SEM:?SEM
+                                          |   \v
+                                            & 1+!VTB:?VTB
+                                          |   \f
+                                            & 1+!FFE:?FFE
+                                          |   \a
+                                            & 1+!BEL:?BEL
+                                          |   <" "
+                                            & 1+!CTL:?CTL
+                                          |   ( "<"
+                                              | ">"
+                                              | "\\"
+                                              | "/"
+                                              | "$"
+                                              | "["
+                                              | "]"
+                                              | "{"
+                                              | "}"
+                                              | "="
+                                              | "|"
+                                              | "*"
+                                              | "#"
+                                              | "%"
+                                              | "&"
+                                              | "_"
+                                              | "+"
+                                              )
+                                            & 1+!SYM:?SYM
+                                          )
+                                  )
+                                . !txt
+                                )
+                            & ( !TOT:~>100
+                              |   !TOT^-1:?TTO
+                                & !DOT*!TTO:<1/5
+                                & !WHT*!TTO:>1/10:<3/5
+                                & !COM*!TTO:<1/25
+                                & !CIF*!TTO:<1/2
+                                & !SEM*!TTO:<170
+                                & !VTB*!TTO:<1/70000
+                                & !FFE*!TTO:<1/1000
+                                & !BEL*!TTO:<1/20000
+                                & !CTL*!TTO:<1/3800
+                                & !SYM*!TTO:<1/10
+                              )
                         )
                       & ( asDiplom
                         =   N lang input
@@ -17806,6 +17903,7 @@ function main2(evt) {
                           |   (application/x-download|application/octet-stream)
                             & log$!ct
                             & getInput$:?input
+                            & log$GotInput
                             & (   @(!input:("%PDF" ?|"%pdf" ?))
                                 &     (   !nofonts:true
                                         & (app.rom)
@@ -17818,11 +17916,19 @@ function main2(evt) {
                                         | pdf
                                       )
                                   : ?R
+                                & log$pdf
                               |   asDiplom$!input:?R
                                 & log$diplom
-                              | asConll$!input:?R
+                              |   asConll$!input:?R
+                                & log$conll
                               |   asTabSeparated$!input:?R
                                 & log$tabs
+                              |   asText$!input
+                                & log$OKtext
+                                &     (app.nrm)
+                                      (facet.txt)
+                                      (format.flat)
+                                  : ?R
                               | :?R
                               )
                           |   application/msword
@@ -17863,21 +17969,31 @@ function main2(evt) {
                                  )
                                )
                           |   application/octet-stream
-                            & @( get$(str$(!DestinationDir !LocalFileName),STR)
-                               : (   ? rtf [<10 ?
-                                   &     (app.nrm)
-                                         (facet.txt)
-                                         (format.rtf)
-                                     : ?R
-                                 |   ? xml [<10 ?
-                                   &     (app.nrm)
-                                         (facet.txt)
-                                         (format.xml)
-                                     : ?R
-                                 |   ?
-                                   & (app.nrm) (facet.txt):?R
+                            & log$(!LocalFileName application/octet-stream)
+                            & ( @( get$(str$(!DestinationDir !LocalFileName),STR,TXT)
+                                 : (   ? rtf [<10 ?
+                                     &     (app.nrm)
+                                           (facet.txt)
+                                           (format.rtf)
+                                       : ?R
+                                   |   ? xml [<10 ?
+                                     &     (app.nrm)
+                                           (facet.txt)
+                                           (format.xml)
+                                       : ?R
+                                   |   ?txt
+                                     & (   asText$!txt
+                                         &     (app.nrm)
+                                               (facet.txt)
+                                               (format.flat)
+                                           : ?R
+                                       | :?R
+                                       )
+                                   )
                                  )
-                               )
+                              |   log$(!LocalFileName "File contains zeros.")
+                                & :?R
+                              )
                           |   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                             &     (app.nrm)
                                   (facet.txt)
@@ -18006,6 +18122,7 @@ function main2(evt) {
                                   . DestinationDir,?DestinationDir
                                   . LocalFileName,?LocalFileName
                                   )
+                              & log$(analyseContentType !LocalFileName)
                               &     analyseContentType
                                   $ (!ContentType.!nofonts.!DestinationDir.!LocalFileName)
                                 : ?feats
