@@ -17456,7 +17456,7 @@ function main2(evt) {
                          : ((%? "/" %?:?ct) ";" ?|?ct)
                          )
                       & ( getInput
-                        = .get$(str$(!DestinationDir !LocalFileName),STR)
+                        = .get$(str$(!DestinationDir !LocalFileName),STR,TXT)
                         )
                       & ( asText
                         =     TOT DOT WHT COM CIF SEM
@@ -17814,7 +17814,6 @@ function main2(evt) {
                                 & ( !L:% %&(format.1col)
                                   |   @(!L:"https://alf.hum.ku.dk/korp" ?)
                                     & (facet.kwic) (format.url)
-                                  | (facet.txt) (format.flat)
                                   )
                               )
                         )
@@ -17902,34 +17901,38 @@ function main2(evt) {
                               : ?R
                           |   (application/x-download|application/octet-stream)
                             & log$!ct
-                            & getInput$:?input
-                            & log$GotInput
-                            & (   @(!input:("%PDF" ?|"%pdf" ?))
-                                &     (   !nofonts:true
-                                        & (app.rom)
-                                      | (app.nrm)
-                                      )
-                                      (facet.txt)
-                                      ( format
-                                      .     !nofonts:true
-                                          & img^pdf
-                                        | pdf
-                                      )
-                                  : ?R
-                                & log$pdf
-                              |   asDiplom$!input:?R
-                                & log$diplom
-                              |   asConll$!input:?R
-                                & log$conll
-                              |   asTabSeparated$!input:?R
-                                & log$tabs
-                              |   asText$!input
-                                & log$OKtext
-                                &     (app.nrm)
-                                      (facet.txt)
-                                      (format.flat)
-                                  : ?R
-                              | :?R
+                            & (   getInput$:?input
+                                & log$GotInput
+                                & (   @( !input
+                                       : ("%PDF" ?|"%pdf" ?)
+                                       )
+                                    &     (   !nofonts:true
+                                            & (app.rom)
+                                          | (app.nrm)
+                                          )
+                                          (facet.txt)
+                                          ( format
+                                          .     !nofonts:true
+                                              & img^pdf
+                                            | pdf
+                                          )
+                                      : ?R
+                                    & log$pdf
+                                  |   asDiplom$!input:?R
+                                    & log$diplom
+                                  |   asConll$!input:?R
+                                    & log$conll
+                                  |   asTabSeparated$!input:?R
+                                    & log$tabs
+                                  |   asText$!input
+                                    & log$OKtext
+                                    &     (app.nrm)
+                                          (facet.txt)
+                                          (format.flat)
+                                      : ?R
+                                  | :?R
+                                  )
+                              | log$HASzeros&:?R
                               )
                           |   application/msword
                             & @( get$(str$(!DestinationDir !LocalFileName),STR)
@@ -18012,20 +18015,24 @@ function main2(evt) {
                                   (format.rtf)
                               : ?R
                           |   text/plain
-                            & getInput$:?input
-                            &   ( asDiplom$!input
-                                | asConll$!input
-                                | asTabSeparated$!input
-                                |   (app.nrm)
-                                    (facet.txt)
-                                    (format.flat)
-                                )
-                              : ?R
+                            & (   getInput$:?input
+                                &   ( asDiplom$!input
+                                    | asConll$!input
+                                    | asTabSeparated$!input
+                                    |   (app.nrm)
+                                        (facet.txt)
+                                        (format.flat)
+                                    )
+                                  : ?R
+                              | log$HASzeros&:?R
+                              )
                           |   (application/conllu|text/x-conll)
                             & log$!ct
-                            & getInput$:?input
-                            &   (asConll$!input|(format.flat))
-                              : ?R
+                            & (   getInput$:?input
+                                &   (asConll$!input|(format.flat))
+                                  : ?R
+                              | log$HASzeros&:?R
+                              )
                           |   @( ?
                                :   image/
                                    (   ( gif
@@ -18096,7 +18103,7 @@ function main2(evt) {
                           )
                       & (   !R
                           : ? (format.json|dipl) ?
-                        | !R (ambig.una):?R
+                        | !R:~&!R (ambig.una):?R
                         )
                       & !R
                   )
