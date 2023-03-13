@@ -243,6 +243,7 @@ toolsProg=
           recentTasks
           wrkflws
           feedback
+          properties
       )
       ( setLang
       =   full A Z
@@ -11419,6 +11420,10 @@ function main2(evt) {
                  * The input can be a file name: this name is appended to the returned value.
                  *
                  */"
+                & ( !baseUrlTools:~
+                  |   readTable$properties
+                    & !properties:? (baseUrlTools.?baseUrlTools.?) ?
+                  )
                 & (toolsdataURL=.str$(!baseUrlTools !stagingArea !arg))
                 & (toolsUploadURL=.str$(!baseUrlTools "/texton/upload" !arg))
                 & makejobstack$!struct:?JobStack
@@ -12716,6 +12721,15 @@ function main2(evt) {
                               )
                             $ !tooladm
                           : ?tooladm
+                        &     (baseUrlTools."http://localhost".)
+                              (wwwServer."http://localhost:8080".)
+                              ( password
+                              . "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
+                              . "Empty string as password."
+                              )
+                              (salt."CvPAQd7naaqtVD1xJD37eg==".)
+                          : ?properties
+& log$(properties !properties)
                       | 
                       )
                     &   (   lst$(!tabs,path$!AAA,NEW)
@@ -12740,6 +12754,20 @@ function main2(evt) {
                 $ "'exportTables$' must be called without argument or with the name of a file that must start with 'alltables'."
               )
           | str$"Cannot read table 'where'"&~
+      )
+      "
+/**
+ * getProperty
+ *
+ * Get baseUrlTools, wwwServer, password or salt. Returns empty string if key not available.
+ */
+"
+      ( getProperty
+      =   value
+        .     readTable$properties
+            & !properties:? (!arg.?value.?) ?
+            & !value
+          | 
       )
       "
 /**
@@ -14749,6 +14777,10 @@ function main2(evt) {
             )
           & ( !arg:(?JobNr.?secs)
             | @(!arg:? #?JobNr)&5:?secs
+            )
+          & ( !wwwServer:~
+            |   readTable$properties
+              & !properties:? (wwwServer.?wwwServer.?) ?
             )
           & ( ~
             |   readTable$jobs
