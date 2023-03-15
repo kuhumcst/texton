@@ -323,9 +323,27 @@ $> cd /opt/texton/BASE/
 $> ls -lrt alltables*
 ```
 
-Copy the file name of the most recent "alltables..." file to the clipboard. Now bavigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
+Copy the file name of the most recent "alltables..." file to the clipboard. Now navigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
 You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
+
+If you want to run Text Tonsorium on anything else but a personal computer, you must set an administrator 'password' and a 'salt' value in the file /opt/texton/BASE/metaproperties.
+Such a password/salt pair can be created in the following way:
+
+1. On your development machine, go to http://localhost/texton/admin
+2. Enter the password that you want to use on your production system in the password field below the `Show Bracmat version' heading.
+3. Press the `Bracmat' button.
+4. Open a linux terminal, and find the location of the file 'textonJava.log'. This location defaults to '/opt/texton/BASE/textonJava.log'. See setting in conf/log4j2.xml in the texton-Java repo.
+5. Open the log file for the java part of Text Tonsorium
+  $> sudo less textonJava.log
+6. Go to the end of this file and find the log statement that contains the string `XMLprop`. Copy everything between `[` and `]` to the file 'properties', replacing the two same named elements.
+7. Save 'properties'
+
+Notice that you also need to replace the values 'www-server' (default http://localhost) and 'baseUrlTools' (default http://localhost:8080) into something that is meaningful for your server.
+E.g. if Text Tonsorium runs as https://me.nu/texton/, then you should change these fields to (www-server."https://me.nu".) and (baseUrlTools."https://me.nu".). 
+If the registered tools are configured to be on the same localhost as the Text Tonsorium itself, then (baseUrlTools."http://localhost:8080") may work as well, assuming that Tomcat runs on port 8080.
+
+The dot following the property value of each of the entries in the 'properties' file is important. Between this dot and the closing parenthesis you can write a comment, e.g., "This is the password used on my development machine.".
 
 ## Wrapped NLP tools
 
