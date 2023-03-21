@@ -150,7 +150,6 @@ $> sudo mkdir /opt/tomcat
 $> sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
 $> sudo ln -s /opt/tomcat/apache-tomcat-9.0.14 /opt/tomcat/latest
 $> sudo chown -RH tomcat: /opt/tomcat/latest
-$> sudo chmod o+x /opt/tomcat/latest/bin/
    
 $> sudo vi /opt/tomcat/latest/conf/tomcat-users.xml  
 ```
