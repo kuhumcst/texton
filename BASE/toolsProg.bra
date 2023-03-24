@@ -2154,37 +2154,35 @@ toolsProg=
                             . !toolUsageList
                             )
                         : ?toolTable
-                      & (   !toolUsageList:? [>1
+                      & (   !toolUsageList:? [>0
+                          &     map
+                              $ ( ( 
+                                  =   ID
+                                    .   !arg:(?ID.?)
+                                      & ( th
+                                        .   
+                                          , ( a
+                                            .     (href.str$("#" !ID))
+                                                  (tabindex.0)
+                                              , ⬇
+                                            )
+                                        )
+                                  )
+                                . !toolTable
+                                )
+                            : ?hyperlinks
                           &   ( thead
                               .   
                                 , ( tr
                                   .   
-                                    ,   ( th
-                                        .   
-                                          ,   localized$(tools værktøjer)
-                                              🠓
-                                              ( 
-                                              | " ⧹ " localized$hyperlinks 🠒
-                                              )
-                                        )
-                                        (     map
-                                            $ ( ( 
-                                                =   ID
-                                                  .   !arg:(?ID.?)
-                                                    & ( th
-                                                      .   
-                                                        , ( a
-                                                          .     (href.str$("#" !ID))
-                                                                (tabindex.0)
-                                                            , ⬇
-                                                          )
-                                                      )
-                                                )
-                                              . !toolTable
-                                              )
-                                          : ?hyperlinks
-                                        & 
-                                        )
+                                    , ( th
+                                      .   
+                                        ,   localized$(tools værktøjer)
+                                            🠓
+                                            ( 
+                                            | " ⧹ " localized$hyperlinks 🠒
+                                            )
+                                      )
                                   )
                               )
                             : ?thead
@@ -12268,27 +12266,9 @@ function main2(evt) {
               )
           | 
       )
-      "
-/**
- * entry
- *
- * Produce the front page of the Text Tonsorium. This is the landing page if
- * the Text Tonsorium is called without parameters indicating uploaded input
- * and (optionally) parameters such as language and desired output features.
- *
- * Called from entry.java
- */"
-      ( entry
-      =   dezilacol UILangNames
-        .   ( dezilacol
-            =   A B G R
-              .   !lANgs:?G:%?A ?B
-                & !B !A:?lANgs
-                & localized$!arg:?R
-                & !G:?lANgs
-                & !R
-            )
-          & ( UILangNames
+      ( fixedMenuItems
+      =   dezilacol UILangNames wheretogo parameters A Z
+        .   ( UILangNames
             =   G R
               .   readTable$linguae
                 & !LaNg:?G
@@ -12306,7 +12286,77 @@ function main2(evt) {
                 & setLang$!G
                 & !R
             )
-          & setLanguageNotPermanently$!arg
+          & ( dezilacol
+            =   A B G R
+              .   !lANgs:?G:%?A ?B
+                & !B !A:?lANgs
+                & localized$!arg:?R
+                & !G:?lANgs
+                & !R
+            )
+          & !arg:(?wheretogo.?parameters)
+          & lst$(parameters,path$"log.txt",APP)
+          & (   !parameters:?A (UIlanguage.?) ?Z
+              & !A !Z:?parameters
+            | 
+            )
+          & (   !parameters:?A (TyPeFaCe.?) ?Z
+              & !A !Z:?parameters
+            | 
+            )
+          &     map
+              $ ( ( 
+                  =   att val
+                    .       !arg
+                          : ( FieldName,?FieldName
+                            . Name,?Name
+                            . ContentType,%?ContentType ?nofonts
+                            . Size,?Size
+                            . DestinationDir,?DestinationDir
+                            . LocalFileName,?LocalFileName
+                            )
+                        &   "&"
+                            FieldName
+                            "="
+                              queryEncode
+                            $ ( str
+                              $ (!ContentType ";" !nofonts ";" !DestinationDir ";" !LocalFileName)
+                              )
+                      |   !arg:(method|DATE.?)
+                        & 
+                      |   !arg:(?att.?val)
+                        & "&" !att "=" queryEncode$!val
+                  )
+                .   (UIlanguage.dezilacol$!lANgs)
+                    (TyPeFaCe.queryEncode$(!TyPeFaCe|"Comic Sans MS"))
+                    !parameters
+                )
+            : % ?parameters
+          & ( div
+            .   (class.rightfloating)
+              ,   helplink$()
+                  " "
+                  changeloglink$()
+                  " "
+                  ( a
+                  .   (href.str$("/texton/" !wheretogo "?" !parameters)) (tabindex.0)
+                    , localized$(UILangNames$(dezilacol$!lANgs))
+                  )
+            )
+      )
+      "
+/**
+ * entry
+ *
+ * Produce the front page of the Text Tonsorium. This is the landing page if
+ * the Text Tonsorium is called without parameters indicating uploaded input
+ * and (optionally) parameters such as language and desired output features.
+ *
+ * Called from entry.java
+ */"
+      ( entry
+      =   
+        .   setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
           &   toML
             $ ( ("!DOCTYPE"." html")
@@ -12380,31 +12430,7 @@ function main2(evt) {
                                                     )
                                                 )
                                                 (br.,)
-                                                ( div
-                                                .   (class.rightfloating)
-                                                  ,   helplink$()
-                                                      " "
-                                                      changeloglink$()
-                                                      " "
-                                                      ( a
-                                                      .     ( href
-                                                            .   str
-                                                              $ ( "/texton/?UIlanguage="
-                                                                  dezilacol$!lANgs
-                                                                  "&TyPeFaCe="
-                                                                    queryEncode
-                                                                  $ ( !TyPeFaCe
-                                                                    | "Comic Sans MS"
-                                                                    )
-                                                                )
-                                                            )
-                                                            (tabindex.0)
-                                                        ,   localized
-                                                          $ ( UILangNames
-                                                            $ (dezilacol$!lANgs)
-                                                            )
-                                                      )
-                                                )
+                                                fixedMenuItems$(.)
                                           )
                                       )
                                 )
@@ -18164,12 +18190,24 @@ function main2(evt) {
                         =     FieldName Name ContentType nofonts Size
                             , DestinationDir LocalFileName feats A N name Z
                           .       !arg
-                                : ( FieldName,?FieldName
-                                  . Name,?Name
-                                  . ContentType,%?ContentType ?nofonts
-                                  . Size,?Size
-                                  . DestinationDir,?DestinationDir
-                                  . LocalFileName,?LocalFileName
+                                : ( ( FieldName,?FieldName
+                                    . Name,?Name
+                                    . ContentType,%?ContentType ?nofonts
+                                    . Size,?Size
+                                    . DestinationDir,?DestinationDir
+                                    . LocalFileName,?LocalFileName
+                                    )
+                                  | ( FieldName
+                                    . @( ?
+                                       :   ?ContentType
+                                           ";"
+                                           ?nofonts
+                                           ";"
+                                           ?DestinationDir
+                                           ";"
+                                           ?LocalFileName
+                                       )
+                                    )
                                   )
                               & log$(analyseContentType !LocalFileName)
                               &     analyseContentType
@@ -18868,18 +18906,33 @@ function main2(evt) {
                 & cmptblWrkflws$(!items.!presels):?items
                 & ( !items
                   .     fieldset
-                      $ (   (strong.,localized$("Your uploaded input" "Din uploadede input"))
-                            (br.,)
-                            (   !items:% %
-                              &   localized
-                                $ ( "Text Tonsorium has categorized your inputs. Correct if you see something wrong. Not every field needs to be filled out. Choose one of the columns of inputs."
-                                    "Text Tonsorium har kategoriseret dine inputs. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke. Vælg en af kolonnerne."
-                                  )
-                            |   localized
-                              $ ( "Text Tonsorium has categorized your input. Correct if you see something wrong. Not every field needs to be filled out."
-                                  "Text Tonsorium har kategoriseret din input. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke."
+                      $ ( ( div
+                          .   (class.overflowing)
+                            ,   ( div
+                                .     (class.leftfloating)
+                                      (style."width: 50%; height: auto;")
+                                  ,   ( strong
+                                      .   
+                                        , localized$("Your uploaded input" "Din uploadede input")
+                                      )
+                                      (br.,)
+                                      (   !items:% %
+                                        &   localized
+                                          $ ( "Text Tonsorium has categorized your inputs. Correct if you see something wrong. Not every field needs to be filled out. Choose one of the columns of inputs."
+                                              "Text Tonsorium har kategoriseret dine inputs. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke. Vælg en af kolonnerne."
+                                            )
+                                      |   localized
+                                        $ ( "Text Tonsorium has categorized your input. Correct if you see something wrong. Not every field needs to be filled out."
+                                            "Text Tonsorium har kategoriseret din input. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke."
+                                          )
+                                      )
                                 )
-                            )
+                                ( div
+                                .     (class.rightfloating)
+                                      (style."width: 50%; height: auto;")
+                                  , (p.,fixedMenuItems$(specifyGoal.!orgarg))
+                                )
+                          )
                         .   Table
                           $ ( id,inputs
                             .   row
