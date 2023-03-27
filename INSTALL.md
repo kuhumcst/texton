@@ -47,10 +47,10 @@ $> sudo apt-get install -y git-lfs
 $> cd /opt
 $> sudo git clone https://github.com/kuhumcst/texton.git
 $> cd texton
-$> sudo chgrp -R www-data *
+$> sudo chgrp -R www-data: *
 $> sudo chmod -R g+w * 
 $> cd BASE
-$> sudo chown -R tomcat *
+$> sudo chown -R tomcat: *
 ```
 
 In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
@@ -120,89 +120,6 @@ Restart apache
 
 ```bash
 $> sudo service apache2 restart
-```
-
-## java
-
-```bash
-$> sudo apt install default-jdk
-```
-
-## ant
-Ant is needed if you want to build the texton.war file from source.
-
-```bash
-$> sudo apt install ant
-```
-
-## Tomcat
-
-Tomcat can be installed using `apt install`, but it can not be started using `sudo service tomcat start` if running under WSL.  
-Therefore, if you install the Text Tonsorium under WSL, you must install Tomcat from a downloaded archive.
-
-Visit https://tomcat.apache.org/ to obtain a link to a recent archive.
-
-```bash
-$> sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
-$> cd /tmp
-$> wget http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.14/bin/apache-tomcat-9.0.14.tar.gz -P .
-$> sudo mkdir /opt/tomcat
-$> sudo tar xf apache-tomcat-9*.tar.gz -C /opt/tomcat
-$> sudo ln -s /opt/tomcat/apache-tomcat-9.0.14 /opt/tomcat/latest
-$> sudo chown -RH tomcat: /opt/tomcat/latest
-   
-$> sudo vi /opt/tomcat/latest/conf/tomcat-users.xml  
-```
-
-Add
-
-    <role rolename="manager-gui"/>
-    <user username="tomcat" password="secret-password" roles="manager-gui"/>
-
-Make sure that you use a good password instead of "secret-password".
-
-```bash
-$> sudo vi /opt/tomcat/latest/conf/server.xml
-```
-
-change
-
-    <Connector port="8080" protocol="HTTP/1.1"
-
-to
-
-    <Connector address="127.0.0.1" port="8080" protocol="HTTP/1.1"
-
-Start Tomcat
-
-```bash
-$> sudo /opt/tomcat/latest/bin/startup.sh
-```
-
-Stop Tomcat
-
-```bash
-$> sudo /opt/tomcat/latest/bin/shutdown.sh
-```
-
-Add "bracmat.jar" to classpath: create (or edit) the file /opt/tomcat/latest/bin/setenv.sh. For example
-
-    CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar
-
-(See below how to make bracmat.jar.)
-
-If there are several java versions, enter the path to the version of java that tomcat must use in setenv.sh, e.g.
-
-    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-
-If your computer has more than 8 GB RAM, you can add
-
-    JAVA_OPTS="-Djava.awt.headless=true -XX:+UseG1GC -Xms7168m -Xmx7168m"
-
-Make the file executable
-
-```bash
-$> sudo chmod ugo+x /opt/tomcat/latest/bin/setenv.sh
 ```
 
 ## Proxy settings
@@ -277,41 +194,27 @@ $> make
 $> sudo cp bracmat /opt/texton/bin/
 ```
 
-## texton - Java part
+## texton-Java
 
-### bracmat.jar and libbracmat.so.1.0
-
-```bash
-$> cd ~/Bracmat/java-JNI/
-$> sudo ./compileAndTestJNI.sh
-```
-
-This script creates the symbolic links /usr/lib/libbracmat.so and /usr/lib/libbracmat.so.1 and creates the share object /usr/lib/libbracmat.so.1.0.
-The script also creates bracmat.jar and attempts to copy it to Tomcat's "lib" folder. This is because bracmat runs as a JNI, its functions being called from the texton-java java code. 
-
-### texton-Java
-
-The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
-Make sure that texton-Java/ and Bracmat/ share the same parent folder. You can clone whereever you want. Here we assume that you build software in your home folder.
-
-The installation instructions in https://github.com/kuhumcst/texton-Java are not up-to-data as of 2020.08.17
-Just do:
-
-```bash
-$> cd ~
-$> git clone https://github.com/kuhumcst/texton-Java.git
-$> cd texton-Java/
-$> sudo chmod ugo+x compileTomcat.sh
-$> sudo ./compileTomcat.sh
-$> sudo /opt/tomcat/latest/bin/startup.sh
-```
-
-Here we assume you installed Tomcat from a downloaded archive, see above.
-
-The Text Tonsorium only needs the .war file that is the result of compiling the java source.
-But for the second step, it is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
+See INSTALL.md in the texton-Java repo.
 
 ### running Text Tonsorium the first time
+
+Create file /opt/texton/BASE/meta/properties containing
+
+    ( baseUrlTools
+    . "http://localhost:8080"
+    . "Protocol and domain of infrastructure as made known to integrated tools"
+    )
+    ( wwwServer
+    . "http://localhost"
+    . "Protocol and domain of infrastructure as made known to users' browsers"
+    )
+    ( password
+    . "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
+    . "Empty string as password."
+    )
+    (salt."CvPAQd7naaqtVD1xJD37eg==".)
 
 Open a browser and navigate to http://localhost:8080/texton/
 
