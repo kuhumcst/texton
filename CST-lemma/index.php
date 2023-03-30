@@ -41,6 +41,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -52,6 +53,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -783,13 +785,13 @@ try {
         global $mode;
         if($mode == 'dry')
             {
-            $posfile = "\$lemmainputfile";
-            scrip("python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute");
+            $lemmainputfile = "\$lemmainputfile";
+            scrip("python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $lemmainputfile $emptyattribute");
             }
         else
             {
-            $posfile = tempFileName("merge");
-            $command = "python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $posfile $emptyattribute";
+            $lemmainputfile = tempFileName("merge");
+            $command = "python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $lemmainputfile $emptyattribute";
             logit($command);
 
             if(($cmd = popen($command, "r")) == NULL)
@@ -801,7 +803,7 @@ try {
                 {
                 }
             }
-        return $posfile;
+        return $lemmainputfile;
         }
 
 
@@ -809,20 +811,20 @@ try {
         {
         global $ERROR;
         global $mode;
-        $posfile = tempFileName("add-" . $attribute . "-attribute");
+        $lemmainputfile = tempFileName("add-" . $attribute . "-attribute");
         if($mode == 'dry')
             {
             if($idprefix == '')
-                scrip("python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element - > \$lemmainputfile");
+                scrip("python3 pyaddatt.py $uploadfile \$lemmainputfile $attribute $ancestor $element -");
             else
-                scrip("python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id > \$lemmainputfile");
+                scrip("python3 pyaddatt.py $uploadfile \$lemmainputfile $attribute $ancestor $element id");
             }
         else
             {
             if($idprefix == '')
-                $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element -";
+                $command = "python3 pyaddatt.py $uploadfile $lemmainputfile $attribute $ancestor $element -";
             else
-                $command = "python3 pyaddatt.py $uploadfile $posfile $attribute $ancestor $element id";
+                $command = "python3 pyaddatt.py $uploadfile $lemmainputfile $attribute $ancestor $element id";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 {
@@ -832,7 +834,7 @@ try {
             while($read = fgets($cmd))
                 {
                 }
-            $handle = @fopen("$posfile", "r");
+            $handle = @fopen("$lemmainputfile", "r");
             if ($handle)
                 {
                 if(($buffer = fgets($handle, 4096)) !== false)
@@ -848,7 +850,7 @@ try {
                 fclose($handle);
                 }
             }
-        return $posfile;
+        return $lemmainputfile;
         }
 
     function do_CSTLem()
@@ -1439,7 +1441,7 @@ try {
             header("HTTP/1.0 404 Input tokens not found (F or IfacettokF parameter). ");
             return;
             }
-
+        //copy($uploadfile,"uploadfile");
         logit("uploadfile = $uploadfile");
 
         if($Ifacetpos || $Ifacet_pos_seg_tok)
