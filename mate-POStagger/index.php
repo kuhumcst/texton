@@ -58,7 +58,7 @@ function logit($str) /* TODO You can use this function to write strings to the l
     $ftemp = fopen($toollog,'a');
     if($ftemp)
         {
-        fwrite($ftemp,$str . "\n");
+        fwrite($ftemp,date("H:i:s") . "\t" . $str . "\n");
         fclose($ftemp);
         }
     }
@@ -474,7 +474,10 @@ try {
             $command = "../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '$conllfile' '$Ifacettok' '$Ifacetseg'";
 
             logit($command);
-
+            /*
+            copy($Ifacettok,"Ifacettok");
+            copy($Ifacetseg,"Ifacetseg");
+            */
             if(($cmd = popen($command, "r")) == NULL)
             {
                 throw new SystemExit(); // instead of exit()
@@ -485,6 +488,8 @@ try {
             }
 
             pclose($cmd);
+            //logit("DONE:" . $command);
+            //copy($conllfile,"conllfile");
         }
         return $conllfile;
         }
@@ -502,12 +507,19 @@ try {
             {
             $command = "../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputPos=\"$MatePOSTaggerfile\") (output=\"$posfile\") (get\$\"brapostei\")'";
             logit($command);
+            //copy($MatePOSTaggerfile,"MatePOSTaggerfile");
             if(($cmd = popen($command, "r")) == NULL)
+                {
+                logit("Cannot open command $command");
                 exit(1);
-
+                }
+            logit("Running $command");
             while($read = fgets($cmd))
                 {
                 }
+            pclose($cmd);
+            //logit("DONE:" . $command);
+  //          copy($posfile,"posfile");
             }
         return $posfile;
         }

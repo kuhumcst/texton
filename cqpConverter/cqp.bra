@@ -15,21 +15,27 @@ vådmørtler       N         N.IND.PLU    vådmørtel
 X=
   ( doit
   =   
-    .   !arg:(?tok.?seg.?pos.?lem.?segtok.?outp.?today)
+    .     !arg
+        : (?tok.?seg.?pos.?lem.?segtok.?outp.?today)
       & :?past
-      &   (!segtok:|get$(!segtok,X ML TRM))
+      &   ( !segtok:
+          | get$(!segtok,X ML TRM)
+          )
         : ?ST
       & "segtok: This file is the original TEI P5 text. The file is read without nesting it afterwards!
          It is scanned for <lb> and <pb> markings, so they can be reproduced in the output."
       &     map
           $ ( ( 
               =   
-                .     !arg:((lb|pb):?arg.?)
+                .       !arg
+                      : ((lb|pb):?arg.?)
                     & (!arg.!past):?arg
                     & :?past
                     & !arg
                   |     !arg
-                      : (c|w.? ("xml:id".?arg) ?)
+                      : ( c|w
+                        . ? ("xml:id".?arg) ?
+                        )
                     & !arg !past:?past
                     & 
                   | 
@@ -37,18 +43,72 @@ X=
             . !ST
             )
         : ?lpb
-      & lst$(lpb,lpb,NEW)
-      & put$(,fid,NEW)
       & ( !tok:
         |   get$(!tok,X ML):?T
-          &   (!seg:|get$(!seg,X ML TRM))
+          &   ( !seg:
+              | get$(!seg,X ML TRM)
+              )
             : ?S
-          &   (!pos:|get$(!pos,X ML TRM))
+          &   ( !pos:
+              | get$(!pos,X ML TRM)
+              )
             : ?P
-          &   (!lem:|get$(!lem,X ML TRM))
+          &   ( !lem:
+              | get$(!lem,X ML TRM)
+              )
             : ?L
           & 0:?ID
           & :?p:?words
+          & new$hash:?PH
+          & new$hash:?LH
+          & new$hash:?SH
+          &   map
+            $ ( ( 
+                =   
+                  .     !arg
+                      : ( ( span
+                          .   ?
+                              (from.@(?:"#" ?ref))
+                              ?
+                          )
+                        |   %@?p
+                          & (PH..insert)$(!ref.!p)
+                        )
+                    | 
+                )
+              . !P
+              )
+          &   map
+            $ ( ( 
+                =   
+                  .     !arg
+                      : ( ( span
+                          .   ?
+                              (from.@(?:"#" ?ref))
+                              ?
+                          )
+                        |   %@?l
+                          & (LH..insert)$(!ref.!l)
+                        )
+                    | 
+                )
+              . !L
+              )
+          &   map
+            $ ( ( 
+                =   
+                  .       !arg
+                        : ( span
+                          .     ?
+                                (to.@(?:"#" ?ref))
+                                ?
+                            , ?
+                          )
+                      & (SH..insert)$(!ref.)
+                    | 
+                )
+              . !S
+              )
           &   whl
             ' (   !T
                 :   ?
@@ -60,20 +120,10 @@ X=
                     (.span.)
                     ?T
               & str$("#" !tid):?ref
-              & (   !P
-                  :   ?
-                      (span.? (from.!ref) ?)
-                      ?POS
-                      (.span.)
-                      ?P
+              & ( (PH..find)$!tid:(?.?POS)
                 | "_":?POS
                 )
-              & (   !L
-                  :   ?
-                      (span.? (from.!ref) ?)
-                      ?lemma
-                      (.span.)
-                      ?L
+              & ( (LH..find)$!tid:(?.?lemma)
                 | "_":?lemma
                 )
               & ( !('(!lpb:(?.? ()$fid ?) ?))
@@ -98,31 +148,26 @@ X=
                     !words
                 : ?words
               & :?sent
-              & (   !( 
-                     ' ( !S
-                       :   ?
-                           (span.? (to.$ref) ?,?)
-                           ?S
-                       )
-                     )
+              & (   (SH..find)$!tid
                   & 1+!ID:?ID
                   &   whl
                     ' ( !words:%?line ?words
                       & !line !sent:?sent
                       )
-                  &   (   !p:
-                        &   \n
-                            (sentence.(id.!ID),\n !sent)
-                            \n
-                      |   !p
-                          \n
-                          (sentence.(id.!ID),\n !sent)
-                          \n
-                      )
+                  &     \n
+                        (sentence.(id.!ID),\n !sent)
+                        \n
+                        !p
                     : ?p
                 | 
                 )
               )
+          & :?PP
+          &   whl
+            ' ( !p:%?elm ?p
+              & !elm !PP:?PP
+              )
+          & !PP:?p
           &     toML
               $ ( ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
                   \n
@@ -138,7 +183,7 @@ X=
                 )
             : ?ML
           & @(!ML:? \n ?ML)
-          & put$(!ML,!outp,NEW)
+          & put$(!ML,!outp,NEW,BIN)
         )
   )
   ( new
@@ -151,7 +196,8 @@ X=
         & (arg$:?lem|:?lem)
         & (arg$:?segtok|:?segtok)
         & (arg$:?today|:?today)
-        & (its.doit)$(!tok.!seg.!pos.!lem.!segtok.!outp.!today)
+        &   (its.doit)
+          $ (!tok.!seg.!pos.!lem.!segtok.!outp.!today)
   );
 
 r=
@@ -176,10 +222,11 @@ vådmørtler       N         N.IND.PLU    vådmørtel
 "
     , "cqp.bra"
     , NEW
+    , BIN
     )
-& lst'(X,"cqp.bra",APP)
-& put'(\n,"cqp.bra",APP)
-& lst'(r,"cqp.bra",APP)
-& put$(str$("\nnew'" X ";\n"),"cqp.bra",APP);
+& lst'(X,"cqp.bra",APP,BIN)
+& put'(\n,"cqp.bra",APP,BIN)
+& lst'(r,"cqp.bra",APP,BIN)
+& put$(str$("\nnew'" X ";\n"),"cqp.bra",APP,BIN);
 
 new'X;

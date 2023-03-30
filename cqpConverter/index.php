@@ -202,6 +202,12 @@ try {
         }
         else
         {
+            /*copy($IfacettokF,"IfacettokF");
+            copy($IfacetsegF,"IfacetsegF");
+            copy($IfacetposF,"IfacetposF");
+            copy($IfacetlemF,"IfacetlemF");
+            copy($Ifacet_seg_tokF,"Ifacet_seg_tokF");
+            */
             $command = "../bin/bracmat 'get\$\"cqp.bra\"' $cqp4file $IfacettokF $IfacetsegF $IfacetposF $IfacetlemF $Ifacet_seg_tokF $today";
 
             logit($command);
@@ -216,6 +222,7 @@ try {
             }
 
             pclose($cmd);
+            //copy($cqp4file,"cqp4file");
         }
         return $cqp4file;
     }
@@ -273,17 +280,17 @@ try {
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $Ifacet_seg_tokF = "";	/* Input with type of content segments (sætningssegmenter) and tokens (tokens) */
+        $Ifacet_seg_tokF = "";	/* Input with type of content segments (sÃ¦tningssegmenter) and tokens (tokens) */
         $IfacetlemF = "";	/* Input with type of content lemmas (lemmaer) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
-        $IfacetsegF = "";	/* Input with type of content segments (sætningssegmenter) */
+        $IfacetsegF = "";	/* Input with type of content segments (sÃ¦tningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacet_lem_pos_seg_tok = false;	/* Type of content in input is lemmas (lemmaer) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) if true */
-        $Ifacet_seg_tok = false;	/* Type of content in input is segments (sætningssegmenter) and tokens (tokens) if true */
+        $Ifacet_lem_pos_seg_tok = false;	/* Type of content in input is lemmas (lemmaer) and PoS-tags (PoS-tags) and segments (sÃ¦tningssegmenter) and tokens (tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (sÃ¦tningssegmenter) and tokens (tokens) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (lemmaer) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (sÃ¦tningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatcols = false;	/* Format in input is columns, tab separated fields (kolonner, tab separeret) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
@@ -292,7 +299,7 @@ try {
         $Ofacetcls = false;	/* Type of content in output is word class (ordklasse) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
-        $Ofacetseg = false;	/* Type of content in output is segments (sætningssegmenter) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (sÃ¦tningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatvrt = false;	/* Format in output is Corpus Workbench (for CQP queries) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
@@ -334,7 +341,7 @@ try {
             $Ifacet_seg_tokF = requestFile("Ifacet_seg_tokF");
             if($Ifacet_seg_tokF == '')
             {
-                header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter) and tokens (tokens)' not found (Ifacet_seg_tokF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (sÃ¦tningssegmenter) and tokens (tokens)' not found (Ifacet_seg_tokF parameter). ");
                 return;
             }
             $echos = $echos . "Ifacet_seg_tokF=$Ifacet_seg_tokF ";
@@ -367,7 +374,7 @@ try {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
             {
-                header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (sÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
             }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";

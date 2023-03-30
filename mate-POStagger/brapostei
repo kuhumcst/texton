@@ -2,7 +2,8 @@
 
 X=
   ( convert2html
-  =   xml file Ent atts ent entn write,doamp
+  =     xml file Ent atts ent entn write
+      , doamp
     .   !arg:(?xml.?file)
       & ( doamp
         =   x y
@@ -65,7 +66,8 @@ X=
         )
       & ( entn
         =   A
-          .   !arg:%?A ?arg&ent$!A entn$!arg
+          .     !arg:%?A ?arg
+              & ent$!A entn$!arg
             | !arg
         )
       & ( atts
@@ -95,27 +97,56 @@ X=
                           )
                         & (   !C:
                             &   fil
-                              $ (,,,str$("<" !A atts$!att " />"))
-                          |   fil$(,,,str$("<" !A atts$!att ">"))
+                              $ ( 
+                                , 
+                                , 
+                                , str$("<" !A atts$!att " />")
+                                )
+                          |     fil
+                              $ ( 
+                                , 
+                                , 
+                                , str$("<" !A atts$!att ">")
+                                )
                             & write$!C
-                            & fil$(,,,str$("</" !A ">"))
+                            &   fil
+                              $ (,,,str$("</" !A ">"))
                           )
                       |   !A
                         : (   
                             & !B:(?B.)
-                            & fil$(,,,str$("</" ent$!B ">"))
+                            &   fil
+                              $ ( 
+                                , 
+                                , 
+                                , str$("</" ent$!B ">")
+                                )
                           |   "!"
-                            & fil$(,,,str$("<!" !B ">"))
+                            &   fil
+                              $ (,,,str$("<!" !B ">"))
                           |   "!--"
-                            & fil$(,,,str$("<!--" !B "-->"))
+                            &   fil
+                              $ (,,,str$("<!--" !B "-->"))
                           |   "?"
-                            & fil$(,,,str$("<?" !B "?>"))
+                            &   fil
+                              $ (,,,str$("<?" !B "?>"))
                           |   "![CDATA["
-                            & fil$(,,,str$("<![CDATA[" !B "]]>"))
+                            &   fil
+                              $ ( 
+                                , 
+                                , 
+                                , str$("<![CDATA[" !B "]]>")
+                                )
                           |   "!DOCTYPE"
-                            & fil$(,,,str$("<!DOCTYPE" !B ">"))
+                            &   fil
+                              $ (,,,str$("<!DOCTYPE" !B ">"))
                           |   ?
-                            & fil$(,,,str$("<" !A atts$!B ">"))
+                            &   fil
+                              $ ( 
+                                , 
+                                , 
+                                , str$("<" !A atts$!B ">")
+                                )
                           )
                       )
                   | fil$(,,,str$(entn$!car))
@@ -134,19 +165,23 @@ X=
       & !inputPos
       & !output
       & ( get$(!inputTok,X,ML,TRM):?XMLtok
-        | put$(cannotopen !inputTok \n,"brapostei.log",APP)
+        |   put
+          $ (cannotopen !inputTok \n,"brapostei.log",APP)
         )
       & ( get$(!inputPos,STR):?pos
-        | put$(cannotopen !inputPos \n,"brapostei.log",APP)
+        |   put
+          $ (cannotopen !inputPos \n,"brapostei.log",APP)
         )
       & :?nXML:?oldt:?oldA
       & 0:?nr
       & 99999999999:?snold
       & ( sentNo
         =   sent
-          .   @(!arg:? #%?sent "." ?)&str$(!sent ".")
+          .     @(!arg:? #%?sent "." ?)
+              & str$(!sent ".")
             | 
         )
+      & vap$((=.!arg).!pos.\n):?pos
       &   whl
         ' ( !XMLtok
           : (   (?e.?a) @?A (.!e.) ?XMLtok
@@ -159,58 +194,79 @@ X=
               & (@(!from:"#" ?from)|)
               & (@(!to:"#" ?to)|)
               & "3	take	_	_	_	VB	_	_	-1	_	_	_	_	_"
-              & @( !pos
-                 :   ?
-                     \t
-                     ?w
-                     \t
-                     "_"
-                     \t
-                     "_"
-                     \t
-                     "_"
-                     \t
-                     ?p
-                     \t
-                     ?
-                     (\n|\r)
-                     ?pos
-                 )
+              &   !pos
+                :   @( ?
+                     :   ?
+                         \t
+                         ?w
+                         \t
+                         "_"
+                         \t
+                         "_"
+                         \t
+                         "_"
+                         \t
+                         ?p
+                         \t
+                         ?
+                     )
+                    ?pos
               & @( rev$!w
                  : ( ?w (" "|\n|\r) ?
                    | ?w
                    )
                  )
               & rev$!w:?w
-              &     !nXML
-                    ( !e
-                    .     (@(!A:? !w ?oldA)|@(low$!A:? !w ?oldA))
-                        & sentNo$!t:?sno
-                        & (!sno:!snold|0:?nr)
-                        &   ("xml:id".str$(p !sno (1+!nr:?nr)))
-                            (from.str$("#" !t))
-                      |   (@(!oldA:? !w ?oldA)|@(low$!oldA:? !w ?oldA))
-                        & sentNo$!oldt:?sno
-                        & (!sno:!snold|0:?nr)
-                        &   (!e.!a) !A (.!e.) !XMLtok
-                          : ?XMLtok
-                        &   ("xml:id".str$(p !sno (1+!nr:?nr)))
-                            (from.str$("#" !oldt))
+              &     ( !e
+                    .       ( @(!A:? !w ?oldA)
+                            | @(low$!A:? !w ?oldA)
+                            )
+                          & sentNo$!t:?sno
+                          & ( !sno:!snold
+                            | 0:?nr
+                            )
+                          &   ( "xml:id"
+                              .   str
+                                $ (p !sno (1+!nr:?nr))
+                              )
+                              (from.str$("#" !t))
+                        |   ( @(!oldA:? !w ?oldA)
+                            | @(low$!oldA:? !w ?oldA)
+                            )
+                          & sentNo$!oldt:?sno
+                          & ( !sno:!snold
+                            | 0:?nr
+                            )
+                          &     (!e.!a)
+                                !A
+                                (.!e.)
+                                !XMLtok
+                            : ?XMLtok
+                          &   ( "xml:id"
+                              .   str
+                                $ (p !sno (1+!nr:?nr))
+                              )
+                              (from.str$("#" !oldt))
+                      , !p
                     )
-                    !p
-                    (.!e.)
+                    !nXML
                 : ?nXML
               & !t:?oldt
               & !sno:?snold
             |   %?v ?XMLtok
               & (   !v:(spanGrp.ana.?)
-                  & (spanGrp.ana.str$("#" MatePOSTagger)):?v
+                  &   (spanGrp.ana.str$("#" MatePOSTagger))
+                    : ?v
                 | 
                 )
-              & !nXML !v:?nXML
+              & !v !nXML:?nXML
             )
           )
-      & (its.convert2html)$(!nXML.!output)
+      &   whl
+        ' ( !nXML:%?v ?nXML
+          & !v !XMLtok:?XMLtok
+          )
+      & (its.convert2html)$(!XMLtok.!output)
   );
 
 r=
@@ -221,7 +277,7 @@ r=
 
 ",brapostei,NEW)
 & lst'(X,brapostei,APP)
-      & lst$(nXML,nXML,NEW)
+& lst$(nXML,nXML,NEW)
 & put'(\n,brapostei,APP)
 & lst'(r,brapostei,APP)
 & put$(str$("\nnew'" X ";\n"),brapostei,APP);
