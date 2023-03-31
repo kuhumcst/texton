@@ -582,7 +582,7 @@ try {
                 {
                 $outn = tempFileName("bohnetout");
                 $sentenceCounter = 0;
-                $blocksize = 10;
+                $blocksize = 100;
                 foreach ($lines as $k => $v)
                     {
                     fwrite($inp,$lines[$k]);
