@@ -42,7 +42,7 @@ $tobedeleted = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -54,7 +54,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -217,6 +217,33 @@ try {
             }
         logit("empty");
         return "";
+        }
+
+    function trans1000($fp,$nocomment,$dep2treefile,$F)
+        {
+        logit("trans1000")
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        $odir = tempdir();
+        $command = "export LANG=en_US.UTF-8 && python3 dependency2tree.py -o $odir/D.svg -c $nocomment --ignore-double-indices";
+        if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+        while($read = fgets($cmd)){}
+        pclose($cmd);
+        $odirlst = scandir($odir);
+
+        $lsodir = tempFileName("dep2tree-lsodir");
+        $fp = fopen($lsodir, "w+");
+        flock($fp, LOCK_EX);
+        foreach($odirlst as $line)
+            {
+            fwrite($fp, $line . "\n");
+            }
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir' '$lsodir' '$F' '$nocomment' '$dep2treefile'";
+        if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+        while($read = fgets($cmd)){}
+        pclose($cmd);
         }
 
     function do_dep2tree()
@@ -389,11 +416,8 @@ try {
             }
         else
             {
-            $nocomment = tempFileName("dep2tree-nocomment");
-            $lsodir = tempFileName("dep2tree-lsodir");
-            $odir = tempdir();
-            $out = array();
             $data = file($F);
+            $out = array();
             foreach($data as $line)
                 {
                 if(!str_starts_with(trim($line),"#"))
@@ -401,33 +425,26 @@ try {
                     $out[] = $line;
                     }
                 }
+            $upto999 = 0;
+            
+            $nocomment = tempFileName("dep2tree-nocomment");
             $fp = fopen($nocomment, "w+");
             flock($fp, LOCK_EX);
             foreach($out as $line)
                 {
                 fwrite($fp, $line);
+                $upto999 = $upto999 + 1;
+                if($upto999 == 1000)
+                    {
+                    $upto999 = 0;
+                    trans1000($fp,$nocomment,$dep2treefile,$F);
+                    $fp = fopen($nocomment, "w+");
+                    flock($fp, LOCK_EX);
+                    }
                 }
-            flock($fp, LOCK_UN);
-            fclose($fp);
-            $command = "export LANG=en_US.UTF-8 && python3 dependency2tree.py -o $odir/D.svg -c $nocomment --ignore-double-indices";
-            if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
-            while($read = fgets($cmd)){}
-            pclose($cmd);
-            $odirlst = scandir($odir);
-
-            $fp = fopen($lsodir, "w+");
-            flock($fp, LOCK_EX);
-            foreach($odirlst as $line)
-                {
-                fwrite($fp, $line . "\n");
-                }
-            flock($fp, LOCK_UN);
-            fclose($fp);
-            $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir' '$lsodir' '$F' '$nocomment' '$dep2treefile'";
-            if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
-            while($read = fgets($cmd)){}
-            pclose($cmd);
+            trans1000($fp,$nocomment,$dep2treefile,$F);
             }
+
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dep2treefile
 //*/
         $tmpf = fopen($dep2treefile,'r');
