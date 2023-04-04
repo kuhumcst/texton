@@ -293,14 +293,12 @@ It is probably better to use the newer udpipe software.
 $> git clone https://github.com/boberle/dependency2tree.git
 ```
 
-and comment out the lines telling that rights is "none" for these file types.
 
 ```bash
 $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
 $> sudo apt install graphviz
 ```
 
-and comment out the lines telling that rights is "none" for these file types.
 
 ### espeak
 
