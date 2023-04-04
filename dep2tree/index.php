@@ -219,31 +219,20 @@ try {
         return "";
         }
 
-    function trans1000($fp,$nocomment,$dep2treefile,$F)
+    function trans1000($nocomment,$odir,$subdir)
         {
-        logit("trans1000")
-        flock($fp, LOCK_UN);
-        fclose($fp);
-        $odir = tempdir();
-        $command = "export LANG=en_US.UTF-8 && python3 dependency2tree.py -o $odir/D.svg -c $nocomment --ignore-double-indices";
+        logit("trans1000 nocomment [$nocomment]");
+        $command = "export LANG=en_US.UTF-8 && python3 dependency2tree.py -o $odir/$subdir/D.svg -c $nocomment --ignore-double-indices";
         if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
         pclose($cmd);
-        $odirlst = scandir($odir);
+        }
 
-        $lsodir = tempFileName("dep2tree-lsodir");
-        $fp = fopen($lsodir, "w+");
-        flock($fp, LOCK_EX);
-        foreach($odirlst as $line)
-            {
-            fwrite($fp, $line . "\n");
-            }
-        flock($fp, LOCK_UN);
-        fclose($fp);
-        $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$odir' '$lsodir' '$F' '$nocomment' '$dep2treefile'";
-        if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
-        while($read = fgets($cmd)){}
-        pclose($cmd);
+    function filelist($odir)
+        {
+        $odirlst = tempFileName("odirlst");
+        system("find $odir -maxdepth 2 -type f > $odirlst");
+        return $odirlst;
         }
 
     function do_dep2tree()
@@ -425,24 +414,64 @@ try {
                     $out[] = $line;
                     }
                 }
-            $upto999 = 0;
+            $remainder = 0;
             
             $nocomment = tempFileName("dep2tree-nocomment");
-            $fp = fopen($nocomment, "w+");
-            flock($fp, LOCK_EX);
+            $ALLnocomment = tempFileName("dep2tree-nocoal");
+            $fpNocomment = fopen($nocomment, "w+");
+            $fpALLnocomment = fopen($ALLnocomment,"w+");
+            flock($fpNocomment, LOCK_EX);
+            logit("foreach");
+            $newlineseen = 0;
+            $odir = tempdir();
+            $subdir = 0;
+            mkdir("$odir/$subdir");
+            $modulus = 999; /* 001 ... 999 */
             foreach($out as $line)
                 {
-                fwrite($fp, $line);
-                $upto999 = $upto999 + 1;
-                if($upto999 == 1000)
+                fwrite($fpNocomment, $line);
+                fwrite($fpALLnocomment,$line);
+                if($line == "\n")
                     {
-                    $upto999 = 0;
-                    trans1000($fp,$nocomment,$dep2treefile,$F);
-                    $fp = fopen($nocomment, "w+");
-                    flock($fp, LOCK_EX);
+                    if($newlineseen == 0)
+                        {
+                        $remainder = $remainder + 1;
+                        $newlineseen = 1;
+                        logit("One more $remainder");
+                        }
+                    }
+                else
+                    {
+	                $newlineseen = 0;
+                    }
+
+                if($remainder == $modulus)
+                    {
+                    $remainder = 0;
+                    flock($fpNocomment, LOCK_UN);
+                    fclose($fpNocomment);
+                    trans1000($nocomment,$odir,$subdir);
+                    $fpNocomment = fopen($nocomment, "w+");
+                    flock($fpNocomment, LOCK_EX);
+                    $subdir = $subdir + 1;
+                    mkdir("$odir/$subdir");
+                    logit("NEW FOLDER $subdir");
                     }
                 }
-            trans1000($fp,$nocomment,$dep2treefile,$F);
+            logit("After foreach");
+            flock($fpNocomment, LOCK_UN);
+            logit("Unlocked $nocomment");
+            fclose($fpNocomment);
+            fclose($fpALLnocomment);
+            logit("Closed $nocomment");
+            trans1000($nocomment,$odir,$subdir);
+            logit("trans1000 DONE");
+
+            $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$F' '$ALLnocomment' '$dep2treefile' '$modulus' '$odir' '$subdir' '$remainder'";
+            logit("command $command");
+            if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+            while($read = fgets($cmd)){}
+            pclose($cmd);
             }
 
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $dep2treefile

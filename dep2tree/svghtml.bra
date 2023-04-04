@@ -4,10 +4,88 @@ Convert conll output from dependency2tree to HTML, combining all .svg files, add
 
 X=
   ( doit
-  =   odir lsodir F dep2treefile svgf
-    .   !arg:(?odir.?lsodir.?F.?conll.?dep2treefile)
-      & get$(!lsodir,STR):?svgs
-      & lst$(svgs,svgs,NEW)
+  =     odir lsodir F dep2treefile svgs modulus
+      , AllSVGs
+    .     !arg
+        : ( ?F
+          . ?conll
+          . ?dep2treefile
+          . ?modulus
+          . ?odir
+          . ?lastsubdir
+          . ?remainder
+          )
+      & ( getSVG
+        =   svg
+          .   !arg
+            ,       map
+                  $ ( (=.!arg:~" "|)
+                    . get$(!arg,X ML TRM)
+                    )
+                : ? (svg.?att) ?svg
+              & (   !att:?a (width.?) ?z
+                  & !a !z:?att
+                | 
+                )
+              & (   !att:?a (height.?) ?z
+                  & !a !z:?att
+                | 
+                )
+              & (svg.!att) !svg:?svg
+              &   map
+                $ ( ( 
+                    =   a z e id
+                      .       !arg
+                            : ( ?e
+                              .   ?a
+                                  (id.@(?:?id #))
+                                  ?z
+                              )
+                          & ( !e
+                            .   !a
+                                ( id
+                                . str$(!id (!!id+1:?!id))
+                                )
+                                !z
+                            )
+                        | !arg
+                    )
+                  . !svg
+                  )
+        )
+      & ( AllSVGs
+        =   modulus lastsubdir remainder RET subdir N
+          .   !arg:(?modulus.?odir.?lastsubdir.?remainder)
+            & :?RET
+            & !lastsubdir:?subdir
+            & !remainder:?N
+            &   whl
+              ' (   whl
+                  ' (       getSVG
+                          $ ( str
+                            $ ( !odir
+                                "/"
+                                !subdir
+                                "/D-"
+                                ( !N:<10&00
+                                | !N:<100&0
+                                | 
+                                )
+                                !N
+                                ".svg"
+                              )
+                            )
+                          !RET
+                      : ?RET
+                    & !N+-1:>0:?N
+                    )
+                & !modulus:?N
+                & !subdir+-1:~<0:?subdir
+                )
+            & !RET
+        )
+      &   AllSVGs$(!modulus.!odir.!lastsubdir.!remainder)
+        : ?SVGS
       & 0:?graph:?node:?edge
       & get$(!conll,STR):?CONLL
       &     str
@@ -35,50 +113,11 @@ X=
             . \n
             )
         : ?sents
-      &     map
-          $ ( ( 
-              =   svg
-                .   !arg
-                  ,       map
-                        $ ( (=.!arg:~" "|)
-                          . get$(str$(!odir "/" !arg),X ML TRM)
-                          )
-                      : ? (svg.?att) ?svg
-                    & (   !att:?a (width.?) ?z
-                        & !a !z:?att
-                      | 
-                      )
-                    & (   !att:?a (height.?) ?z
-                        & !a !z:?att
-                      | 
-                      )
-                    & (svg.!att) !svg:?svg
-                    &   map
-                      $ ( ( 
-                          =   a z e id
-                            .       !arg
-                                  : ( ?e
-                                    . ?a (id.@(?:?id #)) ?z
-                                    )
-                                & ( !e
-                                  .   !a
-                                      (id.str$(!id (!!id+1:?!id)))
-                                      !z
-                                  )
-                              | !arg
-                          )
-                        . !svg
-                        )
-              )
-            .   vap
-              $ ( (=.@(!arg:D ?)|)
-                . !svgs
-                . \n
-                )
-            )
-        : ?SVGS
       &     ("!DOCTYPE"." html")
-            (html.(lang.en) (xmlns."http://www.w3.org/1999/xhtml"))
+            ( html
+            .   (lang.en)
+                (xmlns."http://www.w3.org/1999/xhtml")
+            )
             (head.)
             (meta.(charset.utf-8),)
             (title.)
@@ -91,7 +130,9 @@ X=
                 =   
                   .   !arg:(?,?arg)
                     & !sents:(?sentNR.?sent) ?sents
-                    & (p.,!sentNR) (p.,!sent) !arg
+                    &   (p.,!sentNR)
+                        (p.,!sent)
+                        !arg
                 )
               . !SVGS
               )
@@ -104,12 +145,22 @@ X=
   ( new
   =   
     .   ~
-      |   arg$:?odir
-        & arg$:?lsodir
-        & arg$:?F
+      |   arg$:?F
         & arg$:?conll
         & arg$:?dep2treefile
-        & (its.doit)$(!odir.!lsodir.!F.!conll.!dep2treefile)
+        & arg$:?modulus
+        & arg$:?odir
+        & arg$:?lastsubdir
+        & arg$:?remainder
+        &   (its.doit)
+          $ ( !F
+            . !conll
+            . !dep2treefile
+            . !modulus
+            . !odir
+            . !lastsubdir
+            . !remainder
+            )
   );
 
 r=
