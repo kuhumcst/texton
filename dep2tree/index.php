@@ -437,7 +437,6 @@ try {
                         {
                         $remainder = $remainder + 1;
                         $newlineseen = 1;
-                        logit("One more $remainder");
                         }
                     }
                 else
@@ -455,10 +454,9 @@ try {
                     flock($fpNocomment, LOCK_EX);
                     $subdir = $subdir + 1;
                     mkdir("$odir/$subdir");
-                    logit("NEW FOLDER $subdir");
                     }
                 }
-            logit("After foreach");
+            logit("After foreach odir $odir subdir $subdir remainder $remainder");
             flock($fpNocomment, LOCK_UN);
             logit("Unlocked $nocomment");
             fclose($fpNocomment);
