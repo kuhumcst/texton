@@ -416,9 +416,9 @@ try {
         if($mode == 'dry')
             {
             scripinit($inputF,$input,$output);
-            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $lang $period \$IfacettokF \$IfacetsegF \$CoreNLPfile $tmp1 $tmp2";
+            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $lang $period \$IfacettokF \$IfacetsegF \$CoreNLPfile tmp1 tmp2";
             $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
-            $rms1 =  "&& rm $tmp1 && rm $tmp2 ";
+            $rms1 =  "&& rm tmp1 && rm tmp2 ";
             $rms3 = "&& rm \$CoreNLPfile ";
             $command .= " && curl -v -F job=$job -F name=\$CoreNLPfile -F data=@\$CoreNLPfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
             scrip($command);
