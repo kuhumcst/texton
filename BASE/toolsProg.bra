@@ -603,6 +603,22 @@ toolsProg=
               )
           & !featdesc
       )
+      ( getFeatAndValueNames
+      =   feature featvals featname table specificationTables featdesc
+        .   !arg:(?feature,?featvals)
+          &   !features
+            :   ?
+              + ( ? (short.!feature) ?
+                : ? (name.?featname) ?
+                : ? (table.?table) ?
+                : ( ? (specificationTable.?specificationTables) ?
+                  | ?&:?specificationTables
+                  )
+                )
+              + ?
+          & describefeature$(!featvals.!table.!specificationTables):?featdesc
+          & (!featname,!featdesc)
+      )
       ( inoutdesc
       =   description
         .         map
@@ -2478,10 +2494,14 @@ toolsProg=
             ,   \r\n
                 (html|"Use this together with min-height:100%" "html {height: 100%;}")
                 \r\n
-                ( ".bodycanvas {background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat; }"
-                |   "min-height:100% is not nice as soon as you begin to scroll. The previously unseen content gets a white background."
-                    ".bodycanvas {min-height: 100%; background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat; }"
-                | ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
+                (   ~
+                  & ".bodycanvas {background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat; }"
+                |   ~
+                  &   "min-height:100% is not nice as soon as you begin to scroll. The previously unseen content gets a white background."
+                      ".bodycanvas {min-height: 100%; background: linear-gradient(179deg, rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255),rgb(204,228,255), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204), rgba(255,246,204));background-repeat: no-repeat; }"
+                |   ~
+                  & ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(0,210,255,0.2));background-repeat: no-repeat;}"
+                | ".bodycanvas {background: linear-gradient(rgb(254,254,254), rgba(200,200,200,0.2));background-repeat: no-repeat;}"
                 )
                 \r\n
                 "a:link, a:visited {color: #000;}"
@@ -3103,6 +3123,33 @@ toolsProg=
                         "&TyPeFaCe="
                         queryEncode$(!TyPeFaCe|"Comic Sans MS")
                         (!offset:|"#" !offset)
+                      )
+                  )
+                  (!title:|(title.!title))
+                  (tabindex.0)
+              , localized$!linktext
+            )
+      )
+      ( contactlink
+      =   usedonly linktext offset title
+        .   ( !arg:? (usedonly.?usedonly) ?
+            | y:?usedonly
+            )
+          & ( !arg:? (linktext.?linktext) ?
+            | contact kontakt:?linktext
+            )
+          & ( !arg:? (title.?title) ?
+            | :?title
+            )
+          & ( a
+            .     ( href
+                  .   str
+                    $ ( "contact?UIlanguage="
+                        !LaNg
+                        "&usedonly="
+                        !usedonly
+                        "&TyPeFaCe="
+                        queryEncode$(!TyPeFaCe|"Comic Sans MS")
                       )
                   )
                   (!title:|(title.!title))
@@ -5389,10 +5436,10 @@ try {
       )
       ( Pipelines
       =     i o o-SUpPLEMENT restriction FP fP fp
-          , superset userInput prunePipes windFW
+          , superset userInput prunePipes windFW lasttool
           , calls nth parms furtherCheck o2o extractIOfeaturesFromHTTParg
           , A Z reorderedworkflowlist topologicalOrderedTools
-          , B Npipes Y features nFP nr oo ou pp
+          , B Npipes Y features nFP nr oo ou pp lastt
           , restr returnCode supers uiin uiou haz
         .   ( windFW
             =   nth ZZ pipes pipe
@@ -5614,7 +5661,8 @@ try {
                       & valueSeq$(!goalValue.!!table):?go
                       & (!so.!go)
                   )
-                & !arg:(?source.?goal.?.?)
+                & !arg:(?source.?goal.?desiredtool,?lasttool.?)
+                & log$(desiredtool !desiredtool lasttool !lasttool goal !goal)
                 & readTable$tooladm
                 & readTable$toolprop
                 & :?bridges
@@ -5745,16 +5793,34 @@ try {
                           )
                       : ~
                   |   "Failure reason 4: The combination of feature values."
-                    &   localized
-                      $ ( "The combination of feature values is unrealizable."
-                          "Kombinationen af trækværdier kan ikke realiseres."
-                        )
+                    & (   !goal:
+                        & ( !desiredtool:
+                          | !lasttool:
+                          |   " "
+                                localized
+                              $ ( "The two tools you specified cannot occur together."
+                                  "De to valgte værktøjer kan ikke optræde sammen."
+                                )
+                          )
+                      |     localized
+                          $ ( "The combination of feature values is unrealizable."
+                              "Kombinationen af trækværdier kan ikke realiseres."
+                            )
+                          ( !desiredtool:
+                          | !lasttool:
+                          |   " "
+                                localized
+                              $ ( "It is also possible that the two tools you specified cannot occur together."
+                                  "En anden mulighed er at de to valgte værktøjer ikke kan optræde sammen."
+                                )
+                          )
+                      )
                   )
             )
           & ( fp
             =     tool source goal restriction superset makeSmell
                 , fulfil memoizedSteps activeTools Calls smell resembling
-                , memos duplic impassages notttcnt getSuperGoals
+                , memos duplic impassages notttcnt getSuperGoals lasttool
                 , sourcegoalmatch unfulfillable notThisTool fulfilGoal
                 , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
                 , getGoals getImplicatedGoals N21 inner smellCache
@@ -5888,6 +5954,7 @@ try {
                       , goal source I IO O Os sourcePlus
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
                       & !arg:(?source.?goaly.?tools.?restriction.?forkk)
+                      & log$(fulfilGoal goaly !goaly restriction !restriction)
                       & !forkk:~0
                       &     (     (unfulfillable..find)$(str$!goaly)
                                 : ? (?.!source) ?
@@ -5896,7 +5963,9 @@ try {
                             |   unify$(!source.fold$!goaly):?sourcePlus
                               & 1+!sourcegoalmatch:?sourcegoalmatch
                               & sort$!sourcePlus
-                            |     (!restriction:~0|!tools)
+                            |     ( ~&!restriction:~0
+                                  | !tools
+                                  )
                                 : ?ltools
                               & 0:?toolspath
                               &   whl
@@ -6038,6 +6107,7 @@ try {
                   =   goalterm tools forkk goaly restriction source
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
                       & !arg:(?source.?goalterm.?tools.?restriction)
+                      & log$(fulfilGoalProduct goalterm !goalterm restriction !restriction)
                       & 1:?forkk
                       &   whl
                         ' ( !forkk:~0
@@ -6118,11 +6188,13 @@ try {
                       , goals goalterm nnnpathh indent accPipelines
                       , Pipeline WRONGPIPES OKPIPES restriction
                     .   !arg:(?tools.?source.?goal.?indent.?restriction)
+                      & log$(inside fulfil restriction !restriction)
                       & "Restrict path length to max 20"
                       & !indent:<20
                       & (|1+!Calls:?Calls)
                       & 0:?accPipelines
                       & unfoldGoal$!goal:?goals
+                      & log$(source !source goals !goals)
                       & 0:?found
                       &   whl
                         ' ( !goals:%?goalterm+?goals
@@ -6221,16 +6293,15 @@ try {
                       & add%$(removeNumFactors$!AllFs)
                   )
                 & ( getImplicatedGoals
-                  =   allios tools,restriction ios restrictedTools
-                    .   !arg:(?tools.?restriction)
+                  =   allios tools lasttool ios restrictedTools
+                    .   !arg:(?tools.?lasttool)
                       & 0:?allios:?restrictedTools
                       & (   !tools
                           :   ?
-                            + ( !restriction
+                            + ( !lasttool
                               .   ?ios
                                 & !ios+!allios:?allios
-                                &   (!restriction.!ios)+!restrictedTools
-                                  : ?restrictedTools
+                                & (!lasttool.!ios)+!restrictedTools:?restrictedTools
                                 & ~
                               )
                             + ?
@@ -6343,41 +6414,110 @@ try {
                           )
                       & !nwg
                   )
-                & !arg:(?source.?goal.?restriction.?superset)
+                & !arg:(?source.?goal.?restriction,?lasttool.?superset)
+                & log$(goal !goal restriction !restriction lasttool !lasttool)
                 & readTable$toolprop
                 & getActiveTools$:?activeTools
-                & (   !goal:
-                    & getImplicatedGoals$(!activeTools.!restriction):(?goal.?restriction)
-                  | 0:?restriction
-                  )
-                & (   !superset:
+                & log$activeTools
+                & :?reasons
+                & ( !lasttool:
+                  |   getImplicatedGoals$(!activeTools.!lasttool):(?ngoal.?lasttoolAll)
+                    & log$(goal !goal ngoal !ngoal)
                     &     map
                         $ ( ( 
-                            =   n v
-                              .     !arg:(?n,%*%:?v)
-                                  & (!n,(!v.OnE))
-                                | !arg
+                            =   
+                              .   !arg:(?feat,?goly)
+                                & log$(feat !feat goly !goly)
+                                & 0:?sel
+                                &   mop
+                                  $ ( ( 
+                                      =   
+                                        .       (     !arg
+                                                    : ? (!feat,?ngoly) ?
+                                                  & log$(ngoly !ngoly)
+                                                  & (   !ngoly:!goly
+                                                      & !arg
+                                                    | 0
+                                                    )
+                                                | !arg
+                                                )
+                                              + !sel
+                                            : ?sel
+                                          | 
+                                      )
+                                    . !ngoal
+                                    . (=+)
+                                    )
+                                & log$(sel !sel)
+                                & (   !sel:~0:?ngoal
+                                    & 
+                                  |   str
+                                    $ (   localized
+                                        $ ("Your specification of " "Din specifikation af ")
+                                        "'"
+                                        ( getFeatAndValueNames$!arg:(?feat,?)
+                                        & localized$!feat
+                                        )
+                                        "'"
+                                          localized
+                                        $ ( " cannot be fulfilled by the tool "
+                                            " er ikke forenelig med værktøjet "
+                                          )
+                                        "'"
+                                        ToolTitle$!lasttool
+                                        "'."
+                                      )
+                                  )
                             )
                           . !goal
                           )
-                      : ?goal
-                  |   ( !servicedSuperGoals:?SuperSets
-                      | readTable$SuperSets
+                      : ?reasons
+                    & ( !reasons:
+                      | 0:?ngoal&log$!reasons
                       )
-                    & getSuperGoals$!goal:?goal
+                    & log$(NEWngoal !ngoal)
+                    & !ngoal:?goal
+                  | 0:?lasttool
                   )
-                &   0
-                  : ?memoizedSteps
-                  : ?memos
-                  : ?duplic
-                  : ?sourcegoalmatch
-                  : ?impassages
-                  : ?notttcnt
-                & new$hash:?unfulfillable
-                & new$hash:?notThisTool
-                & 0:?Calls
-                & log$("Calling fulfil" !goal)
-                & (fulfil$(!activeTools.!source.!goal.0.!restriction)|!Calls)
+                & (   !goal:0
+                    |   (   !restriction:
+                          & 0:?restriction
+                        | 
+                        )
+                      & log$(goalIMPLICATED !goal lasttool !lasttool superset !superset)
+                      & (   !superset:
+                          &     map
+                              $ ( ( 
+                                  =   n v
+                                    .     !arg:(?n,%*%:?v)
+                                        & (!n,(!v.OnE))
+                                      | !arg
+                                  )
+                                . !goal
+                                )
+                            : ?goal
+                        |   ( !servicedSuperGoals:?SuperSets
+                            | readTable$SuperSets
+                            )
+                          & getSuperGoals$!goal:?goal
+                        )
+                      & log$(NEWGOAL !goal)
+                      &   0
+                        : ?memoizedSteps
+                        : ?memos
+                        : ?duplic
+                        : ?sourcegoalmatch
+                        : ?impassages
+                        : ?notttcnt
+                      & new$hash:?unfulfillable
+                      & new$hash:?notThisTool
+                      & 0:?Calls
+                      & log$("Calling fulfil" !goal)
+                      & ( fulfil$(!activeTools.!source.!goal.0.!restriction)
+                        | !Calls
+                        )
+                  . !reasons
+                  )
             )
           & "+-----------+
              | Pipelines |
@@ -6385,6 +6525,9 @@ try {
           & !arg:(?arg:?parms.?nth)
           & ( !arg:? (desiredtool.?restriction) ?
             | :?restriction
+            )
+          & ( !arg:? (lasttool.?lasttool) ?
+            | :?lasttool
             )
           & 0:?Npipes
           &     map
@@ -6468,7 +6611,7 @@ try {
                 : ( ? (!superset,?) ?
                   | ?&:?superset
                   )
-              . !restriction
+              . !restriction,!lasttool
               . !superset
               )
             : ?userInput
@@ -6541,7 +6684,7 @@ try {
             )
           & ( prunePipes
             =     As NNN Z incarnationpipes parms NIncarnationPipes
-                , newpipes pipe pipes pipesN restriction filter
+                , newpipes pipe pipes pipesN restriction filter lasttool
                 , wantThis unfoldTree sources calls Npipes supplement
                 , DownStream UpStream percolateForgottenFeatures
               .   ( unfoldTree
@@ -7270,21 +7413,22 @@ try {
                         )
                   )
                 & ( filter
-                  =   pipes desiredtool o pipe1 has
-                    .   ( has
-                        =   rstr S
-                          .   !arg:(?arg.?rstr)
-                            & ( !arg:?*(!rstr,?)*?
+                  =   pipes restriction o pipe1 has
+                    .   !arg:(?pipes.?restriction)
+                      & log$(filter !restriction)
+                      &     
+                          ' ( S
+                            .   !arg:?*($restriction,?)*?
                               |   !arg:?*(?,(?.?.?.?S))*?arg
-                                & (has$(!S.!rstr)|has$(!arg.!rstr))
-                              )
-                        )
-                      & !arg:(?pipes.?desiredtool)
+                                & (has$!S|has$!arg)
+                            )
+                        : (=?has)
+                      & lst$(has,path$"log.txt",APP,BIN)
                       &   map
                         $ ( ( 
                             =   
                               .   !arg:(?o.?pipe1)
-                                & ( has$(!pipe1.!desiredtool)&!arg
+                                & ( has$!pipe1&!arg
                                   | 
                                   )
                             )
@@ -7803,14 +7947,21 @@ try {
                     & "The 1 is the initial stop list, which is formed as a product."
                     & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
                     & !pipesN:? [?NNN
-                    & (   !parms:? (desiredtool.?restriction) ?
-                        & !restriction:~
-                        & filter$(!pipesN.!restriction):?pipesN
+                    & (   (   !parms:? (desiredtool.?desiredtool) ?
+                            & !desiredtool:~
+                            & filter$(!pipesN.!desiredtool):?pipesN
+                          | 0:?desiredtool
+                          )
+                        & !parms:? (lasttool.?lasttool) ?
+                        & !lasttool:~:~!desiredtool
+                        & filter$(!pipesN.!lasttool):?pipesN
                       | 
                       )
+                    & log$(pipesNafterFilter !pipesN)
                     & percolateForgottenFeatures$!pipesN !newpipes:?newpipes
                     & log$percolateForgottenFeaturesDONE
                     )
+                & log$(newpipes !newpipes)
                 & ( 
                   |   ( showDif
                       =   L Name
@@ -7832,6 +7983,7 @@ try {
                   )
                 & (removeNumFactors$(list2sum$!newpipes).!Npipes)
             )
+          & :?msg
           & (   ( !recentTasks
                 | readTable$recentTasks
                 | :?recentTasks&saveTable$recentTasks
@@ -7851,7 +8003,7 @@ try {
               & (!memoizedTrees|:?memoizedTrees)
               & 0:?indent:?calls
               & (   log$("Look in meMOizedTrees for" !userInput)
-                  & !userInput:(?uiin.?uiou.?restriction.?superset)
+                  & !userInput:(?uiin.?uiou.?restriction,?lasttool.?superset)
                   & "o1o The userInput may be more strict than what is found in
                      memoized trees. So each output feature in a memoized tree
                      must occur in the userInput's output specs."
@@ -7945,7 +8097,7 @@ try {
                     )
                   &   !memoizedTrees
                     :   ?
-                        (   (!uiin.?ou.?restr.?supers)
+                        (   (!uiin.?ou.?restr,?lastt.?supers)
                           & "We have something that matches the input knowns.
                              Now check whether all output specs in this record correspond to a user spec.
                              So there may be fewer recorded specs than user specs, but all recorded specs
@@ -7976,9 +8128,13 @@ try {
                                 . !ou
                                 )
                             : 
-                          & ( (!restr.!supers):(!restriction.!superset)
-                            | !superset:&!ou:~
-                            )
+                          &   (!restr,!lastt.!supers)
+                            : ( !restriction,!lasttool
+                              .   !superset
+                                |   ?
+                                  & !superset:
+                                  & !ou:~
+                              )
                         .   ?FP
                           & log$MEMOIZED!
                           & "o2o Now we have a set of memoized trees based on
@@ -8012,7 +8168,8 @@ try {
                           )
                         !o-SUpPLEMENT
                     : ?o
-                  &   ((!i.!o.!restriction.!superset).!nFP) !memoizedTrees
+                  &     ((!i.!o.!restriction,!lasttool.!superset).!nFP)
+                        !memoizedTrees
                     : ?memoizedTrees
                   & !nFP:?FP
                 |   "The next call fails if no workflows found."
@@ -8022,17 +8179,28 @@ try {
                     )
                   & log$"Call fp"
                   & 0:?ners
-                  & fp$!userInput:?FP
+                  & log$(userInput !userInput)
+                  & fp$!userInput:(?FP.?msg)
+                  & log$(msg !msg)
                   & !FP:~#
+                  & !msg:
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
                   & (   !FP
                       : ((?,?) ?|~(?+(?.?)+?))
                     |   prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
                       & !Npipes:~>!MAXPIPES
-                      & log$"Calling prunePipes success"
-                      & (!userInput.!FP) !memoizedTrees:?memoizedTrees
-                      & (!memoizedTrees:?memoizedTrees [100 ?|)
+                      & log$(FP !FP Npipes !Npipes)
+                      & (   !FP:~0
+                          & log$"Calling prunePipes success"
+                          & (!userInput.!FP) !memoizedTrees:?memoizedTrees
+                          & ( !memoizedTrees:?memoizedTrees [100 ?
+                            | 
+                            )
+                        |   0:?Npipes
+                          & log$"all pipes were pruned."
+                          & ~
+                        )
                     )
                 )
               & ( !userInput
@@ -8076,6 +8244,8 @@ try {
                       )
                   | ((!FP.).onlyWithoutRestriction.)
                 )
+            |   !msg:~
+              & (!userInput.(0.).notFulfillable.!msg)
             |   !FP:#:<0
               & log$(!FP "!FP:#:<0 gives tooMany")
               & (!userInput.(0.).tooMany.)
@@ -9056,21 +9226,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     $ ( ( 
                         =   
                           .   !arg:(?feature.?featvals.?)
-                            &   !features
-                              :   ?
-                                + ( ? (short.!feature) ?
-                                  : ? (name.?featname) ?
-                                  : ? (table.?table) ?
-                                  : (   ?
-                                        (specificationTable.?specificationTables)
-                                        ?
-                                    |   ?
-                                      & :?specificationTables
-                                    )
-                                  )
-                                + ?
-                            &   describefeature$(!featvals.!table.!specificationTables)
-                              : ?featdesc
+                            &   getFeatAndValueNames$(!feature,!featvals)
+                              : (?featname,?featdesc)
                             & ( !featdesc:
                               | ", " localized$!featname "=" !featdesc
                               )
@@ -9384,6 +9541,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 )
                 (   !parms:? (desiredtool.?rstr) ?
                   & (desiredtool.!rstr)
+                | 
+                )
+                (   !parms:? (lasttool.?rstr) ?
+                  & (lasttool.!rstr)
                 | 
                 )
                   map
@@ -11639,7 +11800,7 @@ function main2(evt) {
           & ( "The user has selected a workflow."
             =     Submit hiddenData o-SUpPLEMENT
                 , parms nth batch Items mail2 ERR
-                , allpipes ViewDetails
+                , allpipes ViewDetails lasttool
                 , returnCode struct whichButton
                 , restriction sources bm err
                 , goals topologicalOrderedTools wf
@@ -11707,7 +11868,7 @@ function main2(evt) {
                   )
                 & !arg:(?parms.?Submit.?hiddenData.?batch.?Items.?mail2)
                 & 0:?allpipes
-                & :?returnCode:?restriction
+                & :?returnCode:?restriction:?lasttool
                 &   !parms
                   : ( ? (nth.?nth) ?
                     | ?&1:?nth
@@ -12336,6 +12497,8 @@ function main2(evt) {
             .   (class.rightfloating)
               ,   helplink$()
                   " "
+                  contactlink$()
+                  " "
                   changeloglink$()
                   " "
                   ( a
@@ -12429,8 +12592,11 @@ function main2(evt) {
                                                         )
                                                     )
                                                 )
-                                                (br.,)
-                                                fixedMenuItems$(.)
+                                                ( div
+                                                .     (class.rightfloating)
+                                                      (style."width: 75%; height: auto;")
+                                                  , fixedMenuItems$(.)
+                                                )
                                           )
                                       )
                                 )
@@ -13001,6 +13167,45 @@ function main2(evt) {
       =   
         .   (|log$(goodRunningThreads !runningThreads))
           & (!runningThreads:<8&y|n)
+      )
+      ( feedbackform
+      =   
+        .   paragraph
+          $ ( (h2.,localized$("Feedback to the developer" "Feedback til udvikleren"))
+              ( p
+              .   
+                ,   localized
+                  $ ("Help us improve the Text Tonsorium." "Hjælp os med at forbedre Text Tonsorium.")
+              )
+                form
+              $ ( usermsg
+                .   UserMsg$(localized$!suggestions.)
+                    (br.,)
+                    makeHiddenFields$!hiddenData
+                )
+            )
+      )
+      "
+/**
+ * contact
+ *
+ * Creates a web page containing email and box for feedback.
+ *
+ * Called from contact.java
+ */"
+      ( contact
+      =   
+        .   setLanguageNotPermanently$!arg
+          & setTypefaceNotPermanently$!arg
+          &   toML
+            $ ( HTML-SVG-bodyContainer
+              $ ( contact
+                .   (h1.,"Text Tonsorium ⸺ " localized$(Contact Kontakt))
+                    (p.,"Clarin.dk: info@clarin.dk")
+                    (p.,localized$("Developer:" "Udvikler:") " bartj@hum.ku.dk")
+                    feedbackform$
+                )
+              )
       )
       "
 /**
@@ -14924,7 +15129,7 @@ function main2(evt) {
                               paragraph
                             $ (   localized
                                 $ ( "Click the following link to immediately DELETE your input and the results from the workflow from the server. "
-                                    "Tryk på næste link for at fjerne din input og arbejdsgangens resultater fra serveren. "
+                                    "Tryk på næste link for at fjerne dit input og arbejdsgangens resultater fra serveren. "
                                   )
                                 ( a
                                 .     (href.!wwwServer "/texton/cleanup?JobNr=" !JobNr)
@@ -14947,22 +15152,7 @@ function main2(evt) {
                                   . (src."texton.png") (alt.start),
                                   )
                               )
-                              paragraph
-                            $ ( (h2.,"Feedback to the developer")
-                                ( p
-                                .   
-                                  ,   localized
-                                    $ ( "Help us improve the Text Tonsorium."
-                                        "Hjælp os med at forbedre Text Tonsorium."
-                                      )
-                                )
-                                  form
-                                $ ( usermsg
-                                  .   UserMsg$(localized$!suggestions.)
-                                      (br.,)
-                                      makeHiddenFields$!hiddenData
-                                  )
-                              )
+                            feedbackform$
                       )
                 |   refreshingXHTMLbodyContainer
                   $ ( !secs str$(!wwwServer "/texton/mypoll?job=" !JobNr)
@@ -16902,7 +17092,7 @@ function main2(evt) {
           , val allpipes batch returnCode restriction sources
           , ShowAllPipesIfNotTooExpensive add makeValRows
           , B M Y f fixed formFields fvs nfvs nvs output
-          , ZoomInOrShowWorkflows o-SUpPLEMENT
+          , ZoomInOrShowWorkflows o-SUpPLEMENT lasttool
           , pipes pps rwl superset tool updatedArg userInput vs
         .   ( ShowAllPipes
             =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct
@@ -16990,10 +17180,13 @@ function main2(evt) {
                     )
             )
           & ( NothingToDo
-            =   hiddenData rstr
+            =   hiddenData rstr lstr
               .   !arg:?hiddenData
                 & ( !hiddenData:? (desiredtool.?rstr) ?
                   | :?rstr
+                  )
+                & ( !hiddenData:? (desiredtool.?lstr) ?
+                  | :?lstr
                   )
                 &   str
                   $ ( 200~~~
@@ -17414,7 +17607,7 @@ function main2(evt) {
                 |   updateUploads$!parms
                   & 0:?allpipes
                   & localized$("No workflows found." "Ingen arbejdsgange fundet."):?returnCode
-                  & :?restriction
+                  & :?restriction:?lasttool
                   & log$CALL-Pipelines
                   & :?msg
                   & (     Pipelines$(!parms.)
@@ -18263,27 +18456,49 @@ function main2(evt) {
                         $ ( " fields are empty), the Text Tonsorium computes all workflows that have the selected tool as the last step."
                             " har specificeret i rubrikken ovenover."
                           )
-                    .   paragraph
-                      $ ( makeSelectFormField
-                        $ (   localized
-                            $ ("Workflow must utilize the tool:" "Arbejdsgang skal inkludere værktøjet:")
-                          . desiredtool
-                          . options
-                          .   makeOptionList
-                            $ (   mop
-                                $ ( ( 
-                                    =   
-                                      .     !arg:(?.?Title.?ToolID)
-                                          & (!Title.!ToolID)
-                                        | 
+                    .     paragraph
+                        $ ( makeSelectFormField
+                          $ (   localized
+                              $ ( "Workflow must utilize the tool:"
+                                  "Arbejdsgang skal inkludere værktøjet:"
+                                )
+                            . desiredtool
+                            . options
+                            .   makeOptionList
+                              $ (   mop
+                                  $ ( ( 
+                                      =   
+                                        .     !arg:(?.?Title.?ToolID)
+                                            & (!Title.!ToolID)
+                                          | 
+                                      )
+                                    . !S
+                                    . (=+)
                                     )
-                                  . !S
-                                  . (=+)
-                                  )
-                              . 
-                              )
+                                . 
+                                )
+                            )
                           )
-                        )
+                          paragraph
+                        $ ( makeSelectFormField
+                          $ ( localized$("The last tool must be:" "Arbejdsgangen skal afslutte med:")
+                            . lasttool
+                            . options
+                            .   makeOptionList
+                              $ (   mop
+                                  $ ( ( 
+                                      =   
+                                        .     !arg:(?.?Title.?ToolID)
+                                            & (!Title.!ToolID)
+                                          | 
+                                      )
+                                    . !S
+                                    . (=+)
+                                    )
+                                . 
+                                )
+                            )
+                          )
                     )
             )
           & ( sourcesAndGoals
@@ -18466,18 +18681,27 @@ function main2(evt) {
                                             & ( span
                                               .   (class.smallfont)
                                                 ,     localized
-                                                    $ ( "(Be the first to bookmark a workflow for this"
-                                                        "(Vær den føste til at markere en arbejds-"
+                                                    $ ( "(Be the first to bookmark a workflow for this kind of"
+                                                        "(Vær den første til at markere en arbejdsgang til den her"
                                                       )
                                                     (br.,)
                                                       localized
-                                                    $ ( "kind of input: define your goal and press the"
-                                                        "gang til den her slags input: specificer dit"
+                                                    $ ( "input. But for now, "
+                                                        "slags input. Men for nu: "
                                                       )
+                                                    ( strong
+                                                    .   
+                                                      ,   localized
+                                                        $ ( "specify your goal"
+                                                            "specificer dit mål"
+                                                          )
+                                                    )
+                                                      localized
+                                                    $ (" and press the" " og tryk knappen")
                                                     (br.,)
                                                       localized
                                                     $ ( "button near the bottom of this page.)"
-                                                        "mål og tryk knappen nederst på siden.)"
+                                                        "nederst på siden.)"
                                                       )
                                               )
                                           |     listToThreeColumnTable$!wrkfls
@@ -18910,26 +19134,27 @@ function main2(evt) {
                           .   (class.overflowing)
                             ,   ( div
                                 .     (class.leftfloating)
-                                      (style."width: 50%; height: auto;")
+                                      (style."width: 70%; height: auto;")
                                   ,   ( strong
                                       .   
-                                        , localized$("Your uploaded input" "Din uploadede input")
+                                        ,   localized
+                                          $ ("This is your input" "Det her er dit input")
                                       )
-                                      (br.,)
+                                      (" ⸺ "|(br.,))
                                       (   !items:% %
                                         &   localized
-                                          $ ( "Text Tonsorium has categorized your inputs. Correct if you see something wrong. Not every field needs to be filled out. Choose one of the columns of inputs."
-                                              "Text Tonsorium har kategoriseret dine inputs. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke. Vælg en af kolonnerne."
+                                          $ ( "Correct only if you see something wrong. Not every field needs to be filled out. Choose one of the columns of inputs."
+                                              "Korriger kun hvis du ser noget forkert. Nogle felter må godt være blanke. Vælg en af kolonnerne."
                                             )
                                       |   localized
-                                        $ ( "Text Tonsorium has categorized your input. Correct if you see something wrong. Not every field needs to be filled out."
-                                            "Text Tonsorium har kategoriseret din input. Korriger hvis du ser noget forkert. Nogle felter må godt være blanke."
+                                        $ ( "Correct only if you see something wrong. Not every field needs to be filled out."
+                                            "Korriger kun hvis du ser noget forkert. Nogle felter må godt være blanke."
                                           )
                                       )
                                 )
                                 ( div
                                 .     (class.rightfloating)
-                                      (style."width: 50%; height: auto;")
+                                      (style."width: 30%; height: auto;")
                                   , (p.,fixedMenuItems$(specifyGoal.!orgarg))
                                 )
                           )
@@ -18993,17 +19218,14 @@ function main2(evt) {
                             )
                         )
                         fieldset
-                      $ (   (   !items:? (?.?.% ?) ?
-                              &     localized
-                                  $ ( "Text Tonsorium can enact a bookmarked workflow or compute and enact a workflow that fulfils your goal as specified below."
-                                      "Text Tonsorium kan afvikle en markeret arbejdsgang eller beregne og udføre en arbejdsgang som opfylder dit mål som beskrevet hernede."
-                                    )
-                                  (br.,)
-                                  (br.,)
-                            | 
+                      $ (   ( big
+                            .   
+                              ,   (big.,(big.,"☞ "))
+                                  ( strong
+                                  . ,localized$("Specify your goal" "Specificer dit mål")
+                                  )
                             )
-                            (strong.,localized$("Your goal" "Dit mål"))
-                            (br.,)
+                            (" ⸺ "|(br.,))
                             localized$("Fill out only " "Udfyld ")
                             (strong.,localized$(two to))
                             localized$(" or " " eller ")
@@ -19133,6 +19355,15 @@ function main2(evt) {
                                         ,   localized
                                           $ ("Bookmarked workflows" "Markerede arbejdsgange")
                                       )
+                                      ( p
+                                      .   
+                                        ,   localized
+                                          $ ( "Text Tonsorium can enact a bookmarked workflow or compute and enact a workflow that fulfils your goal as specified above."
+                                              "Text Tonsorium kan afvikle en markeret arbejdsgang eller beregne og udføre en arbejdsgang som opfylder dit mål som beskrevet ovenover."
+                                            )
+                                      )
+                                      (br.,)
+                                      (br.,)
                                         map
                                       $ ( ( 
                                           =   nt linkedWorkflows
