@@ -653,6 +653,49 @@ toolsProg=
               )
           & !S
       )
+      ( OnEify
+      =   L A F v
+        .   :?L
+          &   whl
+            ' ( !arg:%?A+?arg
+              &     ( 
+                    .   map
+                      $ ( ( 
+                          =   
+                            .     !arg:(?F,%*%:?v)
+                                & (!F,(!v.OnE))
+                              | !arg
+                          )
+                        . !A
+                        )
+                    )
+                    !L
+                : ?L
+              )
+          &   whl
+            ' (!L:(.?A) ?L&!A+!arg:?arg)
+          & !arg
+      )
+      ( dotlist2sum
+      =   f e S
+        .   "arg must not contain duplicates"
+          &   whl
+            ' ( !arg:(.%?e) (.%?f) ?arg
+              & !e+!f !S:?S
+              )
+          & ( !arg:
+            |   !arg:(.?e)
+              & !S:%?f ?S
+              & !f+!e !S:?S
+            )
+          & !S:?arg
+          &   whl
+            ' ( :?S
+              & whl'(!arg:%?e %?f ?arg&!f+!e !S:?S)
+              & !arg !S:?S:% %:?arg
+              )
+          & !S
+      )
       ( sort
       =   f L e S
         .   :?L
@@ -661,8 +704,7 @@ toolsProg=
           &   whl
             ' ( :?S
               & whl'(!L:%?e %?f ?L&!f+!e !S:?S)
-              & !L !S:?S
-              & !S:% %:?L
+              & !L !S:?S:% %:?L
               )
           &   mop
             $ ( (=.!arg:#*(?arg.)&!arg)
@@ -3189,11 +3231,16 @@ toolsProg=
             )
       )
       ( denumerizeSum
-      =   A M Z
-        .     whl
-            ' ( !arg:(?A+#%*?M+?Z|?A+?M^#%+?Z)
-              & !A+!M+!Z:?arg
+      =   A M L
+        .   :?L
+          &   whl
+            ' ( !arg:%?A+?arg
+              & (!A:#%*?A|)
+              & (!A:?A^#%|)
+              & !A !L:?L
               )
+          & 0:?arg
+          & whl'(!L:%?A ?L&!A+!arg:?arg)
           & !arg
       )
       ( removeNumFactors
@@ -5803,7 +5850,7 @@ try {
                                 )
                           )
                       |     localized
-                          $ ( "The combination of feature values is unrealizable."
+                          $ ( "The combination of feature values is not possible."
                               "Kombinationen af trækværdier kan ikke realiseres."
                             )
                           ( !desiredtool:
@@ -5954,7 +6001,6 @@ try {
                       , goal source I IO O Os sourcePlus
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
                       & !arg:(?source.?goaly.?tools.?restriction.?forkk)
-                      & log$(fulfilGoal goaly !goaly restriction !restriction)
                       & !forkk:~0
                       &     (     (unfulfillable..find)$(str$!goaly)
                                 : ? (?.!source) ?
@@ -6107,7 +6153,6 @@ try {
                   =   goalterm tools forkk goaly restriction source
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
                       & !arg:(?source.?goalterm.?tools.?restriction)
-                      & log$(fulfilGoalProduct goalterm !goalterm restriction !restriction)
                       & 1:?forkk
                       &   whl
                         ' ( !forkk:~0
@@ -6188,13 +6233,11 @@ try {
                       , goals goalterm nnnpathh indent accPipelines
                       , Pipeline WRONGPIPES OKPIPES restriction
                     .   !arg:(?tools.?source.?goal.?indent.?restriction)
-                      & log$(inside fulfil restriction !restriction)
                       & "Restrict path length to max 20"
                       & !indent:<20
                       & (|1+!Calls:?Calls)
                       & 0:?accPipelines
                       & unfoldGoal$!goal:?goals
-                      & log$(source !source goals !goals)
                       & 0:?found
                       &   whl
                         ' ( !goals:%?goalterm+?goals
@@ -6261,7 +6304,7 @@ try {
                         )
                       & 0:?AllFs
                       &   whl
-                        ' ( !arg:%?Inca+?arg
+                        ' ( !arg:(.?Inca) ?arg
                           &     map
                               $ ( ( 
                                   =   
@@ -6269,13 +6312,10 @@ try {
                                         & 0:?allOs
                                         &   whl
                                           ' ( !Ios:(?.?Os)+?Ios
-                                            &   whl
-                                              ' ( !Os:%?O+?Os
-                                                & !O+!allOs:?allOs
-                                                )
+                                            & !Os+!allOs:?allOs
                                             )
-                                        & (!FN,!allOs)
-                                      | 
+                                        & (!FN,denumerizeSum$!allOs)
+                                      | log$(WHAAAT !arg)&
                                   )
                                 . !Inca
                                 )
@@ -6290,24 +6330,28 @@ try {
                               )
                           & !FS+!AllFs:?AllFs
                           )
-                      & add%$(removeNumFactors$!AllFs)
+                      & ( removeNumFactors$!AllFs
+                        | add%$(removeNumFactors$!AllFs)
+                        )
                   )
                 & ( getImplicatedGoals
-                  =   allios tools lasttool ios restrictedTools
+                  =   allios tools lasttool ios
                     .   !arg:(?tools.?lasttool)
-                      & 0:?allios:?restrictedTools
-                      & (   !tools
-                          :   ?
-                            + ( !lasttool
-                              .   ?ios
-                                & !ios+!allios:?allios
-                                & (!lasttool.!ios)+!restrictedTools:?restrictedTools
-                                & ~
-                              )
-                            + ?
-                        | 
-                        )
-                      & (getGoals$!allios.!restrictedTools)
+                      & log$(getImplicatedGoals lasttool !lasttool)
+                      & :?allios
+                      & !( 
+                         ' ( whl
+                           ' ( !tools
+                             :   ?
+                               + ( $lasttool
+                                 .   ?ios
+                                   & (.!ios) !allios:?allios
+                                 )
+                               + ?tools
+                             )
+                           )
+                         )
+                      & getGoals$(sort$!allios)
                   )
                 & "N21: Mark the argument as feature values all found in a single
                    file. If the argument is atomic, just return the argument. Else,
@@ -6317,101 +6361,140 @@ try {
                   =   goal nwg
                     .   !arg:?goal
                       & 0:?nwg
-                      &   map
-                        $ ( ( 
-                            =     feat vals A Z Val
-                                , NVALS VAL VALS Vsp
-                                , a agg n21s vsp z
-                              .     !arg:(?feat.?vals)
-                                  & !goal:?A (!feat,?Val) ?Z
-                                  & (   !Val:@^?
-                                      &   map
-                                        $ ( ( 
-                                            =   val alts sp
-                                              .   !arg:(?val.?alts)
-                                                & (   !Val:!val^?sp
+                      &     map
+                          $ ( ( 
+                              =     feat vals A Z goalval supervals
+                                  , NVALS VAL VALS Vsp
+                                  , a agg n21s vsp z
+                                .     !arg:(?feat.?supervals)
+                                    &   mop
+                                      $ ( ( 
+                                          =   
+                                            .     !arg:?goal
+                                                &   !goal
+                                                  : ?A (!feat,?goalval) ?Z
+                                                & log$(goalval !goalval)
+                                                & (   !goalval:@^?
                                                     &   map
                                                       $ ( ( 
-                                                          =   a z
-                                                            .         ( !A
-                                                                        ( !feat
-                                                                        ,   (   !sp
-                                                                              : 1
-                                                                            |     !arg
-                                                                                :   ?a
-                                                                                  * !val
-                                                                                  * ?z
-                                                                              &     !a
-                                                                                  * !Val
-                                                                                  * !z
-                                                                                : ?arg
-                                                                            )
-                                                                          & (   !arg
-                                                                              : @
-                                                                            |   N21
-                                                                              $ !arg
-                                                                            )
-                                                                        )
-                                                                        !Z
+                                                          =   val alts sp
+                                                            .     !arg
+                                                                : (?val.?alts)
+                                                              & (     !goalval
+                                                                    : !val^?sp
+                                                                  &   log
+                                                                    $ ( goalval
+                                                                        !goalval
+                                                                        val
+                                                                        !val
+                                                                        sp
+                                                                        !sp
+                                                                        alts
+                                                                        !alts
                                                                       )
-                                                                    + !nwg
-                                                                  : ?nwg
-                                                                & 
-                                                              | 
+                                                                  &   map
+                                                                    $ ( ( 
+                                                                        =   a z
+                                                                          .   ( 
+                                                                              .   !A
+                                                                                  ( !feat
+                                                                                  ,   (   !sp
+                                                                                        : 1
+                                                                                      |     !arg
+                                                                                          :   ?a
+                                                                                            * !val
+                                                                                            * ?z
+                                                                                        &     !a
+                                                                                            * !goalval
+                                                                                            * !z
+                                                                                          : ?arg
+                                                                                      )
+                                                                                    & ( !arg
+                                                                                      |   !arg
+                                                                                        : @
+                                                                                      |   N21
+                                                                                        $ !arg
+                                                                                      )
+                                                                                  )
+                                                                                  !Z
+                                                                              )
+                                                                            | 
+                                                                        )
+                                                                      . !alts
+                                                                      )
+                                                                | 
+                                                                )
                                                           )
-                                                        . !alts
+                                                        . !supervals
                                                         )
+                                                  |   0:?agg
+                                                    &   map
+                                                      $ ( ( 
+                                                          =   L
+                                                            .     !arg
+                                                                : (?.?L)
+                                                              &   map
+                                                                $ ( ( 
+                                                                    =   
+                                                                      .     !arg
+                                                                          + !agg
+                                                                        : ?agg
+                                                                    )
+                                                                  . !L
+                                                                  )
+                                                          )
+                                                        . !supervals
+                                                        )
+                                                    & 0:?n21s
+                                                    &   whl
+                                                      ' ( !agg:%?vals+?agg
+                                                        & ( !vals:#%*?vals
+                                                          | 
+                                                          )
+                                                        & !goalval:?VALS
+                                                        &   whl
+                                                          ' (   !VALS
+                                                              : %@?VAL^?Vsp*?NVALS
+                                                            &   !vals
+                                                              : ?a*!VAL^?vsp*?z
+                                                            &   (     !Vsp
+                                                                    : 1
+                                                                  & !vsp
+                                                                |     !vsp
+                                                                    : 1
+                                                                  & !Vsp
+                                                                |   !Vsp
+                                                                  : !vsp
+                                                                )
+                                                              : ?Vsp
+                                                            &   !a*!VAL^!Vsp*!z
+                                                              : ?vals
+                                                            & !NVALS:?VALS
+                                                            )
+                                                        & (   !VALS:1
+                                                            &   N21$!vals+!n21s
+                                                              : ?n21s
+                                                          | 
+                                                          )
+                                                        )
+                                                    & (.!A (!feat,!n21s) !Z)
                                                   | 
                                                   )
-                                            )
-                                          . !vals
+                                              | 
                                           )
-                                    |   0:?agg
-                                      &   map
-                                        $ ( ( 
-                                            =   L
-                                              .   !arg:(?.?L)
-                                                &   map
-                                                  $ ( ( 
-                                                      = .!arg+!agg:?agg
-                                                      )
-                                                    . !L
-                                                    )
-                                            )
-                                          . !vals
-                                          )
-                                      & 0:?n21s
-                                      &   whl
-                                        ' ( !agg:%?vals+?agg
-                                          & ( !vals:#%*?vals
-                                            | 
-                                            )
-                                          & !Val:?VALS
-                                          &   whl
-                                            ' ( !VALS:%@?VAL^?Vsp*?NVALS
-                                              & !vals:?a*!VAL^?vsp*?z
-                                              &   (   !Vsp:1
-                                                    & !vsp
-                                                  |   !vsp:1
-                                                    & !Vsp
-                                                  | !Vsp:!vsp
-                                                  )
-                                                : ?Vsp
-                                              & !a*!VAL^!Vsp*!z:?vals
-                                              & !NVALS:?VALS
-                                              )
-                                          & (   !VALS:1
-                                              & N21$!vals+!n21s:?n21s
-                                            | 
-                                            )
-                                          )
-                                      &   !A (!feat,!n21s) !Z+!nwg
-                                        : ?nwg
-                                    )
-                                | 
+                                        . !goal
+                                        . (=+)
+                                        )
+                                  | 
+                              )
+                            . !SuperSets
                             )
-                          . !SuperSets
-                          )
+                        : ?nwg
+                      & log$(UNSORTEDnwg1 !nwg)
+                      & sort$!nwg:?nwg
+                      & log$(nwg1 !nwg)
+                      & dotlist2sum$!nwg:?nwg
+                      & log$(nwg2 !nwg)
                       & !nwg
                   )
                 & !arg:(?source.?goal.?restriction,?lasttool.?superset)
@@ -6421,62 +6504,78 @@ try {
                 & log$activeTools
                 & :?reasons
                 & ( !lasttool:
-                  |   getImplicatedGoals$(!activeTools.!lasttool):(?ngoal.?lasttoolAll)
-                    & log$(goal !goal ngoal !ngoal)
-                    &     map
-                        $ ( ( 
-                            =   
-                              .   !arg:(?feat,?goly)
-                                & log$(feat !feat goly !goly)
-                                & 0:?sel
-                                &   mop
-                                  $ ( ( 
-                                      =   
-                                        .       (     !arg
-                                                    : ? (!feat,?ngoly) ?
-                                                  & log$(ngoly !ngoly)
-                                                  & (   !ngoly:!goly
-                                                      & !arg
-                                                    | 0
-                                                    )
-                                                | !arg
-                                                )
-                                              + !sel
-                                            : ?sel
-                                          | 
-                                      )
-                                    . !ngoal
-                                    . (=+)
+                  |   getImplicatedGoals$(!activeTools.!lasttool):?implGoal
+                    & ( viableIncarnations
+                      =   goal implGoal action
+                        .   !arg:(?goal.?implGoal.(=?action))
+                          & (   map
+                              $ ( ( 
+                                  =   ok
+                                    .   !arg:(?feat,?goly)
+                                      & log$(feat !feat goly !goly)
+                                      & !implGoal:?tgoal
+                                      & 0:?sel
+                                      & !( 
+                                         ' ( whl
+                                           ' (   !tgoal
+                                               :   ?
+                                                 + (   ?
+                                                       ($feat,$goly)
+                                                       ?
+                                                   : ?ok
+                                                   )
+                                                 + ?tgoal
+                                             & !sel+!ok:?sel
+                                             )
+                                           )
+                                         )
+                                      & !action
+                                  )
+                                . !goal
+                                )
+                            . !implGoal
+                            )
+                      )
+                    &     viableIncarnations
+                        $ ( !goal
+                          . !implGoal
+                          . ( 
+                            =   !sel:~0&
+                              |   str
+                                $ ( localized$("Your specification of " "Din specifikation af ")
+                                    "'"
+                                    ( getFeatAndValueNames$!arg:(?feat,?)
+                                    & localized$!feat
                                     )
-                                & log$(sel !sel)
-                                & (   !sel:~0:?ngoal
-                                    & 
-                                  |   str
-                                    $ (   localized
-                                        $ ("Your specification of " "Din specifikation af ")
-                                        "'"
-                                        ( getFeatAndValueNames$!arg:(?feat,?)
-                                        & localized$!feat
-                                        )
-                                        "'"
-                                          localized
-                                        $ ( " cannot be fulfilled by the tool "
-                                            " er ikke forenelig med værktøjet "
-                                          )
-                                        "'"
-                                        ToolTitle$!lasttool
-                                        "'."
+                                    "'"
+                                      localized
+                                    $ ( " cannot be fulfilled by the tool "
+                                        " er ikke forenelig med værktøjet "
                                       )
+                                    "'"
+                                    ToolTitle$!lasttool
+                                    "'. "
                                   )
                             )
-                          . !goal
                           )
-                      : ?reasons
-                    & ( !reasons:
-                      | 0:?ngoal&log$!reasons
+                      : (?reasons.?implGoal)
+                    & (   !reasons:
+                        &     viableIncarnations
+                            $ ( !goal
+                              . !implGoal
+                              . ( 
+                                =     !sel:~0:?implGoal
+                                    & 
+                                  |   localized
+                                    $ ( "Given the tool, the combination of feature specifications is too restrictive. Remove one of them."
+                                        "For det givne værktøj er kombinationen af trækværdier for restriktiv. Fjern en af dem."
+                                      )
+                                )
+                              )
+                          : (?reasons.?implGoal)
+                      | 0:?implGoal&log$!reasons
                       )
-                    & log$(NEWngoal !ngoal)
-                    & !ngoal:?goal
+                    & !implGoal:?goal
                   | 0:?lasttool
                   )
                 & (   !goal:0
@@ -6484,24 +6583,27 @@ try {
                           & 0:?restriction
                         | 
                         )
-                      & log$(goalIMPLICATED !goal lasttool !lasttool superset !superset)
                       & (   !superset:
-                          &     map
-                              $ ( ( 
-                                  =   n v
-                                    .     !arg:(?n,%*%:?v)
-                                        & (!n,(!v.OnE))
-                                      | !arg
+                          & ( 
+                            |     map
+                                $ ( ( 
+                                    =   n v
+                                      .     !arg:(?n,%*%:?v)
+                                          & (!n,(!v.OnE))
+                                        | !arg
+                                    )
+                                  . !goal
                                   )
-                                . !goal
-                                )
-                            : ?goal
+                              : ?goal
+                            )
                         |   ( !servicedSuperGoals:?SuperSets
                             | readTable$SuperSets
                             )
                           & getSuperGoals$!goal:?goal
                         )
                       & log$(NEWGOAL !goal)
+                      & OnEify$!goal:?goal
+                      & log$(NEWESTGOAL !goal)
                       &   0
                         : ?memoizedSteps
                         : ?memos
@@ -6512,7 +6614,7 @@ try {
                       & new$hash:?unfulfillable
                       & new$hash:?notThisTool
                       & 0:?Calls
-                      & log$("Calling fulfil" !goal)
+                      & log$("Calling fulfil" !goal restriction !restriction)
                       & ( fulfil$(!activeTools.!source.!goal.0.!restriction)
                         | !Calls
                         )
@@ -6915,17 +7017,8 @@ try {
                                The returned value is 'short', enriched with subspecifications.
                               "
                             & ( containedBy
-                              =       short
-                                      long
-                                      fea
-                                      val
-                                      e
-                                      E
-                                      rem
-                                      Val
-                                      P
-                                      nval
-                                      nVal
+                              =     short long fea val e E
+                                  , rem Val P nval nVal
                                   , saves savel v
                                 .     !arg
                                     : (?short:?saves.?long:?savel)
@@ -7957,11 +8050,9 @@ try {
                         & filter$(!pipesN.!lasttool):?pipesN
                       | 
                       )
-                    & log$(pipesNafterFilter !pipesN)
                     & percolateForgottenFeatures$!pipesN !newpipes:?newpipes
                     & log$percolateForgottenFeaturesDONE
                     )
-                & log$(newpipes !newpipes)
                 & ( 
                   |   ( showDif
                       =   L Name
@@ -8190,7 +8281,6 @@ try {
                       : ((?,?) ?|~(?+(?.?)+?))
                     |   prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
                       & !Npipes:~>!MAXPIPES
-                      & log$(FP !FP Npipes !Npipes)
                       & (   !FP:~0
                           & log$"Calling prunePipes success"
                           & (!userInput.!FP) !memoizedTrees:?memoizedTrees
@@ -9604,7 +9694,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                           )
                         )
-                      (p.,str$("(" !arg ")"))
+                      (p.,map$((=.str$("(" !arg ")") (br.,)).!arg))
                     )
                   )
               )
@@ -15037,7 +15127,6 @@ function main2(evt) {
               | steplinks$(!JobNr.!jobs)
               )
             : ?links
-          & log$(links !links)
           &     ( 
                 =   locJobs n JobNr
                   .   0:?n
