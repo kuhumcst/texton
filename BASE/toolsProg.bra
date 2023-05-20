@@ -1852,6 +1852,7 @@ toolsProg=
                                   ")"
                               )
                         )
+                      & (nice=."Leave all I/O details out."&)
                       & ( fullinoutdesc
                         =   description
                           .         map
@@ -5488,8 +5489,8 @@ try {
           & saveTable$recentTasks
       )
       ( Pipelines
-      =     i o o-SUpPLEMENT restriction FP fP fp
-          , superset userInput prunePipes windFW lasttool
+      =     i o o-SUpPLEMENT reqtool FP fP fp
+          , superset userInput prunePipes windFW fintool
           , calls nth parms furtherCheck o2o extractIOfeaturesFromHTTParg
           , A Z reorderedworkflowlist topologicalOrderedTools
           , B Npipes Y features nFP nr oo ou pp lastt
@@ -5714,8 +5715,8 @@ try {
                       & valueSeq$(!goalValue.!!table):?go
                       & (!so.!go)
                   )
-                & !arg:(?source.?goal.?desiredtool,?lasttool.?)
-                & log$(desiredtool !desiredtool lasttool !lasttool goal !goal)
+                & !arg:(?source.?goal.?reqtool,?fintool.?)
+                & log$(reqtool !reqtool fintool !fintool goal !goal)
                 & readTable$tooladm
                 & readTable$toolprop
                 & :?bridges
@@ -5847,8 +5848,8 @@ try {
                       : ~
                   |   "Failure reason 4: The combination of feature values."
                     & (   !goal:
-                        & ( !desiredtool:
-                          | !lasttool:
+                        & ( !reqtool:
+                          | !fintool:
                           |   " "
                                 localized
                               $ ( "The two tools you specified cannot occur together."
@@ -5856,11 +5857,11 @@ try {
                                 )
                           )
                       |     localized
-                          $ ( "The combination of feature values is not possible."
-                              "Kombinationen af trækværdier kan ikke realiseres."
+                          $ ( "The combination of feature values cannot be realized in any workflow."
+                              "Kombinationen af trækværdier kan ikke realiseres i en eneste arbejdsgang."
                             )
-                          ( !desiredtool:
-                          | !lasttool:
+                          ( !reqtool:
+                          | !fintool:
                           |   " "
                                 localized
                               $ ( "It is also possible that the two tools you specified cannot occur together."
@@ -5871,12 +5872,12 @@ try {
                   )
             )
           & ( fp
-            =     tool source goal restriction superset makeSmell
+            =     tool source goal reqtool superset makeSmell
                 , fulfil memoizedSteps activeTools Calls smell resembling
-                , memos duplic impassages notttcnt getSuperGoals lasttool
+                , memos duplic impassages notttcnt getSuperGoals fintool
                 , sourcegoalmatch unfulfillable notThisTool fulfilGoal
                 , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
-                , getGoals getImplicatedGoals N21 inner smellCache
+                , getGoals getImpliedGoals inner smellCache
               .   0:?smell
                 & :?smellCache
                 & ( makeSmell
@@ -6003,10 +6004,10 @@ try {
                   =     tools forkk goaly
                       , toolspath pathsonetool tool ltools path1
                       , toolFeatures pathh pathfields newGoal infeat
-                      , memopaths lasttool
+                      , memopaths fintool
                       , goal source I IO O Os sourcePlus
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
-                      & !arg:(?source.?goaly.?tools.?lasttool.?forkk)
+                      & !arg:(?source.?goaly.?tools.?fintool.?forkk)
                       & !forkk:~0
                       &     (     (unfulfillable..find)$(str$!goaly)
                                 : ? (?.!source) ?
@@ -6020,29 +6021,21 @@ try {
                               &   whl
                                 ' ( !forkk:~0
                                   & !ltools:(?tool.?)+?
-                                  & ( !lasttool:
-                                    | !tool:!lasttool
+                                  & ( !fintool:
+                                    | !tool:!fintool
                                     |     whl
                                         ' ( !ltools:%+?ltools
                                           & !ltools:(?tool.?)+?
-                                          & !tool:~!lasttool
+                                          & !tool:~!fintool
                                           )
-                                      & !tool:!lasttool
-                                      &   log
-                                        $ (fulfilgoal lasttool !lasttool goaly !goaly)
+                                      & !tool:!fintool
                                     )
                                   & 0:?pathsonetool
                                   & (     (notThisTool..find)$(str$!goaly)
                                         : ? (?.!tool.!source) ?
-                                      & ( !lasttool:
-                                        | log$NOTHISTOOL
-                                        )
                                       & whl'(!ltools:(!tool.?)+?ltools)
                                       & 1+!notttcnt:?notttcnt
-                                    |   ( !lasttool:
-                                        | log$isfulfilled?
-                                        )
-                                      &   isfulfilled$(!source.!goaly.!tool)
+                                    |     isfulfilled$(!source.!goaly.!tool)
                                         : (?source.?goal.?memopaths)
                                       & 1+!memos:?memos
                                       & whl'(!ltools:(!tool.?)+?ltools)
@@ -6052,27 +6045,11 @@ try {
                                     |   whl
                                       ' (   !ltools
                                           : ?+(!tool.~:?toolFeatures)+?ltools
-                                        & ( !lasttool:
-                                          | log$(toolFeatures !toolFeatures)
-                                          )
                                         &   makeSmell$(!tool.!toolFeatures)
                                           : ?toolFeatures
-                                        & ( !lasttool:
-                                          | log$(smellytoolFeatures !toolFeatures)
-                                          )
                                         & (       matchGoalWithFeatures
                                                 $ (!goaly.!toolFeatures)
                                               : (?pathfields.?newGoal)
-                                            & ( !lasttool:
-                                              |   log
-                                                $ ( matchGoalWithFeatures!
-                                                    !goaly
-                                                    toolFeatures
-                                                    !toolFeatures
-                                                    newGoal
-                                                    !newGoal
-                                                  )
-                                              )
                                             & (       fulfil
                                                     $ ( !tools
                                                       . !source
@@ -6081,9 +6058,6 @@ try {
                                                       . 
                                                       )
                                                   : ?pathh
-                                                & ( !lasttool:
-                                                  | log$(fulfilled! newGoal !newGoal)
-                                                  )
                                                 &   removeNumFactors$!pathh
                                                   : ?infeat
                                                 &   distribute$(!newGoal.!infeat)
@@ -6189,9 +6163,9 @@ try {
                       & !forkk
                   )
                 & ( fulfilGoalProduct
-                  =   goalterm tools forkk goaly lasttool source
+                  =   goalterm tools forkk goaly fintool source
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
-                      & !arg:(?source.?goalterm.?tools.?lasttool)
+                      & !arg:(?source.?goalterm.?tools.?fintool)
                       & 1:?forkk
                       &   whl
                         ' ( !forkk:~0
@@ -6204,7 +6178,7 @@ try {
                             )
                           & !Calls:>0
                           & !goalterm:%?goaly*?goalterm
-                          &   fulfilGoal$(!source.!goaly.!tools.!lasttool.!forkk)
+                          &   fulfilGoal$(!source.!goaly.!tools.!fintool.!forkk)
                             : ?forkk
                           )
                       & !Calls:>0
@@ -6270,8 +6244,8 @@ try {
                 & ( fulfil
                   =     tools source goal sourcePlus forkk found
                       , goals goalterm nnnpathh indent accPipelines
-                      , Pipeline WRONGPIPES OKPIPES lasttool
-                    .   !arg:(?tools.?source.?goal.?indent.?lasttool)
+                      , Pipeline WRONGPIPES OKPIPES fintool
+                    .   !arg:(?tools.?source.?goal.?indent.?fintool)
                       & "Restrict path length to max 20"
                       & !indent:<20
                       & (|1+!Calls:?Calls)
@@ -6284,7 +6258,7 @@ try {
                                     & 1+!Calls:?Calls
                                     & sort$!sourcePlus
                                   |       fulfilGoalProduct
-                                        $ (!source.!goalterm.!tools.!lasttool)
+                                        $ (!source.!goalterm.!tools.!fintool)
                                       : ?forkk
                                     & !Calls:>0
                                     &   (     !forkk
@@ -6349,16 +6323,16 @@ try {
                           )
                       & removeNumFactors$!AllFs
                   )
-                & ( getImplicatedGoals
-                  =   allios tools lasttool ios
-                    .   !arg:(?tools.?lasttool)
-                      & log$(getImplicatedGoals lasttool !lasttool)
+                & ( getImpliedGoals
+                  =   allios tools fintool ios
+                    .   !arg:(?tools.?fintool)
+                      & log$(getImpliedGoals fintool !fintool)
                       & :?allios
                       & !( 
                          ' ( whl
                            ' ( !tools
                              :   ?
-                               + ( $lasttool
+                               + ( $fintool
                                  .   ?ios
                                    & (.!ios) !allios:?allios
                                  )
@@ -6368,10 +6342,6 @@ try {
                          )
                       & getGoals$(sort$!allios)
                   )
-                & "N21: Mark the argument as feature values all found in a single
-                   file. If the argument is atomic, just return the argument. Else,
-                   embed the product of feature values a, b and c in (a*b*c.OnE)."
-                & (N21=.!arg:@|(!arg.OnE))
                 & ( getSuperGoals
                   =   goal nwg
                     .   !arg:?goal
@@ -6482,155 +6452,110 @@ try {
                             )
                           . !SuperSets
                           )
-                      & log$(newgoal !goal)
                       & denumerizeSum$!goal
                   )
-                & !arg:(?source.?goal.?restriction,?lasttool.?superset)
-                & log$(goal !goal restriction !restriction lasttool !lasttool)
+                & !arg:(?source.?goal.?reqtool,?fintool.?superset)
+                & log$(goal !goal reqtool !reqtool fintool !fintool)
                 & readTable$toolprop
                 & getActiveTools$:?activeTools
-                & log$activeTools
                 & :?reasons
-                & ( !lasttool:
-                  |   getImplicatedGoals$(!activeTools.!lasttool):?implGoal
+                & ( !fintool:
+                  |   getImpliedGoals$(!activeTools.!fintool):?implGoal
                     & ( viableIncarnations
                       =   goal implGoal action superset
                         .   !arg:(?goal.?implGoal.(=?action).?superset)
-                          &   log
-                            $ ( viableIncarnations
-                                goal
-                                !goal
-                                implGoal
-                                !implGoal
-                                superset
-                                !superset
-                              )
                           & (   map
                               $ ( ( 
                                   =   ok sel
                                     .     !arg:(?feat,?goly)
-                                        & log$(feat !feat goly !goly)
                                         & !implGoal:?tgoal
                                         & 0:?sel
                                         & !( 
-                                           ' (     mop
-                                                 $ ( ( 
-                                                     =   igo
-                                                       .     log$(moparg !arg)
-                                                           & (     !arg
-                                                                 : ~( ?
-                                                                      ($feat,?)
-                                                                      ?
-                                                                    )
-                                                               &     !sel
-                                                                   +   sort
-                                                                     $ ( ( $feat
-                                                                         , $goly
-                                                                         )
-                                                                         !arg
+                                           '   mop
+                                             $ ( ( 
+                                                 =   igo
+                                                   .       !arg
+                                                         : ~( ?
+                                                              ($feat,?)
+                                                              ?
+                                                            )
+                                                       &     !sel
+                                                           +   sort
+                                                             $ ( ($feat,$goly)
+                                                                 !arg
+                                                               )
+                                                         : ?sel
+                                                       & 
+                                                     |     !arg
+                                                         :   ?
+                                                             ($feat,?igo)
+                                                             ?
+                                                       & (   !igo:$goly
+                                                           &   !sel+!arg
+                                                             : ?sel
+                                                           & 
+                                                         |       mop
+                                                               $ ( ( 
+                                                                   =   
+                                                                     .     !igo
+                                                                         : ~( ?
+                                                                            *   !arg
+                                                                              ^ ?
+                                                                            * ?
+                                                                            )
+                                                                       | 
+                                                                   )
+                                                                 . $goly
+                                                                 . ( 
+                                                                   = *
+                                                                   )
+                                                                 )
+                                                             : ~
+                                                           &   str
+                                                             $ ( "NOT all "
+                                                                 ()$goly
+                                                                 " is in "
+                                                                 !igo
+                                                               )
+                                                         |   !superset:
+                                                           & (       mop
+                                                                   $ ( ( 
+                                                                       =   
+                                                                         .       !arg
+                                                                               :   @?arg
+                                                                                 ^ ?
+                                                                             &     
+                                                                                 $ goly
+                                                                               : ~( ?
+                                                                                  * !arg
+                                                                                  * ?
+                                                                                  )
+                                                                           | 
                                                                        )
+                                                                     . !igo
+                                                                     . ( 
+                                                                       = *
+                                                                       )
+                                                                     )
+                                                                 : 
+                                                               &   !sel+!arg
                                                                  : ?sel
                                                                & 
-                                                             |     !arg
-                                                                 :   ?
-                                                                     ($feat,?igo)
-                                                                     ?
-                                                               & (     !igo
-                                                                     : $goly
-                                                                   &   !sel+!arg
-                                                                     : ?sel
-                                                                   & 
-                                                                 |       mop
-                                                                       $ ( ( 
-                                                                           =   
-                                                                             .     !igo
-                                                                                 : ~( ?
-                                                                                    *   !arg
-                                                                                      ^ ?
-                                                                                    * ?
-                                                                                    )
-                                                                               | 
-                                                                           )
-                                                                         . $goly
-                                                                         . ( 
-                                                                           = *
-                                                                           )
-                                                                         )
-                                                                     : ~
-                                                                   &   log
-                                                                     $ ( str
-                                                                       $ ( "NOT all "
-                                                                           ()$goly
-                                                                           " is in "
-                                                                           !igo
-                                                                         )
-                                                                       )
-                                                                   &   str
-                                                                     $ ( "NOT all "
-                                                                         ()$goly
-                                                                         " is in "
-                                                                         !igo
-                                                                       )
-                                                                 |     !superset
-                                                                     : 
-                                                                   & (       mop
-                                                                           $ ( ( 
-                                                                               =   
-                                                                                 .       !arg
-                                                                                       :   @?arg
-                                                                                         ^ ?
-                                                                                     &     
-                                                                                         $ goly
-                                                                                       : ~( ?
-                                                                                          * !arg
-                                                                                          * ?
-                                                                                          )
-                                                                                   | 
-                                                                               )
-                                                                             . !igo
-                                                                             . ( 
-                                                                               =   
-                                                                                 * 
-                                                                               )
-                                                                             )
-                                                                         : 
-                                                                       &     !sel
-                                                                           + !arg
-                                                                         : ?sel
-                                                                       & 
-                                                                     |     log
-                                                                         $ ( str
-                                                                           $ ( "Some "
-                                                                               !igo
-                                                                               " are not in "
-                                                                                 ()
-                                                                               $ goly
-                                                                             )
-                                                                           )
-                                                                       &   str
-                                                                         $ ( "Some "
-                                                                             !igo
-                                                                             " are not in "
-                                                                               ()
-                                                                             $ goly
-                                                                           )
-                                                                     )
-                                                                 |     !sel+!arg
-                                                                     : ?sel
-                                                                   & 
+                                                             |   str
+                                                               $ ( "Some "
+                                                                   !igo
+                                                                   " are not in "
+                                                                   ()$goly
                                                                  )
                                                              )
-                                                         | BLURB !arg
-                                                     )
-                                                   . !implGoal
-                                                   . (=+)
-                                                   )
-                                               : ?ReS
-                                             & ( !ReS:
-                                               | log$(ReS !ReS)
+                                                         |     !sel+!arg
+                                                             : ?sel
+                                                           & 
+                                                         )
+                                                 )
+                                               . !implGoal
+                                               . (=+)
                                                )
-                                             & !ReS
-                                             )
                                            )
                                         & !action
                                       | "No exact match:" !arg
@@ -6657,7 +6582,7 @@ try {
                                         " er ikke forenelig med værktøjet "
                                       )
                                     "'"
-                                    ToolTitle$!lasttool
+                                    ToolTitle$!fintool
                                     "'. "
                                   )
                             )
@@ -6682,26 +6607,20 @@ try {
                       | 0:?implGoal&log$!reasons
                       )
                     & !implGoal:?goal
-                  | :?lasttool
+                  | :?fintool
                   )
                 & (   !goal:0
-                    |   (   !restriction:
-                          & 0:?restriction
+                    |   ( !reqtool:&0:?reqtool
                         | 
                         )
-                      & log$(OLDGOAL !goal)
                       & ( !superset:
-                        | !lasttool:~
+                        | !fintool:~
                         |   ( !servicedSuperGoals:?SuperSets
                             | readTable$SuperSets
                             )
-                          & log$(VOORSUPER !goal)
                           & getSuperGoals$!goal:?goal
-                          & log$(NAaaSUPER !goal)
                         )
-                      & log$(NEWGOAL !goal)
                       & OnEify$!goal:?goal
-                      & log$(NEWESTGOAL !goal)
                       &   0
                         : ?memoizedSteps
                         : ?memos
@@ -6712,8 +6631,8 @@ try {
                       & new$hash:?unfulfillable
                       & new$hash:?notThisTool
                       & 0:?Calls
-                      & log$("Calling fulfil" !goal lasttool !lasttool)
-                      & ( fulfil$(!activeTools.!source.!goal.0.!lasttool)
+                      & log$("Calling fulfil" !goal fintool !fintool)
+                      & ( fulfil$(!activeTools.!source.!goal.0.!fintool)
                         | !Calls
                         )
                   . !reasons
@@ -6723,13 +6642,13 @@ try {
              | Pipelines |
              +-----------+"
           & !arg:(?arg:?parms.?nth)
-          & ( !arg:? (desiredtool.?restriction) ?
-            | :?restriction
+          & ( !arg:? (reqtool.?reqtool) ?
+            | :?reqtool
             )
-          & ( !arg:? (lasttool.?lasttool) ?
-            | :?lasttool
+          & ( !arg:? (fintool.?fintool) ?
+            | :?fintool
             )
-          & log$(restriction !restriction lasttool !lasttool)
+          & log$(reqtool !reqtool fintool !fintool)
           & 0:?Npipes
           &     map
               $ ( ( 
@@ -6812,7 +6731,7 @@ try {
                 : ( ? (!superset,?) ?
                   | ?&:?superset
                   )
-              . !restriction,!lasttool
+              . !reqtool,!fintool
               . !superset
               )
             : ?userInput
@@ -6885,7 +6804,7 @@ try {
             )
           & ( prunePipes
             =     As NNN Z incarnationpipes parms NIncarnationPipes
-                , newpipes pipe pipes pipesN restriction filter lasttool
+                , newpipes pipe pipes pipesN reqtool filter fintool
                 , wantThis unfoldTree sources calls Npipes supplement
                 , DownStream UpStream percolateForgottenFeatures
               .   ( unfoldTree
@@ -7605,17 +7524,15 @@ try {
                         )
                   )
                 & ( filter
-                  =   pipes restriction o pipe1 has
-                    .   !arg:(?pipes.?restriction)
-                      & log$(filter !restriction)
+                  =   pipes reqtool o pipe1 has
+                    .   !arg:(?pipes.?reqtool)
                       &     
                           ' ( S
-                            .   !arg:?*($restriction,?)*?
+                            .   !arg:?*($reqtool,?)*?
                               |   !arg:?*(?,(?.?.?.?S))*?arg
                                 & (has$!S|has$!arg)
                             )
                         : (=?has)
-                      & lst$(has,path$"log.txt",APP,BIN)
                       &   map
                         $ ( ( 
                             =   
@@ -8139,14 +8056,14 @@ try {
                     & "The 1 is the initial stop list, which is formed as a product."
                     & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
                     & !pipesN:? [?NNN
-                    & (   (   !parms:? (desiredtool.?desiredtool) ?
-                            & !desiredtool:~
-                            & filter$(!pipesN.!desiredtool):?pipesN
-                          | 0:?desiredtool
+                    & (   (   !parms:? (reqtool.?reqtool) ?
+                            & !reqtool:~
+                            & filter$(!pipesN.!reqtool):?pipesN
+                          | 0:?reqtool
                           )
-                        & !parms:? (lasttool.?lasttool) ?
-                        & !lasttool:~:~!desiredtool
-                        & filter$(!pipesN.!lasttool):?pipesN
+                        & !parms:? (fintool.?fintool) ?
+                        & !fintool:~:~!reqtool
+                        & filter$(!pipesN.!fintool):?pipesN
                       | 
                       )
                     & percolateForgottenFeatures$!pipesN !newpipes:?newpipes
@@ -8193,7 +8110,7 @@ try {
               & (!memoizedTrees|:?memoizedTrees)
               & 0:?indent:?calls
               & (   log$("Look in meMOizedTrees for" !userInput)
-                  & !userInput:(?uiin.?uiou.?restriction,?lasttool.?superset)
+                  & !userInput:(?uiin.?uiou.?reqtool,?fintool.?superset)
                   & "o1o The userInput may be more strict than what is found in
                      memoized trees. So each output feature in a memoized tree
                      must occur in the userInput's output specs."
@@ -8319,7 +8236,7 @@ try {
                                 )
                             : 
                           &   (!restr,!lastt.!supers)
-                            : ( !restriction,!lasttool
+                            : ( !reqtool,!fintool
                               .   !superset
                                 |   ?
                                   & !superset:
@@ -8358,7 +8275,7 @@ try {
                           )
                         !o-SUpPLEMENT
                     : ?o
-                  &     ((!i.!o.!restriction,!lasttool.!superset).!nFP)
+                  &     ((!i.!o.!reqtool,!fintool.!superset).!nFP)
                         !memoizedTrees
                     : ?memoizedTrees
                   & !nFP:?FP
@@ -8400,9 +8317,9 @@ try {
                     & !FP:?+[?NNNN
                     & log$(tooMany !NNNN)
                     & ((!FP.).tooMany.)
-                  |   ( !restriction:
+                  |   ( !reqtool:
                       |   !FP
-                        : ?+(?.?fP&haz$(!fP.!restriction))+?
+                        : ?+(?.?fP&haz$(!fP.!reqtool))+?
                       )
                     & (   !nth:
                         & "The returned structure is still unpruned and would
@@ -9728,12 +9645,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 | "Does the user want to decide which tool to use or does she want
                  to let the infrastructure work out a way to reach a set goal?"
                 )
-                (   !parms:? (desiredtool.?rstr) ?
-                  & (desiredtool.!rstr)
+                (   !parms:? (reqtool.?rstr) ?
+                  & (reqtool.!rstr)
                 | 
                 )
-                (   !parms:? (lasttool.?rstr) ?
-                  & (lasttool.!rstr)
+                (   !parms:? (fintool.?rstr) ?
+                  & (fintool.!rstr)
                 | 
                 )
                   map
@@ -11989,9 +11906,9 @@ function main2(evt) {
           & ( "The user has selected a workflow."
             =     Submit hiddenData o-SUpPLEMENT
                 , parms nth batch Items mail2 ERR
-                , allpipes ViewDetails lasttool
+                , allpipes ViewDetails fintool
                 , returnCode struct whichButton
-                , restriction sources bm err
+                , reqtool sources bm err
                 , goals topologicalOrderedTools wf
               .   ( whichButton
                   =   bm
@@ -12057,7 +11974,7 @@ function main2(evt) {
                   )
                 & !arg:(?parms.?Submit.?hiddenData.?batch.?Items.?mail2)
                 & 0:?allpipes
-                & :?returnCode:?restriction:?lasttool
+                & :?returnCode:?reqtool:?fintool
                 &   !parms
                   : ( ? (nth.?nth) ?
                     | ?&1:?nth
@@ -17277,10 +17194,10 @@ function main2(evt) {
           , presels errors BodyContainer topologicalOrderedTools
           , PIPE A Z TooManyWorkflows updateUploads 2or3things
           , ShowAllPipes rstr reorderedworkflowlist orgarg pipe
-          , val allpipes batch returnCode restriction sources
+          , val allpipes batch returnCode reqtool sources
           , ShowAllPipesIfNotTooExpensive add makeValRows
           , B M Y f fixed formFields fvs nfvs nvs output
-          , ZoomInOrShowWorkflows o-SUpPLEMENT lasttool
+          , ZoomInOrShowWorkflows o-SUpPLEMENT fintool
           , pipes pps rwl superset tool updatedArg userInput vs
         .   ( ShowAllPipes
             =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct
@@ -17376,10 +17293,10 @@ function main2(evt) {
           & ( NothingToDo
             =   hiddenData rstr lstr
               .   !arg:?hiddenData
-                & ( !hiddenData:? (desiredtool.?rstr) ?
+                & ( !hiddenData:? (reqtool.?rstr) ?
                   | :?rstr
                   )
-                & ( !hiddenData:? (desiredtool.?lstr) ?
+                & ( !hiddenData:? (reqtool.?lstr) ?
                   | :?lstr
                   )
                 &   str
@@ -17801,7 +17718,7 @@ function main2(evt) {
                 |   updateUploads$!parms
                   & 0:?allpipes
                   & localized$("No workflows found." "Ingen arbejdsgange fundet."):?returnCode
-                  & :?restriction:?lasttool
+                  & :?reqtool:?fintool
                   & log$CALL-Pipelines
                   & :?msg
                   & (     Pipelines$(!parms.)
@@ -17854,8 +17771,8 @@ function main2(evt) {
                             | 
                             )
                         |   !returnCode:onlyWithoutRestriction
-                          & !parms:? (desiredtool.?restriction) ?
-                          & FulfillableWithoutRestriction$!restriction
+                          & !parms:? (reqtool.?reqtool) ?
+                          & FulfillableWithoutRestriction$!reqtool
                         |   !returnCode:triviallyFulfilled
                           & NothingToDo$!hiddenData
                         |   !returnCode:(tooMany|tooComplex)
@@ -18635,81 +18552,6 @@ function main2(evt) {
                       + ?
                   | 
                   )
-                &   fieldset
-                  $ (     localized
-                        $ ( "Restrict list of workflow candidates. (Optional if you specified your goal in the fields above.)"
-                            "Indskrænk listen med kandiderende arbejdsgange. (Kan springes over hvis du har specificeret dit mål i rubrikken ovenover.)"
-                          )
-                        (br.,)
-                          localized
-                        $ ( "If you did not specify a goal (i.e. "
-                            "Værktøjet er det sidste i arbejdsgangene hvis du "
-                          )
-                        (strong.,localized$(ALL INTET))
-                          localized
-                        $ ( " fields are empty), the Text Tonsorium computes all workflows that have the selected tool as the last step."
-                            " har specificeret i rubrikken ovenover."
-                          )
-                    .     paragraph
-                        $ ( makeSelectFormField
-                          $ (   localized
-                              $ ( "Workflow must utilize the tool:"
-                                  "Arbejdsgang skal inkludere værktøjet:"
-                                )
-                            . desiredtool
-                            . options
-                            .   makeOptionList
-                              $ (   mop
-                                  $ ( ( 
-                                      =   
-                                        .     !arg:(?.?Title.?ToolID)
-                                            & (!Title.!ToolID)
-                                          | 
-                                      )
-                                    . !S
-                                    . (=+)
-                                    )
-                                . 
-                                )
-                            )
-                          )
-                          paragraph
-                        $ ( makeSelectFormField
-                          $ ( localized$("The last tool must be:" "Arbejdsgangen skal afslutte med:")
-                            . lasttool
-                            . options
-                            .   makeOptionList
-                              $ (   mop
-                                  $ ( ( 
-                                      =   
-                                        .     !arg:(?.?Title.?ToolID)
-                                            & (!Title.!ToolID)
-                                          | 
-                                      )
-                                    . !S
-                                    . (=+)
-                                    )
-                                . 
-                                )
-                            )
-                          )
-                    )
-            )
-          & ( desiredTools
-            =   ToolID Title S
-              .   readTable$tooladm
-                & 0:?S
-                & (   !tooladm
-                    :   ?
-                      + (   ~(? (Inactive.on) ?)
-                          : ? (ToolID.?ToolID) ?
-                          : ? (Title.?Title) ?
-                        & !S+(low$!Title.!Title.!ToolID):?S
-                        & ~
-                        )
-                      + ?
-                  | 
-                  )
                 &   ( tr
                     .   
                       ,   ( td
@@ -18724,7 +18566,7 @@ function main2(evt) {
                           .   
                             ,   makeSelectFormField
                               $ ( 
-                                . desiredtool
+                                . reqtool
                                 . options
                                 .   makeOptionList
                                   $ (   mop
@@ -18752,7 +18594,7 @@ function main2(evt) {
                           .   
                             ,   makeSelectFormField
                               $ ( 
-                                . lasttool
+                                . fintool
                                 . options
                                 .   makeOptionList
                                   $ (   mop
@@ -19616,8 +19458,7 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?hiddenData
-                    &   !sourceAndGoal (|desiredTools$)
-                      : ?formFields
+                    & !sourceAndGoal:?formFields
                     &   str
                       $ ( 200~~~
                             toML
@@ -19628,10 +19469,6 @@ function main2(evt) {
                                     .   makeHiddenFields$!hiddenData
                                         !formFields
                                         submit$(localized$!helpmespecifymygoal)
-                                        ( 
-                                        | submitNR$(localized$!"skip zoom")
-                                        )
-                                        helplink$()
                                         (br.,)
                                         ( small
                                         .   
