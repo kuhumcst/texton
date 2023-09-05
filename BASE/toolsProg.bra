@@ -553,10 +553,9 @@ toolsProg=
               . !arg
               )
       )
-      ( describefeature
-      =     featvals table specificationTables featdesc
-          , featval spec full stbl sps
-          , featvalspec featvalspecs addFeatvalSpec
+      ( getFeatAndValueNames
+      =     feature featvals featname table specificationTables featdesc
+          , featval spec full stbl sps featvalspec featvalspecs addFeatvalSpec
         .   ( addFeatvalSpec
             =     !featdesc
                   (!featdesc:|" & ")
@@ -588,7 +587,17 @@ toolsProg=
                   )
               : ?featdesc
             )
-          & !arg:(?featvals.?table.?specificationTables)
+          & !arg:(?feature,?featvals)
+          &   !features
+            :   ?
+              + ( ? (short.!feature) ?
+                : ? (name.?featname) ?
+                : ? (table.?table) ?
+                : ( ? (specificationTable.?specificationTables) ?
+                  | ?&:?specificationTables
+                  )
+                )
+              + ?
           & :?featdesc
           &   whl
             ' ( !featvals:%?featvalspec*?featvals
@@ -601,45 +610,37 @@ toolsProg=
                   | %?featval^?spec&!addFeatvalSpec
                   )
               )
-          & !featdesc
-      )
-      ( getFeatAndValueNames
-      =   feature featvals featname table specificationTables featdesc
-        .   !arg:(?feature,?featvals)
-          &   !features
-            :   ?
-              + ( ? (short.!feature) ?
-                : ? (name.?featname) ?
-                : ? (table.?table) ?
-                : ( ? (specificationTable.?specificationTables) ?
-                  | ?&:?specificationTables
-                  )
-                )
-              + ?
-          & describefeature$(!featvals.!table.!specificationTables):?featdesc
           & (!featname,!featdesc)
       )
       ( inoutdesc
-      =   description
-        .         map
+      =   description sep
+        .     !arg:(?arg.?sep)
+            &     map
                 $ ( ( 
                     =   featname featvals table,specificationTables
-                      .     !arg:(?featname,?featvals)
-                          &   !features
-                            :   ?
-                              + ( ? (short.!featname) ?
-                                : ? (table.?table) ?
-                                : ( ? (specificationTable.?specificationTables) ?
-                                  | ?&:?specificationTables
-                                  )
-                                )
-                              + ?
-                          & ", " describefeature$(!featvals.!table.!specificationTables)
+                      .     getFeatAndValueNames$!arg:(?,?featdesc)
+                          & !sep str$!featdesc
                         | 
                     )
                   . !arg
                   )
-              : ", " ?description
+              : !sep ?description
+            & !description
+          | 
+      )
+      ( fullinoutdesc
+      =   description sep
+        .     !arg:(?arg.?sep)
+            &     map
+                $ ( ( 
+                    =   featdesc name
+                      .     getFeatAndValueNames$!arg:(?name,?featdesc)
+                          & !sep localized$!name " = " !featdesc
+                        | 
+                    )
+                  . !arg
+                  )
+              : !sep ?description
             & !description
           | 
       )
@@ -1826,7 +1827,7 @@ toolsProg=
         .   ( translateManyToHumanLanguage
             =   description seqno struct abbrevs o,describeShort
               .   ( describeShort
-                  =   describe circle nice arrow fullinoutdesc
+                  =   describe circle nice arrow
                     .   ( circle
                         =   
                           .   !arg:~#&!arg
@@ -1844,8 +1845,8 @@ toolsProg=
                       & ( nice
                         =   i o
                           .   !arg:(?i.?o)
-                            & inoutdesc$!i:?i
-                            & inoutdesc$!o:?o
+                            & inoutdesc$(!i.", "):?i
+                            & inoutdesc$(!o.", "):?o
                             & ( :!i:!o
                               |   "("
                                   !i
@@ -1858,41 +1859,6 @@ toolsProg=
                               )
                         )
                       & (nice=."Leave all I/O details out."&)
-                      & ( fullinoutdesc
-                        =   description
-                          .         map
-                                  $ ( ( 
-                                      =     featname featvals table
-                                          , specificationTables name
-                                        .     !arg:(?featname,?featvals)
-                                            &   !features
-                                              :   ?
-                                                + ( ? (short.!featname) ?
-                                                  : ? (table.?table) ?
-                                                  : ? (name.?name) ?
-                                                  : (   ?
-                                                        ( specificationTable
-                                                        . ?specificationTables
-                                                        )
-                                                        ?
-                                                    |   ?
-                                                      & :?specificationTables
-                                                    )
-                                                  )
-                                                + ?
-                                            &   ", "
-                                                localized$!name
-                                                ":"
-                                                  describefeature
-                                                $ (!featvals.!table.!specificationTables)
-                                          | 
-                                      )
-                                    . !arg
-                                    )
-                                : ", " ?description
-                              & !description
-                            | 
-                        )
                       & ( arrow
                         =   b i
                           .   !arg:(?arg.?b)
@@ -1904,7 +1870,9 @@ toolsProg=
                                     | !arg:3&" ⇛ "
                                     | " ⭆ "
                                     )
-                                    (span.(class.tooltiptext),fullinoutdesc$!i)
+                                    ( span
+                                    . (class.tooltiptext),fullinoutdesc$(!i.", ")
+                                    )
                               )
                         )
                       & ( describe
@@ -1969,7 +1937,7 @@ toolsProg=
                                                   ,   ∵
                                                       ( span
                                                       .   (class.tooltiptext)
-                                                        , fullinoutdesc$!c
+                                                        , fullinoutdesc$(!c.", ")
                                                       )
                                                 )
                                               )
@@ -1993,7 +1961,7 @@ toolsProg=
                     &   !description
                         ( div
                         .   (class.tooltip) (tabindex.0)
-                          , ∴ (span.(class.tooltiptextL),inoutdesc$!o)
+                          , ∴ (span.(class.tooltiptextL),inoutdesc$(!o.", "))
                         )
                   |   log$"It seems that the input already matches your goal"
                     &   localized
@@ -2334,24 +2302,9 @@ toolsProg=
                               .   
                                 ,   map
                                   $ ( ( 
-                                      =     featname featvals table
-                                          , specificationTables name
-                                        .   !arg:(?featname,?featvals)
-                                          &   !features
-                                            :   ?
-                                              + ( ? (short.!featname) ?
-                                                : ? (table.?table) ?
-                                                : ? (name.?name) ?
-                                                : (   ?
-                                                      ( specificationTable
-                                                      . ?specificationTables
-                                                      )
-                                                      ?
-                                                  |   ?
-                                                    & :?specificationTables
-                                                  )
-                                                )
-                                              + ?
+                                      =   featdesc name
+                                        .     getFeatAndValueNames$!arg
+                                            : (?name,?featdesc)
                                           & ( tr
                                             .   
                                               ,   ( td
@@ -2360,11 +2313,7 @@ toolsProg=
                                                   )
                                                   ( td
                                                   .   (class.smallfont)
-                                                    ,   describefeature
-                                                      $ ( !featvals
-                                                        . !table
-                                                        . !specificationTables
-                                                        )
+                                                    , !featdesc
                                                   )
                                             )
                                       )
@@ -11958,59 +11907,82 @@ function main2(evt) {
       =     L M Q SVG U a b calc code edges
           , dimensions dimpla g iterations extractEdges
           , pla planets pointsT
-          , times x y z
+          , times x y z nameedges
         .   ( extractEdges
             =   volgnr trav collect
               .   48:?volgnr
                 & ( trav
-                  =   A B
+                  =   A B ou in
                     .     !arg:%?A %?B
                         & trav$!A:?A
                         & trav$!B !A
                       | !arg:(%?A,%?B)&(trav$!A,trav$!B)
-                      | !arg:(.?A.?)&(.!A.)
-                      |   !arg:(?A.?B.?)
+                      | !arg:(.?A.?.?ou)&(.!A.!ou)
+                      |   !arg:(?A.?B.?in.?ou)
                         & 1+!volgnr:?volgnr
                         & !B:(|!volgnr)
-                        & (!A.!volgnr.)
+                        &   (!A.!volgnr.!ou)
+                            ( !volgnr:49&(InPut.48.!in)
+                            | 
+                            )
                   )
-                & trav$!arg:?arg
+                & !arg:? (?.?.?.?ou)
+                & trav$(!arg (∴..!ou.)):?arg
+                & put$(str$(\n\n travA \n\n),path$arg,APP)
+                & lst$(arg,path$arg,APP,RAW)
                 & ( collect
                   =   A B
                     .   !arg:%?A %?B&collect$!A
                       | !arg:(%?A,%?B)&collect$!A collect$!B
-                      | !arg:(?.?A.?)&!A
+                      | !arg:(?.?A.?B)&(!A.!B)
                   )
                 & ( trav
-                  =   A B X
+                  =   A B X ou
                     .     !arg:%?A %?B
-                        & !A:(?X.?v.)
-                        & map$((=.!X,!arg !v).collect$!B) trav$!B
+                        & !A:(?X.?v.?ou)
+                        &     map
+                            $ ( ( 
+                                =   
+                                  .   !arg:(?arg.?ou)
+                                    & (!X,!arg !v.!ou)
+                                )
+                              . collect$!B
+                              )
+                            trav$!B
                       | !arg:(%?A,%?B)&trav$!A trav$!B
                       | 
                   )
                 & "trav has a side effect: it increments volgnr"
                 & trav$!arg:?arg
+                & put$(str$(\n\n travB \n\n),path$arg,APP)
+                & lst$(arg,path$arg,APP,RAW)
                 &   map
                   $ ( ( 
                       =   n a b
-                        .   !arg:(?n,#%?a #%?b)
-                          & (!n,!a+-48 !b+-48)
+                        .   !arg:(?n,#%?a #%?b.?ou)
+                          & (!n,!a+-48 !b+-48.!ou)
                       )
-                    . (output,!volgnr !volgnr+1) !arg (input,48 49)
+                    . !arg
                     )
             )
+          & readTable$tooladm
           & 0:?planets
+          & put$(str$(\n\n UFP \n\n),path$arg,NEW)
+          & lst$(arg,path$arg,APP,RAW)
           &     map
               $ ( ( 
                   =   a b
-                    .   !arg:(?,#%?fr #%?to)
+                    .   !arg:(?,#%?fr #%?to.?)
                       & (!to:>!planets:?planets|)
                       & (,!fr !to)
                   )
-                . extractEdges$!arg
+                . extractEdges$!arg:?nameedges
                 )
             : ?links
+          & put$(str$(\n\n nameedges \n\n),path$arg,APP)
+          & lst$(nameedges,path$arg,APP,RAW)
+          & put$(str$(\n\n links \n\n),path$arg,APP)
+          & lst$(links,path$arg,APP,RAW)
           & 1+!planets:?planets
           & 2:?dimensions
           & 2000:?iterations
@@ -12027,16 +11999,17 @@ function main2(evt) {
           & 8:?shortLine
           & "q: an exponent. The higher, the faster the repelling force from en edge diminishes with distance."
           & 8:?q
-          & "q = 2, 4, 6, ...  Even, so we don't need to compute absolute values. If 2, normal coulomb repulsion."
+          & "q = 2, 4, 6, ...  Even, so we don't need to compute absolute values. If 2, normal Coulomb repulsion."
           & -1*(1+!q^-1):?qexp
           & !q+-1:?q-1
           & "G: Constant factor of line-repelling force. Higher value implies stronger force.
-         Unit of acceleration due to 'PietHein' repulsion between vertex and edge.
-         (Danish Piet Hein invented superellipse table.)"
+             Unit of acceleration due to 'PietHein' repulsion between vertex and edge.
+             (The Danish Piet Hein invented the superellipse table. (The Dutch one 'won de zilvervloot'.))"
           & 5:?G
           & !dimensions*!planets:?dimpla
           & !links:? [?nlinks
           & 0:?degreeSum
+          & put$(UFPcodeMAP1,path$arg,APP)
           &   map
             $ ( ( 
                 =   
@@ -12045,6 +12018,7 @@ function main2(evt) {
                 )
               . !links
               )
+          & put$(UFPcodeMOP2,path$arg,APP)
           &     mop
               $ ( ( 
                   = .!arg:?n*(.?vertex)&(,!vertex !n)
@@ -12053,6 +12027,7 @@ function main2(evt) {
                 . (=+)
                 )
             : ?degrees
+          & put$(UFPcode,path$arg,APP)
           & "The code below will be evaluated by a UFP object (UnIfancyfied Floating Point)"
           &     
               ' ( (a.links,$nlinks,2) (a.degrees,$planets,2)
@@ -12498,8 +12473,11 @@ function main2(evt) {
             : ?code
           & "End of UFP code."
           & new$(UFP,!code):?calc
+          & put$(STARTINGcalc,path$arg,APP)
           &   (   (calc..go)$((,!links) (,!degrees))
+                & put$(GONE,path$arg,APP)
                 & (calc..export)$(N,T):?pointsT
+                & put$(EXPOrted,path$arg,APP)
                 & !pointsT:(,?times)
                 &     map
                     $ ( ( 
@@ -12531,25 +12509,45 @@ function main2(evt) {
                 & !NN^-1:?MM
                 & -1:?nn
                 & !pointsT:(,? (,?positions))
+                & put$(AAAA,path$arg,APP)
                 &     map
                     $ ( ( 
                         =   p q
                           .   !arg:(,%?p %?q)
                             & !positions:? [!p (,%?x1 %?y1 ?) ?
                             & !positions:? [!q (,%?x2 %?y2 ?) ?
-                            & ( line
-                              .     (x1.!svgX+!x1)
-                                    (y1.!svgX+!y1)
-                                    (x2.!svgX+!x2)
-                                    (y2.!svgX+!y2)
-                                    (stroke.green)
-                                    (marker-end."url(#arrow)")
-                                , 
-                              )
+                            & !( 
+                               ' ( $nameedges
+                                 : ? (?,$p ()$q.?desc) ?
+                                 )
+                               )
+                            & fullinoutdesc$(!desc.\n):?desc
+                            &   put
+                              $ (str$(desc[ !desc "," !p "," !q "]"),path$arg,APP)
+                            &   ( line
+                                .     (x1.!svgX+!x1)
+                                      (y1.!svgX+!y1)
+                                      (x2.!svgX+!x2)
+                                      (y2.!svgX+!y2)
+                                      (stroke.blue)
+                                      (stroke-width.6)
+                                      (opacity."0.01")
+                                  , (title.,!desc)
+                                )
+                                ( line
+                                .     (x1.!svgX+!x1)
+                                      (y1.!svgX+!y1)
+                                      (x2.!svgX+!x2)
+                                      (y2.!svgX+!y2)
+                                      (stroke.blue)
+                                      (marker-end."url(#arrow)")
+                                  , (title.,!desc)
+                                )
                         )
                       . !links
                       )
                   : ?lines
+                & put$(LinES,path$arg,APP)
                 & 1000000:?xmin:?ymin
                 & -1000000:?xmax:?ymax
                 &     map
@@ -12586,10 +12584,35 @@ function main2(evt) {
                                         )
                                     | ∵
                                 )
+                                ( circle
+                                .     (cx.!a)
+                                      (cy.!b)
+                                      (r.12)
+                                      (stroke.str$("rgb(" !col "," !col "," !col ")"))
+                                      (fill.red)
+                                      (opacity."0.1")
+                                  , ( title
+                                    .   
+                                      ,       !nameedges
+                                            :   ?
+                                                (?toolID,% !nn.?desc)
+                                                ?
+                                          &   !tooladm
+                                            :   ?
+                                              + ( ? (ToolID.!toolID) ?
+                                                : ? (Title.?Title) ?
+                                                )
+                                              + ?
+                                          & !Title
+                                        | !nn:0&Input
+                                        | Output
+                                    )
+                                )
                         )
                       . !L
                       )
                   : ?circles
+                & put$(CiRCles,path$arg,APP)
                 & 20:?margin
                 & !xmin+-1*!margin:?xmin
                 & !ymin+-1*!margin:?ymin
@@ -20100,7 +20123,7 @@ function main2(evt) {
                                                             . ?
                                                             )
                                                             ?
-                                                      & inoutdesc$!o
+                                                      & inoutdesc$(!o.", ")
                                                   )
                                             )
                                             (br.,)
