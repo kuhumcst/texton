@@ -1752,7 +1752,8 @@ toolsProg=
               .   !arg:(?plus.?A)
                 &   whl
                   ' ( !A:(?f,?v) ?A
-                    & !plus:?a (!f,?x*!v*?y) ?z
+                    &   !plus
+                      : ?a (!f,?x*(!v.OnE)*?y|?x*!v*?y) ?z
                     & ( !x*!y:1
                       | !a (!f,!x*!y) !z:?plus
                       )
@@ -1954,7 +1955,6 @@ toolsProg=
                       & !arg
                   )
                 & !arg:(?abbrevs.?struct)
-                & SpotInput$!struct:?struct
                 & describeShort$!struct:?description
                 & (   !description:~
                     & !struct:? (?.?.?.?o)
@@ -2105,6 +2105,7 @@ toolsProg=
                                   .   (?Ntools.?toolsUsed.?Nsteps.?toolPlumbing.?nr)
                                     , (?abbR.?struct)
                                   )
+                              & SpotInput$!struct:?struct
                               & toolID2title$!toolsUsed:?toolsUsed2
                               & 1+!nth:?nth
                               &   (   !nth:1
@@ -2389,7 +2390,6 @@ toolsProg=
                       & (dl.,!arg)
                   )
                 & !arg:?struct
-                & SpotInput$!struct:?struct
                 & describeLong$!struct:?description
                 & (   !description:~
                     &   !struct
@@ -2403,7 +2403,8 @@ toolsProg=
                       )
                   )
             )
-          & translateOneToHumanLanguage$!arg (br.,)
+          & SpotInput$!arg:?arg
+          & (translateOneToHumanLanguage$!arg (br.,).workflowSVG$!arg)
       )
       ( makePasswordFormField
       =   text parm desc size required
@@ -11917,19 +11918,20 @@ function main2(evt) {
                         & trav$!A:?A
                         & trav$!B !A
                       | !arg:(%?A,%?B)&(trav$!A,trav$!B)
-                      | !arg:(.?A.?.?ou)&(.!A.!ou)
+                      |   !arg:(.?A.?.?ou)
+                        & (.!A:~∵|48.!ou)
                       |   !arg:(?A.?B.?in.?ou)
                         & 1+!volgnr:?volgnr
                         & !B:(|!volgnr)
                         &   (!A.!volgnr.!ou)
-                            ( !volgnr:49&(InPut.48.!in)
+                            (   ~
+                              & !volgnr:49
+                              & (InPut.48.!in)
                             | 
                             )
                   )
                 & !arg:? (?.?.?.?ou)
                 & trav$(!arg (∴..!ou.)):?arg
-                & put$(str$(\n\n travA \n\n),path$arg,APP)
-                & lst$(arg,path$arg,APP,RAW)
                 & ( collect
                   =   A B
                     .   !arg:%?A %?B&collect$!A
@@ -11954,8 +11956,6 @@ function main2(evt) {
                   )
                 & "trav has a side effect: it increments volgnr"
                 & trav$!arg:?arg
-                & put$(str$(\n\n travB \n\n),path$arg,APP)
-                & lst$(arg,path$arg,APP,RAW)
                 &   map
                   $ ( ( 
                       =   n a b
@@ -11967,8 +11967,6 @@ function main2(evt) {
             )
           & readTable$tooladm
           & 0:?planets
-          & put$(str$(\n\n UFP \n\n),path$arg,NEW)
-          & lst$(arg,path$arg,APP,RAW)
           &     map
               $ ( ( 
                   =   a b
@@ -11979,10 +11977,6 @@ function main2(evt) {
                 . extractEdges$!arg:?nameedges
                 )
             : ?links
-          & put$(str$(\n\n nameedges \n\n),path$arg,APP)
-          & lst$(nameedges,path$arg,APP,RAW)
-          & put$(str$(\n\n links \n\n),path$arg,APP)
-          & lst$(links,path$arg,APP,RAW)
           & 1+!planets:?planets
           & 2:?dimensions
           & 2000:?iterations
@@ -12009,7 +12003,6 @@ function main2(evt) {
           & !dimensions*!planets:?dimpla
           & !links:? [?nlinks
           & 0:?degreeSum
-          & put$(UFPcodeMAP1,path$arg,APP)
           &   map
             $ ( ( 
                 =   
@@ -12018,7 +12011,6 @@ function main2(evt) {
                 )
               . !links
               )
-          & put$(UFPcodeMOP2,path$arg,APP)
           &     mop
               $ ( ( 
                   = .!arg:?n*(.?vertex)&(,!vertex !n)
@@ -12027,7 +12019,6 @@ function main2(evt) {
                 . (=+)
                 )
             : ?degrees
-          & put$(UFPcode,path$arg,APP)
           & "The code below will be evaluated by a UFP object (UnIfancyfied Floating Point)"
           &     
               ' ( (a.links,$nlinks,2) (a.degrees,$planets,2)
@@ -12473,11 +12464,8 @@ function main2(evt) {
             : ?code
           & "End of UFP code."
           & new$(UFP,!code):?calc
-          & put$(STARTINGcalc,path$arg,APP)
           &   (   (calc..go)$((,!links) (,!degrees))
-                & put$(GONE,path$arg,APP)
                 & (calc..export)$(N,T):?pointsT
-                & put$(EXPOrted,path$arg,APP)
                 & !pointsT:(,?times)
                 &     map
                     $ ( ( 
@@ -12509,7 +12497,6 @@ function main2(evt) {
                 & !NN^-1:?MM
                 & -1:?nn
                 & !pointsT:(,? (,?positions))
-                & put$(AAAA,path$arg,APP)
                 &     map
                     $ ( ( 
                         =   p q
@@ -12522,8 +12509,6 @@ function main2(evt) {
                                  )
                                )
                             & fullinoutdesc$(!desc.\n):?desc
-                            &   put
-                              $ (str$(desc[ !desc "," !p "," !q "]"),path$arg,APP)
                             &   ( line
                                 .     (x1.!svgX+!x1)
                                       (y1.!svgX+!y1)
@@ -12547,7 +12532,6 @@ function main2(evt) {
                       . !links
                       )
                   : ?lines
-                & put$(LinES,path$arg,APP)
                 & 1000000:?xmin:?ymin
                 & -1000000:?xmax:?ymax
                 &     map
@@ -12612,7 +12596,6 @@ function main2(evt) {
                       . !L
                       )
                   : ?circles
-                & put$(CiRCles,path$arg,APP)
                 & 20:?margin
                 & !xmin+-1*!margin:?xmin
                 & !ymin+-1*!margin:?ymin
@@ -12678,11 +12661,11 @@ function main2(evt) {
           , "The user has selected a workflow."
           , errorInMetadata
           , MetadataInParms
-          , rememberMetadata
+          , rememberMetadata SVG
         .   ( ShowOnlyTheCurrentPipe
             =   formFields struct nth bm visfields
               .   !arg:(?struct.?nth.?bm.?err)
-                & makeWorkflowVisualisation$!struct:?visfields
+                & makeWorkflowVisualisation$!struct:(?visfields.?SVG)
                 &   ( !nth:#<1&
                     |   (br.,)
                         submit$Submit
@@ -12729,7 +12712,7 @@ function main2(evt) {
                                                 "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen."
                                               )
                                       )
-                                      workflowSVG$!struct
+                                      !SVG
                                 )
                             )
                       )
@@ -13027,7 +13010,7 @@ function main2(evt) {
             )
           & ( ApplyThePipelineToTheInput
             =     struct batch jobIDoffset parms
-                , retrieveMetadataFromParms
+                , retrieveMetadataFromParms tXt
                 , Items item subjobs mail2 JobId metadataType
                 , toolsdataURL toolsUploadURL dryORrun
               .   !arg:(?metadataType.?struct.?batch.?Items.?mail2.?parms.?dryORrun)
@@ -13095,9 +13078,10 @@ function main2(evt) {
                     $ (!jobNr..!JobStack.toolsdataURL$.toolsUploadURL$.!Items.!dryORrun)
                   )
                 & (readTable$jobAbout|:?jobAbout)
+                & makeWorkflowVisualisation$!struct:(?tXt.?SVG)
                 &     ( !JobNr
                       .   (mail2.!mail2)
-                          (human.makeWorkflowVisualisation$!struct)
+                          (human.!tXt)
                           (userProvidedMetadata.retrieveMetadataFromParms$(!metadataType.!parms))
                       )
                       !jobAbout
@@ -18572,7 +18556,7 @@ function main2(evt) {
           , val allpipes batch returnCode reqtool sources
           , ShowAllPipesIfNotTooExpensive add makeValRows
           , B M Y f fixed formFields fvs nfvs nvs output
-          , ZoomInOrShowWorkflows o-SUpPLEMENT fintool
+          , ZoomInOrShowWorkflows o-SUpPLEMENT fintool SVG
           , pipes pps rwl superset tool updatedArg userInput vs
         .   ( ShowAllPipes
             =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct
@@ -18637,7 +18621,8 @@ function main2(evt) {
                                       !"visualizedWorkFlow(s)"
                                   )
                           |   !reorderedworkflowlist:(?,(?.?struct))
-                            & makeWorkflowVisualisation$!struct:?"visualizedWorkFlow(s)"
+                            &   makeWorkflowVisualisation$!struct
+                              : (?"visualizedWorkFlow(s)".?SVG)
                             &   (h3.,Workflow)
                                 ( p
                                 .   
@@ -18659,7 +18644,41 @@ function main2(evt) {
                                       (br.,)
                                       (br.,)
                                       makeHiddenFields$!hiddenData
-                                      !"visualizedWorkFlow(s)"
+                                      ( div
+                                      .   (style."width: 100%; overflow: hidden;")
+                                        ,   ( div
+                                            .   (style."width: 30%; float: left;")
+                                              ,   ( h3
+                                                  .   
+                                                    ,   localized
+                                                      $ ( "Workflow steps"
+                                                          "Trin i arbejdsgangen"
+                                                        )
+                                                  )
+                                                  !"visualizedWorkFlow(s)"
+                                            )
+                                            ( div
+                                            .   (style."margin-left: 30%;")
+                                              , ( figure
+                                                .   
+                                                  ,   ( figcaption
+                                                      .   
+                                                        ,   ( a
+                                                            .     (id.Fig2)
+                                                                  (tabindex.0)
+                                                              ,   localized
+                                                                $ ("Figure 1" "Figur 1")
+                                                            )
+                                                            ". "
+                                                              localized
+                                                            $ ( "Directed Acyclic Graph (DAG) of the workflow."
+                                                                "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen."
+                                                              )
+                                                      )
+                                                      !SVG
+                                                )
+                                            )
+                                      )
                                   )
                           )
                         )
