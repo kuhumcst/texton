@@ -10368,7 +10368,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   .     (id.svgwortel)
                         (width.!canvasX)
                         (height.!canvasY)
-                       (viewBox.str$("0 0 " !canvasX " " !canvasY))
+                        (viewBox.str$("0 0 " !canvasX " " !canvasY))
                         (onload."main(evt)")
                     ,   ( rect
                         .     (class.Border)
@@ -11904,12 +11904,7 @@ function main2(evt) {
                       |   !arg:(?A.?B.?in.?ou)
                         & 1+!volgnr:?volgnr
                         & !B:(|!volgnr)
-                        &   (!A.!volgnr.!ou)
-                            (   ~
-                              & !volgnr:49
-                              & (InPut.48.!in)
-                            | 
-                            )
+                        & (!A.!volgnr.!ou)
                   )
                 & !arg:? (?.?.?.?ou)
                 & trav$(!arg (∴..!ou.)):?arg
@@ -12448,6 +12443,33 @@ function main2(evt) {
           & new$(UFP,!code):?calc
           &   (   (calc..go)$((,!links) (,!degrees))
                 & (calc..export)$(N,T):?pointsT
+                & (calc..export)$(Q,dist2):?dist2array
+                & lst$(dist2array,path$dist2array,NEW,WYD,RAW,BIN)
+                & 0:?maxdist2
+                & (   !dist2array
+                    : ( 
+                      ,   ?
+                          ( 
+                          ,   ?
+                              `[%( !sjt:>!maxdist2:?maxdist2
+                                 & ~
+                                 )
+                              ?
+                          )
+                          ?
+                      )
+                  | 
+                  )
+                &     new
+                    $ ( UFP
+                      ,   
+                        ' ( (s.SQR)
+                          . sqrt$!SQR:?SQ&!SQ
+                          )
+                      )
+                  : ?sqrt
+                & (sqrt..go)$!maxdist2
+                & (sqrt..export)$(N,SQ):?radius
                 & !pointsT:(,?times)
                 &     map
                     $ ( ( 
@@ -12583,7 +12605,12 @@ function main2(evt) {
                 & !ymin+-1*!margin:?ymin
                 & !xmax+-1*!xmin+!margin:?xwidth
                 & !ymax+-1*!ymin+!margin:?ywidth
-                & (!xwidth:>!ywidth:?ywidth|!ywidth:?xwidth)
+                & ( !xwidth:>!ywidth:?ywidth
+                  | !ywidth:?xwidth
+                  )
+                & ( !radius:>!xwidth:?xwidth:?ywidth
+                  | 
+                  )
                 & ( svg
                   .   (viewBox.str$(!xmin " " !ymin " " !xwidth " " !ywidth))
                     ,   (~|("!--"."A marker to be used as an arrowhead"))
@@ -18905,7 +18932,8 @@ function main2(evt) {
                                                   )
                                               )
                                               ( div
-                                              . (class.topmargin),(table.,!formFields)
+                                              .   (class.topmargin)
+                                                , (table.,!formFields)
                                               )
                                               ( div
                                               .   (class.topmargin)
