@@ -11956,497 +11956,840 @@ function main2(evt) {
                 )
             : ?links
           & 1+!planets:?planets
-          & 2:?dimensions
-          & 2000:?iterations
-          & -1+!iterations:?maxn
-          & "Repelling coulomb force constant."
-          & 300*!planets^-2:?M/planets2
-          & "Coordinate origin."
-          & 600:?svgX:?svgY
-          & "Spring constant"
-          & -1/3000:?F
-          & "W friction"
-          & 299/300:?W
-          & "shortLine: repulsion between line and a vertex is as from a superelipse with lenght/width=linelength/shortLine=K."
-          & 8:?shortLine
-          & "q: an exponent. The higher, the faster the repelling force from en edge diminishes with distance."
-          & 8:?q
-          & "q = 2, 4, 6, ...  Even, so we don't need to compute absolute values. If 2, normal Coulomb repulsion."
-          & -1*(1+!q^-1):?qexp
-          & !q+-1:?q-1
-          & "G: Constant factor of line-repelling force. Higher value implies stronger force.
+            & lst$(planets,path$links,NEW)
+            & lst$(links,path$links,APP)
+
+      & 2:?dimensions
+      & 2000:?iterations
+      & -1+!iterations:?maxn
+      & "Repelling coulomb force constant."
+      & 300*!planets^-2:?M/planets2
+      & "Coordinate origin."
+      & 600:?svgX:?svgY
+      & "Spring constant"
+      & -1/1500:?F
+      & "W friction"
+      & 299/300:?W
+      & "shortLine: repulsion between line and a vertex is as from a superelipse with lenght/width=linelength/shortLine=K."
+      & 8:?shortLine
+      & "q: an exponent. The higher, the faster the repelling force from en edge diminishes with distance."
+      & 8:?q
+      & "q = 2, 4, 6, ...  Even, so we don't need to compute absolute values. If 2, normal Coulomb repulsion."
+      & -1*(1+!q^-1):?qexp
+      & !q+-1:?q-1
+      & "G: Constant factor of line-repelling force. Higher value implies stronger force.
              Unit of acceleration due to 'PietHein' repulsion between vertex and edge.
              (The Danish Piet Hein invented the superellipse table. (The Dutch one 'won de zilvervloot'.))"
-          & 20:?G
-          & !dimensions*!planets:?dimpla
-          & !links:? [?nlinks
-          & 0:?degreeSum
-          &   map
-            $ ( ( 
-                =   
-                  .   !arg:(,%?a %?b)
-                    & (.!a)+(.!b)+!degreeSum:?degreeSum
-                )
-              . !links
+      & 40:?G
+      & 5/10:?donethreshhold
+      & !dimensions*!planets:?dimpla
+      & !links:? [?nlinks
+      & 0:?degreeSum
+      &   map
+        $ ( ( 
+            =   
+              .   !arg:(,%?a %?b)
+                & (.!a)+(.!b)+!degreeSum:?degreeSum
+            )
+          . !links
+          )
+      &     mop
+          $ ( ( 
+              =   n vertex
+                . !arg:?n*(.?vertex)&(,!vertex !n)
               )
-          &     mop
-              $ ( ( 
-                  =   n vertex
-                    . !arg:?n*(.?vertex)&(,!vertex !n)
-                  )
-                . !degreeSum
-                . (=+)
+            . !degreeSum
+            . (=+)
+            )
+        : ?degrees
+      & "The code below will be evaluated by a UFP object (UnIfancyfied Floating Point)"
+      &     
+          ' ( (a.links,$nlinks,2) (a.degrees,$planets,2)
+            .   tbl$(Diff,$planets,$planets,$dimensions)
+              & tbl$(dist2,$planets,$planets)
+              & tbl$(position,$planets,$dimensions)
+              & tbl$(velocity,$planets,$dimensions)
+              & tbl$(acceleration,$planets,$dimensions)
+              & tbl$(xy,2)
+              & tbl$(planetTransits,$planets,2)
+              & "pointlinks[planet,link,0]
+                       If planet is enpoint of crossed link:   2
+                       If planet is enpoint of uncrossed link: 1
+                       If planet is not endpoint of link:      0
+                     pointlinks[planet,link,1]: number of closest crossing link, or -1
+                     pointlinks[planet,link,2]: distance from vertex to closest crossing link, initially a large number
+                     "
+              & tbl$(pointlinks,$planets,$nlinks,3)
+              & ( initPointLinks
+                =   (a.pointlinks) (a.links)
+                  .   $planets:?planet
+                    &   whl
+                      ' ( !planet:>0
+                        & -1+!planet:?planet
+                        & $nlinks:?link
+                        &   whl
+                          ' ( !link:>0
+                            & -1+!link:?link
+                            & 0:?(idx$(pointlinks,!planet,!link,0))
+                            )
+                        )
+                    & $nlinks:?link
+                    &   whl
+                      ' ( !link:>0
+                        & -1+!link:?link
+                        & 1:?(idx$(pointlinks,!(idx$(links,!link,0)),!link,0))
+                        & 1:?(idx$(pointlinks,!(idx$(links,!link,1)),!link,0))
+                        )
+                    & 1
                 )
-            : ?degrees
-          & "The code below will be evaluated by a UFP object (UnIfancyfied Floating Point)"
-          &     
-              ' ( (a.links,$nlinks,2) (a.degrees,$planets,2)
-                .   tbl$(Diff,$planets,$planets,$dimensions)
-                  & tbl$(dist2,$planets,$planets)
-                  & tbl$(position,$planets,$dimensions)
-                  & tbl$(velocity,$planets,$dimensions)
-                  & tbl$(acceleration,$planets,$dimensions)
-                  & ( init
-                    =   (a.matrix) (s.rang)
-                      .   extent$(matrix,0):?xtn
+              & ( initMinDistances
+                =   (a.pointlinks)
+                  .   $planets:?planet
+                    &   whl
+                      ' ( !planet:>0
+                        & -1+!planet:?planet
+                        & $nlinks:?link
                         &   whl
-                          ' ( !xtn:>0
-                            & -1+!xtn:?xtn
-                            & $dimensions:?D
-                            &   whl
-                              ' ( !D:>0
-                                & -1+!D:?D
-                                & rand$!rang:?(idx$(matrix,!xtn,!D))
-                                )
-                            )
-                        & 0
-                    )
-                  & "Return 1 if second value is between first and third value, 0 otherwise."
-                  & ( btween
-                    =   (s.a) (s.m) (s.z)
-                      .   (   (   !a:<!z
-                                & !a:<!m
-                                & !m:<!z
-                              |   !a:>!z
-                                & !a:>!m
-                                & !m:>!z
+                          ' ( !link:>0
+                            & -1+!link:?link
+                            & ( !(idx$(pointlinks,!planet,!link,0)):0
+                              |   1:?pointlinks
+                                & -1:?(idx$(pointlinks,!planet,!link,1))
+                                &   "0x1.fffffffffffffp+1023"
+                                  : ?(idx$(pointlinks,!planet,!link,2))
                               )
-                            & 1:?R
-                          | 0:?R
+                            )
+                        )
+                    & 1
+                )
+              & initPointLinks$(pointlinks,links)
+              & "linkrelations[k,l] 
+                        if perhaps crossing of line segments: -4; (needs to be computed)
+                        if no crossing of line segments:      -3; (has been computed)
+                        if crossing of line segments:         -2; (has been computed)
+                        if no crossing of line segments:      -1; (diagonal) 
+                        else:                             number of common vertex
+                     "
+              & tbl$(linkrelations,$nlinks,$nlinks)
+              & ( initLinkRelations
+                =   (a.linkrelations) (a.links)
+                  .   $nlinks:?K
+                    &   whl
+                      ' ( !K:>0
+                        & -1+!K:?K
+                        & $nlinks:?M
+                        &   whl
+                          ' ( !M:>0
+                            & -1+!M:?M
+                            & idx$(linkrelations,!K,!M)
+                            & (   !K:!M
+                                & -1:?linkrelations
+                              |   !(idx$(links,!K,0)):?pK
+                                & !(idx$(links,!K,1)):?qK
+                                & !(idx$(links,!M,0)):?pM
+                                & !(idx$(links,!M,1)):?qM
+                                & (   ( !pK:!pM
+                                      | !qK:!pM
+                                      )
+                                    & !pM:?linkrelations
+                                  |   ( !pK:!qM
+                                      | !qK:!qM
+                                      )
+                                    & !qM:?linkrelations
+                                  )
+                              | -4:?linkrelations
+                              )
+                            )
+                        )
+                )
+              & ( updatePointLink
+                =     (a.position)
+                      (a.pointlinks)
+                      (a.links)
+                      (s.planet)
+                      (s.link)
+                      (s.crossinglink)
+                      (s.x)
+                      (s.y)
+                  .   !(idx$(position,!planet,0)):?X
+                    & !(idx$(position,!planet,1)):?Y
+                    & subtract$(!X,!x):?dx
+                    & subtract$(!Y,!y):?dy
+                    & hypot$(!dx,!dy):?dist2
+                    & (   !(idx$(pointlinks,!planet,!link,2)):>!dist2
+                        & !dist2:?pointlinks
+                        & !crossinglink:?(idx$(pointlinks,!planet,!link,1))
+                        & "Planet is endpoint of crossed link"
+                        & 2:?(idx$(pointlinks,!planet,!link,0))
+                      | 
+                      )
+                )
+              & ( updateLinkRelation
+                =     (s.A)
+                      (s.B)
+                      (a.xy)
+                      (a.linkrelations)
+                      (a.links)
+                      (a.pointlinks)
+                      (a.position)
+                  .   -2:?(idx$(linkrelations,!A,!B))
+                    & !(idx$(links,!A,0)):?pA
+                    & !(idx$(links,!A,1)):?qA
+                    & !(idx$(links,!B,0)):?pB
+                    & !(idx$(links,!B,1)):?qB
+                    & !(idx$(xy,0)):?x
+                    & !(idx$(xy,1)):?y
+                    & updatePointLink$(position,pointlinks,links,!pA,!A,!B,!x,!y)
+                    & updatePointLink$(position,pointlinks,links,!qA,!A,!B,!x,!y)
+                    & updatePointLink$(position,pointlinks,links,!pB,!B,!A,!x,!y)
+                    & updatePointLink$(position,pointlinks,links,!qB,!B,!A,!x,!y)
+                )
+              & initLinkRelations$(linkrelations,links)
+              & ( init
+                =   (a.matrix) (s.rang)
+                  .   extent$(matrix,0):?xtn
+                    &   whl
+                      ' ( !xtn:>0
+                        & -1+!xtn:?xtn
+                        & $dimensions:?D
+                        &   whl
+                          ' ( !D:>0
+                            & -1+!D:?D
+                            & rand$!rang:?(idx$(matrix,!xtn,!D))
+                            )
+                        )
+                    & 0
+                )
+              & "Return 1 if second value is between first and third value, 0 otherwise."
+              & ( btween
+                =   (s.a) (s.m) (s.z)
+                  .   (   (   !a:<!z
+                            & !a:<!m
+                            & !m:<!z
+                          |   !a:>!z
+                            & !a:>!m
+                            & !m:>!z
                           )
-                        & !R
-                    )
-                  & ( gradient
-                    =   (s.a) (s.b) (s.c) (s.d)
-                      . divide$(subtract$(!a,!b),subtract$(!c,!d))
-                    )
-                  & ( cross
-                    =     (s.x0)
-                          (s.y0)
-                          (s.x1)
-                          (s.y1)
-                          (s.x2)
-                          (s.y2)
-                          (s.x3)
-                          (s.y3)
-                      .   ( gradient$(!y0,!y1,!x0,!x1):?H01
-                          & gradient$(!y2,!y3,!x2,!x3):?H23
-                          &     divide
-                              $ ( subtract$(!y2,!y0)+subtract$(!H01*!x0,!H23*!x2)
-                                , subtract$(!H01,!H23)
-                                )
-                            : ?x
-                          & (   btween$(!x0,!x,!x1):1
-                              & btween$(!x2,!x,!x3):1
-                              & 1:?R
-                            | 0:?R
+                        & 1:?R
+                      | 0:?R
+                      )
+                    & !R
+                )
+              & ( gradient
+                =   (s.a) (s.b) (s.c) (s.d)
+                  . divide$(subtract$(!a,!b),subtract$(!c,!d))
+                )
+              & ( cross
+                =     (s.x0)
+                      (s.y0)
+                      (s.x1)
+                      (s.y1)
+                      (s.x2)
+                      (s.y2)
+                      (s.x3)
+                      (s.y3)
+                      (a.xy)
+                  .   gradient$(!y0,!y1,!x0,!x1):?H01
+                    & gradient$(!y2,!y3,!x2,!x3):?H23
+                    &     divide
+                        $ (subtract$(!y2+!H01*!x0,!y0+!H23*!x2),subtract$(!H01,!H23))
+                      : ?x
+                    & (   btween$(!x0,!x,!x1):1
+                        & btween$(!x2,!x,!x3):1
+                        & !y0+subtract$(!x,!x0)*!H01:?y
+                        & !y:?(idx$(xy,1))
+                        & !x:?(idx$(xy,0))
+                        & 1:?R
+                      | 0:?R
+                      )
+                    & !R
+                )
+              & ( norm
+                =   (a.vector)
+                  .   0:?len
+                    & $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        & !(idx$(vector,!d)):?df
+                        & !df*!df+!len:?len
+                        )
+                    & sqrt$!len
+                )
+              & ( point
+                =   (a.position) (s.p) (a.pnt)
+                  .   $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        & !(idx$(position,!p,!d)):?(idx$(pnt,!d))
+                        )
+                    & 0
+                )
+              & ( midpoint
+                =   (a.pointA) (a.pointZ) (a.pointM)
+                  .   $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        &   divide$(!(idx$(pointA,!d))+!(idx$(pointZ,!d)),2)
+                          : ?(idx$(pointM,!d))
+                        )
+                    & 1
+                )
+              & ( inproduct
+                =   (a.vectorA) (a.vectorB)
+                  .   0:?inn
+                    & $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        & !(idx$(vectorA,!d))*!(idx$(vectorB,!d))+!inn:?inn
+                        )
+                    & !inn
+                )
+              & ( ScalarTimesVector
+                =   (s.scalar) (a.vector) (a.product)
+                  .   $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        & !scalar*!(idx$(vector,!d)):?(idx$(product,!d))
+                        )
+                )
+              & ( Unit
+                =   (a.vector)
+                  .   norm$vector^-1:?neL
+                    & $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        & !(idx$(vector,!d))*!neL:?vector
+                        )
+                )
+              & ( vectorSum
+                =   (a.vectorA) (a.vectorB) (a.sumvector)
+                  .   $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        &   !(idx$(vectorA,!d))+!(idx$(vectorB,!d))
+                          : ?(idx$(sumvector,!d))
+                        )
+                )
+              & ( vector
+                =   (a.pointA) (a.pointB) (a.vectorAB)
+                  .   $dimensions:?d
+                    &   whl
+                      ' ( !d:>0
+                        & -1+!d:?d
+                        &   subtract$(!(idx$(pointB,!d)),!(idx$(pointA,!d)))
+                          : ?(idx$(vectorAB,!d))
+                        )
+                )
+              & ( perpendicular
+                =   (a.unitX) (a.mt) (a.unitY)
+                  .   tbl$(vectorProjection,$dimensions)
+                    & inproduct$(unitX,mt):?impr
+                    & ScalarTimesVector$(!impr,unitX,vectorProjection)
+                    & vector$(vectorProjection,mt,unitY)
+                    & Unit$unitY
+                )
+              & ( PietHeinForce
+                =     (a.acceleration)
+                      (a.planetTransits)
+                      (s.pK)
+                      (s.qK)
+                      (a.pointqK)
+                      (a.pointMiddleK)
+                      (s.pt)
+                      (a.pointT)
+                      (s.done)
+                  .   !pK:!pt
+                    | !qK:!pt
+                    | !(idx$(planetTransits,!pt,1)):~<0
+                    |   tbl$(unitX,$dimensions)
+                      & tbl$(unitY,$dimensions)
+                      & tbl$(mq,$dimensions)
+                      & tbl$(mt,$dimensions)
+                      & vector$(pointMiddleK,pointqK,mq)
+                      & vector$(pointMiddleK,pointT,mt)
+                      & norm$mq:?MQ
+                      & norm$mt:?MT
+                      &   ScalarTimesVector
+                        $ (divide$(sign$(inproduct$(mq,mt)),!MQ),mq,unitX)
+                      & perpendicular$(unitX,mt,unitY)
+                      & divide$(inproduct$(unitX,mt),!MT)*!MT:?X
+                      & sqrt$(subtract$(sqr$!MT,sqr$!X)):?Y
+                      & divide$($shortLine,!MQ):?K
+                      & !Y^$q+(!K*!X)^$q:?Rq
+                      & $G*!Rq^$qexp:?ERqqexp
+                      & !K^$q*!ERqqexp*!X^$q-1:?FX
+                      & !ERqqexp*!Y^$q-1:?FY
+                      & tbl$(accX,$dimensions)
+                      & tbl$(accY,$dimensions)
+                      & tbl$(PietAcc,$dimensions)
+                      & sqr$!done:?WW
+                      & ScalarTimesVector$(!WW*!FX,unitX,accX)
+                      & ScalarTimesVector$(!WW*!FY,unitY,accY)
+                      & vectorSum$(accX,accY,PietAcc)
+                      & divide$(!FX,!FY):?FX/FY
+                      & ( fabs$!FX/FY:>1000
+                        |   subtract$(!X,!Y*!FX/FY):?Xs
+                          & !MQ+!MQ:?PQ
+                          & (   -1*!Xs:>!MQ
+                              & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
+                              & -1*divide$(!Xs+!MQ,!PQ):?weightQ
+                            |   !Xs:>!MQ
+                              & divide$(-1*(!MQ+!Xs),!PQ):?weightQ
+                              & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
+                            |   -1*divide$(!Xs+!MQ,!PQ):?weightQ
+                              & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
                             )
+                          & 0:?d
+                          &   whl
+                            ' ( !d:<($dimensions)
+                              &   !(idx$(acceleration,!pt,!d))+!(idx$(PietAcc,!d))
+                                : ?acceleration
+                              &     !(idx$(acceleration,!pK,!d))
+                                  + !weightP*!(idx$(accY,!d))
+                                  + -1/2*!(idx$(accX,!d))
+                                : ?acceleration
+                              &   !(idx$(acceleration,!qK,!d))+!weightQ*!accY+-1/2*!accX
+                                : ?acceleration
+                              & 1+!d:?d
+                              )
+                        )
+                )
+              & ( addForceBetweenLines
+                =     (a.position)
+                      (a.acceleration)
+                      (a.planetTransits)
+                      (s.pK)
+                      (s.qK)
+                      (s.pM)
+                      (s.qM)
+                      (s.done)
+                  .   tbl$(pointpK,$dimensions)
+                    & tbl$(pointqK,$dimensions)
+                    & tbl$(pointpM,$dimensions)
+                    & tbl$(pointqM,$dimensions)
+                    & point$(position,!pK,pointpK)
+                    & point$(position,!qK,pointqK)
+                    & point$(position,!pM,pointpM)
+                    & point$(position,!qM,pointqM)
+                    & tbl$(pointMiddleM,$dimensions)
+                    & tbl$(pointMiddleK,$dimensions)
+                    & midpoint$(pointpM,pointqM,pointMiddleM)
+                    & midpoint$(pointpK,pointqK,pointMiddleK)
+                    &   PietHeinForce
+                      $ ( acceleration
+                        , planetTransits
+                        , !pK
+                        , !qK
+                        , pointqK
+                        , pointMiddleK
+                        , !pM
+                        , pointpM
+                        , !done
+                        )
+                    &   PietHeinForce
+                      $ ( acceleration
+                        , planetTransits
+                        , !pK
+                        , !qK
+                        , pointqK
+                        , pointMiddleK
+                        , !qM
+                        , pointqM
+                        , !done
+                        )
+                    &   PietHeinForce
+                      $ ( acceleration
+                        , planetTransits
+                        , !pM
+                        , !qM
+                        , pointqM
+                        , pointMiddleM
+                        , !pK
+                        , pointpK
+                        , !done
+                        )
+                    &   PietHeinForce
+                      $ ( acceleration
+                        , planetTransits
+                        , !pM
+                        , !qM
+                        , pointqM
+                        , pointMiddleM
+                        , !qK
+                        , pointqK
+                        , !done
+                        )
+                )
+              & init$(position,200)
+              & init$(velocity,1/1000)
+              & init$(acceleration,1/1000)
+              & extent$(links,0):?Nlinks
+              & tbl$(T,$iterations,$planets,$dimensions)
+              & rank$T:?DD
+              & 0:?b
+              &   whl
+                ' ( !b:<!DD
+                  & extent$(T,!b):?R
+                  & 1+!b:?b
+                  )
+              & -1:?n
+              &   whl
+                ' ( 1+!n:?n:<($iterations)
+                  & divide$(!n,$maxn):?done
+                  & $planets:?p
+                  &   whl
+                    ' ( !p:>0
+                      & -1+!p:?p
+                      & $dimensions:?d
+                      &   whl
+                        ' ( !d:>0
+                          & -1+!d:?d
+                          & 0:?(idx$(acceleration,!p,!d))
                           )
-                        & !R
-                    )
-                  & ( norm
-                    =   (a.vector)
-                      .   0:?len
-                        & $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            & !(idx$(vector,!d)):?df
-                            & !df*!df+!len:?len
-                            )
-                        & sqrt$!len
-                    )
-                  & ( point
-                    =   (a.position) (s.p) (a.pnt)
-                      .   $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            & !(idx$(position,!p,!d)):?(idx$(pnt,!d))
-                            )
-                        & 0
-                    )
-                  & ( midpoint
-                    =   (a.pointA) (a.pointZ) (a.pointM)
-                      .   $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            &   divide$(!(idx$(pointA,!d))+!(idx$(pointZ,!d)),2)
-                              : ?(idx$(pointM,!d))
-                            )
-                        & 1
-                    )
-                  & ( inproduct
-                    =   (a.vectorA) (a.vectorB)
-                      .   0:?inn
-                        & $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            & !(idx$(vectorA,!d))*!(idx$(vectorB,!d))+!inn:?inn
-                            )
-                        & !inn
-                    )
-                  & ( ScalarTimesVector
-                    =   (s.scalar) (a.vector) (a.product)
-                      .   $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            & !scalar*!(idx$(vector,!d)):?(idx$(product,!d))
-                            )
-                    )
-                  & ( Unit
-                    =   (a.vector)
-                      .   norm$vector^-1:?neL
-                        & $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            & !(idx$(vector,!d))*!neL:?vector
-                            )
-                    )
-                  & ( vectorSum
-                    =   (a.vectorA) (a.vectorB) (a.sumvector)
-                      .   $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            &   !(idx$(vectorA,!d))+!(idx$(vectorB,!d))
-                              : ?(idx$(sumvector,!d))
-                            )
-                    )
-                  & ( vector
-                    =   (a.pointA) (a.pointB) (a.vectorAB)
-                      .   $dimensions:?d
-                        &   whl
-                          ' ( !d:>0
-                            & -1+!d:?d
-                            &   subtract$(!(idx$(pointB,!d)),!(idx$(pointA,!d)))
-                              : ?(idx$(vectorAB,!d))
-                            )
-                    )
-                  & ( perpendicular
-                    =   (a.unitX) (a.mt) (a.unitY)
-                      .   tbl$(vectorProjection,$dimensions)
-                        & inproduct$(unitX,mt):?impr
-                        & ScalarTimesVector$(!impr,unitX,vectorProjection)
-                        & vector$(vectorProjection,mt,unitY)
-                        & Unit$unitY
-                    )
-                  & ( PietHeinForce
-                    =     (a.acceleration)
-                          (s.pK)
-                          (s.qK)
-                          (a.pointqK)
-                          (a.pointMiddleK)
-                          (s.pt)
-                          (a.pointT)
-                          (s.done)
-                      .   !pK:!pt
-                        | !qK:!pt
-                        |   tbl$(unitX,$dimensions)
-                          & tbl$(unitY,$dimensions)
-                          & tbl$(mq,$dimensions)
-                          & tbl$(mt,$dimensions)
-                          & vector$(pointMiddleK,pointqK,mq)
-                          & vector$(pointMiddleK,pointT,mt)
-                          & norm$mq:?MQ
-                          & norm$mt:?MT
-                          &   ScalarTimesVector
-                            $ (sign$(inproduct$(mq,mt))*!MQ^-1,mq,unitX)
-                          & perpendicular$(unitX,mt,unitY)
-                          & !MT^-1*inproduct$(unitX,mt):?cosa
-                          & !MT*!cosa:?X
-                          & sqrt$(sqr$!MT+-1*sqr$!X):?Y
-                          & !MQ^-1*$shortLine:?K
-                          & !K*!X:?KX
-                          & !Y^$q+!KX^$q:?Rq
-                          & $G*!Rq^$qexp:?ERqqexp
-                          & !K^$q*!ERqqexp*!X^$q-1:?FX
-                          & !ERqqexp*!Y^$q-1:?FY
-                          & tbl$(accX,$dimensions)
-                          & tbl$(accY,$dimensions)
-                          & tbl$(PietAcc,$dimensions)
-                          & sqr$!done:?WW
-                          & ScalarTimesVector$(!WW*!FX,unitX,accX)
-                          & ScalarTimesVector$(!WW*!FY,unitY,accY)
-                          & vectorSum$(accX,accY,PietAcc)
-                          & !FX*!FY^-1:?FX/FY
-                          & ( fabs$!FX/FY:>1000
-                            |   subtract$(!X,!Y*!FX/FY):?Xs
-                              & !MQ+!MQ:?PQ
-                              & (   -1*!Xs:>!MQ
-                                  & divide$(!Xs+-1*!MQ,!PQ):?weightP
-                                  & -1*divide$(!Xs+!MQ,!PQ):?weightQ
-                                |   !Xs:>!MQ
-                                  & divide$(-1*(!MQ+!Xs),!PQ):?weightQ
-                                  & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
-                                |   -1*divide$(!Xs+!MQ,!PQ):?weightQ
-                                  & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
-                                )
+                      )
+                  & $planets:?p
+                  &   whl
+                    ' ( !p:>0
+                      & -1+!p:?p
+                      & $planets:?q
+                      &   whl
+                        ' ( !q:>0
+                          & -1+!q:?q
+                          & ( !q:!p
+                            |   0:?(idx$(dist2,!p,!q))
                               & 0:?d
                               &   whl
                                 ' ( !d:<($dimensions)
-                                  &   !(idx$(acceleration,!pt,!d))+!(idx$(PietAcc,!d))
-                                    : ?acceleration
-                                  &     !(idx$(acceleration,!pK,!d))
-                                      + !weightP*!(idx$(accY,!d))
-                                      + -1/2*!(idx$(accX,!d))
-                                    : ?acceleration
-                                  &     !(idx$(acceleration,!qK,!d))
-                                      + !weightQ*!accY
-                                      + -1/2*!accX
+                                  &     subtract
+                                      $ (!(idx$(position,!p,!d)),!(idx$(position,!q,!d)))
+                                    : ?(idx$(Diff,!p,!q,!d))
+                                  & sqr$!Diff+!dist2:?dist2
+                                  & 1+!d:?d
+                                  )
+                            )
+                          )
+                      )
+                  & $planets:?p
+                  &   whl
+                    ' ( !p:>0
+                      & -1+!p:?p
+                      & (   !(idx$(degrees,!p,1)):1
+                          & $planets:?Qp
+                        | 3+!degrees:?Qp
+                        )
+                      & $planets:?q
+                      &   whl
+                        ' ( !q:>0
+                          & -1+!q:?q
+                          & ( !q:!p
+                            | !(idx$(dist2,!p,!q)):0
+                            |   (   !(idx$(degrees,!q,1)):1
+                                  & $planets:?Qq
+                                | 3+!degrees:?Qq
+                                )
+                              & sqrt$!dist2:?dist
+                              & !dist^-1:?tsid1
+                              & divide$($M/planets2,!dist2):?coulomb
+                              & 0:?d
+                              &   whl
+                                ' ( !d:<($dimensions)
+                                  &       !(idx$(Diff,!p,!q,!d))
+                                        * !tsid1
+                                        * !coulomb
+                                        * (!Qp*!Qq+!Qp+!Qq)
+                                      + !(idx$(acceleration,!p,!d))
                                     : ?acceleration
                                   & 1+!d:?d
                                   )
                             )
-                    )
-                  & ( addForceBetweenLines
-                    =     (a.position)
-                          (a.acceleration)
-                          (s.pK)
-                          (s.qK)
-                          (s.pM)
-                          (s.qM)
-                          (s.done)
-                      .   tbl$(pointpK,$dimensions)
-                        & tbl$(pointqK,$dimensions)
-                        & tbl$(pointpM,$dimensions)
-                        & tbl$(pointqM,$dimensions)
-                        & point$(position,!pK,pointpK)
-                        & point$(position,!qK,pointqK)
-                        & point$(position,!pM,pointpM)
-                        & point$(position,!qM,pointqM)
-                        & tbl$(pointMiddleM,$dimensions)
-                        & tbl$(pointMiddleK,$dimensions)
-                        & midpoint$(pointpM,pointqM,pointMiddleM)
-                        & midpoint$(pointpK,pointqK,pointMiddleK)
-                        &   PietHeinForce
-                          $ (acceleration,!pK,!qK,pointqK,pointMiddleK,!pM,pointpM,!done)
-                        &   PietHeinForce
-                          $ (acceleration,!pK,!qK,pointqK,pointMiddleK,!qM,pointqM,!done)
-                        &   PietHeinForce
-                          $ (acceleration,!pM,!qM,pointqM,pointMiddleM,!pK,pointpK,!done)
-                        &   PietHeinForce
-                          $ (acceleration,!pM,!qM,pointqM,pointMiddleM,!qK,pointqK,!done)
-                    )
-                  & init$(position,200)
-                  & init$(velocity,1/1000)
-                  & init$(acceleration,1/1000)
-                  & extent$(links,0):?Nlinks
-                  & tbl$(T,$iterations,$planets,$dimensions)
-                  & rank$T:?DD
-                  & 0:?b
-                  &   whl
-                    ' ( !b:<!DD
-                      & extent$(T,!b):?R
-                      & 1+!b:?b
+                          )
                       )
-                  & -1:?n
+                  & !Nlinks:?K
                   &   whl
-                    ' ( 1+!n:?n:<($iterations)
-                      & divide$(!n,$maxn):?done
-                      & $planets:?p
-                      &   whl
-                        ' ( !p:>0
-                          & -1+!p:?p
-                          & $dimensions:?d
+                    ' ( !K:>0
+                      & -1+!K:?K
+                      & !(idx$(links,!K,0)):?p
+                      & !(idx$(links,!K,1)):?q
+                      & ( !q:!p
+                        | !(idx$(dist2,!p,!q)):0
+                        |   sqrt$!dist2:?dist
+                          & !dist^-1:?tsid1
+                          & "divide$($F*!dist,sqrt$(fabs$(subtract$(!p,!q))))"
+                          & $F*!dist:?elastiek
+                          & 0:?d
                           &   whl
-                            ' ( !d:>0
-                              & -1+!d:?d
-                              & 0:?(idx$(acceleration,!p,!d))
+                            ' ( !d:<($dimensions)
+                              & !(idx$(Diff,!p,!q,!d))*!tsid1*!elastiek:?delta
+                              & !delta+!(idx$(acceleration,!p,!d)):?acceleration
+                              &   -1*!delta+!(idx$(acceleration,!q,!d))
+                                : ?acceleration
+                              & 1+!d:?d
                               )
-                          )
-                      & $planets:?p
-                      &   whl
-                        ' ( !p:>0
-                          & -1+!p:?p
-                          & $planets:?q
-                          &   whl
-                            ' ( !q:>0
-                              & -1+!q:?q
-                              & ( !q:!p
-                                |   0:?(idx$(dist2,!p,!q))
-                                  & 0:?d
-                                  &   whl
-                                    ' ( !d:<($dimensions)
-                                      &     subtract
-                                          $ ( !(idx$(position,!p,!d))
-                                            , !(idx$(position,!q,!d))
-                                            )
-                                        : ?(idx$(Diff,!p,!q,!d))
-                                      & sqr$!Diff+!dist2:?dist2
-                                      & 1+!d:?d
-                                      )
-                                )
-                              )
-                          )
-                      & $planets:?p
-                      &   whl
-                        ' ( !p:>0
-                          & -1+!p:?p
-                          & (   !(idx$(degrees,!p,1)):1
-                              & $planets:?Qp
-                            | 3+!degrees:?Qp
-                            )
-                          & $planets:?q
-                          &   whl
-                            ' ( !q:>0
-                              & -1+!q:?q
-                              & ( !q:!p
-                                | !(idx$(dist2,!p,!q)):0
-                                |   (   !(idx$(degrees,!q,1)):1
-                                      & $planets:?Qq
-                                    | 3+!degrees:?Qq
-                                    )
-                                  & sqrt$!dist2:?dist
-                                  & !dist^-1:?tsid1
-                                  & divide$($M/planets2,!dist2):?coulomb
-                                  & 0:?d
-                                  &   whl
-                                    ' ( !d:<($dimensions)
-                                      &       !(idx$(Diff,!p,!q,!d))
-                                            * !tsid1
-                                            * !coulomb
-                                            * (!Qp*!Qq+!Qp+!Qq)
-                                          + !(idx$(acceleration,!p,!d))
-                                        : ?acceleration
-                                      & 1+!d:?d
-                                      )
-                                )
-                              )
-                          )
+                        )
+                      )
+                  & ( !done:<($donethreshhold)
+                    |   0:?crosses
+                      & initMinDistances$pointlinks
                       & !Nlinks:?K
                       &   whl
                         ' ( !K:>0
                           & -1+!K:?K
-                          & !(idx$(links,!K,0)):?p
-                          & !(idx$(links,!K,1)):?q
-                          & ( !q:!p
-                            | !(idx$(dist2,!p,!q)):0
-                            |   sqrt$!dist2:?dist
-                              & !dist^-1:?tsid1
-                              &   divide$($F*!dist,sqr$(subtract$(!p,!q)))
-                                : ?elastiek
-                              & 0:?d
+                          & !(idx$(links,!K,0)):?pK
+                          & !(idx$(links,!K,1)):?qK
+                          & ( !qK:!pK
+                            |   !K:?M
                               &   whl
-                                ' ( !d:<($dimensions)
-                                  &   !(idx$(Diff,!p,!q,!d))*!tsid1*!elastiek
-                                    : ?delta
-                                  &   !delta+!(idx$(acceleration,!p,!d))
-                                    : ?acceleration
-                                  &   -1*!delta+!(idx$(acceleration,!q,!d))
-                                    : ?acceleration
-                                  & 1+!d:?d
+                                ' ( !M:>0
+                                  & -1+!M:?M
+                                  & !(idx$(links,!M,0)):?pM
+                                  & !(idx$(links,!M,1)):?qM
+                                  & idx$(linkrelations,!K,!M)
+                                  & (   !linkrelations:<-1
+                                      & ( !pK:!pM
+                                        | !qK:!pM
+                                        | !pK:!qM
+                                        | !qK:!qM
+                                        |       cross
+                                              $ ( !(idx$(position,!pK,0))
+                                                , !(idx$(position,!pK,1))
+                                                , !(idx$(position,!qK,0))
+                                                , !(idx$(position,!qK,1))
+                                                , !(idx$(position,!pM,0))
+                                                , !(idx$(position,!pM,1))
+                                                , !(idx$(position,!qM,0))
+                                                , !(idx$(position,!qM,1))
+                                                , xy
+                                                )
+                                            : ?CROSS
+                                          & (   !CROSS:1
+                                              &   updateLinkRelation
+                                                $ ( !K
+                                                  , !M
+                                                  , xy
+                                                  , linkrelations
+                                                  , links
+                                                  , pointlinks
+                                                  , position
+                                                  )
+                                              &   updateLinkRelation
+                                                $ ( !M
+                                                  , !K
+                                                  , xy
+                                                  , linkrelations
+                                                  , links
+                                                  , pointlinks
+                                                  , position
+                                                  )
+                                              & 1+!crosses:?crosses
+                                            |     -3
+                                                : ?(idx$(linkrelations,!K,!M))
+                                              &   -3
+                                                : ?(idx$(linkrelations,!M,!K))
+                                            )
+                                        | 
+                                        )
+                                    | 
+                                    )
                                   )
                             )
                           )
-                      & ( !done:<8/10
-                        |   0:?crosses
-                          & !Nlinks:?K
-                          &   whl
-                            ' ( !K:>0
-                              & -1+!K:?K
-                              & !(idx$(links,!K,0)):?pK
-                              & !(idx$(links,!K,1)):?qK
-                              & ( !qK:!pK
-                                |   -1+!K:?M
-                                  &   whl
-                                    ' ( !M:>0
-                                      & -1+!M:?M
-                                      & !(idx$(links,!M,0)):?pM
+                      & ( addCrossingIfOnlyConnected
+                        =   (a.pointlinks) (a.linkrelations)
+                          .   $planets:?planet
+                            &   whl
+                              ' ( !planet:>0
+                                & -1+!planet:?planet
+                                & $nlinks:?link
+                                &   whl
+                                  ' ( !link:>0
+                                    & -1+!link:?link
+                                    & (     !(idx$(pointlinks,!planet,!link,0))
+                                          : 2
+                                        &   !(idx$(pointlinks,!planet,!link,1))
+                                          : ?crosslink
+                                        & $nlinks:?link2
+                                        &   whl
+                                          ' ( !link2:>0
+                                            & -1+!link2:?link2
+                                            & (     !( idx
+                                                     $ (pointlinks,!planet,!link2,0)
+                                                     )
+                                                  : 1
+                                                &   !( idx
+                                                     $ (linkrelations,!crosslink,!link2)
+                                                     )
+                                                  : ~<0
+                                                &   !crosslink
+                                                  : ?( idx
+                                                     $ (pointlinks,!planet,!link2,1)
+                                                     )
+                                                & 
+                                              | 
+                                              )
+                                            )
+                                      | 
+                                      )
+                                    )
+                                )
+                        )
+                      & ( needChangeSide
+                        =     (a.pointlinks)
+                              (a.linkrelations)
+                              (a.planetTransits)
+                              (a.links)
+                          .   addCrossingIfOnlyConnected$(pointlinks,linkrelations)
+                            & tbl$(linkcount1,$nlinks)
+                            & tbl$(linkcount2,$nlinks)
+                            & $planets:?planet
+                            &   whl
+                              ' ( !planet:>0
+                                & -1+!planet:?planet
+                                & 0:?totcount
+                                & $nlinks:?link
+                                &   whl
+                                  ' ( !link:>0
+                                    & -1+!link:?link
+                                    & 0:?(idx$(linkcount1,!link))
+                                    & 0:?(idx$(linkcount2,!link))
+                                    )
+                                & $nlinks:?link
+                                &   whl
+                                  ' ( !link:>0
+                                    & -1+!link:?link
+                                    & idx$(pointlinks,!planet,!link,0)
+                                    & (   !pointlinks:2
+                                        & 1+!totcount:?totcount
+                                        &     1
+                                            + !( idx
+                                               $ ( linkcount2
+                                                 , !(idx$(pointlinks,!planet,!link,1))
+                                                 )
+                                               )
+                                          : ?linkcount2
+                                      |   !pointlinks:1
+                                        & 1+!totcount:?totcount
+                                        & (     !(idx$(pointlinks,!planet,!link,1))
+                                              : ~<0
+                                            &   1+!(idx$(linkcount1,!pointlinks))
+                                              : ?linkcount1
+                                          | 
+                                          )
+                                      | 
+                                      )
+                                    )
+                                & $nlinks:?link
+                                &   whl
+                                  ' ( !link:>0
+                                    & -1+!link:?link
+                                    & !(idx$(linkcount2,!link)):?count2
+                                    & (   !count2:>0
+                                        & !(idx$(linkcount1,!link)):?count1
+                                        & (   !count1+!count2:!totcount
+                                            & 1:?linkcount2
+                                          |     divide
+                                              $ ( subtract$(!count2,!count1)
+                                                , subtract$(!totcount,!count1)
+                                                )
+                                            : ?linkcount2
+                                          )
+                                        & ( !linkcount2:>1/2
+                                          | 0:?linkcount2
+                                          )
+                                      | 
+                                      )
+                                    )
+                                & 0:?maxcross
+                                & -1:?maxcrossed
+                                & $nlinks:?link
+                                &   whl
+                                  ' ( !link:>0
+                                    & -1+!link:?link
+                                    & idx$(linkcount2,!link)
+                                    & (   !linkcount2:>!maxcross
+                                        & !linkcount2:?maxcross
+                                        & !link:?maxcrossed
+                                      |   !linkcount2:!maxcross
+                                        & -1:?maxcrossed
+                                      | 
+                                      )
+                                    )
+                                & (   !maxcrossed:-1
+                                    & -1:?(idx$(planetTransits,!planet,0))
+                                    & -1:?(idx$(planetTransits,!planet,1))
+                                  |     !(idx$(links,!maxcrossed,0))
+                                      : ?(idx$(planetTransits,!planet,0))
+                                    &   !(idx$(links,!maxcrossed,1))
+                                      : ?(idx$(planetTransits,!planet,1))
+                                  )
+                                )
+                        )
+                      & needChangeSide$(pointlinks,linkrelations,planetTransits,links)
+                      & !Nlinks:?K
+                      &   whl
+                        ' ( !K:>0
+                          & -1+!K:?K
+                          & !(idx$(links,!K,0)):?pK
+                          & !(idx$(links,!K,1)):?qK
+                          & ( !qK:!pK
+                            |   -1+!K:?M
+                              &   whl
+                                ' ( !M:>0
+                                  & -1+!M:?M
+                                  & (   !(idx$(links,!M,0)):?pM
                                       & ( !pK:!pM
                                         | !qK:!pM
                                         |   !(idx$(links,!M,1)):?qM
-                                          & !qM:!pM
-                                        | !pK:!qM
-                                        | !qK:!qM
-                                        |   (   !n:$maxn
-                                              & !(idx$(position,!pK,0)):?x0
-                                              & !(idx$(position,!pK,1)):?y0
-                                              & !(idx$(position,!qK,0)):?x1
-                                              & !(idx$(position,!qK,1)):?y1
-                                              & !(idx$(position,!pM,0)):?x2
-                                              & !(idx$(position,!pM,1)):?y2
-                                              & !(idx$(position,!qM,0)):?x3
-                                              & !(idx$(position,!qM,1)):?y3
-                                              &     cross
-                                                  $ ( !x0
-                                                    , !y0
-                                                    , !x1
-                                                    , !y1
-                                                    , !x2
-                                                    , !y2
-                                                    , !x3
-                                                    , !y3
-                                                    )
-                                                : ?CROSS
-                                              & !CROSS+!crosses:?crosses
-                                            | 
+                                          & ( !pK:!qM
+                                            | !qK:!qM
+                                            |   addForceBetweenLines
+                                              $ ( position
+                                                , acceleration
+                                                , planetTransits
+                                                , !pK
+                                                , !qK
+                                                , !pM
+                                                , !qM
+                                                , !done
+                                                )
                                             )
-                                          &   addForceBetweenLines
-                                            $ ( position
-                                              , acceleration
-                                              , !pK
-                                              , !qK
-                                              , !pM
-                                              , !qM
-                                              , !done
-                                              )
                                         )
-                                      )
-                                )
-                              )
-                        )
-                      & 0:?p
-                      &   whl
-                        ' ( !p:<($planets)
-                          & 1+!J:?J
-                          & 0:?d
-                          &   whl
-                            ' ( !d:<($dimensions)
-                              & !(idx$(position,!p,!d)):?(idx$(T,!n,!p,!d))
-                              &     !(idx$(acceleration,!p,!d))
-                                  + $W*!(idx$(velocity,!p,!d))
-                                : ?velocity
-                              &   divide$(-25/24+!done,-3)*!velocity+!position
-                                : ?position
-                              & 1+!d:?d
-                              )
-                          & 1+!p:?p
+                                    | 
+                                    )
+                                  )
+                            )
                           )
+                    )
+                  & 0:?p
+                  &   whl
+                    ' ( !p:<($planets)
+                      & 1+!J:?J
+                      & 0:?d
+                      &   whl
+                        ' ( !d:<($dimensions)
+                          & !(idx$(position,!p,!d)):?(idx$(T,!n,!p,!d))
+                          &   !(idx$(acceleration,!p,!d))+$W*!(idx$(velocity,!p,!d))
+                            : ?velocity
+                          & divide$(-25/24+!done,-3)*!velocity+!position:?position
+                          & 1+!d:?d
+                          )
+                      & 1+!p:?p
                       )
-                  & !n
-                )
-            : ?code
-          & "End of UFP code."
+                  )
+              & !n
+            )
+        : ?code
+      & "End of UFP code."
           & new$(UFP,!code):?calc
           &   (   (calc..go)$((,!links) (,!degrees))
                 & (calc..export)$(N,T):?pointsT
                 & (calc..export)$(Q,dist2):?dist2array
-                & lst$(dist2array,path$dist2array,NEW,WYD,RAW,BIN)
                 & 0:?maxdist2
                 & (   !dist2array
                     : ( 
@@ -13978,7 +14321,8 @@ function main2(evt) {
                   changeloglink$()
                   " "
                   ( a
-                  .   (href.str$("/texton/" !wheretogo "?" !parameters)) (tabindex.0)
+                  .     (href.str$("/texton/" !wheretogo "?" !parameters))
+                        (tabindex.0)
                     , localized$(UILangNames$(dezilacol$!lANgs))
                   )
             )
