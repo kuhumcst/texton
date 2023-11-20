@@ -2282,7 +2282,7 @@ toolsProg=
           & candidateList$(!reorderedworkflowlist.!topologicalOrderedTools)
       )
       ( makeWorkflowVisualisation
-      =   n o struct translateOneToHumanLanguage
+      =   n o struct translateOneToHumanLanguage getNodesAndLinks
         .   ( translateOneToHumanLanguage
             =   description seqno struct o describeLong
               .   ( describeLong
@@ -2404,8 +2404,112 @@ toolsProg=
                       )
                   )
             )
+          & ( getNodesAndLinks
+            =   titlelinks planettitles extractEdges
+              .   ( extractEdges
+                  =   volgnr trav collect ou
+                    .   48:?volgnr
+                      & ( trav
+                        =   A B ou in
+                          .     !arg:%?A %?B
+                              & trav$!A:?A
+                              & trav$!B !A
+                            |   !arg:(%?A,%?B)
+                              & (trav$!A,trav$!B)
+                            |   !arg:(.?A.?.?ou)
+                              & (.!A:~∵|48.!ou)
+                            |   !arg:(?A.?B.?in.?ou)
+                              & 1+!volgnr:?volgnr
+                              & !B:(|!volgnr)
+                              & (!A.!volgnr.!ou)
+                        )
+                      & !arg:? (?.?.?.?ou)
+                      & trav$(!arg (∴..!ou.)):?arg
+                      & ( collect
+                        =   A B
+                          .   !arg:%?A %?B&collect$!A
+                            |   !arg:(%?A,%?B)
+                              & collect$!A collect$!B
+                            | !arg:(?.?A.?B)&(!A.!B)
+                        )
+                      & ( trav
+                        =   A B X ou v
+                          .     !arg:%?A %?B
+                              & !A:(?X.?v.?ou)
+                              &     map
+                                  $ ( ( 
+                                      =   
+                                        .   !arg:(?arg.?ou)
+                                          & (!X,!arg !v.!ou)
+                                      )
+                                    . collect$!B
+                                    )
+                                  trav$!B
+                            | !arg:(%?A,%?B)&trav$!A trav$!B
+                            | 
+                        )
+                      & "trav has a side effect: it increments volgnr"
+                      & trav$!arg:?arg
+                      &   map
+                        $ ( ( 
+                            =   n a b
+                              .   !arg:(?n,#%?a #%?b.?ou)
+                                & (!n,!a+-48 !b+-48.!ou)
+                            )
+                          . !arg
+                          )
+                  )
+                & readTable$tooladm
+                & 0:?planettitles
+                & extractEdges$!arg:?nameedges
+                &     map
+                    $ ( ( 
+                        =   a b desc
+                          .   !arg:(?toolID,#%?fr #%?to.?desc)
+                            & ( !planettitles:?+(!to.?)+?
+                              |   (   !fr:0
+                                    &   (0.∵.Input)+!planettitles
+                                      : ?planettitles
+                                  | 
+                                  )
+                                &     ( !to
+                                      .       !tooladm
+                                            :   ?
+                                              + ( ? (ToolID.!toolID) ?
+                                                : ? (Title.?Title) ?
+                                                )
+                                              + ?
+                                          & (!to.!Title)
+                                        | (∴.Output)
+                                      )
+                                    + !planettitles
+                                  : ?planettitles
+                              )
+                            & (str$(fullinoutdesc$(!desc.\n)),!fr !to)
+                        )
+                      . !nameedges
+                      )
+                  : ?titlelinks
+                &     mop
+                    $ ( ( 
+                        =   
+                          .   !arg:#*((?.?.?):?arg)
+                            & !arg
+                        )
+                      . !planettitles
+                      . (=+)
+                      )
+                  : ?planettitles
+                & lst$(titlelinks,path$titlelinks,NEW RAW)
+                & lst$(planettitles,path$planettitles,NEW RAW)
+                & lst$(arg,path$arg,NEW RAW)
+                & lst$(nameedges,path$nameedges,NEW RAW)
+                & (!planettitles.!titlelinks)
+            )
           & SpotInput$!arg:?arg
-          & (translateOneToHumanLanguage$!arg (br.,).workflowSVG$!arg)
+          & ( translateOneToHumanLanguage$!arg (br.,)
+            . workflowSVG$(getNodesAndLinks$!arg)
+            )
       )
       ( makePasswordFormField
       =   text parm desc size required
@@ -11887,676 +11991,903 @@ function main2(evt) {
           & saveTable$jobs
       )
       ( workflowSVG
-      =     L M SVG a b calc code
+      =     M SVG a b calc code
           , dimensions dimpla iterations extractEdges
-          , pla planets pointsT times x y z nameedges
-          , MM Title col degreeSum desc fr nn positions svgX to
-          , toolID x1 x2 xmax xmin y1 y2 ymax ymin
-        .   ( extractEdges
-            =   volgnr trav collect ou
-              .   48:?volgnr
-                & ( trav
-                  =   A B ou in
-                    .     !arg:%?A %?B
-                        & trav$!A:?A
-                        & trav$!B !A
-                      | !arg:(%?A,%?B)&(trav$!A,trav$!B)
-                      |   !arg:(.?A.?.?ou)
-                        & (.!A:~∵|48.!ou)
-                      |   !arg:(?A.?B.?in.?ou)
-                        & 1+!volgnr:?volgnr
-                        & !B:(|!volgnr)
-                        & (!A.!volgnr.!ou)
-                  )
-                & !arg:? (?.?.?.?ou)
-                & trav$(!arg (∴..!ou.)):?arg
-                & ( collect
-                  =   A B
-                    .   !arg:%?A %?B&collect$!A
-                      | !arg:(%?A,%?B)&collect$!A collect$!B
-                      | !arg:(?.?A.?B)&(!A.!B)
-                  )
-                & ( trav
-                  =   A B X ou v
-                    .     !arg:%?A %?B
-                        & !A:(?X.?v.?ou)
-                        &     map
-                            $ ( ( 
-                                =   
-                                  .   !arg:(?arg.?ou)
-                                    & (!X,!arg !v.!ou)
-                                )
-                              . collect$!B
-                              )
-                            trav$!B
-                      | !arg:(%?A,%?B)&trav$!A trav$!B
-                      | 
-                  )
-                & "trav has a side effect: it increments volgnr"
-                & trav$!arg:?arg
-                &   map
-                  $ ( ( 
-                      =   n a b
-                        .   !arg:(?n,#%?a #%?b.?ou)
-                          & (!n,!a+-48 !b+-48.!ou)
-                      )
-                    . !arg
-                    )
+          , planets pointsTTT x y z nameedges
+          , MM col degreeSum desc fr nn to
+          , xx1 xx2 xmax xmin yy1 yy2 ymax ymin
+          , some breuk F M/planets2 W dampeningDoneDhreshold
+          , degrees dimensions epsilon freezing hasCrossing
+          , iterations maxn nlinks noCrossing planets q
+          , evry
+          , NN lineno linkcolour linkcolours ll
+          , planetcolour planetcolours planetstates plnt
+          , strngth xx xxs xxyy yys
+          , G MASS chargeLowerBound circles export extra lines links
+          , linkstate linkstates margin planetstate pt
+          , q-1 qexp radius shortLine sprintweak xwidth ywidth yy
+          , ( UFP
+            .   CROSS
+                D
+                DD
+                Diff
+                F
+                H01
+                H23
+                K
+                LineAcc
+                M
+                M/planets2
+                N
+                Nlinks
+                product
+                Qp
+                Qq
+                R
+                ScalarTimesVector
+                StringEnergy
+                W
+                X
+                Y
+                acceleration
+                addForceBetweenLines
+                b
+                bestcrossingLink
+                block
+                btween
+                changed
+                closestCrossingLink
+                coulomb
+                cross
+                crossedRay
+                crosses
+                crossingLink
+                cumNStringEnergy
+                cumPStringEnergy
+                d
+                dampeningDoneDhreshold
+                degrees
+                delta
+                diagonal
+                dimensions
+                dist1
+                dist2
+                divide
+                done
+                dx
+                dy
+                elastiek
+                epsilon
+                extent
+                fabs
+                factor
+                fp
+                fq
+                fractionGiven
+                fractionKept
+                fractionTaken
+                freezing
+                gradient
+                hasCrossing
+                hypot
+                idx
+                increase
+                init
+                initLinkRelations
+                initMinDistances
+                initPointLinks
+                initstrengths
+                inn
+                inproduct
+                iterations
+                link
+                link2
+                maxgain
+                maxn
+                mobility
+                n
+                needChangeSide
+                needed
+                nlinks
+                noCrossing
+                p
+                pA
+                pB
+                pK
+                pM
+                perhapsCrossing
+                planet
+                planets
+                point
+                pointlinks
+                position
+                q
+                qA
+                qB
+                qK
+                qM
+                rand
+                ray
+                snap
+                sqr
+                sqrt
+                st2
+                st8
+                strength
+                subtract
+                unchanged
+                uncrossedRay
+                unrelatedLink
+                updateLinkRelation
+                updatePointLink
+                vector
+                vectorDifference
+                velocity
+                x
+                xtn
+                y
             )
-          & readTable$tooladm
-          & 0:?planets
-          &     map
-              $ ( ( 
-                  =   a b
-                    .   !arg:(?,#%?fr #%?to.?)
-                      & (!to:>!planets:?planets|)
-                      & (,!fr !to)
-                  )
-                . extractEdges$!arg:?nameedges
-                )
-            : ?links
-          & 1+!planets:?planets
-            & lst$(planets,path$links,NEW)
-            & lst$(links,path$links,APP)
-
-      & 2:?dimensions
-      & 2000:?iterations
-      & -1+!iterations:?maxn
-      & "Repelling coulomb force constant."
-      & 300*!planets^-2:?M/planets2
-      & "Coordinate origin."
-      & 600:?svgX:?svgY
-      & "Spring constant"
-      & -1/1500:?F
-      & "W friction"
-      & 299/300:?W
-      & "shortLine: repulsion between line and a vertex is as from a superelipse with lenght/width=linelength/shortLine=K."
-      & 8:?shortLine
-      & "q: an exponent. The higher, the faster the repelling force from en edge diminishes with distance."
-      & 8:?q
-      & "q = 2, 4, 6, ...  Even, so we don't need to compute absolute values. If 2, normal Coulomb repulsion."
-      & -1*(1+!q^-1):?qexp
-      & !q+-1:?q-1
-      & "G: Constant factor of line-repelling force. Higher value implies stronger force.
+        .   !arg:(?planettitles.?titlelinks)
+          & !planettitles:? [?planets
+          & ( breuk
+            =   a b
+              .   @(!arg:?a "/" ?b)&str$(!a "_" !b)
+                | !arg
+            )
+          & 2:?dimensions
+          & 2200:?iterations
+          & 7/10:?freezing
+          & -1+!iterations:?maxn
+          & "Repelling coulomb force constant."
+          & 5000:?MASS
+          & !MASS*!planets^-2:?M/planets2
+          & 1/50:?chargeLowerBound
+          & "Coordinate origin."
+          & "Spring constant"
+          & 1500:?sprintweak
+          & -1*!sprintweak^-1:?F
+          & "W non-friction, mobility"
+          & 29/30:?W
+          & "shortLine: repulsion between line and a vertex is as from a superelipse with lenght/width=linelength/shortLine=K."
+          & 8:?shortLine
+          & "q: an exponent. The higher, the faster the repelling force from en edge diminishes with distance."
+          & 8:?q
+          & "q = 2, 4, 6, ...  Even, so we don't need to compute absolute values. If 2, normal Coulomb repulsion."
+          & -1*(1+!q^-1):?qexp
+          & -1*!q^-1:?qexp
+          & !q+-1:?q-1
+          & "G: Constant factor of line-repelling force. Higher value implies stronger force.
              Unit of acceleration due to 'PietHein' repulsion between vertex and edge.
              (The Danish Piet Hein invented the superellipse table. (The Dutch one 'won de zilvervloot'.))"
-      & 40:?G
-      & 5/10:?donethreshhold
-      & !dimensions*!planets:?dimpla
-      & !links:? [?nlinks
-      & 0:?degreeSum
-      &   map
-        $ ( ( 
-            =   
-              .   !arg:(,%?a %?b)
-                & (.!a)+(.!b)+!degreeSum:?degreeSum
-            )
-          . !links
-          )
-      &     mop
-          $ ( ( 
-              =   n vertex
-                . !arg:?n*(.?vertex)&(,!vertex !n)
+          & 25000:?G
+          & !M/planets2:?G
+          & 3/10:?dampeningDoneDhreshold
+          & 5:?epsilon
+          & "As in 1/(epsilon+distance), to get rid of runaway."
+          & !dimensions*!planets:?dimpla
+          & !titlelinks:? [?nlinks
+          & 0:?degreeSum
+          &   map
+            $ ( ( 
+                =   
+                  .   !arg:(?,%?a %?b)
+                    & (.!a)+(.!b)+!degreeSum:?degreeSum
+                )
+              . !titlelinks
               )
-            . !degreeSum
-            . (=+)
-            )
-        : ?degrees
-      & "The code below will be evaluated by a UFP object (UnIfancyfied Floating Point)"
-      &     
-          ' ( (a.links,$nlinks,2) (a.degrees,$planets,2)
-            .   tbl$(Diff,$planets,$planets,$dimensions)
-              & tbl$(dist2,$planets,$planets)
-              & tbl$(position,$planets,$dimensions)
-              & tbl$(velocity,$planets,$dimensions)
-              & tbl$(acceleration,$planets,$dimensions)
-              & tbl$(xy,2)
-              & tbl$(planetTransits,$planets,2)
-              & "pointlinks[planet,link,0]
-                       If planet is enpoint of crossed link:   2
-                       If planet is enpoint of uncrossed link: 1
-                       If planet is not endpoint of link:      0
-                     pointlinks[planet,link,1]: number of closest crossing link, or -1
-                     pointlinks[planet,link,2]: distance from vertex to closest crossing link, initially a large number
-                     "
-              & tbl$(pointlinks,$planets,$nlinks,3)
-              & ( initPointLinks
-                =   (a.pointlinks) (a.links)
-                  .   $planets:?planet
-                    &   whl
-                      ' ( !planet:>0
-                        & -1+!planet:?planet
-                        & $nlinks:?link
-                        &   whl
-                          ' ( !link:>0
-                            & -1+!link:?link
-                            & 0:?(idx$(pointlinks,!planet,!link,0))
-                            )
-                        )
-                    & $nlinks:?link
-                    &   whl
-                      ' ( !link:>0
-                        & -1+!link:?link
-                        & 1:?(idx$(pointlinks,!(idx$(links,!link,0)),!link,0))
-                        & 1:?(idx$(pointlinks,!(idx$(links,!link,1)),!link,0))
-                        )
-                    & 1
+          &     mop
+              $ ( ( 
+                  =   n vertex
+                    . !arg:?n*(.?vertex)&(,!vertex !n)
+                  )
+                . !degreeSum
+                . (=+)
                 )
-              & ( initMinDistances
-                =   (a.pointlinks)
-                  .   $planets:?planet
-                    &   whl
-                      ' ( !planet:>0
-                        & -1+!planet:?planet
-                        & $nlinks:?link
-                        &   whl
-                          ' ( !link:>0
-                            & -1+!link:?link
-                            & ( !(idx$(pointlinks,!planet,!link,0)):0
-                              |   1:?pointlinks
-                                & -1:?(idx$(pointlinks,!planet,!link,1))
-                                &   "0x1.fffffffffffffp+1023"
-                                  : ?(idx$(pointlinks,!planet,!link,2))
-                              )
-                            )
-                        )
-                    & 1
-                )
-              & initPointLinks$(pointlinks,links)
-              & "linkrelations[k,l] 
-                        if perhaps crossing of line segments: -4; (needs to be computed)
-                        if no crossing of line segments:      -3; (has been computed)
-                        if crossing of line segments:         -2; (has been computed)
-                        if no crossing of line segments:      -1; (diagonal) 
+            : ?degrees
+          & "
+         pointlinks[0] values:
+        "
+          & -77:?closestCrossingLink
+          & 0:?unrelatedLink
+          & 1:?uncrossedRay
+          & 2:?crossedRay
+          & "
+         linkrelation values:
+        "
+          & -4:?perhapsCrossing
+          & -3:?noCrossing
+          & -2:?hasCrossing
+          & -1:?diagonal
+          & "The code below will be evaluated by a UFP object (UnIfancyfied Floating Point)"
+          &     
+              ' ( (a.links,$nlinks,2) (a.degrees,$planets,2)
+                .   tbl$(Diff,$planets,$planets,$dimensions)
+                  & tbl$(dist2,$planets,$planets)
+                  & "dist1 is just sqrt of dist2"
+                  & tbl$(dist1,$planets,$planets)
+                  & tbl$(position,$planets,$dimensions)
+                  & tbl$(velocity,$planets,$dimensions)
+                  & tbl$(acceleration,$planets,$dimensions)
+                  & tbl$(xy,2)
+                  & tbl$(strength,$nlinks)
+                  & tbl$(linkstate,$nlinks,$iterations)
+                  & tbl$(planetstate,$planets,$iterations)
+                  & "linkrelation[k,l] 
+                        if perhaps crossing of line segments: -4; (needs to be computed) $perhapsCrossing
+                        if no crossing of line segments:      -3; (has been computed)    $noCrossing
+                        if crossing of line segments:         -2; (has been computed)    $hasCrossing
+                        if no crossing of line segments:      -1; (diagonal)             $diagonal
                         else:                             number of common vertex
                      "
-              & tbl$(linkrelations,$nlinks,$nlinks)
-              & ( initLinkRelations
-                =   (a.linkrelations) (a.links)
-                  .   $nlinks:?K
-                    &   whl
-                      ' ( !K:>0
-                        & -1+!K:?K
-                        & $nlinks:?M
+                  & tbl$(linkrelation,$nlinks,$nlinks)
+                  & "pointlinks[planet,link,0]
+                       If link is the closest crossing link of a link2 emanating from planet:   3 $closestCrossingLink
+                       If planet is enpoint of crossed link:                                    2 $crossedRay
+                       If planet is enpoint of uncrossed link:                                  1 $uncrossedRay
+                       If planet is not endpoint of link:                                       0 $unrelatedLink
+                 pointlinks[planet,link,1]: number of closest crossing link, or -1 (if pointlinks[planet,link,0] != $closestCrossingLink)
+                 pointlinks[planet,link,1]: gain if planet moves over the link     (if pointlinks[planet,link,0] == $closestCrossingLink)
+                 pointlinks[planet,link,2]: distance from vertex to closest crossing link, initially a large number
+                 "
+                  & tbl$(pointlinks,$planets,$nlinks,3)
+                  & ( initstrengths
+                    =   (a.strength)
+                      .   $nlinks:?N
                         &   whl
-                          ' ( !M:>0
-                            & -1+!M:?M
-                            & idx$(linkrelations,!K,!M)
-                            & (   !K:!M
-                                & -1:?linkrelations
-                              |   !(idx$(links,!K,0)):?pK
-                                & !(idx$(links,!K,1)):?qK
-                                & !(idx$(links,!M,0)):?pM
-                                & !(idx$(links,!M,1)):?qM
-                                & (   ( !pK:!pM
-                                      | !qK:!pM
-                                      )
-                                    & !pM:?linkrelations
-                                  |   ( !pK:!qM
-                                      | !qK:!qM
-                                      )
-                                    & !qM:?linkrelations
+                          ' ( !N:>0
+                            & -1+!N:?N
+                            & 1:?(idx$(strength,!N))
+                            )
+                    )
+                  & ( initPointLinks
+                    =   (a.pointlinks) (a.links)
+                      .   $planets:?planet
+                        &   whl
+                          ' ( !planet:>0
+                            & -1+!planet:?planet
+                            & $nlinks:?link
+                            &   whl
+                              ' ( !link:>0
+                                & -1+!link:?link
+                                &   $unrelatedLink
+                                  : ?(idx$(pointlinks,!planet,!link,0))
+                                & 0:?(idx$(pointlinks,!planet,!link,1))
+                                & 0:?(idx$(pointlinks,!planet,!link,2))
+                                )
+                            )
+                        & $nlinks:?link
+                        & "Make planets (uncrossed) endpoints of links."
+                        &   whl
+                          ' ( !link:>0
+                            & -1+!link:?link
+                            &   $uncrossedRay
+                              : ?(idx$(pointlinks,!(idx$(links,!link,0)),!link,0))
+                            &   $uncrossedRay
+                              : ?(idx$(pointlinks,!(idx$(links,!link,1)),!link,0))
+                            )
+                        & 1
+                    )
+                  & ( initMinDistances
+                    =   (a.pointlinks)
+                      .   $planets:?planet
+                        &   whl
+                          ' ( !planet:>0
+                            & -1+!planet:?planet
+                            & $nlinks:?link
+                            &   whl
+                              ' ( !link:>0
+                                & -1+!link:?link
+                                & (   !(idx$(pointlinks,!planet,!link,0))
+                                    : $unrelatedLink
+                                  |   !pointlinks:$closestCrossingLink
+                                    & 0:?(idx$(pointlinks,!planet,!link,1))
+                                  |   $uncrossedRay:?pointlinks
+                                    & -1:?(idx$(pointlinks,!planet,!link,1))
+                                    &   "0x1.fffffffffffffp+1023"
+                                      : ?(idx$(pointlinks,!planet,!link,2))
                                   )
-                              | -4:?linkrelations
-                              )
+                                )
                             )
-                        )
-                )
-              & ( updatePointLink
-                =     (a.position)
-                      (a.pointlinks)
-                      (a.links)
-                      (s.planet)
-                      (s.link)
-                      (s.crossinglink)
-                      (s.x)
-                      (s.y)
-                  .   !(idx$(position,!planet,0)):?X
-                    & !(idx$(position,!planet,1)):?Y
-                    & subtract$(!X,!x):?dx
-                    & subtract$(!Y,!y):?dy
-                    & hypot$(!dx,!dy):?dist2
-                    & (   !(idx$(pointlinks,!planet,!link,2)):>!dist2
-                        & !dist2:?pointlinks
-                        & !crossinglink:?(idx$(pointlinks,!planet,!link,1))
-                        & "Planet is endpoint of crossed link"
-                        & 2:?(idx$(pointlinks,!planet,!link,0))
-                      | 
-                      )
-                )
-              & ( updateLinkRelation
-                =     (s.A)
-                      (s.B)
-                      (a.xy)
-                      (a.linkrelations)
-                      (a.links)
-                      (a.pointlinks)
-                      (a.position)
-                  .   -2:?(idx$(linkrelations,!A,!B))
-                    & !(idx$(links,!A,0)):?pA
-                    & !(idx$(links,!A,1)):?qA
-                    & !(idx$(links,!B,0)):?pB
-                    & !(idx$(links,!B,1)):?qB
-                    & !(idx$(xy,0)):?x
-                    & !(idx$(xy,1)):?y
-                    & updatePointLink$(position,pointlinks,links,!pA,!A,!B,!x,!y)
-                    & updatePointLink$(position,pointlinks,links,!qA,!A,!B,!x,!y)
-                    & updatePointLink$(position,pointlinks,links,!pB,!B,!A,!x,!y)
-                    & updatePointLink$(position,pointlinks,links,!qB,!B,!A,!x,!y)
-                )
-              & initLinkRelations$(linkrelations,links)
-              & ( init
-                =   (a.matrix) (s.rang)
-                  .   extent$(matrix,0):?xtn
-                    &   whl
-                      ' ( !xtn:>0
-                        & -1+!xtn:?xtn
-                        & $dimensions:?D
+                        & 1
+                    )
+                  & ( initLinkRelations
+                    =   (a.linkrelation) (a.links)
+                      .   $nlinks:?K
                         &   whl
-                          ' ( !D:>0
-                            & -1+!D:?D
-                            & rand$!rang:?(idx$(matrix,!xtn,!D))
+                          ' ( !K:>0
+                            & -1+!K:?K
+                            & $nlinks:?M
+                            &   whl
+                              ' ( !M:>0
+                                & -1+!M:?M
+                                & idx$(linkrelation,!K,!M)
+                                & (   !K:!M
+                                    & $diagonal:?linkrelation
+                                  |   !(idx$(links,!K,0)):?pK
+                                    & !(idx$(links,!K,1)):?qK
+                                    & !(idx$(links,!M,0)):?pM
+                                    & !(idx$(links,!M,1)):?qM
+                                    & (   ( !pK:!pM
+                                          | !qK:!pM
+                                          )
+                                        & !pM:?linkrelation
+                                      |   ( !pK:!qM
+                                          | !qK:!qM
+                                          )
+                                        & !qM:?linkrelation
+                                      )
+                                  | $perhapsCrossing:?linkrelation
+                                  )
+                                )
                             )
-                        )
-                    & 0
-                )
-              & "Return 1 if second value is between first and third value, 0 otherwise."
-              & ( btween
-                =   (s.a) (s.m) (s.z)
-                  .   (   (   !a:<!z
-                            & !a:<!m
-                            & !m:<!z
-                          |   !a:>!z
-                            & !a:>!m
-                            & !m:>!z
+                    )
+                  & ( updatePointLink
+                    =     (a.position)
+                          (a.pointlinks)
+                          (a.links)
+                          (s.planet)
+                          (s.link)
+                          (s.crossingLink)
+                          (s.x)
+                          (s.y)
+                      .   !(idx$(position,!planet,0)):?X
+                        & !(idx$(position,!planet,1)):?Y
+                        & subtract$(!X,!x):?dx
+                        & subtract$(!Y,!y):?dy
+                        & hypot$(!dx,!dy):?dist2
+                        & (   !(idx$(pointlinks,!planet,!link,2)):>!dist2
+                            & !dist2:?pointlinks
+                            & !crossingLink:?(idx$(pointlinks,!planet,!link,1))
+                            & "Planet is endpoint of crossed link"
+                            & $crossedRay:?(idx$(pointlinks,!planet,!link,0))
+                          | 
                           )
-                        & 1:?R
-                      | 0:?R
-                      )
-                    & !R
-                )
-              & ( gradient
-                =   (s.a) (s.b) (s.c) (s.d)
-                  . divide$(subtract$(!a,!b),subtract$(!c,!d))
-                )
-              & ( cross
-                =     (s.x0)
-                      (s.y0)
-                      (s.x1)
-                      (s.y1)
-                      (s.x2)
-                      (s.y2)
-                      (s.x3)
-                      (s.y3)
-                      (a.xy)
-                  .   gradient$(!y0,!y1,!x0,!x1):?H01
-                    & gradient$(!y2,!y3,!x2,!x3):?H23
-                    &     divide
-                        $ (subtract$(!y2+!H01*!x0,!y0+!H23*!x2),subtract$(!H01,!H23))
-                      : ?x
-                    & (   btween$(!x0,!x,!x1):1
-                        & btween$(!x2,!x,!x3):1
-                        & !y0+subtract$(!x,!x0)*!H01:?y
-                        & !y:?(idx$(xy,1))
-                        & !x:?(idx$(xy,0))
-                        & 1:?R
-                      | 0:?R
-                      )
-                    & !R
-                )
-              & ( norm
-                =   (a.vector)
-                  .   0:?len
-                    & $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        & !(idx$(vector,!d)):?df
-                        & !df*!df+!len:?len
-                        )
-                    & sqrt$!len
-                )
-              & ( point
-                =   (a.position) (s.p) (a.pnt)
-                  .   $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        & !(idx$(position,!p,!d)):?(idx$(pnt,!d))
-                        )
-                    & 0
-                )
-              & ( midpoint
-                =   (a.pointA) (a.pointZ) (a.pointM)
-                  .   $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        &   divide$(!(idx$(pointA,!d))+!(idx$(pointZ,!d)),2)
-                          : ?(idx$(pointM,!d))
-                        )
-                    & 1
-                )
-              & ( inproduct
-                =   (a.vectorA) (a.vectorB)
-                  .   0:?inn
-                    & $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        & !(idx$(vectorA,!d))*!(idx$(vectorB,!d))+!inn:?inn
-                        )
-                    & !inn
-                )
-              & ( ScalarTimesVector
-                =   (s.scalar) (a.vector) (a.product)
-                  .   $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        & !scalar*!(idx$(vector,!d)):?(idx$(product,!d))
-                        )
-                )
-              & ( Unit
-                =   (a.vector)
-                  .   norm$vector^-1:?neL
-                    & $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        & !(idx$(vector,!d))*!neL:?vector
-                        )
-                )
-              & ( vectorSum
-                =   (a.vectorA) (a.vectorB) (a.sumvector)
-                  .   $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        &   !(idx$(vectorA,!d))+!(idx$(vectorB,!d))
-                          : ?(idx$(sumvector,!d))
-                        )
-                )
-              & ( vector
-                =   (a.pointA) (a.pointB) (a.vectorAB)
-                  .   $dimensions:?d
-                    &   whl
-                      ' ( !d:>0
-                        & -1+!d:?d
-                        &   subtract$(!(idx$(pointB,!d)),!(idx$(pointA,!d)))
-                          : ?(idx$(vectorAB,!d))
-                        )
-                )
-              & ( perpendicular
-                =   (a.unitX) (a.mt) (a.unitY)
-                  .   tbl$(vectorProjection,$dimensions)
-                    & inproduct$(unitX,mt):?impr
-                    & ScalarTimesVector$(!impr,unitX,vectorProjection)
-                    & vector$(vectorProjection,mt,unitY)
-                    & Unit$unitY
-                )
-              & ( PietHeinForce
-                =     (a.acceleration)
-                      (a.planetTransits)
-                      (s.pK)
-                      (s.qK)
-                      (a.pointqK)
-                      (a.pointMiddleK)
-                      (s.pt)
-                      (a.pointT)
-                      (s.done)
-                  .   !pK:!pt
-                    | !qK:!pt
-                    | !(idx$(planetTransits,!pt,1)):~<0
-                    |   tbl$(unitX,$dimensions)
-                      & tbl$(unitY,$dimensions)
-                      & tbl$(mq,$dimensions)
-                      & tbl$(mt,$dimensions)
-                      & vector$(pointMiddleK,pointqK,mq)
-                      & vector$(pointMiddleK,pointT,mt)
-                      & norm$mq:?MQ
-                      & norm$mt:?MT
-                      &   ScalarTimesVector
-                        $ (divide$(sign$(inproduct$(mq,mt)),!MQ),mq,unitX)
-                      & perpendicular$(unitX,mt,unitY)
-                      & divide$(inproduct$(unitX,mt),!MT)*!MT:?X
-                      & sqrt$(subtract$(sqr$!MT,sqr$!X)):?Y
-                      & divide$($shortLine,!MQ):?K
-                      & !Y^$q+(!K*!X)^$q:?Rq
-                      & $G*!Rq^$qexp:?ERqqexp
-                      & !K^$q*!ERqqexp*!X^$q-1:?FX
-                      & !ERqqexp*!Y^$q-1:?FY
-                      & tbl$(accX,$dimensions)
-                      & tbl$(accY,$dimensions)
-                      & tbl$(PietAcc,$dimensions)
-                      & sqr$!done:?WW
-                      & ScalarTimesVector$(!WW*!FX,unitX,accX)
-                      & ScalarTimesVector$(!WW*!FY,unitY,accY)
-                      & vectorSum$(accX,accY,PietAcc)
-                      & divide$(!FX,!FY):?FX/FY
-                      & ( fabs$!FX/FY:>1000
-                        |   subtract$(!X,!Y*!FX/FY):?Xs
-                          & !MQ+!MQ:?PQ
-                          & (   -1*!Xs:>!MQ
-                              & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
-                              & -1*divide$(!Xs+!MQ,!PQ):?weightQ
-                            |   !Xs:>!MQ
-                              & divide$(-1*(!MQ+!Xs),!PQ):?weightQ
-                              & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
-                            |   -1*divide$(!Xs+!MQ,!PQ):?weightQ
-                              & divide$(subtract$(!Xs,!MQ),!PQ):?weightP
+                    )
+                  & ( updateLinkRelation
+                    =     (s.A)
+                          (s.B)
+                          (a.xy)
+                          (a.links)
+                          (a.pointlinks)
+                          (a.position)
+                      .   !(idx$(links,!A,0)):?pA
+                        & !(idx$(links,!A,1)):?qA
+                        & !(idx$(links,!B,0)):?pB
+                        & !(idx$(links,!B,1)):?qB
+                        & !(idx$(xy,0)):?x
+                        & !(idx$(xy,1)):?y
+                        & "Check for each of the four end points of the two crossing lines whether the crossing line
+                       is closer to the point than other, already checked crossing lines. Updates pointlinks."
+                        & updatePointLink$(position,pointlinks,links,!pA,!A,!B,!x,!y)
+                        & updatePointLink$(position,pointlinks,links,!qA,!A,!B,!x,!y)
+                        & updatePointLink$(position,pointlinks,links,!pB,!B,!A,!x,!y)
+                        & updatePointLink$(position,pointlinks,links,!qB,!B,!A,!x,!y)
+                    )
+                  & ( init
+                    =   (a.matrix) (s.rang)
+                      .   extent$(matrix,0):?xtn
+                        &   whl
+                          ' ( !xtn:>0
+                            & -1+!xtn:?xtn
+                            & $dimensions:?D
+                            &   whl
+                              ' ( !D:>0
+                                & -1+!D:?D
+                                & rand$!rang:?(idx$(matrix,!xtn,!D))
+                                )
                             )
-                          & 0:?d
-                          &   whl
-                            ' ( !d:<($dimensions)
-                              &   !(idx$(acceleration,!pt,!d))+!(idx$(PietAcc,!d))
-                                : ?acceleration
-                              &     !(idx$(acceleration,!pK,!d))
-                                  + !weightP*!(idx$(accY,!d))
-                                  + -1/2*!(idx$(accX,!d))
-                                : ?acceleration
-                              &   !(idx$(acceleration,!qK,!d))+!weightQ*!accY+-1/2*!accX
-                                : ?acceleration
-                              & 1+!d:?d
+                        & 0
+                    )
+                  & "Return 1 if second value is between first and third value, 0 otherwise."
+                  & ( btween
+                    =   (s.a) (s.m) (s.z)
+                      .   (   (   !a:<!z
+                                & !a:<!m
+                                & !m:<!z
+                              |   !a:>!z
+                                & !a:>!m
+                                & !m:>!z
                               )
-                        )
-                )
-              & ( addForceBetweenLines
-                =     (a.position)
-                      (a.acceleration)
-                      (a.planetTransits)
-                      (s.pK)
-                      (s.qK)
-                      (s.pM)
-                      (s.qM)
-                      (s.done)
-                  .   tbl$(pointpK,$dimensions)
-                    & tbl$(pointqK,$dimensions)
-                    & tbl$(pointpM,$dimensions)
-                    & tbl$(pointqM,$dimensions)
-                    & point$(position,!pK,pointpK)
-                    & point$(position,!qK,pointqK)
-                    & point$(position,!pM,pointpM)
-                    & point$(position,!qM,pointqM)
-                    & tbl$(pointMiddleM,$dimensions)
-                    & tbl$(pointMiddleK,$dimensions)
-                    & midpoint$(pointpM,pointqM,pointMiddleM)
-                    & midpoint$(pointpK,pointqK,pointMiddleK)
-                    &   PietHeinForce
-                      $ ( acceleration
-                        , planetTransits
-                        , !pK
-                        , !qK
-                        , pointqK
-                        , pointMiddleK
-                        , !pM
-                        , pointpM
-                        , !done
-                        )
-                    &   PietHeinForce
-                      $ ( acceleration
-                        , planetTransits
-                        , !pK
-                        , !qK
-                        , pointqK
-                        , pointMiddleK
-                        , !qM
-                        , pointqM
-                        , !done
-                        )
-                    &   PietHeinForce
-                      $ ( acceleration
-                        , planetTransits
-                        , !pM
-                        , !qM
-                        , pointqM
-                        , pointMiddleM
-                        , !pK
-                        , pointpK
-                        , !done
-                        )
-                    &   PietHeinForce
-                      $ ( acceleration
-                        , planetTransits
-                        , !pM
-                        , !qM
-                        , pointqM
-                        , pointMiddleM
-                        , !qK
-                        , pointqK
-                        , !done
-                        )
-                )
-              & init$(position,200)
-              & init$(velocity,1/1000)
-              & init$(acceleration,1/1000)
-              & extent$(links,0):?Nlinks
-              & tbl$(T,$iterations,$planets,$dimensions)
-              & rank$T:?DD
-              & 0:?b
-              &   whl
-                ' ( !b:<!DD
-                  & extent$(T,!b):?R
-                  & 1+!b:?b
-                  )
-              & -1:?n
-              &   whl
-                ' ( 1+!n:?n:<($iterations)
-                  & divide$(!n,$maxn):?done
-                  & $planets:?p
-                  &   whl
-                    ' ( !p:>0
-                      & -1+!p:?p
-                      & $dimensions:?d
-                      &   whl
-                        ' ( !d:>0
-                          & -1+!d:?d
-                          & 0:?(idx$(acceleration,!p,!d))
+                            & 1:?R
+                          | 0:?R
                           )
-                      )
-                  & $planets:?p
+                        & !R
+                    )
+                  & ( gradient
+                    =   (s.a) (s.b) (s.c) (s.d)
+                      . divide$(subtract$(!a,!b),subtract$(!c,!d))
+                    )
+                  & ( cross
+                    =     (s.x0)
+                          (s.y0)
+                          (s.x1)
+                          (s.y1)
+                          (s.x2)
+                          (s.y2)
+                          (s.x3)
+                          (s.y3)
+                          (a.xy)
+                      .   gradient$(!y0,!y1,!x0,!x1):?H01
+                        & gradient$(!y2,!y3,!x2,!x3):?H23
+                        &     divide
+                            $ ( subtract$(!y2+!H01*!x0,!y0+!H23*!x2)
+                              , subtract$(!H01,!H23)
+                              )
+                          : ?x
+                        & (   btween$(!x0,!x,!x1):1
+                            & btween$(!x2,!x,!x3):1
+                            & !y0+subtract$(!x,!x0)*!H01:?y
+                            & !y:?(idx$(xy,1))
+                            & !x:?(idx$(xy,0))
+                            & 1:?R
+                          | 0:?R
+                          )
+                        & !R
+                    )
+                  & ( point
+                    =   (a.position) (s.p) (a.pnt)
+                      .   $dimensions:?d
+                        &   whl
+                          ' ( !d:>0
+                            & -1+!d:?d
+                            & !(idx$(position,!p,!d)):?(idx$(pnt,!d))
+                            )
+                        & 0
+                    )
+                  & ( inproduct
+                    =   (a.vectorA) (a.vectorB)
+                      .   0:?inn
+                        & $dimensions:?d
+                        &   whl
+                          ' ( !d:>0
+                            & -1+!d:?d
+                            & !(idx$(vectorA,!d))*!(idx$(vectorB,!d))+!inn:?inn
+                            )
+                        & !inn
+                    )
+                  & ( ScalarTimesVector
+                    =   (s.scalar) (a.vector) (a.product)
+                      .   $dimensions:?d
+                        &   whl
+                          ' ( !d:>0
+                            & -1+!d:?d
+                            & !scalar*!(idx$(vector,!d)):?(idx$(product,!d))
+                            )
+                    )
+                  & ( vectorDifference
+                    =   (a.vectorA) (a.vectorB) (a.diffvector)
+                      .   $dimensions:?d
+                        &   whl
+                          ' ( !d:>0
+                            & -1+!d:?d
+                            &   subtract$(!(idx$(vectorA,!d)),!(idx$(vectorB,!d)))
+                              : ?(idx$(diffvector,!d))
+                            )
+                    )
+                  & ( vector
+                    =   (a.pointA) (a.pointB) (a.vectorAB)
+                      .   $dimensions:?d
+                        &   whl
+                          ' ( !d:>0
+                            & -1+!d:?d
+                            &   subtract$(!(idx$(pointB,!d)),!(idx$(pointA,!d)))
+                              : ?(idx$(vectorAB,!d))
+                            )
+                    )
+                  & ( addForceBetweenLines
+                    =     (a.position)
+                          (a.acceleration)
+                          (s.p)
+                          (s.q)
+                          (s.t)
+                          (s.done)
+                          (s.block)
+                          (s.n)
+                      .   0:?factor
+                        & (   tbl$(P,$dimensions)
+                            & tbl$(Q,$dimensions)
+                            & tbl$(T,$dimensions)
+                            & point$(position,!p,P)
+                            & point$(position,!q,Q)
+                            & point$(position,!t,T)
+                            & tbl$(PT,$dimensions)
+                            & tbl$(PQ,$dimensions)
+                            & tbl$(PS,$dimensions)
+                            & tbl$(ST,$dimensions)
+                            & tbl$(LineAcc,$dimensions)
+                            & vector$(P,T,PT)
+                            & vector$(P,Q,PQ)
+                            &   divide$(inproduct$(PT,PQ),inproduct$(PQ,PQ))
+                              : ?fq
+                            & (   !fq:>0
+                                & !fq:<1
+                                & subtract$(1,!fq):?fp
+                                & ScalarTimesVector$(!fq,PQ,PS)
+                                & vectorDifference$(PT,PS,ST)
+                                & inproduct$(ST,ST):?st2
+                                & (   !st2:>0
+                                    & ($epsilon+sqrt$!st2)^3:?st8
+                                    & (   ( !block:1
+                                          | !done:>($freezing)
+                                          )
+                                        & divide$(300,!st8):?factor
+                                      |     divide$(!done^10*300,!st8)
+                                          : ?factor
+                                        & 0:?factor
+                                      )
+                                    & ScalarTimesVector$(!factor,ST,LineAcc)
+                                    & 0:?d
+                                    &   whl
+                                      ' ( !d:<($dimensions)
+                                        &     !(idx$(acceleration,!t,!d))
+                                            + !(idx$(LineAcc,!d))
+                                          : ?acceleration
+                                        &     subtract
+                                            $ (!(idx$(acceleration,!p,!d)),!fp*!LineAcc)
+                                          : ?acceleration
+                                        &     subtract
+                                            $ (!(idx$(acceleration,!q,!d)),!fq*!LineAcc)
+                                          : ?acceleration
+                                        & 1+!d:?d
+                                        )
+                                  | 
+                                  )
+                              | 
+                              )
+                          | 
+                          )
+                    )
+                  & ( needChangeSide
+                    =     (a.pointlinks)
+                          (a.linkrelation)
+                          (a.links)
+                          (a.strength)
+                          (a.linkstate)
+                          (a.planetstate)
+                          (s.n)
+                          (a.dist2)
+                          (a.dist1)
+                      .   "Reset linkstates."
+                        & $nlinks:?link
+                        &   whl
+                          ' ( !link:>0
+                            & -1+!link:?link
+                            & 0:?(idx$(linkstate,!link,!n))
+                            )
+                        & "Decide for each planet separately whether it should move to the other
+                               side of a line to diminish the number of line crossings."
+                        & $planets:?planet
+                        &   whl
+                          ' ( !planet:>0
+                            & -1+!planet:?planet
+                            & $nlinks:?link
+                            &   whl
+                              ' ( !link:>0
+                                & -1+!link:?link
+                                & (   !(idx$(pointlinks,!planet,!link,0))
+                                    : $crossedRay
+                                  | !pointlinks:$uncrossedRay
+                                  | $unrelatedLink:?pointlinks
+                                  )
+                                )
+                            & $nlinks:?link
+                            &   whl
+                              ' ( !link:>0
+                                & -1+!link:?link
+                                & (     !(idx$(pointlinks,!planet,!link,0))
+                                      : $crossedRay
+                                    & "planet is endpoint of crossed link"
+                                    & "Create relation between planet and crossing link."
+                                    &   $closestCrossingLink
+                                      : ?( idx
+                                         $ ( pointlinks
+                                           , !planet
+                                           , !(idx$(pointlinks,!planet,!link,1))
+                                           , 0
+                                           )
+                                         )
+                                  | 
+                                  )
+                                )
+                            & $nlinks:?crossingLink
+                            &   whl
+                              ' ( !crossingLink:>0
+                                & -1+!crossingLink:?crossingLink
+                                & (     !(idx$(pointlinks,!planet,!crossingLink,0))
+                                      : $closestCrossingLink
+                                    & "This link crosses at least one link emanating from planet. Check how many rays do and don't.
+                                           First reset gain obtained by letting the planet move over the crossing link."
+                                    &   0
+                                      : ?(idx$(pointlinks,!planet,!crossingLink,1))
+                                    & $nlinks:?ray
+                                    &   whl
+                                      ' ( !ray:>0
+                                        & -1+!ray:?ray
+                                        & ( !crossingLink:!ray
+                                          |   idx$(pointlinks,!planet,!ray,0)
+                                            & ( !pointlinks:$crossedRay
+                                              | !pointlinks:$uncrossedRay
+                                              )
+                                            & "Link radiates from or to planet. Crossed or not."
+                                            & idx$(pointlinks,!planet,!crossingLink,1)
+                                            & (     !( idx
+                                                     $ (linkrelation,!crossingLink,!ray)
+                                                     )
+                                                  : $hasCrossing
+                                                & "crossingLink and ray cross. Moving planet to other side of crossingLink will remove a crossing. Good."
+                                                & 1+!pointlinks:?pointlinks
+                                              | !linkrelation:~<0
+                                              |   "crossingLink and ray have nothing in common. Moving planet to other side of crossingLink will add a crossing. Bad."
+                                                & -1+!pointlinks:?pointlinks
+                                              | "crossingLink and ray have a planet in common. Moving planet to other side of crossingLink makes no difference."
+                                              )
+                                          | 
+                                          )
+                                        )
+                                  | 
+                                  )
+                                )
+                            & 0:?maxgain
+                            & -1:?bestcrossingLink
+                            & $nlinks:?crossingLink
+                            &   whl
+                              ' ( !crossingLink:>0
+                                & -1+!crossingLink:?crossingLink
+                                & (     !(idx$(pointlinks,!planet,!crossingLink,0))
+                                      : $closestCrossingLink
+                                    & (     !(idx$(pointlinks,!planet,!crossingLink,1))
+                                          : >!maxgain
+                                        & !pointlinks:?maxgain
+                                        & !crossingLink:?bestcrossingLink
+                                      | 
+                                      )
+                                  | 
+                                  )
+                                )
+                            & -1:?(idx$(planetstate,!planet,!n))
+                            & (   !maxgain:>0
+                                & !bestcrossingLink:>-1
+                                & "Remember that this planet wants to cross a particular crossing link."
+                                & !bestcrossingLink:?planetstate
+                                & $nlinks:?link
+                                &   whl
+                                  ' ( !link:>0
+                                    & -1+!link:?link
+                                    & (     !(idx$(linkrelation,!bestcrossingLink,!link))
+                                          : $hasCrossing
+                                        & "This link is crossed by the link that must be crossed. But is this link connecting to the planet?"
+                                        & ( !(idx$(links,!link,0)):!planet
+                                          | !(idx$(links,!link,1)):!planet
+                                          )
+                                        & "Yes, this planet is an endpoint. Make the link tighter. (But only if the link is not crossing another link that is also tightening. See further down.)
+                                               But don't shorten if the link is already rather short."
+                                        & ( 
+                                          |   !( idx
+                                               $ ( dist1
+                                                 , !(idx$(links,!link,0))
+                                                 , !(idx$(links,!link,1))
+                                                 )
+                                               )
+                                            : >50
+                                          )
+                                        &   1+!(idx$(linkstate,!link,!n))
+                                          : ?linkstate
+                                      | 
+                                      )
+                                    )
+                              | "This planet has no drive to transgress a line."
+                              )
+                            )
+                        & "Finished examining for all planets whether they should move to the other side of a line or stay put.
+                               Now do the moving."
+                        & tbl$(StringEnergy,$nlinks)
+                        & 0:?cumPStringEnergy
+                        & 0:?cumNStringEnergy
+                        & 0:?unchanged
+                        & 0:?changed
+                        & "At this point we have linkstate telling whether a link must get stronger or weaker."
+                        & $nlinks:?link
+                        &   whl
+                          ' ( !link:>0
+                            & -1+!link:?link
+                            &     !(idx$(strength,!link))
+                                * !( idx
+                                   $ ( dist2
+                                     , !(idx$(links,!link,0))
+                                     , !(idx$(links,!link,1))
+                                     )
+                                   )
+                              : ?(idx$(StringEnergy,!link))
+                            & (   !(idx$(linkstate,!link,!n)):>0
+                                & (   100/99*!strength:<($planets)
+                                    & "Link gets stronger, because it is not already too strong and linkstate is positive."
+                                    & $nlinks:?link2
+                                    &   whl
+                                      ' ( !link2:>0
+                                        & -1+!link2:?link2
+                                        & ( !link2:!link
+                                          |   !(idx$(linkstate,!link2,!n)):>0
+                                            &   !(idx$(linkrelation,!link2,!link))
+                                              : $hasCrossing
+                                            & "If two crossing links both are set to contract, change the linkstate for one of them."
+                                            & 0:?linkstate
+                                          | 
+                                          )
+                                        )
+                                    &   !cumPStringEnergy+!StringEnergy
+                                      : ?cumPStringEnergy
+                                    & 1+!changed:?changed
+                                  |   $nlinks:?K
+                                    &   whl
+                                      ' ( !K:>0
+                                        & -1+!K:?K
+                                        & (   !(idx$(linkstate,!K,!n)):>0
+                                            & !(idx$(strength,!K)):>1
+                                          | 1:?(idx$(strength,!K))
+                                          )
+                                        )
+                                    &   !cumNStringEnergy+!StringEnergy
+                                      : ?cumNStringEnergy
+                                    & -1+!unchanged:?unchanged
+                                  )
+                              |   "Link gets weaker, because it is at max strength or because linkstate is not positive."
+                                & 0:?(idx$(linkstate,!link,!n))
+                                & !cumNStringEnergy+!StringEnergy:?cumNStringEnergy
+                                & -1+!unchanged:?unchanged
+                              )
+                            )
+                        & (   !unchanged:<0
+                            & !cumPStringEnergy:>0
+                            & 1/100*!cumPStringEnergy:?needed
+                            & "We allow max. 10% to be taken from non-active strings."
+                            & ( 10*!needed:<!cumNStringEnergy
+                              | divide$(!cumNStringEnergy,10):?needed
+                              )
+                            & divide$(!needed,!cumPStringEnergy):?fractionGiven
+                            & 1+!fractionGiven:?increase
+                            & divide$(!needed,!cumNStringEnergy):?fractionTaken
+                            & subtract$(1,!fractionTaken):?fractionKept
+                            & $nlinks:?link
+                            &   whl
+                              ' ( !link:>0
+                                & -1+!link:?link
+                                & idx$(strength,!link)
+                                & (   !(idx$(linkstate,!link,!n)):>0
+                                    & !increase*!strength:?strength
+                                  | !fractionKept*!strength:?strength
+                                  )
+                                )
+                          | 
+                          )
+                    )
+                  & initstrengths$strength
+                  & initPointLinks$(pointlinks,links)
+                  & initLinkRelations$(linkrelation,links)
+                  & init$(position,200)
+                  & init$(velocity,1/100000000000)
+                  & init$(acceleration,1/100000000000)
+                  & extent$(links,0):?Nlinks
+                  & tbl$(T,$planets,$dimensions,$iterations)
+                  & rank$T:?DD
+                  & 0:?b
                   &   whl
-                    ' ( !p:>0
-                      & -1+!p:?p
-                      & $planets:?q
+                    ' ( !b:<!DD
+                      & extent$(T,!b):?R
+                      & 1+!b:?b
+                      )
+                  & -1:?n
+                  & 25:?snap
+                  &   whl
+                    ' ( 1+!n:?n:<($iterations)
+                      & divide$(!n,$maxn):?done
+                      & "Reset acceleration."
+                      & $planets:?p
                       &   whl
-                        ' ( !q:>0
-                          & -1+!q:?q
-                          & ( !q:!p
-                            |   0:?(idx$(dist2,!p,!q))
+                        ' ( !p:>0
+                          & -1+!p:?p
+                          & $dimensions:?d
+                          &   whl
+                            ' ( !d:>0
+                              & -1+!d:?d
+                              & 0:?(idx$(acceleration,!p,!d))
+                              )
+                          )
+                      & $planets:?p
+                      &   whl
+                        ' ( !p:>0
+                          & -1+!p:?p
+                          & !p:?q
+                          &   whl
+                            ' ( !q:>0
+                              & -1+!q:?q
+                              & 0:?(idx$(dist2,!p,!q))
                               & 0:?d
                               &   whl
                                 ' ( !d:<($dimensions)
                                   &     subtract
                                       $ (!(idx$(position,!p,!d)),!(idx$(position,!q,!d)))
                                     : ?(idx$(Diff,!p,!q,!d))
+                                  & -1*!Diff:?(idx$(Diff,!q,!p,!d))
                                   & sqr$!Diff+!dist2:?dist2
                                   & 1+!d:?d
                                   )
-                            )
+                              & !dist2:?(idx$(dist2,!q,!p))
+                              & sqrt$!dist2:?(idx$(dist1,!p,!q))
+                              & !dist1:?(idx$(dist1,!q,!p))
+                              )
                           )
-                      )
-                  & $planets:?p
-                  &   whl
-                    ' ( !p:>0
-                      & -1+!p:?p
-                      & (   !(idx$(degrees,!p,1)):1
-                          & $planets:?Qp
-                        | 3+!degrees:?Qp
-                        )
-                      & $planets:?q
+                      & $planets:?p
                       &   whl
-                        ' ( !q:>0
-                          & -1+!q:?q
-                          & ( !q:!p
-                            | !(idx$(dist2,!p,!q)):0
-                            |   (   !(idx$(degrees,!q,1)):1
-                                  & $planets:?Qq
-                                | 3+!degrees:?Qq
+                        ' ( !p:>0
+                          & -1+!p:?p
+                          & 2+!degrees:?Qp
+                          & !p:?q
+                          &   whl
+                            ' ( !q:>0
+                              & -1+!q:?q
+                              & ( !(idx$(dist1,!p,!q)):0
+                                |   2+!degrees:?Qq
+                                  &     (1+divide$(2,!dist1))
+                                      * (!Qp*!Qq)
+                                      * $M/planets2
+                                      * ($epsilon+!dist1)^-3
+                                    : ?coulomb
+                                  & 0:?d
+                                  &   whl
+                                    ' ( !d:<($dimensions)
+                                      &     !(idx$(Diff,!p,!q,!d))*!coulomb
+                                          + !(idx$(acceleration,!p,!d))
+                                        : ?acceleration
+                                      &     !(idx$(Diff,!q,!p,!d))*!coulomb
+                                          + !(idx$(acceleration,!q,!d))
+                                        : ?acceleration
+                                      & 1+!d:?d
+                                      )
                                 )
-                              & sqrt$!dist2:?dist
-                              & !dist^-1:?tsid1
-                              & divide$($M/planets2,!dist2):?coulomb
+                              )
+                          )
+                      & !Nlinks:?K
+                      &   whl
+                        ' ( !K:>0
+                          & -1+!K:?K
+                          & !(idx$(links,!K,0)):?p
+                          & !(idx$(links,!K,1)):?q
+                          & ( !q:!p
+                            |   ( $F:?elastiek
+                                |   divide$($F,sqrt$(fabs$(subtract$(!p,!q))))
+                                  : ?elastiek
+                                )
+                              & !(idx$(strength,!K))*!elastiek:?elastiek
                               & 0:?d
                               &   whl
                                 ' ( !d:<($dimensions)
-                                  &       !(idx$(Diff,!p,!q,!d))
-                                        * !tsid1
-                                        * !coulomb
-                                        * (!Qp*!Qq+!Qp+!Qq)
-                                      + !(idx$(acceleration,!p,!d))
+                                  & !(idx$(Diff,!p,!q,!d))*!elastiek:?delta
+                                  &   !delta+!(idx$(acceleration,!p,!d))
+                                    : ?acceleration
+                                  &   -1*!delta+!(idx$(acceleration,!q,!d))
                                     : ?acceleration
                                   & 1+!d:?d
                                   )
                             )
                           )
-                      )
-                  & !Nlinks:?K
-                  &   whl
-                    ' ( !K:>0
-                      & -1+!K:?K
-                      & !(idx$(links,!K,0)):?p
-                      & !(idx$(links,!K,1)):?q
-                      & ( !q:!p
-                        | !(idx$(dist2,!p,!q)):0
-                        |   sqrt$!dist2:?dist
-                          & !dist^-1:?tsid1
-                          & "divide$($F*!dist,sqrt$(fabs$(subtract$(!p,!q))))"
-                          & $F*!dist:?elastiek
-                          & 0:?d
+                      & ( !done:<($dampeningDoneDhreshold)
+                        |   0:?crosses
+                          & initMinDistances$pointlinks
+                          & !Nlinks:?K
                           &   whl
-                            ' ( !d:<($dimensions)
-                              & !(idx$(Diff,!p,!q,!d))*!tsid1*!elastiek:?delta
-                              & !delta+!(idx$(acceleration,!p,!d)):?acceleration
-                              &   -1*!delta+!(idx$(acceleration,!q,!d))
-                                : ?acceleration
-                              & 1+!d:?d
-                              )
-                        )
-                      )
-                  & ( !done:<($donethreshhold)
-                    |   0:?crosses
-                      & initMinDistances$pointlinks
-                      & !Nlinks:?K
-                      &   whl
-                        ' ( !K:>0
-                          & -1+!K:?K
-                          & !(idx$(links,!K,0)):?pK
-                          & !(idx$(links,!K,1)):?qK
-                          & ( !qK:!pK
-                            |   !K:?M
-                              &   whl
-                                ' ( !M:>0
-                                  & -1+!M:?M
-                                  & !(idx$(links,!M,0)):?pM
-                                  & !(idx$(links,!M,1)):?qM
-                                  & idx$(linkrelations,!K,!M)
-                                  & (   !linkrelations:<-1
-                                      & ( !pK:!pM
-                                        | !qK:!pM
-                                        | !pK:!qM
-                                        | !qK:!qM
-                                        |       cross
+                            ' ( !K:>0
+                              & -1+!K:?K
+                              & !(idx$(links,!K,0)):?pK
+                              & !(idx$(links,!K,1)):?qK
+                              & ( !qK:!pK
+                                |   !K:?M
+                                  &   whl
+                                    ' ( !M:>0
+                                      & -1+!M:?M
+                                      & ( !(idx$(linkrelation,!K,!M)):~<0
+                                        |   !(idx$(links,!M,0)):?pM
+                                          & !(idx$(links,!M,1)):?qM
+                                          &     cross
                                               $ ( !(idx$(position,!pK,0))
                                                 , !(idx$(position,!pK,1))
                                                 , !(idx$(position,!qK,0))
@@ -12569,11 +12900,14 @@ function main2(evt) {
                                                 )
                                             : ?CROSS
                                           & (   !CROSS:1
+                                              &   $hasCrossing
+                                                : ?(idx$(linkrelation,!K,!M))
+                                              &   $hasCrossing
+                                                : ?(idx$(linkrelation,!M,!K))
                                               &   updateLinkRelation
                                                 $ ( !K
                                                   , !M
                                                   , xy
-                                                  , linkrelations
                                                   , links
                                                   , pointlinks
                                                   , position
@@ -12582,367 +12916,478 @@ function main2(evt) {
                                                 $ ( !M
                                                   , !K
                                                   , xy
-                                                  , linkrelations
                                                   , links
                                                   , pointlinks
                                                   , position
                                                   )
                                               & 1+!crosses:?crosses
-                                            |     -3
-                                                : ?(idx$(linkrelations,!K,!M))
-                                              &   -3
-                                                : ?(idx$(linkrelations,!M,!K))
+                                            |     $noCrossing
+                                                : ?(idx$(linkrelation,!K,!M))
+                                              &   $noCrossing
+                                                : ?(idx$(linkrelation,!M,!K))
                                             )
-                                        | 
                                         )
+                                      )
+                                )
+                              )
+                          & (   !done:<($freezing)
+                              &   needChangeSide
+                                $ ( pointlinks
+                                  , linkrelation
+                                  , links
+                                  , strength
+                                  , linkstate
+                                  , planetstate
+                                  , !n
+                                  , dist2
+                                  , dist1
+                                  )
+                            |   ( $planets:?planet
+                                &   whl
+                                  ' ( !planet:>0
+                                    & -1+!planet:?planet
+                                    & -2:?(idx$(planetstate,!planet,!n))
+                                    )
+                                )
+                              & $nlinks:?K
+                              &   whl
+                                ' ( !K:>0
+                                  & -1+!K:?K
+                                  & (   !(idx$(strength,!K)):>20/19
+                                      & 19/20*!strength:?strength
+                                    |   !strength:<1/10
+                                      & 1/10:?strength
+                                    |   !strength:<19/20
+                                      & 20/19*!strength:?strength
                                     | 
                                     )
                                   )
                             )
-                          )
-                      & ( addCrossingIfOnlyConnected
-                        =   (a.pointlinks) (a.linkrelations)
-                          .   $planets:?planet
-                            &   whl
-                              ' ( !planet:>0
-                                & -1+!planet:?planet
-                                & $nlinks:?link
-                                &   whl
-                                  ' ( !link:>0
-                                    & -1+!link:?link
-                                    & (     !(idx$(pointlinks,!planet,!link,0))
-                                          : 2
-                                        &   !(idx$(pointlinks,!planet,!link,1))
-                                          : ?crosslink
-                                        & $nlinks:?link2
-                                        &   whl
-                                          ' ( !link2:>0
-                                            & -1+!link2:?link2
-                                            & (     !( idx
-                                                     $ (pointlinks,!planet,!link2,0)
-                                                     )
-                                                  : 1
-                                                &   !( idx
-                                                     $ (linkrelations,!crosslink,!link2)
-                                                     )
-                                                  : ~<0
-                                                &   !crosslink
-                                                  : ?( idx
-                                                     $ (pointlinks,!planet,!link2,1)
-                                                     )
-                                                & 
-                                              | 
-                                              )
+                          & !Nlinks:?K
+                          &   whl
+                            ' ( !K:>0
+                              & -1+!K:?K
+                              & !(idx$(links,!K,0)):?pK
+                              & !(idx$(links,!K,1)):?qK
+                              & ( !qK:!pK
+                                |   $planets:?planet
+                                  &   whl
+                                    ' ( !planet:>0
+                                      & -1+!planet:?planet
+                                      & ( !planet:!pK
+                                        | !planet:!qK
+                                        |   (     !(idx$(planetstate,!planet,!n))
+                                                : !K
+                                              & 0:?block
+                                            | 1:?block
                                             )
-                                      | 
-                                      )
-                                    )
-                                )
-                        )
-                      & ( needChangeSide
-                        =     (a.pointlinks)
-                              (a.linkrelations)
-                              (a.planetTransits)
-                              (a.links)
-                          .   addCrossingIfOnlyConnected$(pointlinks,linkrelations)
-                            & tbl$(linkcount1,$nlinks)
-                            & tbl$(linkcount2,$nlinks)
-                            & $planets:?planet
-                            &   whl
-                              ' ( !planet:>0
-                                & -1+!planet:?planet
-                                & 0:?totcount
-                                & $nlinks:?link
-                                &   whl
-                                  ' ( !link:>0
-                                    & -1+!link:?link
-                                    & 0:?(idx$(linkcount1,!link))
-                                    & 0:?(idx$(linkcount2,!link))
-                                    )
-                                & $nlinks:?link
-                                &   whl
-                                  ' ( !link:>0
-                                    & -1+!link:?link
-                                    & idx$(pointlinks,!planet,!link,0)
-                                    & (   !pointlinks:2
-                                        & 1+!totcount:?totcount
-                                        &     1
-                                            + !( idx
-                                               $ ( linkcount2
-                                                 , !(idx$(pointlinks,!planet,!link,1))
-                                                 )
-                                               )
-                                          : ?linkcount2
-                                      |   !pointlinks:1
-                                        & 1+!totcount:?totcount
-                                        & (     !(idx$(pointlinks,!planet,!link,1))
-                                              : ~<0
-                                            &   1+!(idx$(linkcount1,!pointlinks))
-                                              : ?linkcount1
-                                          | 
-                                          )
-                                      | 
-                                      )
-                                    )
-                                & $nlinks:?link
-                                &   whl
-                                  ' ( !link:>0
-                                    & -1+!link:?link
-                                    & !(idx$(linkcount2,!link)):?count2
-                                    & (   !count2:>0
-                                        & !(idx$(linkcount1,!link)):?count1
-                                        & (   !count1+!count2:!totcount
-                                            & 1:?linkcount2
-                                          |     divide
-                                              $ ( subtract$(!count2,!count1)
-                                                , subtract$(!totcount,!count1)
-                                                )
-                                            : ?linkcount2
-                                          )
-                                        & ( !linkcount2:>1/2
-                                          | 0:?linkcount2
-                                          )
-                                      | 
-                                      )
-                                    )
-                                & 0:?maxcross
-                                & -1:?maxcrossed
-                                & $nlinks:?link
-                                &   whl
-                                  ' ( !link:>0
-                                    & -1+!link:?link
-                                    & idx$(linkcount2,!link)
-                                    & (   !linkcount2:>!maxcross
-                                        & !linkcount2:?maxcross
-                                        & !link:?maxcrossed
-                                      |   !linkcount2:!maxcross
-                                        & -1:?maxcrossed
-                                      | 
-                                      )
-                                    )
-                                & (   !maxcrossed:-1
-                                    & -1:?(idx$(planetTransits,!planet,0))
-                                    & -1:?(idx$(planetTransits,!planet,1))
-                                  |     !(idx$(links,!maxcrossed,0))
-                                      : ?(idx$(planetTransits,!planet,0))
-                                    &   !(idx$(links,!maxcrossed,1))
-                                      : ?(idx$(planetTransits,!planet,1))
-                                  )
-                                )
-                        )
-                      & needChangeSide$(pointlinks,linkrelations,planetTransits,links)
-                      & !Nlinks:?K
-                      &   whl
-                        ' ( !K:>0
-                          & -1+!K:?K
-                          & !(idx$(links,!K,0)):?pK
-                          & !(idx$(links,!K,1)):?qK
-                          & ( !qK:!pK
-                            |   -1+!K:?M
-                              &   whl
-                                ' ( !M:>0
-                                  & -1+!M:?M
-                                  & (   !(idx$(links,!M,0)):?pM
-                                      & ( !pK:!pM
-                                        | !qK:!pM
-                                        |   !(idx$(links,!M,1)):?qM
-                                          & ( !pK:!qM
-                                            | !qK:!qM
-                                            |   addForceBetweenLines
+                                          &     addForceBetweenLines
                                               $ ( position
                                                 , acceleration
-                                                , planetTransits
                                                 , !pK
                                                 , !qK
-                                                , !pM
-                                                , !qM
+                                                , !planet
                                                 , !done
+                                                , !block
+                                                , !n
                                                 )
-                                            )
+                                            : ?factor
+                                        | 
                                         )
-                                    | 
-                                    )
-                                  )
-                            )
-                          )
-                    )
-                  & 0:?p
-                  &   whl
-                    ' ( !p:<($planets)
-                      & 1+!J:?J
-                      & 0:?d
+                                      )
+                                )
+                              )
+                        )
+                      & 0:?p
+                      & $W:?mobility
+                      & (   !done:>($freezing)
+                          & $W*$W:?mobility
+                        | 
+                        )
                       &   whl
-                        ' ( !d:<($dimensions)
-                          & !(idx$(position,!p,!d)):?(idx$(T,!n,!p,!d))
-                          &   !(idx$(acceleration,!p,!d))+$W*!(idx$(velocity,!p,!d))
-                            : ?velocity
-                          & divide$(-25/24+!done,-3)*!velocity+!position:?position
-                          & 1+!d:?d
+                        ' ( !p:<($planets)
+                          & 0:?d
+                          &   whl
+                            ' ( !d:<($dimensions)
+                              & !(idx$(position,!p,!d)):?(idx$(T,!p,!d,!n))
+                              &     !(idx$(acceleration,!p,!d))
+                                  + !mobility*!(idx$(velocity,!p,!d))
+                                : ?velocity
+                              & !velocity+!position:?position
+                              & 1+!d:?d
+                              )
+                          & 1+!p:?p
                           )
-                      & 1+!p:?p
                       )
-                  )
-              & !n
-            )
-        : ?code
-      & "End of UFP code."
+                  & 0
+                )
+            : ?code
+          & "End of UFP code."
           & new$(UFP,!code):?calc
-          &   (   (calc..go)$((,!links) (,!degrees))
-                & (calc..export)$(N,T):?pointsT
-                & (calc..export)$(Q,dist2):?dist2array
-                & 0:?maxdist2
-                & (   !dist2array
-                    : ( 
-                      ,   ?
-                          ( 
-                          ,   ?
-                              `[%( !sjt:>!maxdist2:?maxdist2
-                                 & ~
-                                 )
-                              ?
+          & ( export
+            =   (calc..export)$(N,T):?pointsTTT
+              & (calc..export)$(N,planetstate):?planetstate
+              & (calc..export)$(N,linkstate):?linkstate
+            )
+          &   (   :?pointsTTT
+                &   (calc..go)
+                  $ ( ( 
+                      ,   map
+                        $ ( ( 
+                            = .!arg:(?,?arg)&(,!arg)
+                            )
+                          . !titlelinks
                           )
-                          ?
                       )
-                  | 
+                      (,!degrees)
+                    )
+                & !export
+                & 1000000:?xmin:?ymin
+                & -1000000:?xmax:?ymax
+                & !pointsTTT:(,?pt)
+                & 100*!iterations^-1:?evry
+                & (1:<!evry:?evry|)
+                & ( some
+                  =   dun
+                    .   0:?dun
+                      &   map
+                        $ ( ( 
+                            =   
+                              .     !dun+!evry:?dun:~<1
+                                  & -1+!dun:?dun
+                                  & !arg
+                                | 
+                            )
+                          . !arg
+                          )
                   )
-                &     new
-                    $ ( UFP
-                      ,   
-                        ' ( (s.SQR)
-                          . sqrt$!SQR:?SQ&!SQ
-                          )
-                      )
-                  : ?sqrt
-                & (sqrt..go)$!maxdist2
-                & (sqrt..export)$(N,SQ):?radius
-                & !pointsT:(,?times)
+                & !planetstate:(,?planetstate)
                 &     map
                     $ ( ( 
                         =   
-                          .   !arg:(,?pla)
-                            &   map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(,%@?x %@?y ?z)
-                                      & (!x.!y)
+                          .   !arg:(,?arg)
+                            &     map
+                                $ ( ( 
+                                    =   
+                                      .   ";"
+                                          ( !arg:-1&green
+                                          |   !arg:-2
+                                            & "#C8E9E9"
+                                          | red
+                                          )
+                                    )
+                                  . some$!arg
                                   )
-                                . !pla
-                                )
+                              : ";" ?arg
+                            & str$!arg
                         )
-                      . !times
+                      . !planetstate
                       )
-                  : ?L
-                & ( last
-                  =   K L e
-                    .   !arg:(?K.?n)
-                      & :?L
-                      & whl'(!K:%?e ?K&!e !L:?L)
-                      & (!('(!L:?L [($n) ?))|)
-                      & whl'(!L:%?e ?L&!e !K:?K)
-                      & !K
-                  )
-                & last$(!L.!planets):?L
-                & !L:? [?NN
+                  : ?planetcolours
+                & -1:?plnt
+                &     map
+                    $ ( ( 
+                        =   
+                          .     !arg:(,? @?arg)
+                              & 1+!plnt:?plnt
+                              & (!plnt.!arg)
+                            | 
+                        )
+                      . !planetstate
+                      )
+                  : ?planetstates
+                & !linkstate:(,?linkstate)
+                &     map
+                    $ ( ( 
+                        =   
+                          .   !arg:(,?arg)
+                            &     map
+                                $ ( ( 
+                                    =   
+                                      .   ";"
+                                          (   !arg:0
+                                            & "#065b63"
+                                          | red
+                                          )
+                                    )
+                                  . some$!arg
+                                  )
+                              : ";" ?arg
+                            & str$!arg
+                        )
+                      . !linkstate
+                      )
+                  : ?linkcolours
+                & -1:?NN
+                &     map
+                    $ ( ( 
+                        =   
+                          .   !arg:(,? @?arg)
+                            & 1+!NN:?NN
+                            & (!NN,!arg)
+                        )
+                      . !linkstate
+                      )
+                  : ?linkstates
+                &   map
+                  $ ( ( 
+                      =   xxs yys
+                        .   !arg:(,(,?xxs) (,?yys) ?)
+                          &   map
+                            $ ( ( 
+                                =   
+                                  .   ( !arg:<!xmin:?xmin
+                                      | 
+                                      )
+                                    & ( !arg:>!xmax:?xmax
+                                      | 
+                                      )
+                                )
+                              . !xxs
+                              )
+                          &   map
+                            $ ( ( 
+                                =   
+                                  .   ( !arg:<!ymin:?ymin
+                                      | 
+                                      )
+                                    & ( !arg:>!ymax:?ymax
+                                      | 
+                                      )
+                                )
+                              . !yys
+                              )
+                          & 
+                      )
+                    . !pt
+                    )
+                &     map
+                    $ ( ( 
+                        =   
+                          .   !arg:(,(,?arg) ?)
+                            &   map$((=.";" !arg).some$!arg)
+                              : ";" ?arg
+                            & (,str$!arg)
+                        )
+                      . !pt
+                      )
+                  : ?xx
+                &     map
+                    $ ( ( 
+                        =   
+                          .   !arg:(,% (,?arg) ?)
+                            &   map$((=.";" !arg).some$!arg)
+                              : ";" ?arg
+                            & (,str$!arg)
+                        )
+                      . !pt
+                      )
+                  : ?yy
+                &     map
+                    $ ( ( 
+                        =   xs
+                          .   !arg:(,?arg)
+                            & !xx:(,?xs) ?xx
+                            & (!xs.!arg)
+                        )
+                      . !yy
+                      )
+                  : ?xxyy
+                & !xxyy:? [?NN
                 & !NN^-1:?MM
                 & -1:?nn
-                & !pointsT:(,? (,?positions))
+                & -1:?lineno
                 &     map
                     $ ( ( 
                         =   p q
-                          .   !arg:(,%?p %?q)
-                            & !positions:? [!p (,%?x1 %?y1 ?) ?
-                            & !positions:? [!q (,%?x2 %?y2 ?) ?
-                            & !( 
-                               ' ( $nameedges
-                                 : ? (?,$p ()$q.?desc) ?
-                                 )
-                               )
-                            & fullinoutdesc$(!desc.\n):?desc
+                          .   !arg:(?title,%?p %?q)
+                            & !xxyy:? [!p (?xx1.?yy1) ?
+                            & !xxyy:? [!q (?xx2.?yy2) ?
+                            & !linkcolours:%?linkcolour ?linkcolours
                             &   ( line
-                                .     (x1.!svgX+!x1)
-                                      (y1.!svgX+!y1)
-                                      (x2.!svgX+!x2)
-                                      (y2.!svgX+!y2)
-                                      (stroke.blue)
-                                      (stroke-width.6)
-                                      (opacity."0.01")
-                                  , (title.,!desc)
+                                .   (stroke-width.16) (opacity."0.01")
+                                  ,   (title.,!title)
+                                      ( animate
+                                      .     (attributeName.x1)
+                                            (values.!xx1)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.y1)
+                                            (values.!yy1)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.x2)
+                                            (values.!xx2)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.y2)
+                                            (values.!yy2)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.stroke)
+                                            (values.!linkcolour)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
                                 )
                                 ( line
-                                .     (x1.!svgX+!x1)
-                                      (y1.!svgX+!y1)
-                                      (x2.!svgX+!x2)
-                                      (y2.!svgX+!y2)
-                                      (stroke.blue)
-                                      (marker-end."url(#arrow)")
-                                  , (title.,!desc)
+                                .   (marker-end."url(#arrow)")
+                                  ,   (title.,!title)
+                                      ( animate
+                                      .     (attributeName.x1)
+                                            (values.!xx1)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.y1)
+                                            (values.!yy1)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.x2)
+                                            (values.!xx2)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.y2)
+                                            (values.!yy2)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.stroke)
+                                            (values.!linkcolour)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
                                 )
                         )
-                      . !links
+                      . !titlelinks
                       )
                   : ?lines
-                & 1000000:?xmin:?ymin
-                & -1000000:?xmax:?ymax
                 &     map
                     $ ( ( 
-                        =   
+                        =   a b col planetcolour
                           .   !arg:(?a.?b)
                             & 1+!nn:?nn
                             & 255+-1*div$(255*!nn*!MM,1):?col
-                            & !a+!svgX:?a
-                            & !b+!svgX:?b
-                            & (!a:<!xmin:?xmin|)
-                            & (!a:>!xmax:?xmax|)
-                            & (!b:<!ymin:?ymin|)
-                            & (!b:>!ymax:?ymax|)
+                            & !planetcolours:%?planetcolour ?planetcolours
+                            &   !planettitles
+                              : (!nn.?text.?Title) ?planettitles
                             &   ( circle
-                                .     (cx.!a)
-                                      (cy.!b)
-                                      (r.12)
+                                .     (r.12)
                                       (stroke.str$("rgb(" !col "," !col "," !col ")"))
-                                      (fill.red)
-                                  , 
+                                  ,   ( animate
+                                      .     (attributeName.cx)
+                                            (values.!a)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.cy)
+                                            (values.!b)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.fill)
+                                            (values.!planetcolour)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
                                 )
                                 ( text
-                                .     (x.!a)
-                                      (y.!b)
-                                      (text-anchor.middle)
+                                .     (text-anchor.middle)
                                       (stroke.black)
                                       (stroke-width.1px)
                                       (dominant-baseline.middle)
-                                  ,     !nn:~0
-                                      & (   !nn+1:<!planets
-                                          & !nn
-                                        | ∴
-                                        )
-                                    | ∵
+                                  ,   !text
+                                      ( animate
+                                      .     (attributeName.x)
+                                            (values.!a)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.y)
+                                            (values.!b)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
                                 )
                                 ( circle
-                                .     (cx.!a)
-                                      (cy.!b)
-                                      (r.12)
+                                .     (r.12)
                                       (stroke.str$("rgb(" !col "," !col "," !col ")"))
-                                      (fill.red)
                                       (opacity."0.1")
-                                  , ( title
-                                    .   
-                                      ,       !nameedges
-                                            :   ?
-                                                (?toolID,% !nn.?desc)
-                                                ?
-                                          &   !tooladm
-                                            :   ?
-                                              + ( ? (ToolID.!toolID) ?
-                                                : ? (Title.?Title) ?
-                                                )
-                                              + ?
-                                          & !Title
-                                        | !nn:0&Input
-                                        | Output
-                                    )
+                                  ,   ( animate
+                                      .     (attributeName.cx)
+                                            (values.!a)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.cy)
+                                            (values.!b)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      ( animate
+                                      .     (attributeName.fill)
+                                            (values.!planetcolour)
+                                            (dur.10s)
+                                            (repeatCount.1)
+                                            (fill.freeze)
+                                        , 
+                                      )
+                                      (title.,!Title)
                                 )
                         )
-                      . !L
+                      . !xxyy
                       )
                   : ?circles
                 & 20:?margin
@@ -12969,17 +13414,48 @@ function main2(evt) {
                                   (markerWidth.16)
                                   (markerHeight.16)
                                   (orient.auto-start-reverse)
+                                  (fill."#065b63")
                               , (path.(d."M 0 0 L 20 5 L 0 10 z"),)
                             )
                         )
-                        !lines
-                        !circles
+                        (g.(class.wf),!lines !circles)
                   )
-              | out$"something wrogn"
+              | out$"something wrogn"&wrong
               )
             : ?SVG
           & :?calc
           & !SVG
+      )
+      ( workflowAsTextAndGraph
+      =   visfields SVG
+        .   !arg:(?visfields.?SVG)
+          & ( div
+            .   (style."width: 100%; overflow: hidden;")
+              ,   ( div
+                  .   (style."width: 30%; float: left;")
+                    ,   (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
+                        !visfields
+                  )
+                  ( div
+                  .   (style."margin-left: 30%;")
+                    , ( figure
+                      .   
+                        ,   ( figcaption
+                            .   
+                              ,   ( a
+                                  .   (id.Fig1) (tabindex.0)
+                                    , localized$(Figure Figur)
+                                  )
+                                  ". "
+                                    localized
+                                  $ ( "Directed Acyclic Graph (DAG) of the workflow."
+                                      "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen."
+                                    )
+                            )
+                            !SVG
+                      )
+                  )
+            )
       )
       "
 /**
@@ -13043,35 +13519,7 @@ function main2(evt) {
                         )
                     : ?formFields
                   )
-                &     !formFields
-                      ( div
-                      .   (style."width: 100%; overflow: hidden;")
-                        ,   ( div
-                            .   (style."width: 30%; float: left;")
-                              ,   (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
-                                  !visfields
-                            )
-                            ( div
-                            .   (style."margin-left: 30%;")
-                              , ( figure
-                                .   
-                                  ,   ( figcaption
-                                      .   
-                                        ,   ( a
-                                            .   (id.Fig2) (tabindex.0)
-                                              , localized$("Figure 1" "Figur 1")
-                                            )
-                                            ". "
-                                              localized
-                                            $ ( "Directed Acyclic Graph (DAG) of the workflow."
-                                                "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen."
-                                              )
-                                      )
-                                      !SVG
-                                )
-                            )
-                      )
-                  : ?formFields
+                & !formFields workflowAsTextAndGraph$(!visfields.!SVG):?formFields
                 &   str
                   $ ( 200~~~
                         toML
@@ -19000,41 +19448,7 @@ function main2(evt) {
                                       (br.,)
                                       (br.,)
                                       makeHiddenFields$!hiddenData
-                                      ( div
-                                      .   (style."width: 100%; overflow: hidden;")
-                                        ,   ( div
-                                            .   (style."width: 30%; float: left;")
-                                              ,   ( h3
-                                                  .   
-                                                    ,   localized
-                                                      $ ( "Workflow steps"
-                                                          "Trin i arbejdsgangen"
-                                                        )
-                                                  )
-                                                  !"visualizedWorkFlow(s)"
-                                            )
-                                            ( div
-                                            .   (style."margin-left: 30%;")
-                                              , ( figure
-                                                .   
-                                                  ,   ( figcaption
-                                                      .   
-                                                        ,   ( a
-                                                            .     (id.Fig2)
-                                                                  (tabindex.0)
-                                                              ,   localized
-                                                                $ ("Figure 1" "Figur 1")
-                                                            )
-                                                            ". "
-                                                              localized
-                                                            $ ( "Directed Acyclic Graph (DAG) of the workflow."
-                                                                "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen."
-                                                              )
-                                                      )
-                                                      !SVG
-                                                )
-                                            )
-                                      )
+                                      workflowAsTextAndGraph$(!"visualizedWorkFlow(s)".!!SVG)
                                   )
                           )
                         )
