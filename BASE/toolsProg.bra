@@ -137,7 +137,7 @@ toolsProg=
       "Supergoals are goals that fulfil the user's goal, plus
        more. (If the user checks a box and thereby allows it.)"
       (servicedSuperGoals=)
-      (updateAvailableWorkflows=bookmarked "Vis markeret")
+      (updateAvailableWorkflows="Re-check for bookmarks" "Tjek igen for bogmærker")
       (helpmespecifymygoal="Next: zoom in on goal." "Zoom ind med flere detaljer")
       (Bookmark=Bookmark Marker)
       (Dryrun="Test workflow" "Test arbejdsgang")
@@ -2282,129 +2282,8 @@ toolsProg=
           & candidateList$(!reorderedworkflowlist.!topologicalOrderedTools)
       )
       ( makeWorkflowVisualisation
-      =   n o struct translateOneToHumanLanguage getNodesAndLinks
-        .   ( translateOneToHumanLanguage
-            =   description seqno struct o describeLong
-              .   ( describeLong
-                  =   describe simplearrow fullinoutdescTable
-                    .   ( simplearrow
-                        =   b i
-                          .   !arg:(?arg.?b)
-                            & !b:(?.?.?i.?) ?
-                            & ( !arg:1&" → "
-                              | !arg:2&" ⇒ "
-                              | !arg:3&" ⇛ "
-                              | " ⭆ "
-                              )
-                        )
-                      & ( fullinoutdescTable
-                        =   
-                          .   !arg:
-                            | ( table
-                              .   
-                                ,   map
-                                  $ ( ( 
-                                      =   featdesc name
-                                        .     getFeatAndValueNames$!arg
-                                            : (?name,?featdesc)
-                                          & ( tr
-                                            .   
-                                              ,   ( td
-                                                  .   (class.smallfont)
-                                                    , localized$!name
-                                                  )
-                                                  ( td
-                                                  .   (class.smallfont)
-                                                    , !featdesc
-                                                  )
-                                            )
-                                      )
-                                    . !arg
-                                    )
-                              )
-                        )
-                      & ( describe
-                        =   a b c m n an bn cn h L tit
-                          .   !arg:(?h.?arg)
-                            & (   !arg:(?a,?b)
-                                & describe$(.!a):(?L.?an)
-                                & (   !L
-                                        mop
-                                      $ ( ( 
-                                          =   
-                                            .   (dt.,"+")
-                                                (   describe$(h.!arg)
-                                                  : (?arg.?cn)
-                                                & !an+!cn:?an
-                                                & !arg
-                                                )
-                                          )
-                                        . !b
-                                        . (=,)
-                                        )
-                                  . !an
-                                  )
-                              |   !arg:%?a %?b
-                                & describe$(.!a):(?a.?an)
-                                & (       (dd.,(dl.,!a))
-                                          (dt.,simplearrow$(!an.!b))
-                                          ( describe$(.!b):(?b.?bn)
-                                          & !b
-                                          )
-                                      : ?c
-                                    & ( !h:&!c
-                                      | (dt.,"[") !c (dt.,"]")
-                                      )
-                                  . !bn
-                                  )
-                              |   !arg:(?m.?seqno.?n)
-                                & ( !m::?tit
-                                  |   !tooladm
-                                    :   ?
-                                      + ( ? (ToolID.!m) ?
-                                        : ? (Title.?tit) ?
-                                        )
-                                      + ?
-                                  )
-                                & (   ( dt
-                                      .   
-                                        ,   ( Circle$!seqno:?c:
-                                            |   !c
-                                                ( !tit:
-                                                | "-"
-                                                )
-                                            )
-                                            !tit
-                                      )
-                                      (   !seqno:~∵
-                                        & !tit:
-                                      |   !n:(?.?c)
-                                        & ( !c:
-                                          | (dd.,fullinoutdescTable$!c)
-                                          )
-                                      )
-                                  . 1
-                                  )
-                              )
-                        )
-                      & describe$(.!arg):(?arg.?)
-                      & (dl.,!arg)
-                  )
-                & !arg:?struct
-                & describeLong$!struct:?description
-                & (   !description:~
-                    &   !struct
-                      : ( ? (?.?.?.?o)
-                        | (? (?.?.?.?o),?)
-                        )
-                    & !description
-                  |   localized
-                    $ ( "It seems that the input already matches your goal. Or we haven't enough information about the input. Use the back button to change your choice."
-                        "Det ser ud til at inputtet allerede opfylder dit mål. Eller vi har ikke fundet de nødvendige oplysninger om inputtet. Brug knappen \"Forrige\" for at ændre dine valg."
-                      )
-                  )
-            )
-          & ( getNodesAndLinks
+      =   n o struct boxes getNodesAndLinks breaks
+        .   ( getNodesAndLinks
             =   titlelinks planettitles extractEdges
               .   ( extractEdges
                   =   volgnr trav collect ou
@@ -2480,7 +2359,7 @@ toolsProg=
                                                 )
                                               + ?
                                           & (!to.!Title)
-                                        | (∴.Output)
+                                        | (∴.Result)
                                       )
                                     + !planettitles
                                   : ?planettitles
@@ -2507,9 +2386,169 @@ toolsProg=
                 & (!planettitles.!titlelinks)
             )
           & SpotInput$!arg:?arg
-          & ( translateOneToHumanLanguage$!arg (br.,)
-            . workflowSVG$(getNodesAndLinks$!arg)
+          & getNodesAndLinks$!arg:(?nodes.?edges)
+          & ( breaks
+            =   
+              . table
+              .   (class.datadetails)
+                ,   vap
+                  $ ( ( 
+                      =   
+                        . tr
+                        .   
+                          ,   vap
+                            $ ( ( 
+                                =   
+                                  . td
+                                  .   
+                                    ,     @(!arg:? "&" ?)
+                                        & ( ul
+                                          .   
+                                            ,   vap
+                                              $ ( (=.li.,!arg)
+                                                . !arg
+                                                . "&"
+                                                )
+                                          )
+                                      | !arg
+                                )
+                              . !arg
+                              . "="
+                              )
+                      )
+                    . !arg
+                    . \n
+                    )
             )
+          & ( boxes
+            =   nodes edges
+              .   !arg:(?nodes.?edges)
+                & 0:?links
+                &   map
+                  $ ( ( 
+                      =   
+                        .   !arg:(?desc,%?from %?to)
+                          & (!from.!to.!desc)+!links:?links
+                      )
+                    . !edges
+                    )
+                &     map
+                    $ ( ( 
+                        =   
+                          .   !arg:(?no.?step.?name)
+                            &   ( dt
+                                .   
+                                  ,   str
+                                    $ ( !no
+                                        " - "
+                                        (   !step:∵
+                                          & localized$("Input data ∵" "Inputdata ∵")
+                                        |   !step:∴
+                                          & localized$("Result ∴" "Resultat ∴")
+                                        | !name
+                                        )
+                                      )
+                                )
+                                ( dd
+                                .   
+                                  , ( dl
+                                    .   
+                                      ,   !step:∴&
+                                        |   (   !step:∵
+                                              & 
+                                            | ( dt
+                                              .   
+                                                ,     localized
+                                                    $ ( "Receiving input from"
+                                                        "Modtager input fra"
+                                                      )
+                                                    ( dl
+                                                    .   
+                                                      ,   mop
+                                                        $ ( ( 
+                                                            =   
+                                                              .       !arg
+                                                                    : (?from.!no.?)
+                                                                  &   !nodes
+                                                                    :   ?
+                                                                        ( !from
+                                                                        . ?
+                                                                        . ?desc
+                                                                        )
+                                                                        ?
+                                                                  & ( dd
+                                                                    .   
+                                                                      ,   str
+                                                                        $ ( !from
+                                                                            ": "
+                                                                            !desc
+                                                                          )
+                                                                    )
+                                                                | 
+                                                            )
+                                                          . !links
+                                                          . (=+)
+                                                          )
+                                                    )
+                                              )
+                                            )
+                                            ( dt
+                                            .   
+                                              ,     !step:∵
+                                                  & localized$(Details Detaljer)
+                                                |   localized
+                                                  $ ("Output details" Output-detaljer)
+                                            )
+                                            ( dd
+                                            .   
+                                              ,       !links
+                                                    : ?+(!no.?.?desc)+?
+                                                  & breaks$!desc
+                                                | "(No description)"
+                                            )
+                                            ( dt
+                                            .   
+                                              ,   (   !step:∵
+                                                    & localized$("Sent to " "Sendt til ")
+                                                  |   localized
+                                                    $ ("Output sent to " "Output sendt til ")
+                                                  )
+                                                  ( dl
+                                                  .   
+                                                    ,   mop
+                                                      $ ( ( 
+                                                          =   
+                                                            .       !arg
+                                                                  : (!no.?to.?)
+                                                                &   !nodes
+                                                                  :   ?
+                                                                      (!to.?.?desc)
+                                                                      ?
+                                                                & ( dd
+                                                                  .   
+                                                                    ,   str
+                                                                      $ ( !to
+                                                                          ": "
+                                                                          !desc
+                                                                        )
+                                                                  )
+                                                              | 
+                                                          )
+                                                        . !links
+                                                        . (=+)
+                                                        )
+                                                  )
+                                            )
+                                    )
+                                )
+                        )
+                      . !nodes
+                      )
+                  : ?Nodes
+                & lst$(Nodes,path$Nodes,NEW)
+                & (dl.,!Nodes)
+            )
+          & (boxes$(!nodes.!edges).workflowSVG$(!nodes.!edges))
       )
       ( makePasswordFormField
       =   text parm desc size required
@@ -2613,6 +2652,8 @@ toolsProg=
                 )
                 \r\n
                 "a:link, a:visited {color: #000;}"
+                \r\n
+                ".datadetails tr:nth-child(odd) {background-color: #C8E9E9;}"
                 \r\n
                 "a, dd, dt, label, h1, h2, h3, span, p, td, input, legend, textarea, li {font-family:"
                 (   !TyPeFaCe:sans-serif
@@ -11134,657 +11175,6 @@ function main2(evt) {
                 )
             )
       )
-      ( illustrationAuto
-      =   canvasX canvasY
-        .   (500.500):(?canvasX.?canvasY)
-          & ( svg
-            .   (viewBox."403 432 635 522")
-              ,   ("!--"."A marker to be used as an arrowhead")
-                  ( defs
-                  .   
-                    , ( marker
-                      .     (id.arrow)
-                            (viewBox."0 0 20 10")
-                            (refX.30)
-                            (refY.5)
-                            (markerWidth.16)
-                            (markerHeight.16)
-                            (orient.auto-start-reverse)
-                        , (path.(d."M 0 0 L 20 5 L 0 10 z"),)
-                      )
-                  )
-                  ( line
-                  .     (x1.889)
-                        (y1.907)
-                        (x2.904)
-                        (y2.800)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.904)
-                        (y1.800)
-                        (x2.871)
-                        (y2.714)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.871)
-                        (y1.714)
-                        (x2.845)
-                        (y2.604)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.871)
-                        (y1.714)
-                        (x2.755)
-                        (y2.646)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.845)
-                        (y1.604)
-                        (x2.755)
-                        (y2.646)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.845)
-                        (y1.604)
-                        (x2.713)
-                        (y2.547)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.713)
-                        (y2.547)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.608)
-                        (y2.575)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.713)
-                        (y1.547)
-                        (x2.608)
-                        (y2.575)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.520)
-                        (y2.638)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.713)
-                        (y1.547)
-                        (x2.520)
-                        (y2.638)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.608)
-                        (y1.575)
-                        (x2.520)
-                        (y2.638)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.423)
-                        (y2.587)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.520)
-                        (y1.638)
-                        (x2.423)
-                        (y2.587)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.472)
-                        (y2.469)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.713)
-                        (y1.547)
-                        (x2.472)
-                        (y2.469)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.423)
-                        (y1.587)
-                        (x2.472)
-                        (y2.469)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.472)
-                        (y1.469)
-                        (x2.546)
-                        (y2.452)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.472)
-                        (y1.469)
-                        (x2.484)
-                        (y2.798)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.550)
-                        (y2.869)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.713)
-                        (y1.547)
-                        (x2.550)
-                        (y2.869)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.484)
-                        (y1.798)
-                        (x2.550)
-                        (y2.869)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.616)
-                        (y2.934)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.713)
-                        (y1.547)
-                        (x2.616)
-                        (y2.934)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.550)
-                        (y1.869)
-                        (x2.616)
-                        (y2.934)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.871)
-                        (y1.714)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.755)
-                        (y1.646)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.713)
-                        (y1.547)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.423)
-                        (y1.587)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.546)
-                        (y1.452)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.484)
-                        (y1.798)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.550)
-                        (y1.869)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.616)
-                        (y1.934)
-                        (x2.709)
-                        (y2.898)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.709)
-                        (y1.898)
-                        (x2.827)
-                        (y2.859)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.827)
-                        (y1.859)
-                        (x2.941)
-                        (y2.839)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( line
-                  .     (x1.941)
-                        (y1.839)
-                        (x2.1018)
-                        (y2.847)
-                        (stroke.green)
-                        (marker-end."url(#arrow)")
-                    , 
-                  )
-                  ( circle
-                  .     (cx.889)
-                        (cy.907)
-                        (r.12)
-                        (stroke."rgb(241,241,241)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.889)
-                        (y.907)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 1
-                  )
-                  ( circle
-                  .     (cx.904)
-                        (cy.800)
-                        (r.12)
-                        (stroke."rgb(227,227,227)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.904)
-                        (y.800)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 2
-                  )
-                  ( circle
-                  .     (cx.871)
-                        (cy.714)
-                        (r.12)
-                        (stroke."rgb(213,213,213)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.871)
-                        (y.714)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 3
-                  )
-                  ( circle
-                  .     (cx.845)
-                        (cy.604)
-                        (r.12)
-                        (stroke."rgb(199,199,199)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.845)
-                        (y.604)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 4
-                  )
-                  ( circle
-                  .     (cx.755)
-                        (cy.646)
-                        (r.12)
-                        (stroke."rgb(185,185,185)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.755)
-                        (y.646)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 5
-                  )
-                  ( circle
-                  .     (cx.713)
-                        (cy.547)
-                        (r.12)
-                        (stroke."rgb(170,170,170)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.713)
-                        (y.547)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 6
-                  )
-                  ( circle
-                  .     (cx.608)
-                        (cy.575)
-                        (r.12)
-                        (stroke."rgb(156,156,156)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.608)
-                        (y.575)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 7
-                  )
-                  ( circle
-                  .     (cx.520)
-                        (cy.638)
-                        (r.12)
-                        (stroke."rgb(142,142,142)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.520)
-                        (y.638)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 8
-                  )
-                  ( circle
-                  .     (cx.423)
-                        (cy.587)
-                        (r.12)
-                        (stroke."rgb(128,128,128)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.423)
-                        (y.587)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 9
-                  )
-                  ( circle
-                  .     (cx.472)
-                        (cy.469)
-                        (r.12)
-                        (stroke."rgb(114,114,114)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.472)
-                        (y.469)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 10
-                  )
-                  ( circle
-                  .     (cx.546)
-                        (cy.452)
-                        (r.12)
-                        (stroke."rgb(100,100,100)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.546)
-                        (y.452)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 11
-                  )
-                  ( circle
-                  .     (cx.484)
-                        (cy.798)
-                        (r.12)
-                        (stroke."rgb(85,85,85)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.484)
-                        (y.798)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 12
-                  )
-                  ( circle
-                  .     (cx.550)
-                        (cy.869)
-                        (r.12)
-                        (stroke."rgb(71,71,71)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.550)
-                        (y.869)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 13
-                  )
-                  ( circle
-                  .     (cx.616)
-                        (cy.934)
-                        (r.12)
-                        (stroke."rgb(57,57,57)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.616)
-                        (y.934)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 14
-                  )
-                  ( circle
-                  .     (cx.709)
-                        (cy.898)
-                        (r.12)
-                        (stroke."rgb(43,43,43)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.709)
-                        (y.898)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 15
-                  )
-                  ( circle
-                  .     (cx.827)
-                        (cy.859)
-                        (r.12)
-                        (stroke."rgb(29,29,29)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.827)
-                        (y.859)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 16
-                  )
-                  ( circle
-                  .     (cx.941)
-                        (cy.839)
-                        (r.12)
-                        (stroke."rgb(15,15,15)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.941)
-                        (y.839)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 17
-                  )
-                  ( circle
-                  .     (cx.1018)
-                        (cy.847)
-                        (r.12)
-                        (stroke."rgb(0,0,0)")
-                        (fill.red)
-                    , 
-                  )
-                  ( text
-                  .     (x.1018)
-                        (y.847)
-                        (text-anchor.middle)
-                        (stroke.black)
-                        (stroke-width.1px)
-                        (dominant-baseline.middle)
-                    , 18
-                  )
-            )
-      )
       ( countGraphNodes
       =   count tools feats feat i o cnt tcnt fcnt tool
         .   "Unfold toolprop. Each subspecification doubles count due to specification.
@@ -13444,13 +12834,12 @@ function main2(evt) {
                             .   
                               ,   ( a
                                   .   (id.Fig1) (tabindex.0)
-                                    , localized$(Figure Figur)
+                                    ,   localized
+                                      $ ( "Directed Acyclic Graph (DAG) of the workflow"
+                                          "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen"
+                                        )
                                   )
                                   ". "
-                                    localized
-                                  $ ( "Directed Acyclic Graph (DAG) of the workflow."
-                                      "Rettet acyklisk graf (eng. Directed Acyclic Graph, DAG) af arbejdsgangen."
-                                    )
                             )
                             !SVG
                       )
