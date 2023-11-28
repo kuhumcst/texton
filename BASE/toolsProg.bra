@@ -137,7 +137,9 @@ toolsProg=
       "Supergoals are goals that fulfil the user's goal, plus
        more. (If the user checks a box and thereby allows it.)"
       (servicedSuperGoals=)
-      (updateAvailableWorkflows="Re-check for bookmarks" "Tjek igen for bogmærker")
+      ( (🔍 🔍|"Re-check for bookmarks" "Tjek igen for bogmærker")
+      : ?updateAvailableWorkflows
+      )
       (helpmespecifymygoal="Next: zoom in on goal." "Zoom ind med flere detaljer")
       (Bookmark=Bookmark Marker)
       (Dryrun="Test workflow" "Test arbejdsgang")
@@ -2150,7 +2152,7 @@ toolsProg=
                                   ( input
                                   .     (type.submit)
                                         (name.str$(bview- !nth))
-                                        (value.🔍)
+                                        (value.👁)
                                     , 
                                   )
                                   \r\n
@@ -2269,8 +2271,8 @@ toolsProg=
                                   )
                                 (br.,)
                                   localized
-                                $ ( "Select a workflow by pressing a 🔍 (View details) or ► (Submit) button."
-                                    "Vælg en arbejdsgang ved at trykke på 🔍 (Se detaljer) eller ► (Submit)."
+                                $ ( "Select a workflow by pressing a 👁 (View details) or ► (Submit) button."
+                                    "Vælg en arbejdsgang ved at trykke på 👁 (Se detaljer) eller ► (Submit)."
                                   )
                           )
                     | 
@@ -2611,13 +2613,27 @@ toolsProg=
               \r\n
       )
       ( submit
-      =   button
-        .   !arg:?button
+      =   button title
+        .   !arg:%?button ?title
           &   ( input
               .     (type.submit)
                     (tabindex.1+!tabind:?tabind&0)
                     (name.bsubmit)
                     (value.!button)
+                    (!title:|(title.!title))
+                , 
+              )
+              \r\n
+      )
+      ( submit2
+      =   button name
+        .   !arg:(?name.%?button ?title)
+          &   ( input
+              .     (type.submit)
+                    (tabindex.1+!tabind:?tabind&0)
+                    (name.!name)
+                    (value.!button)
+                    (!title:|(title.!title))
                 , 
               )
               \r\n
@@ -5469,7 +5485,7 @@ try {
       )
       ( featurehelpcell
       =   featurs short inorout help
-        .   !arg:(?featurs.?short.?inorout)
+        .  | !arg:(?featurs.?short.?inorout)
           &   cell
             $ (     !featurs
                   :   ?
@@ -5543,6 +5559,15 @@ try {
                           &   (!short.!servicedGoalsTable) !servicedGoals
                             : ?servicedGoals
                         )
+                      & (     !features
+                            :   ?
+                              + ( ? (short.!short) ?
+                                : ? (goalhelp.?help) ?
+                                )
+                              + ?
+                          & (desc.localized$!help):?help
+                        | :?help
+                        )
                       &   row
                         $ ( namecell$(!features.!short.localized$!name)
                             featurehelpcell$(!features.!short.goalhelp)
@@ -5550,7 +5575,7 @@ try {
                                 : ? (!short.?optgroups) ?
                               &     cell
                                   $ ( makeSelectFormField
-                                    $ (.str$(!OP !short).options.!optgroups)
+                                    $ (.str$(!OP !short).!help (options.!optgroups))
                                     )
                                   ( !including:
                                   |   cell
@@ -5575,8 +5600,7 @@ try {
                               $ ( makeSelectFormField
                                 $ ( 
                                   . str$(!OP !short)
-                                  . options
-                                  . makeOptionList$(!servicedGoalsTable.)
+                                  . !help (options.makeOptionList$(!servicedGoalsTable.))
                                   )
                                 )
                             )
@@ -9753,9 +9777,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (!parms.!hiddenData.!batch)
       )
       ( supplementParmsAndHiddenData
-      =   Submit batch parms nth
+      =   Submit batch parms nth A Z
         .   getBatchHandleDesiredtoolSuperset$!arg:(?parms.?hiddenData.?batch)
           & readTable$tooladm
+          & (   !parms:?A (eye.?) ?Z
+              & !A (bsubmit.eye) !Z:?parms
+              & log$parms
+              & 
+            | 
+            )
           & (   ( !parms:? (bsubmit.?Submit) ?&
                 |     (   !parms:? (@(?:bview- ?nth).?) ?
                         & localized$(localized$("View details" "Se detaljer"))
@@ -19317,7 +19347,8 @@ function main2(evt) {
                         )
                     & saveTable$Uploads
                 )
-              & (   localized$!updateAvailableWorkflows:!Submit
+              & (     (eye|localized$!updateAvailableWorkflows)
+                    : !Submit
                   & specifyGoal$!parms
                 |   updateUploads$!parms
                   & 0:?allpipes
@@ -20140,7 +20171,6 @@ function main2(evt) {
                                   "Arbejdsgang skal inkludere værktøjet:"
                                 )
                           )
-                          (td.,)
                           ( td
                           .   
                             ,   makeSelectFormField
@@ -20168,7 +20198,6 @@ function main2(evt) {
                       ,   ( td
                           . ,localized$("The last tool must be:" "Arbejdsgangen skal afslutte med:")
                           )
-                          (td.,)
                           ( td
                           .   
                             ,   makeSelectFormField
@@ -20268,7 +20297,14 @@ function main2(evt) {
                       & (   !stable:%? [?L
                           & (   "item_group_" !itmgrp:?id
                               & ( a
-                                .   (href.str$("#" !id)) (tabindex.0)
+                                .   (href.str$("#" !id)) (tabindex.0)  ( title
+                                        .   str
+                                          $ ( localized
+                                            $ ( "You can ignore all form fields below if you choose a bookmarked workflow."
+                                                "Du kan ignorere alle formularfelter hernede hvis du vælger en markeret workflow."
+                                              )
+                                            )
+                                        )
                                   ,   str
                                     $ ( !L
                                         " "
@@ -20303,7 +20339,7 @@ function main2(evt) {
                                             ( input
                                             .     (type.submit)
                                                   (name.str$(bview- !full))
-                                                  (value.🔍)
+                                                  (value.👁)
                                               , 
                                             )
                                             \r\n
@@ -20341,8 +20377,17 @@ function main2(evt) {
                     .   !arg:?items
                       & ( tr
                         .   (class.specialrow)
-                          ,   cell$(submit$(localized$!updateAvailableWorkflows))
-                                cell
+                          ,     cell
+                              $ ( submit2
+                                $ ( eye
+                                  .   localized$!updateAvailableWorkflows
+                                        localized
+                                      $ ( "If you have redacted the input fields, use this button to search for relevant bookmarked workflows."
+                                          "Hvis du har ændret noget i inputfelterne, brug knappen for at søge efter passende markerede arbejdsgange."
+                                        )
+                                  )
+                                )
+                            (|    cell
                               $ ( ( div
                                   .     (class.tooltip)
                                         (tabindex.0)
@@ -20357,7 +20402,7 @@ function main2(evt) {
                                     , (small.,(small.,chu$10068))
                                   )
                                 | 
-                                )
+                                ))
                                 map
                               $ ( ( 
                                   =   nt wrkfls exr stable,links linked
@@ -20716,6 +20761,15 @@ function main2(evt) {
                                   & (exr=";" !nt)
                                 | :?exr
                                 )
+                              & (     !features
+                                    :   ?
+                                      + ( ? (short.!short) ?
+                                        : ? (sourcehelp.?help) ?
+                                        )
+                                      + ?
+                                  & (desc.localized$!help):?help
+                                | :?help
+                                )
                               &   row
                                 $ ( namecell$(!features.!short.localized$!name)
                                     featurehelpcell$(!features.!short.sourcehelp)
@@ -20733,10 +20787,12 @@ function main2(evt) {
                                                       &   makeSelectFormField
                                                         $ ( 
                                                           . str$(I !short !exr)
-                                                          . options
-                                                          .   makeOptionList
-                                                            $ ( !servicedSourcesTable
-                                                              . !presel
+                                                          .   !help
+                                                              ( options
+                                                              .   makeOptionList
+                                                                $ ( !servicedSourcesTable
+                                                                  . !presel
+                                                                  )
                                                               )
                                                           )
                                                     |   "List all subspecifications, no possibility to choose other feature value."
@@ -20764,20 +20820,25 @@ function main2(evt) {
                                                       &   makeSelectFormField
                                                         $ ( 
                                                           . str$(I !short !exr)
-                                                          . options
-                                                          .   makeOptionList
-                                                            $ ( !!Types
-                                                              . !spec
-                                                              . str$(!presel "^")
+                                                          .   !help
+                                                              ( options
+                                                              .   makeOptionList
+                                                                $ ( !!Types
+                                                                  . !spec
+                                                                  .   str
+                                                                    $ (!presel "^")
+                                                                  )
                                                               )
                                                           )
                                                     )
                                                 |   makeSelectFormField
                                                   $ ( 
                                                     . str$(I !short !exr)
-                                                    . options
-                                                    .   makeOptionList
-                                                      $ (!servicedSourcesTable.)
+                                                    .   !help
+                                                        ( options
+                                                        .   makeOptionList
+                                                          $ (!servicedSourcesTable.)
+                                                        )
                                                     )
                                                 )
                                         )
@@ -20852,7 +20913,7 @@ function main2(evt) {
                           $ ( id,inputs
                             .   row
                               $ ( cell$()
-                                  cell$()
+                                  
                                     map
                                   $ ( ( 
                                       =   nt wrkfls
@@ -20953,7 +21014,6 @@ function main2(evt) {
                                                 ↳
                                           )
                                       )
-                                      (td.,)
                                       ( td
                                       .   
                                         ,   localized
