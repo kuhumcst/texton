@@ -2438,15 +2438,15 @@ toolsProg=
                           .   !arg:(?no.?step.?name)
                             &   ( dt
                                 .   
-                                  ,   str
-                                    $ ( !no
-                                        " - "
-                                        (   !step:∵
-                                          & localized$("Input data ∵" "Inputdata ∵")
-                                        |   !step:∴
-                                          & localized$("Result ∴" "Resultat ∴")
-                                        | !name
-                                        )
+                                  ,   (bigger.,(strong.(class.big),!no))
+                                      " - "
+                                      (   !step:∵
+                                        &   localized$("Input data " "Inputdata ")
+                                            (strong.,∵)
+                                      |   !step:∴
+                                        &   localized$("Result " "Resultat ")
+                                            (strong.,∴)
+                                      | !name
                                       )
                                 )
                                 ( dd
@@ -2753,6 +2753,8 @@ toolsProg=
                 "#left {width: 500px; float: left;}"
                 \r\n
                 "#content {margin-left: 620px;}"
+                \r\n
+                ".big {font-size: 20px;}"
                 \r\n
                 "}"
           )
@@ -9889,6 +9891,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       =   bm err
         .   !arg:(?bm.?err)
           &   submit$(localized$!Bookmark)
+              (br.,)
                 makeTextFormField
               $ ( localized$("Name for this workflow" "Navn for denne arbejdsgang")
                 . bm
@@ -12817,17 +12820,21 @@ function main2(evt) {
           & !SVG
       )
       ( workflowAsTextAndGraph
-      =   visfields SVG
-        .   !arg:(?visfields.?SVG)
+      =   visfields SVG formfields
+        .   !arg:(?formfields.?visfields.?SVG)
           & ( div
             .   (style."width: 100%; overflow: hidden;")
               ,   ( div
                   .   (style."width: 30%; float: left;")
-                    ,   (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
-                        !visfields
+                    ,   ( div
+                        .   (style."height:20vh;")
+                          ,   !formfields
+                              (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
+                        )
+                        (div.(style."overflow-y:auto; height:80vh;"),!visfields)
                   )
                   ( div
-                  .   (style."margin-left: 30%;")
+                  .   (style."margin-left: 30%; overflow-y:auto; height:100vh;")
                     , ( figure
                       .   
                         ,   ( figcaption
@@ -12889,13 +12896,8 @@ function main2(evt) {
                 &   ( !nth:#<1&
                     |   (br.,)
                         submit$Submit
-                        (br.,)
-                        (br.,)
-                        BookMark$(!bm.!err)
-                        (br.,)
-                        (br.,)
                         submit$(localized$!Dryrun)
-                        (br.,)
+                        BookMark$(!bm.!err)
                     )
                   : ?formFields
                 & ( !formFields !visfields:
@@ -12908,7 +12910,7 @@ function main2(evt) {
                         )
                     : ?formFields
                   )
-                & !formFields workflowAsTextAndGraph$(!visfields.!SVG):?formFields
+                & workflowAsTextAndGraph$(!formFields.!visfields.!SVG):?formFields
                 &   str
                   $ ( 200~~~
                         toML
@@ -18826,18 +18828,21 @@ function main2(evt) {
                                 )
                                   form
                                 $ ( chosenworkflow
-                                  .   submit$Submit
-                                      (br.,)
-                                      (br.,)
-                                      BookMark$(.)
-                                      helplink$()
-                                      (br.,)
-                                      (br.,)
-                                      submit$(localized$!Dryrun)
-                                      (br.,)
-                                      (br.,)
-                                      makeHiddenFields$!hiddenData
-                                      workflowAsTextAndGraph$(!"visualizedWorkFlow(s)".!!SVG)
+                                  .   workflowAsTextAndGraph
+                                    $ (   submit$Submit
+                                          (br.,)
+                                          (br.,)
+                                          BookMark$(.)
+                                          helplink$()
+                                          (br.,)
+                                          (br.,)
+                                          submit$(localized$!Dryrun)
+                                          (br.,)
+                                          (br.,)
+                                          makeHiddenFields$!hiddenData
+                                      . !"visualizedWorkFlow(s)"
+                                      . !!SVG
+                                      )
                                   )
                           )
                         )
