@@ -9621,7 +9621,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (!Items.!presels.!errors)
       )
       ( initialiseSpecifyGoalShowWorkflowsChosenWorkflow
-      =   itms errors hiddenData,Items Tool parms BodyContainer
+      =   itms errors hiddenData Items Tool parms BodyContainer
         .   startclock$
           & :?errors:?hiddenData:?Items
           & 0:?tabind
@@ -9651,7 +9651,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                               !hiddenData
                           : ?hiddenData
-                        & !arg
+                        & (!arg:~(itms.?)|)
                   )
                 . !parms
                 )
@@ -11302,7 +11302,6 @@ function main2(evt) {
   percentEncodeURL: called from compute.java, workflow.java
   poll: called from poll.java
   readJobTables: called from cleanup.java
-  readme: called from zipresults.java
   register: called from register.java
   saveJobTables: called from cleanup.java
   setLanguage: called from setLanguage.java
@@ -13827,10 +13826,11 @@ function main2(evt) {
                                         )
                                     )
                                     ?
+                                . 
                                 )
                                 ?
                             )
-                        & 
+                        & log$(notCached !arg)
                       | !arg
                   )
                 . !ItemGroupsCache
@@ -14789,7 +14789,8 @@ function main2(evt) {
  */"
       ( getNextJobID
       =   A Z jobID dep g test err
-        .     -11:?err
+        .     log$(getNextJobID !arg)
+            & -11:?err
             & !arg:(?arg.?test)
             & -12:?err
             & @(!arg:? #?arg)
@@ -16916,124 +16917,6 @@ function main2(evt) {
           & readTable$CTBs
           & readTable$jobAbout
           & readTable$ItemGroupsCache
-      )
-      "
-/**
- * readme
- *
- * Create readme text in plain format, describing what is in the zip file.
- *
- * Called from zipresults.java
- */"
-      ( readme
-      =   jobNr date yyyy mm dd letter File Files,inputs results
-        .     !arg
-            : ( ?jobNr
-              . @( ?date
-                 : (% % % %:?yyyy) (% %:?mm) (% %:?dd)
-                 )
-              . ?letter
-              )
-          & readTable$Uploads
-          & :?Files:?inputs:?results
-          &   whl
-            ' ( @(!letter:? "file:" ?File ";" ?letter)
-              & (@(!File:? "*" ?File)|)
-              &     !Files
-                    "    "
-                    !File
-                    (   !Uploads:? (?.!File.?) ?
-                      & !inputs !File ",\r\n  ":?inputs
-                      & " (input)"
-                    |   @(!File:? ".xml")
-                      & !results !File ",\r\n  ":?results
-                      & 
-                    | 
-                    )
-                    \r\n
-                : ?Files
-              )
-          &   str
-            $ ( README
-                \r\n
-                !yyyy
-                "."
-                !mm
-                "."
-                !dd
-                \r\n\r\n
-                "job "
-                !jobNr
-                \r\n\r\n
-                "zip-filen ("
-                !jobNr
-                ".zip) indeholder:"
-                \r\n
-                ( !inputs:
-                |   "- "
-                    !inputs
-                    "som er "
-                    ( !inputs:@ @&inputfilen
-                    | inputfilerne
-                    )
-                    \r\n\r\n
-                )
-                ( !results:
-                |   "- "
-                    !results
-                    "som er "
-                    ( !results:@ @&resultatet
-                    | resultater
-                    )
-                    ", dvs. "
-                    ( !results:@ @&inputteksten
-                    | inputtekst
-                    )
-                    " klargjort til deponering."
-                    \r\n
-                    "  "
-                    ( !results:@ @&"Denne fil"
-                    | "Disse filer"
-                    )
-                    " kan deponeres i CLARIN.DK’s repositorie eller bruges som input"
-                    \r\n
-                    "  til annotering vha. CLARIN.DK’s værktøjer."
-                    \r\n\r\n
-                )
-                "- index.html som indeholder detaljer om klargøringsprocessen, herunder de"
-                \r\n
-                "  metadata der blev angivet i interfacet samt beskrivelser af de anvendte"
-                \r\n
-                "  værktøjer."
-                \r\n\r\n
-                (   !inputs:
-                  & "- CMDI.xml som er CMDI metadatafilen som kan uploades sammen med din dataresurse." \r\n\r\n
-                |   "- resten er filerne er mellemtrin som du kan se bort fra hvis processen er"
-                    \r\n
-                    "  forløbet korrekt. Hvis der er fejl i den klargjorte tekst, er det sikrest"
-                    \r\n
-                    "  at rette i et af mellemtrinnene og uploade denne fil til klargøring igen."
-                    \r\n
-                    "  Det er ikke tilrådeligt at rette i tekstdelen i "
-                    ( !results:@ @&filen
-                    | filerne
-                    )
-                    "\r\n  "
-                    !results
-                    "da hvert enkelt ord er unik nummereret hvilket er krævet i den videre"
-                    \r\n
-                    "  lingvistiske processering. Metadataene kan man dog rolig rette i."
-                    \r\n\r\n
-                    "  Filerne er genereret i følgende rækkefølge:"
-                    \r\n
-                    !Files
-                )
-                \r\n\r\n
-                "Hvis du har brug for hjælp til at deponere dine data eller har andre spørgsmål"
-                \r\n
-                "er du velkommen til at henvende dig til info@clarin.dk"
-                \r\n
-              )
       )
       "
 /**
@@ -19805,6 +19688,7 @@ function main2(evt) {
                         =   xml att msd
                           .       get$(str$(!DestinationDir !LocalFileName),X ML)
                                 : ?xml
+                              & "Some inputs contain sporadic <w> tags. Such texts are not to be considered tokenised."
                               &     (   !xml:? (s.?) ?xml
                                       & seg
                                     | 1
@@ -19838,6 +19722,7 @@ function main2(evt) {
                                     )
                                 : ~1
                                 : ~ner
+                                : ~tok
                             | txt
                         )
                       &   !ct
@@ -20949,7 +20834,6 @@ function main2(evt) {
                                               "Inputs tilhører uens kategorier. Vælg en kolonne."
                                             )
                                           )
-                                        cell$()
                                           map
                                         $ ( ( 
                                             =   nt wrkfls
