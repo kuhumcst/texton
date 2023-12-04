@@ -18,8 +18,7 @@ X=
           .   map
             $ ( ( 
                 =   a e c
-                  .     !arg:(~del:?e.?a,?c)
-                      & Cont$!c
+                  .   !arg:(~del:?e.?a,?c)&Cont$!c
                     | !arg:(?.?)&
                     | !arg:~" "
                     | 
@@ -52,10 +51,10 @@ X=
         =   a c e C msd pos id lemma ana to nBI
           .   !arg:((?e.?a,?c).?id)
             & (     !c
-                  :   ?
-                      ((?.? (exclude.?) ?,?):?c)
-                      ?
+                  : ? ((?.? (exclude.?) ?,?):?c) ?
                 & makeLine$(!c.!id)
+              |   !a:~(? ("xml:id"|id.?) ?)
+                & map$(doLine.!c)
               |     !a
                   : (   ? (msd.?msd) ?
                       & (   @(!msd:? "UPosTag=" ?pos)
@@ -82,7 +81,9 @@ X=
                   : ( ? (lemma.?lemma) ?
                     | ?&!C:?lemma
                     )
-                & !linkGrp:? (!id.?ana.?to) ?
+                & ( !linkGrp:? (!id.?ana.?to) ?
+                  | out$!id&~
+                  )
                 &   !id
                     \t
                     !C
@@ -135,7 +136,7 @@ X=
             & map$(doLine.!c)
         )
       & ( write
-        =   att s U V oj
+        =   att s U V oj id
           .   !arg:(?att.?s)
             & ( !att:? ("xml:id".?id) ?
               | 1+!sentno:?sentno:?id
@@ -148,9 +149,7 @@ X=
                       =   id c
                         .       !arg
                               : ( w|pc
-                                .     ?
-                                      ("xml:id"|id.?id)
-                                      ?
+                                .   ? ("xml:id"|id.?id) ?
                                   , ?
                                 )
                             & (tokids..insert)$(!id.1+!n:?n)
@@ -168,33 +167,35 @@ X=
             &     map
                 $ ( ( 
                     =   to from ana
-                      .     !arg
-                          : ( link
-                            .     (ana.?ana)
-                                  ( target
-                                  . @( ?
-                                     :   ?
-                                         "#"
-                                         ?to
-                                         ( " "
-                                         | \n
-                                         | \r
-                                         | \t
-                                         )
-                                         ?
-                                         "#"
-                                         ?from
-                                     )
-                                  )
-                              , ?
-                            )
-                        & (tokids..find)$!to:(?.?to)
-                        & (tokids..find)$!from:(?.?from)
-                        & (!from.!ana.!to)
+                      .       !arg
+                            : ( link
+                              .     (ana.?ana)
+                                    ( target
+                                    . @( ?
+                                       :   ?
+                                           "#"
+                                           ?to
+                                           ( " "
+                                           | \n
+                                           | \r
+                                           | \t
+                                           )
+                                           ?
+                                           "#"
+                                           ?from
+                                       )
+                                    )
+                                , ?
+                              )
+                          & (tokids..find)$!to:(?.?to)
+                          & (tokids..find)$!from:(?.?from)
+                          & (!from.!ana.!to)
+                        | 
                     )
                   . !linkGrp
                   )
               : ?linkGrp
+            & lst$(linkGrp,linkGrp,APP,RAW)
             & :?oj
             &   str
               $ ( "# sent_id = "
@@ -251,14 +252,13 @@ X=
     .   ~
       |   ~
         &   (its.doit)
-          $ ( ".\\BIG\\425-all\\ParlaMint-DK_20151_M78_2016-04-19-115.xml-425-step9.xml"
-            . ".\\BIG\\step10-bracmat.conll"
-            )
+          $ ("..\\teianno\\257-all\\JEB-040-577.xml-257-out.xml"."..\\teianno\\257-all\\JEB-040-577.xml-257-out.conll")
       |   ~
         &   (its.doit)
-          $ ( ".\\BIG\\271-all\\JEB-058-74.xml-271-step9.xml"
-            . ".\\BIG\\JEB-058-74.xml-271-step9-bracmat.conll"
-            )
+          $ (".\\BIG\\425-all\\ParlaMint-DK_20151_M78_2016-04-19-115.xml-425-step9.xml".".\\BIG\\step10-bracmat.conll")
+      |   ~
+        &   (its.doit)
+          $ (".\\BIG\\271-all\\JEB-058-74.xml-271-step9.xml".".\\BIG\\JEB-058-74.xml-271-step9-bracmat.conll")
       |   ~
         &   (its.doit)
           $ ( "C:\\projects\\parlamint\\ParlaMint-DK-TEI-ana\\conllner\\ParlaMint-DK_2014-10-31-20141-M10-439.xml-1176-step11.xml"
@@ -269,6 +269,8 @@ X=
           $ ( "C:\\projects\\parlamint\\tei2conll\\plain-all\\text-1-1196-step11.xml"
             . "C:\\projects\\parlamint\\tei2conll\\plain-all\\text-1-1196-step11.conll"
             )
+      |   ~
+        & (its.doit)$(".\\BIG\\7ZPXU8-573.pdf-250-step14.xml".".\\BIG\\7ZPXU8-573.pdf-250-step15b.conll")
       | (its.doit)$(arg$.arg$)
   );
 
@@ -286,10 +288,10 @@ Create CoNLL-U formatted output from TEI P5 input containing POS, lemma and depe
     , NEW
     , BIN
     )
-& lst'(X,"tei2conll.bra",APP)
-& put'(\n,"tei2conll.bra",APP,BIN)
-& lst'(r,"tei2conll.bra",APP)
-& put$(str$("\nnew'" X ";\n"),"tei2conll.bra",APP,BIN)
+& lst'(X,"tei2conll.bra",APP BIN WYD)
+& put'(\n,"tei2conll.bra",APP,BIN WYD)
+& lst'(r,"tei2conll.bra",APP BIN WYD)
+& put$(str$("\nnew'" X ";\n"),"tei2conll.bra",APP,BIN WYD)
 & ;
 
 new'X;

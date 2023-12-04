@@ -179,7 +179,6 @@ program-annotei=
               . !arg
               )
         )
-      & 0:?ID
       & ( msd
         =   p m
           .   !arg:(?p.?m)
@@ -225,10 +224,11 @@ program-annotei=
         )
       & ( AmbiguousPosOrLemma
         =   lenPS lenLS ID excludes ids len alts A M Z
-          .   !arg:(?lenPS.?lenLS.?ID)
+          .   !arg:(?lenPS.?lenLS)
             & :?excludes:?ids
             & "'excludes' collects @exclude attributes to be added to <w> elements with ambiguous analysis of @pos and/or @lemma.
                'ids' contains the complements of the 'excludes'"
+            & 0:?ID
             & (   !lenPS+!lenLS:>2
                 & "Ambiguous pos or lemma."
                 & (!lenPS:>1|!lenLS):?len
@@ -253,7 +253,7 @@ program-annotei=
                   )
               | 
               )
-            & (!ids.!excludes.!ID)
+            & (!ids.!excludes)
         )
       & ( rid
         =   aa zz tokid
@@ -302,8 +302,9 @@ program-annotei=
                                                     ?PML
                                               & "The 'c' elements that are spaces don't get here.
                                                        Current TEI element is w or pc"
-                                              &   AmbiguousPosOrLemma$(!lenPS.!lenLS.!ID)
-                                                : (?ids.?excludes.?ID)
+                                              &   AmbiguousPosOrLemma$(!lenPS.!lenLS)
+                                                : (?ids.?excludes)
+                                              & @(!tokid:"#" ?tokid)
                                               & (   !to:!id
                                                   & "Element is not a MWU."
                                                   &   getSP$()
@@ -312,98 +313,116 @@ program-annotei=
                                                               : !LS
                                                               : 
                                                             & (!e.!a,!s)
-                                                          |   
-                                                            & ( !e
-                                                              .     (   (   !e
-                                                                          : ~pc
-                                                                        |   !PCLEMMA
-                                                                          : y
-                                                                        )
-                                                                      & (lemma.!LS)
-                                                                    | 
-                                                                    )
-                                                                    ( !POS
-                                                                    .   msd
-                                                                      $ (!PS.!MS)
-                                                                    )
-                                                                      rid
-                                                                    $ (!tokid.!a)
-                                                                , !s
-                                                              )
-                                                          )
-                                                      |   "not tested"
-                                                        & ( !e
-                                                          .     (   (   !e
-                                                                      : ~pc
-                                                                    |   !PCLEMMA
-                                                                      : y
-                                                                    )
-                                                                  &   !LS
-                                                                    : @
-                                                                  & (lemmax.!LS)
-                                                                | 
-                                                                )
-                                                                (     !MS
-                                                                    : @
-                                                                  &   !PS
-                                                                    : @
-                                                                  & ( !POS
-                                                                    .   msd
-                                                                      $ (!PS.!MS)
-                                                                    )
-                                                                | 
-                                                                )
-                                                                !a
-                                                            ,   map
-                                                              $ ( ( 
-                                                                  =   id
-                                                                    .     !ids
-                                                                        :   %?id
-                                                                            ?ids
-                                                                      & (   !PS
-                                                                          :   %?P
-                                                                              ?PS
-                                                                        | 
-                                                                        )
-                                                                      & (   !MS
-                                                                          :   %?M
-                                                                              ?MS
-                                                                        | 
-                                                                        )
-                                                                      & (   !LS
-                                                                          :   %?L
-                                                                              ?LS
-                                                                        | 
-                                                                        )
-                                                                      & ( !e
-                                                                        .     (   (   !e
-                                                                                    : ~pc
-                                                                                  |   !PCLEMMA
-                                                                                    : y
-                                                                                  )
-                                                                                & ( lemmab
-                                                                                  . !L
-                                                                                  )
-                                                                              | 
-                                                                              )
-                                                                              ( !POS
-                                                                              .   msd
-                                                                                $ ( !P
-                                                                                  . !M
-                                                                                  )
-                                                                              )
-                                                                                rid
-                                                                              $ ( !tokid
-                                                                                . !a
-                                                                                )
-                                                                              !id
-                                                                              !arg
-                                                                          , !s
-                                                                        )
+                                                          | ( !e
+                                                            .     (   (   !e
+                                                                        : ~pc
+                                                                      |   !PCLEMMA
+                                                                        : y
+                                                                      )
+                                                                    & (lemma.!LS)
+                                                                  | 
                                                                   )
-                                                                . !excludes
-                                                                )
+                                                                  ( !POS
+                                                                  . msd$(!PS.!MS)
+                                                                  )
+                                                                  rid$(!tokid.!a)
+                                                              , !s
+                                                            )
                                                           )
+                                                      | ( !e
+                                                        .     (   (   !e
+                                                                    : ~pc
+                                                                  |   !PCLEMMA
+                                                                    : y
+                                                                  )
+                                                                & !LS:@
+                                                                & (lemmax.!LS)
+                                                              | 
+                                                              )
+                                                              (   !MS:@
+                                                                & !PS:@
+                                                                & ( !POS
+                                                                  . msd$(!PS.!MS)
+                                                                  )
+                                                              | 
+                                                              )
+                                                              rid$(!tokid.!a)
+                                                          ,   map
+                                                            $ ( ( 
+                                                                =   id
+                                                                  .     !ids
+                                                                      : %?id ?ids
+                                                                    & (   !PS
+                                                                        : %?P ?PS
+                                                                      | 
+                                                                      )
+                                                                    & (   !MS
+                                                                        : %?M ?MS
+                                                                      | 
+                                                                      )
+                                                                    & (   !LS
+                                                                        : %?L ?LS
+                                                                      | 
+                                                                      )
+                                                                    & ( !e
+                                                                      .     (   (   !e
+                                                                                  : ~pc
+                                                                                |   !PCLEMMA
+                                                                                  : y
+                                                                                )
+                                                                              & ( lemma
+                                                                                . !L
+                                                                                )
+                                                                            | 
+                                                                            )
+                                                                            ( !POS
+                                                                            .   msd
+                                                                              $ ( !P
+                                                                                . !M
+                                                                                )
+                                                                            )
+                                                                              rid
+                                                                            $ (   !tokid
+                                                                                  "."
+                                                                                  (   !id
+                                                                                    : ( ?
+                                                                                      . ?id
+                                                                                      )
+                                                                                  & !id
+                                                                                  )
+                                                                              . !a
+                                                                              )
+                                                                            (   !arg
+                                                                              : ( exclude
+                                                                                . ?arg
+                                                                                )
+                                                                            & ( exclude
+                                                                              .       vap
+                                                                                    $ ( ( 
+                                                                                        =   
+                                                                                          .   @( !arg
+                                                                                               :   "#"
+                                                                                                   ?arg
+                                                                                               )
+                                                                                            &   " "
+                                                                                                "#"
+                                                                                                !tokid
+                                                                                                "."
+                                                                                                !arg
+                                                                                        )
+                                                                                      . !arg
+                                                                                      )
+                                                                                  :   " "
+                                                                                      ?arg
+                                                                                & !arg
+                                                                              )
+                                                                            )
+                                                                        , !s
+                                                                      )
+                                                                )
+                                                              . !excludes
+                                                              )
+                                                        )
                                                       )
                                                 |   "'from' and 'to' are different. Remember the 'to' value in 'MWUend'.
                                                  also start collecting MWU units in 'mwu'. Note that MWUend currently is empty."
@@ -566,7 +585,7 @@ program-annotei=
                 )
         )
       & ( getListOfLinkGrp
-        =   tei seg stx from to S A B C,syn target ana skipped
+        =   tei seg stx from to S A B C syn target ana skipped
           .   !arg:(?tei.?seg.?stx)
             & :?skipped
             &   map
@@ -597,8 +616,8 @@ program-annotei=
                           & !syn !B !C:?syn
                         )
                       & !skipped !A:?skipped
-                      & ( !from
-                        , !to
+                      & ( @(!from:"#" ?rom)&!rom
+                        , @(!to:"#" ?o)&!o
                         , ( linkGrp
                           .   (targFunc."head argument") (type.UD-SYN)
                             ,   map
@@ -670,6 +689,7 @@ program-annotei=
                       )
                       ?M
                 & (   !id:!to
+                    & "Single word segment"
                     & !M:?arg
                     & !listOfMissedLinkGrp !Q:?listOfMissedLinkGrp
                     & !P:?ListOfLinkGrp
@@ -716,7 +736,6 @@ program-annotei=
       & ( spotAndInsertSTXEasy
         =   parentID
           .   !arg:(?arg.?parentID)
-            & 0:?Id
             &   map
               $ ( ( 
                   =   e a c d
@@ -733,7 +752,9 @@ program-annotei=
                           | !e:s&!d
                           | (!e.!a,!d)
                           )
-                      | PROBLEM !arg
+                      |   PROBLEM
+                        & get'
+                        & PROBLEM !arg
                   )
                 . !arg
                 )
@@ -995,119 +1016,109 @@ program-annotei=
               )
         )
       & rm#$!tei:?tei
-      & ( adaptid
-        =   parentID tei subid id
-          .   !arg:(?id.?subid.?parentID.?tei)
-            & (   map
-                $ ( ( 
-                    =   e a c A M Z ID v nc x id
-                      .   !arg:@
-                        |   !arg:(?e.?a,?c)
-                          & (     !a
-                                :   ?A
-                                    ("xml:id"|id.?ID)
-                                    ?M
-                                    (("xml:id"|id):?id.?v)
-                                    ?Z
-                              & ( (IDS..find)$!ID:(?.?ID)
-                                | (IDS..insert)$(!ID.str$!parentID)
-                                )
-                              &   !A !M !Z
-                                : (   ?A (exclude.?x) ?Z
-                                    &   ( exclude
-                                        .       vap
-                                              $ ( ( 
-                                                  =   id
-                                                    .   @(!arg:"#" ?id)
-                                                      & " " "#" !parentID "." !id
-                                                  )
-                                                . !x
-                                                . " "
-                                                )
-                                            : " " ?M
-                                          & str$!M
+      & ( adaptID
+        =   subnr idtype parentID
+          .   ( mapfnc
+              =   e a c A Z v vv nc id newv idrem
+                .   !arg:@
+                  |   !arg:(?e.?a,?c)
+                    & (     !a
+                          :   ?A
+                              ( ("xml:id"|id):?idtype
+                              . %@?id ?idrem
+                              )
+                              ?Z
+                        & 1+!subnr:?subnr
+                        & (   (IDS..find)$!id:(?.?vv)
+                            &   !vv "." (!idrem:|A) !subnr
+                              : ?newv
+                          |   (IDS..insert)
+                            $ ( !id
+                              .     str
+                                  $ ( !parentID
+                                      "."
+                                      (!idrem:|A)
+                                      !subnr
+                                    )
+                                : ?newv
+                                : ?vv
+                              )
+                          )
+                        & !A (!idtype.str$!newv) !Z:?a
+                        & (   !a:?A (exclude.?a) ?Z
+                            &     !A
+                                  ( exclude
+                                  .   str
+                                    $ ( map
+                                      $ ( ( 
+                                          =   
+                                            .     !arg:!id
+                                                & !vv
+                                              | !arg
+                                          )
+                                        . !a
                                         )
-                                      : ?M
-                                  | ?A ?M ?Z
-                                  )
-                              & ( !e
-                                .   !A (!id.str$(!parentID "." !v)) !M !Z
-                                  , !c
-                                )
-                            |     (     !a
-                                      :   ?A
-                                          (   ("xml:id"|id)
-                                            : ?ID
-                                          . ?v
-                                          )
-                                          ?Z
-                                    & ( (IDS..find)$!v:(?.?v)
-                                      |   (IDS..insert)
-                                        $ ( !v
-                                          .     str
-                                              $ ( !parentID
-                                                  "."
-                                                  (1+!subid:?subid)
-                                                )
-                                            : ?v
-                                          )
                                       )
-                                    & adaptid$(!id.!subid.!v.!c):(?nc.?subid)
-                                    & !A (!ID.!v) !Z
-                                  |   !e:~s
-                                    & !parentID:?v
-                                    & adaptid$(!id.!subid.!v.!c):(?nc.?subid)
-                                    & !a
-                                  |   adaptid$(!id.0.!v.!c):(?nc.?)
-                                    &   ( !id
-                                        .     str
-                                            $ (!parentID "." (1+!subid:?subid))
-                                          : ?v
-                                        )
-                                        !a
                                   )
-                                : ?a
-                              & (!e.!a,!nc)
-                            )
-                        | !arg
-                    )
-                  . !tei
-                  )
-              . !subid
+                                  !Z
+                              : ?a
+                          | 
+                          )
+                        & (!e.!a,adaptID$(!c.!idtype.!newv))
+                      | (!e.!a,map$(mapfnc.!c))
+                      )
               )
+            & !arg:(?arg.?idtype.?parentID)
+            & 0:?subnr
+            & map$(mapfnc.!arg)
         )
       & ( reidentify
         =   
-          .   map
-            $ ( ( 
-                =   e a c A Z id v nc
-                  .   !arg:@
-                    |   !arg:(?e.?a,?c)
-                      & (     !a
-                            :   ?A
-                                (("xml:id"|id):?id.?v)
-                                ?Z
-                          & (     !c
-                                :   ?
-                                    ( ?
-                                    .     ?
-                                          ( "xml:id"|id
-                                          . @(?:!v ?)
-                                          )
-                                          ?
-                                      , ?
-                                    )
-                                    ?
-                              & (!e.!a,reidentify$!c)
-                            |   adaptid$(!id.0.!v.!c):(?nc.?)
-                              & (!e.!a,!nc)
-                            )
-                        | (!e.!a,reidentify$!c)
-                        )
-                    | !arg
+          .   :?idtype
+            &   map
+              $ ( ( 
+                  =   e a c A Z v nc id newv
+                    .   !arg:@
+                      |   !arg:(?e.?a,?c)
+                        & (     !a
+                              :   ?A
+                                  (("xml:id"|id):?idtype.?id)
+                                  ?Z
+                            & 1+!nr:?nr
+                            & ( (IDS..find)$!id:(?.?newv)
+                              | (IDS..insert)$(!id.str$(div- !nr):?newv)
+                              )
+                            & ( !e
+                              .   !A (!idtype.!newv) !Z
+                                , adaptID$(!c.!idtype.!newv)
+                              )
+                          |   !e:s
+                            & "Create an id."
+                            & (   !idtype:
+                                & (   !c
+                                    :   ?
+                                        ( ?
+                                        .     ?
+                                              (   ("xml:id"|id)
+                                                : ?idtype
+                                              . ?
+                                              )
+                                              ?
+                                          , ?
+                                        )
+                                        ?
+                                  | "xml:id":?idtype
+                                  )
+                              | 
+                              )
+                            & 1+!nr:?nr
+                            & str$(div- !nr):?newv
+                            & (!e.!a (!idtype.!newv),adaptID$(!c.!idtype.!newv))
+                          | (!e.!a,reidentify$!c)
+                          )
+                  )
+                . !arg
                 )
-              . !arg
-              )
         )
       & ( relink
         =   parentID tei
@@ -1165,6 +1176,7 @@ program-annotei=
                 )
         )
       & new$hash:?IDS
+      & 0:?nr
       & reidentify$!tei:?tei
       & :?ides
       & (IDS..forall)$(=.!arg !ides:?ides)
@@ -1452,6 +1464,18 @@ program-annotei=
   ( new
   =   
     .   ~&"Remove the ~ to merely reformat the code, not run it."
+      |   257-all
+        &   (its.doit)
+          $ ( "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step1.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step3.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step12.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step10.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step7.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step4.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step9.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step11.xml"
+            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-out.xml"
+            )
       |   ~
         &   (its.doit)
           $ ( "C:\\gitprojects\\texton\\teianno\\Ifacet_seg_tokF"
@@ -1499,6 +1523,18 @@ program-annotei=
             . "C:\\projects\\parlamint\\small\\IfacetstxF"
             . "*"
             . "C:\\projects\\parlamint\\small\\small.out.xml"
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "fahrkarte\\7ZPXU8-573.pdf-250-step3.xml"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step5.xml"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step13.xml"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step12.xml"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step9.xml"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step6.xml"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step11.xml"
+            . "*"
+            . "fahrkarte\\7ZPXU8-573.pdf-250-step15.xml"
             )
       |   (its.doit)
         $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$.arg$.arg$)
