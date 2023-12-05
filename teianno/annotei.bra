@@ -264,7 +264,7 @@ program-annotei=
                 ("xml:id".!tokid)
         )
       & ( anno
-        =   A e a s lenPS lenLS lenMS id to PS MS LS tokid
+        =   A e a c lenPS lenLS lenMS id to PS MS LS tokid
           .   map
             $ ( ( 
                 =   a b c
@@ -274,9 +274,9 @@ program-annotei=
               .   map
                 $ ( ( 
                     =     M Z aa alts excludes ids len theMWU tokid zz
-                        , e a s id to P M L save
+                        , e a c id to P M L save
                       .   !arg:?save&!arg:@
-                        |   !arg:(?e.?a,?s)
+                        |   !arg:(?e.?a,?c)
                           & (     !e
                                 : ( w
                                   |   c
@@ -284,9 +284,9 @@ program-annotei=
                                       | pc:?e
                                       )
                                   )
-                              & (     !s
+                              & (     !c
                                     : ? (w|c.?,?) ?
-                                  & getSP$() (!e.!a,anno$(join$!s))
+                                  & getSP$() (!e.!a,anno$(join$!c))
                                 |   "Element is w or c or pc and has no child elements."
                                   & (   !a:? ("xml:id".?id) ?
                                       & (   !MWUend:
@@ -304,15 +304,17 @@ program-annotei=
                                                        Current TEI element is w or pc"
                                               &   AmbiguousPosOrLemma$(!lenPS.!lenLS)
                                                 : (?ids.?excludes)
-                                              & @(!tokid:"#" ?tokid)
+                                              & ( 
+                                                | @(!tokid:"#" ?tokid)
+                                                )
                                               & (   !to:!id
-                                                  & "Element is not a MWU."
+                                                  & "Element is not an MWU."
                                                   &   getSP$()
                                                       (   !excludes:
                                                         & (     !PS
                                                               : !LS
                                                               : 
-                                                            & (!e.!a,!s)
+                                                            & (!e.!a,!c)
                                                           | ( !e
                                                             .     (   (   !e
                                                                         : ~pc
@@ -326,7 +328,7 @@ program-annotei=
                                                                   . msd$(!PS.!MS)
                                                                   )
                                                                   rid$(!tokid.!a)
-                                                              , !s
+                                                              , !c
                                                             )
                                                           )
                                                       | ( !e
@@ -405,7 +407,9 @@ program-annotei=
                                                                                                    ?arg
                                                                                                )
                                                                                             &   " "
-                                                                                                "#"
+                                                                                                ( 
+                                                                                                | "#"
+                                                                                                )
                                                                                                 !tokid
                                                                                                 "."
                                                                                                 !arg
@@ -417,7 +421,7 @@ program-annotei=
                                                                                 & !arg
                                                                               )
                                                                             )
-                                                                        , !s
+                                                                        , !c
                                                                       )
                                                                 )
                                                               . !excludes
@@ -427,18 +431,18 @@ program-annotei=
                                                 |   "'from' and 'to' are different. Remember the 'to' value in 'MWUend'.
                                                  also start collecting MWU units in 'mwu'. Note that MWUend currently is empty."
                                                   & !to:?MWUend
-                                                  &   (!e.rid$(!tokid.!a),!s)
+                                                  &   (!e.rid$(!tokid.!a),!c)
                                                     : ?mwu
                                                   & 
                                                 )
-                                            |   !SP (!e.!a,!s):?SP
+                                            |   !SP (!e.!a,!c):?SP
                                               & 
                                             )
                                         |   "'MWUend' is not empty."
                                           & !id:!MWUend
                                           & "Reached the last element in a MWU like 'e' '.' 'g' '.'"
                                           & :?MWUend
-                                          &   !mwu (!e.!a,!s)
+                                          &   !mwu (!e.!a,!c)
                                             : ?mwu
                                             :   ( ?
                                                 .   ? ("xml:id".?iD) ?
@@ -515,19 +519,19 @@ program-annotei=
                                                   )
                                               )
                                         |   "'mwu' is not empty."
-                                          & !mwu (!e.!a,!s):?mwu
+                                          & !mwu (!e.!a,!c):?mwu
                                           & 
                                         )
                                     |   "Element has no xml:id"
-                                      & getSP$() (!e.!a,!s)
+                                      & getSP$() (!e.!a,!c)
                                     )
                                 )
                             |   "(Not w or c) AND/OR child elements present"
-                              & (   !s:? (w.?,?) ?
-                                  & join$!s:?s
+                              & (   !c:? (w.?,?) ?
+                                  & join$!c:?c
                                 | 
                                 )
-                              & getSP$() (!e.!a,anno$!s):?temp
+                              & getSP$() (!e.!a,anno$!c):?temp
                               & ( !mwu:&!temp
                                 | !mwu !temp:?mwu&
                                 )
@@ -541,25 +545,25 @@ program-annotei=
       & :?MWUend:?mwu:?to:?SP
       & anno$!tei:?tei
       & ( cleanup
-        =   A e a s aa zz pat
+        =   A e a c aa zz pat
           .   !arg:(?arg.(=?pat))
             &   map
               $ ( ( 
                   =   
-                    .     !arg:(?e.?a,?s)
+                    .     !arg:(?e.?a,?c)
                         & (     !e
                               : (w|pc|c)
                             & (   !a:? (type.s) ?
-                                & (!s:~|)
+                                & (!c:~|)
                               |     whl
                                   ' ( !a:!pat
                                     & !aa !zz:?a
                                     )
-                                & ( !a:&!s
-                                  | (!e.!a,cleanup$(!s.'$pat))
+                                & ( !a:&!c
+                                  | (!e.!a,cleanup$(!c.'$pat))
                                   )
                               )
-                          | (!e.!a,cleanup$(!s.'$pat))
+                          | (!e.!a,cleanup$(!c.'$pat))
                           )
                       | !arg
                   )
@@ -571,13 +575,13 @@ program-annotei=
           .   !arg:(?tei.?elm)
             &   map
               $ ( ( 
-                  =   e a s
-                    .     !arg:(?e.?a,?s)
+                  =   e a c
+                    .     !arg:(?e.?a,?c)
                         & ( !e:!elm&!arg
-                          | !e:s&filter$(!s.!elm)
-                          | !e:(w|pc)&!s
+                          | !e:s&filter$(!c.!elm)
+                          | !e:(w|pc)&!c
                           | !e:linkGrp&
-                          | (!e.!a,filter$(!s.!elm))
+                          | (!e.!a,filter$(!c.!elm))
                           )
                       | !arg
                   )
@@ -616,8 +620,10 @@ program-annotei=
                           & !syn !B !C:?syn
                         )
                       & !skipped !A:?skipped
-                      & ( @(!from:"#" ?rom)&!rom
-                        , @(!to:"#" ?o)&!o
+                      & (   !from
+                          | @(!from:"#" ?rom)&!rom
+                        ,   !to
+                          | @(!to:"#" ?o)&!o
                         , ( linkGrp
                           .   (targFunc."head argument") (type.UD-SYN)
                             ,   map
@@ -736,6 +742,9 @@ program-annotei=
       & ( spotAndInsertSTXEasy
         =   parentID
           .   !arg:(?arg.?parentID)
+            & ( !parentID:
+              | out$NUL&0:?Id
+              )
             &   map
               $ ( ( 
                   =   e a c d
@@ -862,6 +871,7 @@ program-annotei=
             | !TEIatt:? ("xml:id"|id.?parentID) ?
             | :?parentID
             )
+          & out$nul
           & 0:?Id
           & spotAndInsertSTXEasy$(!tei.!parentID):?tei
           & ( !listOfMissedLinkGrp:
@@ -871,13 +881,13 @@ program-annotei=
                 =   
                   .   map
                     $ ( ( 
-                        =   e a c b d v S I F A Z id
+                        =   e a c b d v S I F A Z idTYpe
                           .     !arg:(?e.?a,?c)
                               & ( !e
                                 .         !a
                                         :   ?b
                                             (   ("xml:id"|id)
-                                              : ?id
+                                              : ?idTYpe
                                             . ?v
                                             )
                                             ?d
@@ -887,7 +897,7 @@ program-annotei=
                                           | (!S.1:?F) !prefi
                                           )
                                         : ?prefi
-                                      & !b (!id.str$(!S "." !F)) !d
+                                      & !b (!idTYpe.str$(!S "." !F)) !d
                                     | !a
                                   , getIDsRight$!c
                                 )
@@ -997,16 +1007,16 @@ program-annotei=
         =   
           .   map
             $ ( ( 
-                =   e a c A Z id v
+                =   e a c A Z idTYpe v v2
                   .   !arg:@
                     |   !arg:(?e.?a,?c)
                       & (     !a
                             :   ?A
-                                ( ("xml:id"|id):?id
-                                . @(?:"#" ?v)
+                                ( ("xml:id"|id):?idTYpe
+                                . @(%:"#" ?v) ?v2
                                 )
                                 ?Z
-                          & !A (!id.!v) !Z:?a
+                          & !A (!idTYpe.!v !v2) !Z:?a
                         | 
                         )
                       & (!e.!a,rm#$!c)
@@ -1032,6 +1042,8 @@ program-annotei=
                         & (   (IDS..find)$!id:(?.?vv)
                             &   !vv "." (!idrem:|A) !subnr
                               : ?newv
+                          |   @(!id:!parentID ?)
+                            & (IDS..insert)$(!id.!id:?newv:?vv)
                           |   (IDS..insert)
                             $ ( !id
                               .     str
@@ -1052,8 +1064,8 @@ program-annotei=
                                     $ ( map
                                       $ ( ( 
                                           =   
-                                            .     !arg:!id
-                                                & !vv
+                                            .     @(!arg:"#" !id)
+                                                & "#" !vv
                                               | !arg
                                           )
                                         . !a
@@ -1084,36 +1096,45 @@ program-annotei=
                               :   ?A
                                   (("xml:id"|id):?idtype.?id)
                                   ?Z
-                            & 1+!nr:?nr
                             & ( (IDS..find)$!id:(?.?newv)
-                              | (IDS..insert)$(!id.str$(div- !nr):?newv)
+                              | (IDS..insert)$(!id.!id:?newv)
+                              |   1+!nr:?nr
+                                &   (IDS..insert)
+                                  $ (!id.str$(div- !nr):?newv)
                               )
                             & ( !e
                               .   !A (!idtype.!newv) !Z
                                 , adaptID$(!c.!idtype.!newv)
                               )
                           |   !e:s
-                            & "Create an id."
-                            & (   !idtype:
-                                & (   !c
-                                    :   ?
-                                        ( ?
-                                        .     ?
-                                              (   ("xml:id"|id)
-                                                : ?idtype
-                                              . ?
-                                              )
-                                              ?
-                                          , ?
-                                        )
-                                        ?
-                                  | "xml:id":?idtype
+                            & ( (!e.!a,!c)
+                              |   "Create an id."
+                                & (   !idtype:
+                                    & (   !c
+                                        :   ?
+                                            ( ?
+                                            .     ?
+                                                  (   ("xml:id"|id)
+                                                    : ?idtype
+                                                  . ?
+                                                  )
+                                                  ?
+                                              , ?
+                                            )
+                                            ?
+                                      | "xml:id":?idtype
+                                      )
+                                  | 
                                   )
-                              | 
+                                & 1+!nr:?nr
+                                & out$(nr !nr Id !Id)
+                                & out$(reidentify !c)
+                                & str$(div- !nr):?newv
+                                & ( !e
+                                  .   !a (!idtype.!newv)
+                                    , adaptID$(!c.!idtype.!newv)
+                                  )
                               )
-                            & 1+!nr:?nr
-                            & str$(div- !nr):?newv
-                            & (!e.!a (!idtype.!newv),adaptID$(!c.!idtype.!newv))
                           | (!e.!a,reidentify$!c)
                           )
                   )
@@ -1464,17 +1485,41 @@ program-annotei=
   ( new
   =   
     .   ~&"Remove the ~ to merely reformat the code, not run it."
-      |   257-all
+      |   ~
         &   (its.doit)
-          $ ( "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step1.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step3.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step12.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step10.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step7.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step4.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step9.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-step11.xml"
-            . "C:\\gitprojects\\texton\\teianno\\257-all\\JEB-040-577.xml-257-out.xml"
+          $ ( "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step1.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step3.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step6.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step9.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step7.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step4.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step8.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-step10.xml"
+            . "C:\\gitprojects\\texton\\teianno\\128ALF-all\\ParlaMint-DK_2014-10-07-20141-M1-2.xml-128-out.xml"
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step3.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step5.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step14.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step12.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step9.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step6.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step11.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-step13.xml"
+            . "C:\\gitprojects\\texton\\teianno\\278-all\\7ZPXU8-683.pdf-278-out.xml"
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step3.xml"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step5.xml"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step13.xml"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step12.xml"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step9.xml"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step6.xml"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-step11.xml"
+            . "*"
+            . "C:\\gitprojects\\texton\\teianno\\281-all\\1EDA6Z-687.pdf-281-out.xml"
             )
       |   ~
         &   (its.doit)
