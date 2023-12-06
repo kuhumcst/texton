@@ -23,7 +23,7 @@ X=
             )
           . !abbreviations
           )
-      & nestML$(get$(!input,X ML)):?xml
+      & nestML$(get$(!input,X ML TRM)):?xml
       &   !xml
         : ?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
       & 0:?tok:?sen:?IS
@@ -942,6 +942,7 @@ X=
                                         | floatingText
                                         | opener
                                         | postscript
+                                        | rs
                                         | salute
                                         | signed
                                         | trailer
@@ -1280,12 +1281,64 @@ X=
                 )
             & inverse$(!intra !sents)
         )
+      & ( structsub
+        =   e a c A S Z
+          .   1+!subn:?subn
+            &   map
+              $ ( ( 
+                  =   
+                    .     !arg:(?e.?a,?c)
+                        & (   !a:?A (S.?S) ?Z
+                            & (!e.!A (S.str$(!S "." !subn)) !Z,!c)
+                          | !e:c&!arg
+                          | (!e.!a,structsub$!c)
+                          )
+                      | !arg
+                  )
+                . !arg
+                )
+        )
+      & ( substruct
+        =   e a c
+          .   "If a substructure of an <s> (e.g. <rs>) has two or more S values,
+               then make them all unique by adding '.n',
+               where 'n' is a text-wide unique number"
+            & (   !arg:? (?.? (S.?) ?,?) ?
+                & "arg seems to be the content of e.g. an <s>. Now check each element in arg for substructures with S'es."
+                &   map
+                  $ ( ( 
+                      =   
+                        .     !arg:(?e.?a,?c)
+                            & (   !a:? (S.?) ?
+                                & !arg
+                              | !e:c&!arg
+                              | (!e.!a,structsub$!c)
+                              )
+                          | !arg
+                      )
+                    . !arg
+                    )
+              |   map
+                $ ( ( 
+                    =   
+                      .     !arg:(?e.?a,?c)
+                          & ( !e:c&!arg
+                            | (!e.!a,substruct$!c)
+                            )
+                        | !arg
+                    )
+                  . !arg
+                  )
+              )
+        )
       & trav$(!text..):?nbody
       & contractwadddel$!nbody:?nbody2
       &   (!style:PT&rcontr$!nbody2|!nbody2)
         : ?nmbody2
       & assignIDs$!nmbody2:?nnbody
-      & get$(toML$!nnbody,X ML MEM):?serial
+      & 0:?subn
+      & substruct$!nnbody:?nnbodys
+      & get$(toML$!nnbodys,X ML MEM):?serial
       & ser$(!serial.S):?nrbody
       & 0:?ID
       & ( removeOutliers
@@ -1359,6 +1412,18 @@ X=
   ( new
   =   input abbr style
     .   ~
+      |   ~
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
+            | 
+            )
+          : ?nabbr
+        &     (its.teitok)
+            $ ("test\\acc-1992_0005_095_london_0090-tei-final.xml".simple.!nabbr !abbr.da)
+          : ?XMLL
+        & toML$!XMLL:?XMLLL
+        & put$(!XMLLL,"test\\ellipsis.out.xml",NEW)
       |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
         &   (   get$(nabbr,STR):?nabbr
