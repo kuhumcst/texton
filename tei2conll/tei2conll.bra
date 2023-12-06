@@ -81,9 +81,7 @@ X=
                   : ( ? (lemma.?lemma) ?
                     | ?&!C:?lemma
                     )
-                & ( !linkGrp:? (!id.?ana.?to) ?
-                  | out$!id&~
-                  )
+                & !linkGrp:? (!id.?ana.?to) ?
                 &   !id
                     \t
                     !C
@@ -141,6 +139,9 @@ X=
             & ( !att:? ("xml:id".?id) ?
               | 1+!sentno:?sentno:?id
               )
+            & ( (tokids..find)$!id&(tokids..remove)$!id
+              | 
+              )
             & (tokids..insert)$(!id.0)
             & ( aggIDS
               =   
@@ -152,7 +153,12 @@ X=
                                 .   ? ("xml:id"|id.?id) ?
                                   , ?
                                 )
-                            & (tokids..insert)$(!id.1+!n:?n)
+                            & 1+!n:?n
+                            & (   (tokids..find)$!id
+                                & (tokids..remove)$!id
+                              | 
+                              )
+                            & (tokids..insert)$(!id.!n)
                           | !arg:(?.?,?c)&aggIDS$!c
                       )
                     . !arg
@@ -187,15 +193,14 @@ X=
                                     )
                                 , ?
                               )
-                          & (tokids..find)$!to:(?.?to)
-                          & (tokids..find)$!from:(?.?from)
-                          & (!from.!ana.!to)
+                          & (tokids..find)$!to:(?k1.?to1) ?to2
+                          & (tokids..find)$!from:(?k2.?from1) ?from2
+                          & (!from1.!ana.!to1)
                         | 
                     )
                   . !linkGrp
                   )
               : ?linkGrp
-            & lst$(linkGrp,linkGrp,APP,RAW)
             & :?oj
             &   str
               $ ( "# sent_id = "
@@ -250,6 +255,11 @@ X=
   ( new
   =   
     .   ~
+      |   
+        &   (its.doit)
+          $ ( "..\\teianno\\286-all-truslerne\\JEB-040-698.xml-286-step13.xml"
+            . "..\\teianno\\286-all-truslerne\\JEB-040-698.xml-286-step13.xml.conll"
+            )
       |   ~
         &   (its.doit)
           $ ("..\\teianno\\257-all\\JEB-040-577.xml-257-out.xml"."..\\teianno\\257-all\\JEB-040-577.xml-257-out.conll")
