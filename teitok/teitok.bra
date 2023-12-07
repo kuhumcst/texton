@@ -1302,7 +1302,8 @@ X=
         =   e a c
           .   "If a substructure of an <s> (e.g. <rs>) has two or more S values,
                then make them all unique by adding '.n',
-               where 'n' is a text-wide unique number"
+               where 'n' is a text-wide unique number.
+               A substructure is an element embedded in an element that has children with S and T attributes."
             & (   !arg:? (?.? (S.?) ?,?) ?
                 & "arg seems to be the content of e.g. an <s>. Now check each element in arg for substructures with S'es."
                 &   map
@@ -1331,6 +1332,82 @@ X=
                   )
               )
         )
+      & ( collectSvals
+        =   S a c
+          .   map
+            $ ( ( 
+                =   
+                  .     !arg:(?.?a,?c)
+                      & ( !a:? (S.?S) ?&!S
+                        | collectSvals$!c
+                        )
+                    | 
+                )
+              . !arg
+              )
+        )
+      & ( retrieveSsequences
+        =   e a c A S Z
+          .   "If an element has no children with S and T elements, then its substructures may not share the same S value if any of those substructures has more than one S value. So this should not be allowed:
+                            ( address
+                            . , (c.(type.s),\" \")
+                                ( addrLine
+                                . , (w.(S.1) (T.4),Hr)
+                                    ( c
+                                    . (type.p) (S.1) (T.5),\".\"
+                                    )
+                                    (c.(type.s),\" \")
+                                    (w.(S.2) (T.2),mag)
+                                    ( c
+                                    . (type.p) (S.2) (T.2),\".\"
+                                    )
+                                    (w.(S.2) (T.2),art)
+                                )
+                                (c.(type.s),\" \")
+                                ( addrLine
+                                . , ( persName
+                                    . (ref.\"#np56\")
+                                      , (w.(S.2) (T.6),Louis)
+                                        (c.(type.s),\" \")
+                                        (w.(S.2) (T.8),Hjelmslev)
+                                    )
+                                )
+                                (c.(type.s),\" \")
+                            )
+              "
+            & (   !arg:? (?.? (S.?) ?,?) ?
+                & "There is at least one sibling with an S attribute.
+                   So this comprises one or more complete or inclomplete sentences.
+                   Make a list of all S values occurring in arg."
+                & (collectSvals$!arg.!arg)
+              |   map
+                $ ( ( 
+                    =   
+                      .     !arg:(?e.?,?c)
+                          & ( !e:c&
+                            | retrieveSsequences$!c
+                            )
+                        | 
+                    )
+                  . !arg
+                  )
+              )
+        )
+      & "replacestruct: Replace S values that continue into next substructure by new unique values."
+      & ( replacestruct
+        =   e a c O N
+          .     !TransS:(!arg.?O.?N) ?TransS
+              & sub$(!arg.(S.!O).S.!N)
+            |   map
+              $ ( ( 
+                  =   
+                    .     !arg:(?e.?a,?c)
+                        & (!e.!a,replacestruct$!c)
+                      | !arg
+                  )
+                . !arg
+                )
+        )
       & trav$(!text..):?nbody
       & contractwadddel$!nbody:?nbody2
       &   (!style:PT&rcontr$!nbody2|!nbody2)
@@ -1338,7 +1415,31 @@ X=
       & assignIDs$!nmbody2:?nnbody
       & 0:?subn
       & substruct$!nnbody:?nnbodys
-      & get$(toML$!nnbodys,X ML MEM):?serial
+      & retrieveSsequences$!nnbodys:?Sseq
+      & ( CreateReplacementTriplets
+        =   a A M Z
+          .   "Find two consecutive elements in TransS where the first ends with an S value equal to the first S value in the second element,
+               and where the first or the second element also contains another S value."
+            & :?TransS
+            & (   !arg
+                :   ?
+                    (?A %@?M.?a)
+                    (   %@!M ?Z
+                      & ( !A:? (%@:~!M) ?
+                        | !Z:? (%@:~!M) ?
+                        )
+                      &   !TransS (!a.!M.str$(!M "." (1+!subn:?subn)))
+                        : ?TransS
+                      & ~
+                    . 
+                    )
+                    ?
+              | !TransS
+              )
+        )
+      & CreateReplacementTriplets$!Sseq:?TransS
+      & replacestruct$!nnbodys:?nnbodys2
+      & get$(toML$!nnbodys2,X ML MEM):?serial
       & ser$(!serial.S):?nrbody
       & 0:?ID
       & ( removeOutliers
@@ -1413,17 +1514,10 @@ X=
   =   input abbr style
     .   ~
       |   ~
-        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
-        &   (   get$(nabbr,STR):?nabbr
-              & vap$((=.!arg).!nabbr.\n)
-            | 
-            )
-          : ?nabbr
-        &     (its.teitok)
-            $ ("test\\acc-1992_0005_095_london_0090-tei-final.xml".simple.!nabbr !abbr.da)
+        &   (its.teitok)$("test/acc-1992_0005_030_Western_0090-tei-final.xml".simple..nb)
           : ?XMLL
         & toML$!XMLL:?XMLLL
-        & put$(!XMLLL,"test\\ellipsis.out.xml",NEW)
+        & put$(!XMLLL,"test/ellipsis.out.xml",NEW)
       |   ~
         & vap$((=.!arg).get$(abbr,STR).\n):?abbr
         &   (   get$(nabbr,STR):?nabbr
