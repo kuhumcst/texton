@@ -14,6 +14,9 @@ X=
           : ? (spanGrp.?,?tok) ?
         &   nestML$(get$(!sent,X ML))
           : ? (spanGrp.?,?sent) ?
+        &   !tok
+          :   (span.? ("xml:id".?fromID) ?,?)
+              ?
         & 0:?i
         & :?ERR
         &   put
@@ -27,39 +30,48 @@ X=
                                 : ( span
                                   .     ? (from.?fromIndex) ?
                                       : ( ? (to.?toIndex) ?
-                                        | ?&:?toIndex
+                                        |   ?
+                                          & :?toIndex
                                         )
                                     , ?
                                   )
-                              &   !tok
-                                :   ?
-                                    (   ( span
-                                        .     ? (from.!fromIndex) ?
-                                            : ? ("xml:id".?fromID) ?
-                                          , ?
-                                        )
-                                        ?
-                                    : ?tok
-                                    )
+                              & (   !tok
+                                  :   ?
+                                      (   ( span
+                                          .       ?
+                                                  (from.!fromIndex)
+                                                  ?
+                                              :   ?
+                                                  ("xml:id".?fromID)
+                                                  ?
+                                            , ?
+                                          )
+                                          ?
+                                      : ?tok
+                                      )
+                                | 
+                                )
                               & (   !toIndex:
                                   & !fromID:?toID
-                                |   !( 
-                                     ' ( $tok
-                                       :   ?
-                                           ( span
-                                           .     (   ?
-                                                     (to.$toIndex)
-                                                     ?
-                                                 |   ?
-                                                     (from.$toIndex)
-                                                     ?
-                                                 )
-                                               : ? ("xml:id".?toID) ?
-                                             , ?
-                                           )
-                                           ?tok
-                                       )
+                                | !( 
+                                   ' ( $tok
+                                     :   ?
+                                         ( span
+                                         .     (   ?
+                                                   (to.$toIndex)
+                                                   ?
+                                               |   ?
+                                                   (from.$toIndex)
+                                                   ?
+                                               )
+                                             :   ?
+                                                 ("xml:id".?toID)
+                                                 ?
+                                           , ?
+                                         )
+                                         ?tok
                                      )
+                                   )
                                 |   !ERR:
                                   &     str
                                       $ ( "ERROR: Inputs are unrelated. Sentence 'to'-index "
@@ -73,7 +85,9 @@ X=
                                 .     (from.str$("#" !fromID))
                                       (to.str$("#" !toID))
                                       (type.Sseg)
-                                      ("xml:id".str$(S (!i+1:?i)))
+                                      ( "xml:id"
+                                      . str$(S (!i+1:?i))
+                                      )
                                   , 
                                 )
                             | 
@@ -90,6 +104,12 @@ X=
   ( new
   =   
     .   ~
+      |   
+        &   (its.doit)
+          $ ( "C:\\gitprojects\\texton\\seg\\IfacettokF2"
+            . "C:\\gitprojects\\texton\\seg\\IfacetsentF2"
+            . "segs.xml"
+            )
       |   ~
         &   (its.doit)
           $ ( "C:\\gitprojects\\texton\\toks\\maak.out2.xml"
