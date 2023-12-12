@@ -5,29 +5,73 @@ Get the casing right for Danish TEI P5 texts}
 
 X=
   ( teitok
-  =   input abbreviations style language,SentenceEndingAbbrSeen
-    .   !arg:(?input.?style.?abbreviations.?language)
-      & :?SentenceEndingAbbrSeen
-      & new$hash:?Mabbr
-      & new$hash:?Eabbr
-      & (Mabbr..ISO)$
-      & (Eabbr..ISO)$
-      &   map
-        $ ( ( 
-            =   
-              .   (   @(!arg:" " ?arg)
-                    & (Eabbr..insert)$(!arg.)
-                  | (Mabbr..insert)$(!arg.)
-                  )
-                & !arg
-            )
-          . !abbreviations
-          )
-      & nestML$(get$(!input,X ML TRM)):?xml
-      &   !xml
-        : ?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
-      & 0:?tok:?sen:?IS
-      & ( Sen
+  =     input abbreviations style language
+      ,   SentenceEndingAbbrSeen
+          COLLECT
+          IDgen
+          InsertS
+          RemoveSpace
+          RemoveSpaceFromS
+          Sen
+          Split
+          SplitAbbr
+          Tx
+          assignIDs
+          collectSvals
+          considerAbbrev
+          contr
+          contractwadddel
+          ecaps
+          findIDs
+          getAll
+          inc1
+          inc2
+          inverse
+          llAteg
+          moveLeadingAndTrailingSpacesOutside
+          perQlateS
+          rcontr
+          removeOutliers
+          removeSpacesIfNoTokens
+          removeSuperfluousSpaces
+          retrieveSsequences
+          sing
+          space
+          toksplit
+          trav
+          trim
+          trm
+          trq
+          vlooi
+      ,   AAA
+          DDD
+          Eabbr
+          ID
+          IDs
+          IS
+          Mabbr
+          Sseq
+          Sseq0
+          Sseq1
+          Sseq2
+          TransS
+          XXX
+          XYZ
+          YYY
+          nbody
+          nbody2
+          nmbody2
+          nnbody
+          nnbodys
+          nnbodys2
+          sen
+          teiatt
+          text
+          textatt
+          tok
+          xml
+      , content tok-1
+    .   ( Sen
         =   R
           .   !IS:?R
             & 0:?IS
@@ -52,8 +96,42 @@ X=
           .   !arg:?A %@?B ?arg&!A trm$!B trim$!arg
             | !arg
         )
+      & ( content
+        =   A c
+          .     !arg:?A (w.?,?c) ?arg
+              & str$(!A !c content$!arg)
+            | !arg
+        )
+      & ( tok-1
+        =   E sen
+          .   !arg:(?arg.? (S.?sen) ?)
+            & ( E
+              =   A e a s p q t
+                .       !arg
+                      :   ?A
+                          ( ?e
+                          .     ( ~(? (S.?) ?)
+                                | ? (S.Sen$) ?
+                                )
+                              : ?a
+                            , ?s
+                          )
+                          ?arg
+                    &   !A
+                        ( !e
+                        .     !a:?p (T.?t) ?q
+                            & (!p (T.-1+!t) !q,!s)
+                          | (!a,E$!s)
+                        )
+                        E$!arg
+                  | !arg
+              )
+            & E$!arg
+        )
       & ( trq
-        =   att sub nm A Z a z w,wa W ad XX ad
+        =     att sub A Z
+            , wa W ad XX ad
+            , I L V XXY e narg wb
           .     whl
               ' (   !arg
                   :   ?A
@@ -162,8 +240,6 @@ X=
             & fnd$!arg
             & !IDs
         )
-      & findIDs$!text:?IDs
-      & 0:?ID
       & ( IDgen
         =   id
           .   !arg:? ("xml:id".?) ?&
@@ -177,10 +253,10 @@ X=
       & ( assignIDs
         =   asn
           .   ( asn
-              =   att sub nm A Z a z
+              =   att sub nm a z
                 .   map
                   $ ( ( 
-                      =   
+                      =   e id
                         .     !arg:(?e.?att,?sub)
                             & (   !e:(w|c)
                                 & (     !att
@@ -226,7 +302,7 @@ X=
             | !arg
         )
       & ( contr
-        =   a b A B S T E
+        =   a b A B S T E Z c
           .     whl
               ' (   !arg
                   :   ?A
@@ -351,9 +427,9 @@ X=
             & !arg
         )
       & ( rcontr
-        =   rc S T ot nt s t
+        =   rc
           .   ( rc
-              =   att sub nm A Z a z e
+              =   att sub e
                 .   map
                   $ ( ( 
                       =   
@@ -461,7 +537,7 @@ X=
                 )
         )
       & ( Split
-        =   A k K it OO
+        =   A k K it OO,rep
           .   :?OO
             & 1:?it
             &   whl
@@ -603,21 +679,21 @@ X=
                 )
         )
       & ( getAll
-        =   K p
+        =   K p P
           .   !arg:(?K.?p)
             & !p:?P
             & whl'(!K:?K !p&!p !P:?P)
             & (!K.!P)
         )
       & ( llAteg
-        =   K p
+        =   K p P
           .   !arg:(?K.?p)
             & !p:?P
             & whl'(!K:!p ?K&!p !P:?P)
             & (!K.!P)
         )
       & ( considerAbbrev
-        =   A P kar kars nxt KRS Z
+        =   A P kar kars nxt KRS Z TOK
           .   !arg:(?arg.?nxt)
             & !arg:?A "."
             & getAll$(!A."."):(?A.?P)
@@ -660,7 +736,7 @@ X=
               )
         )
       & ( toksplit
-        =   A N P Z tp PZ z F L,abb TOK chars kars kar
+        =   A P F,abb TOK chars,frst sep
           .   !arg:(?arg.?abb)
             & ( !SentenceEndingAbbrSeen:
               |   :?SentenceEndingAbbrSeen
@@ -751,7 +827,7 @@ X=
               )
         )
       & ( Tx
-        =   abb efter før
+        =   abb efter før,concS
           .   !arg:(?arg.?abb.?før,?efter)
             & ( !arg:
               |     vap
@@ -762,14 +838,14 @@ X=
                               ( !arg:
                               |       vap
                                     $ ( ( 
-                                        =   T
+                                        =   
                                           .   ( 1+!tok:?tok
                                               & (c.(type.s)," ")
                                               )
                                               ( !arg:
                                               |   vap
                                                 $ ( ( 
-                                                    =   T
+                                                    =   
                                                       .   !arg:
                                                         | toksplit$(!arg.!abb)
                                                     )
@@ -979,358 +1055,12 @@ X=
               & !B
             | 
         )
-      & ( contractwadddel
-        =   content
-          .   ( content
-              =   A c
-                .     !arg:?A (w.?,?c) ?arg
-                    & str$(!A !c content$!arg)
-                  | !arg
-              )
-            & ( tok-1
-              =   E sen
-                .   !arg:(?arg.? (S.?sen) ?)
-                  & ( E
-                    =   A e a s p q t
-                      .       !arg
-                            :   ?A
-                                ( ?e
-                                .     ( ~(? (S.?) ?)
-                                      | ? (S.Sen$) ?
-                                      )
-                                    : ?a
-                                  , ?s
-                                )
-                                ?arg
-                          &   !A
-                              ( !e
-                              .     !a:?p (T.?t) ?q
-                                  & (!p (T.-1+!t) !q,!s)
-                                | (!a,E$!s)
-                              )
-                              E$!arg
-                        | !arg
-                    )
-                  & E$!arg
-              )
-            & trq$!arg
-        )
-      & ( remST
-        =   E1 E2 S Sn e a c sent Sno acc A Z
-          .   !arg:(?arg.?Sno)
-            & :?acc:?sent
-            &   whl
-              ' ( !arg:%?E ?arg
-                &   !E
-                  : ( @&!acc !E:?acc
-                    |   (?e.?a,?c)
-                      & remST$(!c.!Sno):?c
-                      & (   !a:?A (S.~!Sno:?Sno) ?Z
-                          &     !sent
-                                (   !acc
-                                  : % %
-                                  :   ?
-                                      (?.? (S.?) ?,?)
-                                      ?(s.,!acc)
-                                | !acc
-                                )
-                            : ?sent
-                          & :?acc
-                        | !acc (!e.!A !Z,!c):?acc
-                        )
-                    )
-                )
-            &   !sent
-                (   !acc
-                  : % %
-                  : ? (?.? (S.?) ?,?) ?(s.,!acc)
-                | !acc
-                )
-        )
+      & (contractwadddel=.trq$!arg)
       & ( inverse
         =   L e
           .   :?L
             & whl'(!arg:%?e ?arg&!e !L:?L)
             & !L
-        )
-      & ( reverseAndProvideMissingOpeningTags
-        =   el intra tnes closed sent artni e
-          .   !arg:(?artni.?tnes)
-            & inverse$!tnes:?SeNt
-            & :?sent:?intra:?closed
-            &   whl
-              ' ( !tnes:%?el ?tnes
-                & (   !el:(.?.)
-                    & !el !closed:?closed
-                  |   !el:(?e.?)
-                    & !closed:(.!e.) ?closed
-                  | 
-                  )
-                & !el !sent:?sent
-                )
-            &   whl
-              ' ( !closed:~
-                & !artni:%?el ?artni
-                & (   !el:(?e.?)
-                    & !closed:(.!e.) ?closed
-                  | 
-                  )
-                & !el !sent:?sent
-                )
-            & (!artni.!sent)
-        )
-      & ( constructAsentence
-        =   intra tnes sents artni sent SorT
-          .   !arg:(?intra.?tnes.?sents.?SorT.?AT)
-            & inverse$!intra:?artni
-            & reverseAndProvideMissingOpeningTags$(!artni.!tnes):(?artni.?sent)
-            &   (   !SorT:S
-                  & ( s
-                    .   |(where.!AT)
-                      ,   map
-                        $ ( ( 
-                            =   a z
-                              .     !arg:(w.?,?a (w.?) ?z)
-                                  &   !a !z
-                                    : ? (w|c.?) ?
-                                  & !arg
-                                | !arg:(w.?,?arg)&!arg
-                                | !arg
-                            )
-                          . ser$(!sent.T)
-                          )
-                    )
-                | (w.|(where.!AT),!sent)
-                )
-                !artni
-                !sents
-        )
-      & ( ser
-        =   tnes open theS intra sents closed ort sent artni SorT
-          .     
-              : ?tnes
-              : ?open
-              : ?theS
-              : ?intra
-              : ?sents
-            & !arg:(?arg.?SorT)
-            & !( 
-               ' ( $arg
-                 : ?intra ((?.? ($SorT.?theS) ?) ?:?arg)
-                 )
-               )
-            &   whl
-              ' ( !arg:%?el ?arg
-                & (     !el
-                      : (@|(?.?,?)|("!--".?))
-                    & "Element is string, empty or comment."
-                    & (   !open:
-                        & (   !( 
-                               ' ( $arg
-                                 : ? (?.? ($SorT.?S) ?) ?
-                                 )
-                               )
-                            & (   !theS:!S
-                                & "Sequence continues."
-                                & !el !tnes:?tnes
-                              |   "'el' not required in sentence"
-                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.A)
-                                  : ?sents
-                                & :?intra:?tnes
-                                & "Continue from start of next sequence."
-                                & !( 
-                                   ' ( $arg
-                                     :   ?intra
-                                         (   (?.? ($SorT.?theS) ?)
-                                             ?
-                                         : ?arg
-                                         )
-                                     )
-                                   )
-                                & !el !intra:?intra
-                              )
-                          |   "No more sequences."
-                            &   constructAsentence$(!intra.!tnes.!sents.!SorT.B)
-                              : ?sents
-                            & !el !arg:?intra
-                            & :?arg
-                          )
-                      |   "Some sequence element is still open. Wait for closing tag or end of sentence"
-                        & !el !tnes:?tnes
-                      )
-                  |   !el:(.?e.)
-                    & "Closing tag."
-                    & (   !open:(!e.?) ?open
-                        & "Tag belongs to sequence."
-                        & (   !open:
-                            & (   !( 
-                                   ' ( $arg
-                                     : ? (?.? ($SorT.?S) ?) ?
-                                     )
-                                   )
-                                & (   !theS:!S
-                                    & "Sequence continues."
-                                    & !el !tnes:?tnes
-                                  |   "'el' required in sequence"
-                                    & !el !tnes:?tnes
-                                    &   constructAsentence$(!intra.!tnes.!sents.!SorT.AA)
-                                      : ?sents
-                                    & :?intra:?tnes
-                                    & "Continue from start of next sequence."
-                                    & !( 
-                                       ' ( $arg
-                                         :   ?intra
-                                             (   (?.? ($SorT.?theS) ?)
-                                                 ?
-                                             : ?arg
-                                             )
-                                         )
-                                       )
-                                  )
-                              |   "No more sequences."
-                                & !el !tnes:?tnes
-                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.BB)
-                                  : ?sents
-                                & inverse$!arg:?intra
-                                & :?arg
-                              )
-                          | !el !tnes:?tnes
-                          )
-                      |   !( 
-                           ' ( $arg
-                             : ? (?.? ($SorT.?S) ?) ?
-                             )
-                           )
-                        & (   !S:!theS
-                            & "Tag belongs to sequence."
-                            & !el !tnes:?tnes
-                          |   "Tag not needed in sequence, it seems."
-                            &   constructAsentence$(!intra.!tnes.!sents.!SorT.C)
-                              : ?sents
-                            & :?intra:?tnes
-                            & !( 
-                               ' ( $arg
-                                 :   ?intra
-                                     ( (?.? ($SorT.?theS) ?) ?
-                                     : ?arg
-                                     )
-                                 )
-                               )
-                            & !el !intra:?intra
-                          )
-                      |   "No more sequences."
-                        & !open:
-                        & constructAsentence$(!intra.!tnes.!sents.!SorT.D):?sents
-                        & !el !arg:?intra
-                        & :?arg
-                      | 
-                      )
-                  |   !el:(?e.?a)
-                    & (   !('($a:? ($SorT.?S) ?))
-                        & "Open tag with T and S attributes."
-                        & (   !S:~!theS:?theS
-                            & "New sequence"
-                            & (   !open:
-                                &   constructAsentence$(!intra.!tnes.!sents.!SorT.E)
-                                  : ?sents
-                                & :?intra:?tnes
-                                & !el !open:?open
-                                & !el !tnes:?tnes
-                              |     "A New sequence started, but previous sequence has elements that are not closed."
-                                    !el
-                                    OPEN
-                                    !open
-                                & 
-                              )
-                          |   "Old seqence"
-                            & !el !open:?open
-                            & !el !tnes:?tnes
-                          )
-                      |   "Open tag not carrying T and S attributes."
-                        & !( 
-                           ' ( $arg
-                             : ? (?.? ($SorT.?S) ?) ?
-                             )
-                           )
-                        & "Still sequence(s) to do."
-                        & (   !open:
-                            & !S:~!theS:?theS
-                            & "New sequence"
-                            &   constructAsentence$(!intra.!tnes.!sents.!SorT.F)
-                              : ?sents
-                            & !( 
-                               ' ( $arg
-                                 :   ?intra
-                                     ( (?.? ($SorT.?theS) ?) ?
-                                     : ?arg
-                                     )
-                                 )
-                               )
-                            & !el !intra:?intra
-                          |   "Old seqence"
-                            & !el !open:?open
-                            & !el !tnes:?tnes
-                          )
-                      |   "No more sequences hereafter."
-                        & !open:
-                        & constructAsentence$(!intra.!tnes.!sents.!SorT.G):?sents
-                        & !el !arg:?intra
-                        & :?arg
-                      )
-                  )
-                )
-            & inverse$(!intra !sents)
-        )
-      & ( structsub
-        =   e a c A S Z
-          .   1+!subn:?subn
-            &   map
-              $ ( ( 
-                  =   
-                    .     !arg:(?e.?a,?c)
-                        & (   !a:?A (S.?S) ?Z
-                            & (!e.!A (S.str$(!S "." !subn)) !Z,!c)
-                          | !e:c&!arg
-                          | (!e.!a,structsub$!c)
-                          )
-                      | !arg
-                  )
-                . !arg
-                )
-        )
-      & ( substruct
-        =   e a c
-          .   "If a substructure of an <s> (e.g. <rs>) has two or more S values,
-               then make them all unique by adding '.n',
-               where 'n' is a text-wide unique number.
-               A substructure is an element embedded in an element that has children with S and T attributes."
-            & (   !arg:? (?.? (S.?) ?,?) ?
-                & "arg seems to be the content of e.g. an <s>. Now check each element in arg for substructures with S'es."
-                &   map
-                  $ ( ( 
-                      =   
-                        .     !arg:(?e.?a,?c)
-                            & (   !a:? (S.?) ?
-                                & !arg
-                              | !e:c&!arg
-                              | (!e.!a,structsub$!c)
-                              )
-                          | !arg
-                      )
-                    . !arg
-                    )
-              |   map
-                $ ( ( 
-                    =   
-                      .     !arg:(?e.?a,?c)
-                          & ( !e:c&!arg
-                            | (!e.!a,substruct$!c)
-                            )
-                        | !arg
-                    )
-                  . !arg
-                  )
-              )
         )
       & ( collectSvals
         =   S a c
@@ -1347,8 +1077,8 @@ X=
               )
         )
       & ( retrieveSsequences
-        =   e a c A S Z
-          .   "If an element has no children with S and T elements, then its substructures may not share the same S value if any of those substructures has more than one S value. So this should not be allowed:
+        =   e c
+          .   "If an element has no direct children with S and T elements, then its substructures may not share the same S value if any of those substructures has more than one S value. So this should not be allowed:
                             ( address
                             . , (c.(type.s),\" \")
                                 ( addrLine
@@ -1393,55 +1123,189 @@ X=
                   )
               )
         )
-      & "replacestruct: Replace S values that continue into next substructure by new unique values."
-      & ( replacestruct
-        =   e a c O N
-          .     !TransS:(!arg.?O.?N) ?TransS
-              & sub$(!arg.(S.!O).S.!N)
-            |   map
+      & ( sing
+        =   seen el
+          .   :?seen
+            &   whl
+              ' ( !arg:%@?el ?arg
+                & (!seen:? !el ?|!el !seen:?seen)
+                )
+            & !seen
+        )
+      & "Create a Q attribute in all elements that have a descendant having an S attrubite. Q's value is the set of S values."
+      & ( perQlateS
+        =   e a c S Q
+          .   !arg:@
+            |   !arg:(?e.?a,?c)
+              & (   !a:? (S.?S) ?
+                  & (!e.(Q.!S) !a,!c)
+                |   perQlateS$!c:?c
+                  &     sing
+                      $ ( map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : (?.? (Q.?Q) ?,?)
+                                  & !Q
+                                | 
+                            )
+                          . !c
+                          )
+                        )
+                    : ?Q
+                  & (!e.(!Q:|(Q.!Q)) !a,!c)
+                )
+            | map$((=.perQlateS$!arg).!arg)
+        )
+      & ( COLLECT
+        =   foundS L s M S N
+          .     !arg
+              : ?L ((?.? (S.?foundS) ?,?):?s) ?arg
+            & InsertS$!L:?L
+            &   whl
+              ' (   !arg
+                  : ?M ((?.? (S.?S) ?,?):?N) ?arg
+                & ( !S:!foundS&!s !M !N:?s
+                  |   !L (s.,!s) InsertS$!M:?L
+                    & !N:?s
+                    & !S:?foundS
+                  )
+                )
+            & ( !s:
+              | !L (s.,!s) InsertS$!M:?L
+              )
+            & !L InsertS$!arg
+        )
+      & ( InsertS
+        =   e a c A B M Z
+          .   !arg:@
+            |   !arg:(?e.?a,?c)
+              & (   !a:? (Q.?) ?
+                  & (   !a:? (Q.% %) ?
+                      & (     !c
+                            : ? (?.? (S.?) ?,?) ?
+                          & (!e.!a,COLLECT$!c)
+                        | (!e.!a,InsertS$!c)
+                        )
+                    |     !c
+                        :   ?A
+                            (   (?.? (Q.?) ?,?)
+                                ?
+                                (?.? (Q.?) ?,?)
+                                ?
+                            : ?B
+                            )
+                      &   inverse$!B
+                        :   ?Z
+                            (   (?.? (Q.?) ?,?)
+                                ?
+                                (?.? (Q.?) ?,?)
+                                ?
+                            : ?M
+                            )
+                      & (!e.!a,!A (s.,inverse$!M) inverse$!Z)
+                    | !a:? (S.?) ?&(s.,!arg)
+                    | (!e.!a,InsertS$!c)
+                    )
+                | !arg
+                )
+            | map$((=.InsertS$!arg).!arg)
+        )
+      & ( moveLeadingAndTrailingSpacesOutside
+        =   e a c sp1 sp2
+          .     !arg:(?e.?a,?c)
+              & moveLeadingAndTrailingSpacesOutside$!c:?c
+              & :?sp1:?sp2
+              &   whl
+                ' ( !c
+                  : ((c.? (type.s) ?,?):?sp1) ?c
+                  )
+              &   whl
+                ' ( !c
+                  : ?c ((c.? (type.s) ?,?):?sp2)
+                  )
+              & !sp1 (!e.!a,!c) !sp2:?arg
+            |   !arg:% %
+              & map$((=.moveLeadingAndTrailingSpacesOutside$!arg).!arg)
+            | !arg
+        )
+      & ( removeSuperfluousSpaces
+        =   A SP Z
+          .       whl
+                ' (!arg:(c.? (type.s) ?,?) ?arg)
+              & inverse$!arg:?arg
+              &   whl
+                ' (!arg:(c.? (type.s) ?,?) ?arg)
+              & :?Z
+              &   whl
+                ' (   !arg
+                    :   ?A
+                        ((c.? (type.s) ?,?):?SP)
+                        (c.? (type.s) ?,?)
+                        ?arg
+                  & !SP inverse$!A !Z:?Z
+                  )
+              & inverse$!arg !Z:?arg
+              & !arg
+            | !arg
+        )
+      & ( removeSpacesIfNoTokens
+        =   L e a c A
+          .   (   !arg:? (?.? (S.?) ?,?) ?
+                & 
+              |   :?L
+                &   whl
+                  ' (   !arg
+                      : ?A (c.? (type.s) ?,?) ?arg
+                    & !L !A:?L
+                    )
+                & !L !arg:?arg
+              )
+            &   map
               $ ( ( 
                   =   
                     .     !arg:(?e.?a,?c)
-                        & (!e.!a,replacestruct$!c)
+                        & (!e.!a,removeSpacesIfNoTokens$!c)
                       | !arg
                   )
                 . !arg
                 )
         )
-      & trav$(!text..):?nbody
-      & contractwadddel$!nbody:?nbody2
-      &   (!style:PT&rcontr$!nbody2|!nbody2)
-        : ?nmbody2
-      & assignIDs$!nmbody2:?nnbody
-      & 0:?subn
-      & substruct$!nnbody:?nnbodys
-      & retrieveSsequences$!nnbodys:?Sseq
-      & ( CreateReplacementTriplets
-        =   a A M Z
-          .   "Find two consecutive elements in TransS where the first ends with an S value equal to the first S value in the second element,
-               and where the first or the second element also contains another S value."
-            & :?TransS
-            & (   !arg
-                :   ?
-                    (?A %@?M.?a)
-                    (   %@!M ?Z
-                      & ( !A:? (%@:~!M) ?
-                        | !Z:? (%@:~!M) ?
-                        )
-                      &   !TransS (!a.!M.str$(!M "." (1+!subn:?subn)))
-                        : ?TransS
-                      & ~
-                    . 
+      & ( RemoveSpaceFromS
+        =   e a c
+          .   !arg:@
+            |   !arg:(?e.?a,?c)
+              & (   !c:? (?.? (S.?) ?,?) ?
+                  & ( !e
+                    .   !a
+                      ,   removeSuperfluousSpaces
+                        $ (removeSpacesIfNoTokens$(moveLeadingAndTrailingSpacesOutside$!c))
                     )
-                    ?
-              | !TransS
-              )
+                | ( !e
+                  .   !a
+                    ,   map
+                      $ ( ( 
+                          =   
+                            .       !arg
+                                  : (c.? (type.s) ?,?)
+                                & 
+                              | RemoveSpaceFromS$!arg
+                          )
+                        . !c
+                        )
+                  )
+                )
+            | map$((=.RemoveSpaceFromS$!arg).!arg)
         )
-      & CreateReplacementTriplets$!Sseq:?TransS
-      & replacestruct$!nnbodys:?nnbodys2
-      & get$(toML$!nnbodys2,X ML MEM):?serial
-      & ser$(!serial.S):?nrbody
-      & 0:?ID
+      & ( RemoveSpace
+        =   e a c
+          .   !arg:@
+            |   !arg:(c.? (type.s) ?,?)
+              & 
+            | !arg:(s.?,?)&RemoveSpaceFromS$!arg
+            | !arg:(?e.?a,?c)&(!e.!a,RemoveSpace$!c)
+            | map$((=.RemoveSpace$!arg).!arg)
+        )
       & ( removeOutliers
         =   
           .   map
@@ -1466,7 +1330,12 @@ X=
                       &     map
                           $ ( ( 
                               =   
-                                .     !arg:(S|T.?)
+                                .       !arg
+                                      : (   Q
+                                          | S
+                                          | T
+                                        . ?
+                                        )
                                     & 
                                   | !arg
                               )
@@ -1478,7 +1347,12 @@ X=
                       &     map
                           $ ( ( 
                               =   
-                                .     !arg:(S|T.?)
+                                .       !arg
+                                      : (   Q
+                                          | S
+                                          | T
+                                        . ?
+                                        )
                                     & 
                                   | !arg
                               )
@@ -1490,28 +1364,96 @@ X=
                       &     map
                           $ ( ( 
                               =   
-                                .     !arg:(S|T.?)
+                                .       !arg
+                                      : (   Q
+                                          | S
+                                          | T
+                                        . ?
+                                        )
                                     & 
                                   | !arg
                               )
                             . !a
                             )
                         : ?a
-                      & (!e.("xml:id".IDgen$!a) !a)
+                      & (!e.("xml:id".IDgen$!a) !a,vlooi$!c)
                     | !arg
                 )
               . !arg
               )
         )
-      &   !XXX
-          ( TEI
-          .   !teiatt
-            , !AAA (text.!textatt,vlooi$(removeOutliers$(nestML$!nrbody))) !DDD
+      & ( smukkeser
+        =   e a c A Z ZZ AA ca cz Name
+          .   !arg:@
+            | !arg:(?e.?a,?c)&(!e.!a,smukkeser$!c)
+            |   !arg:?A (@(?Name:? Name).?a,(s.,?c)) ?Z
+              & (     !A
+                    :   ?AA
+                        ( s
+                        .   
+                          ,     ?
+                                ( (~c.?,?)
+                                | (c.?,","|";"|":")
+                                )
+                            : ?ca
+                        )
+                  & (   !Z:(s.,?cz) ?ZZ
+                      &   smukkeser
+                        $ (!AA (s.,!ca (!Name.!a,!c) !cz) !ZZ)
+                    | smukkeser$(!AA (s.,!ca (!Name.!a,!c)) !Z)
+                    )
+                |   !Z:(s.,?cz) ?ZZ
+                  & smukkeser$(!A (s.,(!Name.!a,!c) !cz) !ZZ)
+                )
+            | map$((=.smukkeser$!arg).!arg)
+        )
+      & !arg:(?input.?style.?abbreviations.?language)
+      & :?SentenceEndingAbbrSeen
+      & new$hash:?Mabbr
+      & new$hash:?Eabbr
+      & (Mabbr..ISO)$
+      & (Eabbr..ISO)$
+      &   map
+        $ ( ( 
+            =   
+              .   (   @(!arg:" " ?arg)
+                    & (Eabbr..insert)$(!arg.)
+                  | (Mabbr..insert)$(!arg.)
+                  )
+                & !arg
+            )
+          . !abbreviations
           )
-          !YYY
+      & nestML$(get$(!input,X ML TRM)):?xml
+      &   !xml
+        : ?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
+      & 0:?tok:?sen:?IS
+      & findIDs$!text:?IDs
+      & 0:?ID
+      & trav$(!text..):?nbody
+      & contractwadddel$!nbody:?nbody2
+      &   (!style:PT&rcontr$!nbody2|!nbody2)
+        : ?nmbody2
+      & assignIDs$!nmbody2:?nnbody
+      & lst$(nnbody,nnbody,NEW WYD RAW BIN)
+      & retrieveSsequences$!nnbody:?Sseq
+      & lst$(Sseq,Sseq,NEW WYD RAW BIN)
+      & perQlateS$!nnbody:?Sseq0
+      & lst$(Sseq0,Sseq0,NEW WYD RAW BIN)
+      & InsertS$!Sseq0:?Sseq1
+      & lst$(Sseq1,Sseq1,NEW WYD RAW BIN)
+      & RemoveSpace$!Sseq1:?Sseq2
+      & lst$(Sseq2,Sseq2,NEW WYD RAW BIN)
+      & 0:?ID
+      & removeOutliers$!Sseq2:?Sseq3
+      & lst$(Sseq3,Sseq3,NEW RAW)
+      & vlooi$!Sseq3:?XYZ
+      & smukkeser$!XYZ:?XYZ
+      & lst$(XYZ,XYZ,NEW RAW)
+      & !XXX (TEI.!teiatt,!AAA (text.!textatt,!XYZ) !DDD) !YYY
   )
   ( new
-  =   input abbr style
+  =   input abbr style,XMLL XMLLL abbreviations lang language nabbr output
     .   ~
       |   ~
         &   (its.teitok)$("test/acc-1992_0005_032_Uldall_0010-tei-final.xml".simple..da)
@@ -1520,6 +1462,27 @@ X=
         & put$(!XMLLL,"test/ellipsis.out.xml",NEW)
       |   ~
         &   (its.teitok)$("test/acc-1992_0005_030_Western_0090-tei-final.xml".simple..nb)
+          : ?XMLL
+        & toML$!XMLL:?XMLLL
+        & put$(!XMLLL,"test/ellipsis.out.xml",NEW)
+      |   ~
+        &   (its.teitok)$("test/acc-1992_0005_095_london_0090-tei-final.xml".simple..ge)
+          : ?XMLL
+        & toML$!XMLL:?XMLLL
+        & put$(!XMLLL,"test/ellipsis.out.xml",NEW)
+      |   
+        & vap$((=.!arg).get$(abbr,STR).\n):?abbr
+        &   (   get$(nabbr,STR):?nabbr
+              & vap$((=.!arg).!nabbr.\n)
+            | 
+            )
+          : ?nabbr
+        &     (its.teitok)
+            $ ( "C:/Bartstestfiler/glossematics/da/problem/acc-1992_0005_032_Uldall_0010-tei-final.xml"
+              . simple
+              . !nabbr !abbr
+              . da
+              )
           : ?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"test/ellipsis.out.xml",NEW)
