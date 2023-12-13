@@ -1155,7 +1155,76 @@ X=
                     : ?Q
                   & (!e.(!Q:|(Q.!Q)) !a,!c)
                 )
-            | map$((=.perQlateS$!arg).!arg)
+            | !arg:% %&map$(perQlateS.!arg)
+            | !arg
+        )
+      & "Create a R attribute in all elements contained in <s> elements that have (a descendant having) a T attrubite. R's value is the set of T values."
+      & ( peRlaT
+        =   e a c T R
+          .   !arg:@
+            |   !arg:(?e.?a,?c)
+              & (   !a:? (T.?T) ?
+                  & (!e.(R.!T) !a,!c)
+                |   peRlaT$!c:?c
+                  &     sing
+                      $ ( map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : (?.? (R.?R) ?,?)
+                                  & !R
+                                | 
+                            )
+                          . !c
+                          )
+                        )
+                    : ?R
+                  & (!e.(!R:|(R.!R)) !a,!c)
+                )
+            | !arg:% %&map$(peRlaT.!arg)
+            | !arg
+        )
+      & ( complexTok
+        =   e a c r r1 r2 R t u
+          .   !arg:@
+            |   !arg:(?e.?a,?c)
+              & (   !e:s
+                  & inverse$(peRlaT$!c):?u
+                  & noppes:?R
+                  & :?c:?t
+                  &   whl
+                    ' ( !u:%?e ?u
+                      & (     !e
+                            : ( ?
+                              .     ?
+                                    (R.%?r1 ? %?r2|?r1:?r2)
+                                    ?
+                                , ?
+                              )
+                          & ( !r1:!R&!e !t:?t
+                            |   !r2:?R
+                              &     (     !t
+                                        :   ?
+                                            (?.? (R.?) ?,?)
+                                            ?
+                                            (?.? (R.?) ?,?)
+                                            ?
+                                      & (w.,!t)
+                                    | !t
+                                    )
+                                    !c
+                                : ?c
+                              & !e:?t
+                            )
+                        | !e !t:?t
+                        )
+                      )
+                  & !t !c:?c
+                  & (s.!a,!c)
+                | (!e.!a,complexTok$!c)
+                )
+            | !arg:% %&map$(complexTok.!arg)
+            | !arg
         )
       & ( COLLECT
         =   foundS L s M S N
@@ -1209,7 +1278,8 @@ X=
                     )
                 | !arg
                 )
-            | map$((=.InsertS$!arg).!arg)
+            | !arg:% %&map$(InsertS.!arg)
+            | !arg
         )
       & ( moveLeadingAndTrailingSpacesOutside
         =   e a c sp1 sp2
@@ -1226,7 +1296,7 @@ X=
                   )
               & !sp1 (!e.!a,!c) !sp2:?arg
             |   !arg:% %
-              & map$((=.moveLeadingAndTrailingSpacesOutside$!arg).!arg)
+              & map$(moveLeadingAndTrailingSpacesOutside.!arg)
             | !arg
         )
       & ( removeSuperfluousSpaces
@@ -1304,7 +1374,8 @@ X=
               & 
             | !arg:(s.?,?)&RemoveSpaceFromS$!arg
             | !arg:(?e.?a,?c)&(!e.!a,RemoveSpace$!c)
-            | map$((=.RemoveSpace$!arg).!arg)
+            | !arg:% %&map$(RemoveSpace.!arg)
+            | !arg
         )
       & ( removeOutliers
         =   
@@ -1405,7 +1476,8 @@ X=
                 |   !Z:(s.,?cz) ?ZZ
                   & smukkeser$(!A (s.,(!Name.!a,!c) !cz) !ZZ)
                 )
-            | map$((=.smukkeser$!arg).!arg)
+            | !arg:% %&map$(smukkeser.!arg)
+            | !arg
         )
       & !arg:(?input.?style.?abbreviations.?language)
       & :?SentenceEndingAbbrSeen
@@ -1438,10 +1510,11 @@ X=
       & retrieveSsequences$!nnbody:?Sseq
       & perQlateS$!nnbody:?Sseq0
       & InsertS$!Sseq0:?Sseq1
-      & RemoveSpace$!Sseq1:?Sseq2
+      & complexTok$!Sseq1:?Sseq2
+      & RemoveSpace$!Sseq2:?Sseq3
       & 0:?ID
-      & removeOutliers$!Sseq2:?Sseq3
-      & vlooi$!Sseq3:?XYZ
+      & removeOutliers$!Sseq3:?Sseq4
+      & vlooi$!Sseq4:?XYZ
       & smukkeser$!XYZ:?XYZ
       & !XXX (TEI.!teiatt,!AAA (text.!textatt,!XYZ) !DDD) !YYY
   )
@@ -1455,7 +1528,7 @@ X=
             | 
             )
           : ?nabbr
-        & (its.teitok)$("test\\ellipsis.xml".simple.!nabbr !abbr.da):?XMLL
+        & (its.teitok)$("test\\JEB-040.xml".simple.!nabbr !abbr.da):?XMLL
         & toML$!XMLL:?XMLLL
         & put$(!XMLLL,"test\\ellipsis.out.xml",NEW)
       |   arg$:?input
