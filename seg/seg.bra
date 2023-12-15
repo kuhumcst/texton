@@ -10,90 +10,98 @@ X=
   ( doit
   =   
     .     !arg:(?tok.?sent.?seg)
+        & :?ERR
         &   nestML$(get$(!tok,X ML))
           : ? (spanGrp.?,?tok) ?
         &   nestML$(get$(!sent,X ML))
           : ? (spanGrp.?,?sent) ?
-        &   !tok
-          :   (span.? ("xml:id".?fromID) ?,?)
-              ?
-        & 0:?i
-        & :?ERR
         &   put
           $ (   toML
               $ ( spanGrp
                 .   (ana.seg)
-                  ,   map
-                    $ ( ( 
-                        =   
-                          .       !arg
-                                : ( span
-                                  .     ? (from.?fromIndex) ?
-                                      : ( ? (to.?toIndex) ?
-                                        |   ?
-                                          & :?toIndex
-                                        )
-                                    , ?
-                                  )
-                              & (   !tok
-                                  :   ?
-                                      (   ( span
-                                          .       ?
-                                                  (from.!fromIndex)
-                                                  ?
-                                              :   ?
-                                                  ("xml:id".?fromID)
-                                                  ?
-                                            , ?
+                  ,       !tok
+                        :   ( span
+                            . ? ("xml:id".?fromID) ?,?
+                            )
+                            ?
+                      & 0:?i
+                      &   map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : ( span
+                                      .       ?
+                                              (from.?fromIndex)
+                                              ?
+                                          : (   ?
+                                                (to.?toIndex)
+                                                ?
+                                            |   ?
+                                              & :?toIndex
+                                            )
+                                        , ?
+                                      )
+                                  & (   !tok
+                                      :   ?
+                                          (   ( span
+                                              .       ?
+                                                      (from.!fromIndex)
+                                                      ?
+                                                  :   ?
+                                                      ("xml:id".?fromID)
+                                                      ?
+                                                , ?
+                                              )
+                                              ?
+                                          : ?tok
                                           )
-                                          ?
-                                      : ?tok
-                                      )
-                                | 
-                                )
-                              & (   !toIndex:
-                                  & !fromID:?toID
-                                | !( 
-                                   ' ( $tok
-                                     :   ?
-                                         ( span
-                                         .     (   ?
-                                                   (to.$toIndex)
-                                                   ?
-                                               |   ?
-                                                   (from.$toIndex)
-                                                   ?
-                                               )
-                                             :   ?
-                                                 ("xml:id".?toID)
-                                                 ?
-                                           , ?
+                                    | 
+                                    )
+                                  & (   !toIndex:
+                                      & !fromID:?toID
+                                    | !( 
+                                       ' ( $tok
+                                         :   ?
+                                             ( span
+                                             .     (   ?
+                                                       (to.$toIndex)
+                                                       ?
+                                                   |   ?
+                                                       (from.$toIndex)
+                                                       ?
+                                                   )
+                                                 :   ?
+                                                     ("xml:id".?toID)
+                                                     ?
+                                               , ?
+                                             )
+                                             ?tok
                                          )
-                                         ?tok
-                                     )
-                                   )
-                                |   !ERR:
-                                  &     str
-                                      $ ( "ERROR: Inputs are unrelated. Sentence 'to'-index "
-                                          !toIndex
-                                          " does not point to a token."
-                                        )
-                                    : ?ERR
+                                       )
+                                    |   !ERR:
+                                      &     str
+                                          $ ( "ERROR: Inputs are unrelated. Sentence 'to'-index "
+                                              !toIndex
+                                              " does not point to a token."
+                                            )
+                                        : ?ERR
+                                    | 
+                                    )
+                                  & ( span
+                                    .     (from.str$("#" !fromID))
+                                          (to.str$("#" !toID))
+                                          (type.Sseg)
+                                          ( "xml:id"
+                                          .   str
+                                            $ (S (!i+1:?i))
+                                          )
+                                      , 
+                                    )
                                 | 
-                                )
-                              & ( span
-                                .     (from.str$("#" !fromID))
-                                      (to.str$("#" !toID))
-                                      (type.Sseg)
-                                      ( "xml:id"
-                                      . str$(S (!i+1:?i))
-                                      )
-                                  , 
-                                )
-                            | 
-                        )
-                      . !sent
-                      )
+                            )
+                          . !sent
+                          )
+                    | 
                 )
             , !seg
             , NEW

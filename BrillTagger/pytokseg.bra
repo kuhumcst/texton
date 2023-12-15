@@ -16,77 +16,92 @@ X=
   ( doit
   =   
     .     !arg
-        : (?inputTok.?inputSeg.?output.?attribute.?ancestor.?elem.?attr)
-      &   get$(!inputSeg,X ML)
-        : ?sentTree
-        : ? ((span.?) ?:?sentRoot)
+        : ( ?inputTok
+          . ?inputSeg
+          . ?output
+          . ?attribute
+          . ?ancestor
+          . ?elem
+          . ?attr
+          )
       & nestML$(get$(!inputTok,X ML)):?root
       & ( !root:?A (!ancestor.?at,?elements) ?Z
         |   !root:?elements
           & :?A:?Z:?at
         )
-      &   (   !elem:"-"
-            & (   !attr:"-"
-                & '(!x.($attribute.) !y,!z)
+      & get$(!inputSeg,X ML):?sentTree
+      & (     !sentTree
+            : ? ((span.?) ?:?sentRoot)
+          &   (   !elem:"-"
+                & (   !attr:"-"
+                    &   
+                      ' (!x.($attribute.) !y,!z)
+                  |   
+                    ' ( !y:? ($attr.?) ?
+                      & (!x.($attribute.) !y,!z)
+                      )
+                  )
+              |   !attr:"-"
+                &   
+                  ' ( $elem:!x
+                    & ( $elem
+                      . ($attribute.) !y,!z
+                      )
+                    )
               |   
                 ' ( !y:? ($attr.?) ?
-                  & (!x.($attribute.) !y,!z)
+                  & $elem:!x
+                  & ( $elem
+                    . ($attribute.) !y,!z
+                    )
                   )
+              | (=!arg)
               )
-          |   !attr:"-"
-            &   
-              ' ( $elem:!x
-                & ($elem.($attribute.) !y,!z)
+            : (=?expr)
+          &     map
+              $ ( ( 
+                  =   
+                    .     !arg:(?x.?y,?z)
+                        &   (   !y:? ("xml:id".?id) ?
+                              &   !sentRoot
+                                :   ( span
+                                    .     ?
+                                          (from.@(?:"#" !id))
+                                          ?
+                                      , ?
+                                    )
+                                    ?sentRoot
+                              & (br.,)
+                            | 
+                            )
+                            !expr
+                      | !arg
+                  )
+                . !elements
                 )
-          |   
-            ' ( !y:? ($attr.?) ?
-              & $elem:!x
-              & ($elem.($attribute.) !y,!z)
+            : % ?elements
+          &   put
+            $ (   str
+                $ ( toML
+                  $ (   !root:? (!ancestor.?,?) ?
+                      &   !A
+                          (!ancestor.(ana.!attribute),!elements)
+                          !Z
+                    | !elements
+                    )
+                  )
+              , !output
+              , NEW
               )
-          | (=!arg)
-          )
-        : (=?expr)
-      &     map
-          $ ( ( 
-              =   
-                .     !arg:(?x.?y,?z)
-                    &   (   !y:? ("xml:id".?id) ?
-                          &   !sentRoot
-                            :   ( span
-                                .   ? (from.@(?:"#" !id)) ?
-                                  , ?
-                                )
-                                ?sentRoot
-                          & (br.,)
-                        | 
-                        )
-                        !expr
-                  | !arg
-              )
-            . !elements
-            )
-        : % ?elements
-      &   put
-        $ (   str
-            $ ( toML
-              $ (   !root:? (!ancestor.?,?) ?
-                  & !A (!ancestor.!at,!elements) !Z
-                | !elements
-                )
-              )
-          , !output
-          , NEW
-          )
-      & ( 
         |   put
           $ (   str
               $ ( toML
-                $ (   !root:? (!ancestor.?,?) ?
-                    & !A (!ancestor.!at,!elements) !Z
-                  | !elements
+                $ ( !A
+                    (!ancestor.(ana.!attribute),!elements)
+                    !Z
                   )
                 )
-            , brillinput
+            , !output
             , NEW
             )
         )
@@ -94,17 +109,25 @@ X=
   )
   ( new
   =   
-    .     (its.doit)
-        $ ( temp-2BrillTagger-IfacettokF
-          . temp-1BrillTagger-IfacetsegF
-          . temp-3combine-POS-attribute
-          . POS
-          . spanGrp
-          . span
-          . "xml:id"
-          )
+    .     ~
+        &   (its.doit)
+          $ ( "notok.xml"
+            . "noseg.xml"
+            . temp-3combine-POS-attribute
+            . POS
+            . spanGrp
+            . span
+            . "xml:id"
+            )
       |   (its.doit)
-        $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+        $ ( arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          )
   );
 
 r=
