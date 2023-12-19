@@ -815,7 +815,7 @@ try {
             $BrillTaggerfile = '';
 
         if($IfacetnerF == "")
-            $IfacetnerF = "*";
+            $IfacetnerF = "\"*\"";
 
         if($Iformattxtann)
         {
@@ -832,7 +832,7 @@ try {
                 if($mode == 'dry')
                     {
                     if($IfacetnerF == "")
-                        combine($toolbin,"\$IfacettokF","\$IfacetsegF","*",$tempattribute,$element,$idprefix,$ancestor,$nerattribute,$propn);
+                        combine($toolbin,"\$IfacettokF","\$IfacetsegF","\"*\"",$tempattribute,$element,$idprefix,$ancestor,$nerattribute,$propn);
                     else
                         combine($toolbin,"\$IfacettokF","\$IfacetsegF","\$IfacetnerF",$tempattribute,$element,$idprefix,$ancestor,$nerattribute,$propn);
                     }
