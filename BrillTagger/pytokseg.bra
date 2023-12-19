@@ -6,24 +6,33 @@ Add an empty attribute where the POS-tagger can put its result.
 Parameter   Description
 inputTok    name of input file with tokens
 inputSeg    name of input file with segments
+inputNer    name of input file with Named Entities (optional: can be "*")
 output      name of output file
 attribute   name of attribute to add
 ancestor    name of ancestor element (optional)
 elem        name of element (optional)
-attr        name of attribute that has to be present (optional)}
-
+attr        name of attribute that has to be present (optional)
+ne          name of optional attribute for ner input
+propn       value of optional attribute for ner input}
 X=
   ( doit
   =   
     .     !arg
         : ( ?inputTok
           . ?inputSeg
+          . ?inputNer
           . ?output
           . ?attribute
           . ?ancestor
           . ?elem
           . ?attr
+          . ?ne
+          . ?propn
           )
+      & ( !inputNer:"*"&:?NER
+        |   nestML$(get$(!inputNer,X ML))
+          : ? (spanGrp.?,?NER) ?
+        )
       & nestML$(get$(!inputTok,X ML)):?root
       & ( !root:?A (!ancestor.?at,?elements) ?Z
         |   !root:?elements
@@ -80,6 +89,71 @@ X=
                 . !elements
                 )
             : % ?elements
+          & :?LL
+          &   map
+            $ ( ( 
+                =   A B C D from to
+                  .       !arg
+                        : ( span
+                          .       ?
+                                  (from.@(?:"#" ?from))
+                                  ?
+                              : (   ?
+                                    (to.@(?:"#" ?to))
+                                    ?
+                                | ?&:?to
+                                )
+                            , ?
+                          )
+                      &   !elements
+                        :   ?S
+                            ( span
+                            .     ? ("xml:id".!from) ?
+                                : ?D
+                              , ?C
+                            )
+                            ?elements
+                      &     ( 
+                            .     !to:
+                                & ( span
+                                  . (!ne.!propn) !D,!C
+                                  )
+                              |     ( span
+                                    . (!ne.!propn) !D,!C
+                                    )
+                                  : ?Ner
+                                &   whl
+                                  ' ( !elements:%?a ?elements
+                                    & (   !a:(span.?D,?C)
+                                        &   ( span
+                                            .   (!ne.!propn) !D
+                                              , !C
+                                            )
+                                          : ?a
+                                      | 
+                                      )
+                                    & !Ner !a:?Ner
+                                    &   !a
+                                      : ~( span
+                                         .   ? ("xml:id".!to) ?
+                                           , ?
+                                         )
+                                    )
+                                & !Ner
+                            )
+                            (.!S)
+                            !LL
+                        : ?LL
+                    | 
+                )
+              . !NER
+              )
+          & (.!elements) !LL:?LL
+          & :?elements
+          &   whl
+            ' ( !LL:(.?a) ?LL
+              & !a !elements:?elements
+              )
           &   put
             $ (   str
                 $ ( toML
@@ -109,18 +183,25 @@ X=
   )
   ( new
   =   
-    .     ~
+    .   ~
+      |   ~
         &   (its.doit)
-          $ ( "notok.xml"
-            . "noseg.xml"
+          $ ( "399-all/text-159-399-step4.xml"
+            . "399-all/text-159-399-step5.xml"
+            . "399-all/text-159-399-step6meddled.xml"
             . temp-3combine-POS-attribute
             . POS
             . spanGrp
             . span
             . "xml:id"
+            . NE
+            . EGEN
             )
       |   (its.doit)
         $ ( arg$
+          . arg$
+          . arg$
+          . arg$
           . arg$
           . arg$
           . arg$
@@ -143,12 +224,14 @@ Add an empty attribute where the POS-tagger can put its result.
 Parameter   Description
 inputTok    name of input file with tokens
 inputSeg    name of input file with segments
+inputNer    name of input file with Named Entities (optional: can be \"*\")
 output      name of output file
 attribute   name of attribute to add
 ancestor    name of ancestor element (optional)
 elem        name of element (optional)
-attr        name of attribute that has to be present (optional)}
-
+attr        name of attribute that has to be present (optional)
+ne          name of optional attribute for ner input
+propn       value of optional attribute for ner input}
 "
     , "pytokseg.bra"
     , NEW
