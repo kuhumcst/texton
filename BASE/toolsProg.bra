@@ -9619,6 +9619,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & retrieveFeatures$(!Items.!errors):(?presels.?errors)
+          & log$(retrieveFeatures-presels !presels)
           & (!Items.!presels.!errors)
       )
       ( initialiseSpecifyGoalShowWorkflowsChosenWorkflow
@@ -9628,9 +9629,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & 0:?tabind
           & ?:?Tool
           & !arg:?parms
+          & log$(initialiseSpecifyGoalShowWorkflowsChosenWorkflow !arg)
           & ( !parms:? (itms.?itms) ?
             | 1:?itms
             )
+          & log$(itms !itms)
           & readTable$ItemGroupsCache
           &     map
               $ ( ( 
@@ -9652,7 +9655,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               )
                               !hiddenData
                           : ?hiddenData
-                        & (!arg:~(itms.?)|)
+                        & ( !arg
+                          | !arg:~(itms.?)
+                          | 
+                          )
                   )
                 . !parms
                 )
@@ -14153,7 +14159,6 @@ function main2(evt) {
                 & !R
             )
           & !arg:(?wheretogo.?parameters)
-          & lst$(parameters,path$"log.txt",APP)
           & (   !parameters:?A (UIlanguage.?) ?Z
               & !A !Z:?parameters
             | 
@@ -19194,7 +19199,7 @@ function main2(evt) {
                 : (?parms.?Submit.?hiddenData.?batch)
               & "Add any info about the input that the user has provided, e.g. language of the resource."
               & ( updateUploads
-                =   A nr Item stagingName,meta feats Z parms
+                =   A nr Item stagingName meta feats Z parms
                   .   !arg:?parms
                     & readTable$Uploads:?Uploads
                     & readTable$features:?features
@@ -20172,15 +20177,17 @@ function main2(evt) {
                                                           =   a b
                                                             .       !arg
                                                                   : (?a.?b)
-                                                                &   !o
-                                                                  : (   ?
-                                                                        (!a,!b)
-                                                                        ?
-                                                                    | ~( ?
-                                                                         (!a,?)
-                                                                         ?
-                                                                       )
-                                                                    )
+                                                                & ( !b:
+                                                                  |   !o
+                                                                    : (   ?
+                                                                          (!a,!b)
+                                                                          ?
+                                                                      | ~( ?
+                                                                           (!a,?)
+                                                                           ?
+                                                                         )
+                                                                      )
+                                                                  )
                                                                 & !arg
                                                               | 
                                                           )
@@ -20199,8 +20206,8 @@ function main2(evt) {
                           )
                   )
                 & ( linksAndLinked
-                  =   stable exr L itmgrp id
-                    .   !arg:(?stable.?exr)
+                  =   stable exr L itmgrp id Ofields
+                    .   !arg:(?stable.?exr.?Ofields)
                       & !exr:?itmgrp
                       & (!itmgrp:";" ?itmgrp|)
                       & (   !stable:%? [?L
@@ -20235,7 +20242,12 @@ function main2(evt) {
                                   )
                                   ( p
                                   .   (style."text-align: center;")
-                                    , localized$("for this type of input" "til denne type input")
+                                    ,     localized
+                                        $ ("for this type of input" "til denne type input")
+                                        (   !Ofields:? (?.~) ?
+                                          & localized$(" and output" " og output")
+                                        | 
+                                        )
                                   )
                             .   ( p
                                 .   (id.str$!id)
@@ -20291,8 +20303,8 @@ function main2(evt) {
                         )
                   )
                 & ( mentionBookmarkedWorkflows
-                  =   items
-                    .   !arg:?items
+                  =   items Ofields
+                    .   !arg:(?items.?Ofields)
                       & ( tr
                         .   (class.specialrow)
                           ,     cell
@@ -20305,24 +20317,6 @@ function main2(evt) {
                                         )
                                   )
                                 )
-                              ( 
-                              |   cell
-                                $ ( ( div
-                                    .     (class.tooltip)
-                                          (tabindex.0)
-                                          ( title
-                                          .   str
-                                            $ ( localized
-                                              $ ( "You can ignore all form fields below if you choose a bookmarked workflow."
-                                                  "Du kan ignorere alle formularfelter hernede hvis du vælger en markeret workflow."
-                                                )
-                                              )
-                                          )
-                                      , (small.,(small.,chu$10068))
-                                    )
-                                  | 
-                                  )
-                              )
                                 map
                               $ ( ( 
                                   =   nt wrkfls exr stable,links linked
@@ -20335,33 +20329,55 @@ function main2(evt) {
                                         $ (   !wrkfls:
                                             & ( span
                                               .   (class.smallfont)
-                                                ,     localized
-                                                    $ ( "(Be the first to bookmark a workflow for this kind of"
-                                                        "(Bliv den første til at markere en arbejdsgang til den her"
-                                                      )
-                                                    (br.,)
-                                                      localized
-                                                    $ ( "input. But for now, "
-                                                        "slags input. Men for nu: "
-                                                      )
-                                                    ( strong
-                                                    .   
-                                                      ,   localized
-                                                        $ ( "specify your goal"
-                                                            "specificer dit mål"
+                                                ,       !Ofields
+                                                      : ? (?.~) ?
+                                                    &     localized
+                                                        $ ( "(No workflows have already been defined for this"
+                                                            "(Der ikke endnu nogen arbejdsgange der passer til "
                                                           )
-                                                    )
-                                                      localized
-                                                    $ (" and press the" " og tryk knappen")
-                                                    (br.,)
-                                                      localized
-                                                    $ ( "button near the bottom of this page.)"
-                                                        "nederst på siden.)"
+                                                        (br.,)
+                                                          localized
+                                                        $ ( "combination of input and output specs. Specify "
+                                                            "denne kombination af input- og outputspecificationer. "
+                                                          )
+                                                        (br.,)
+                                                          localized
+                                                        $ ( "your goal the best as you can and press the button"
+                                                            "Specificer dit mål så godt du kan og tryk knappen "
+                                                          )
+                                                        (br.,)
+                                                          localized
+                                                        $ ( "near the bottom of this page.)"
+                                                            "nederst på siden.)"
+                                                          )
+                                                  |     localized
+                                                      $ ( "(Be the first to bookmark a workflow for this kind of"
+                                                          "(Bliv den første til at markere en arbejdsgang til den her"
+                                                        )
+                                                      (br.,)
+                                                        localized
+                                                      $ ( "input. But for now, "
+                                                          "slags input. Men for nu: "
+                                                        )
+                                                      ( strong
+                                                      .   
+                                                        ,   localized
+                                                          $ ( "specify your goal"
+                                                              "specificer dit mål"
+                                                            )
                                                       )
+                                                        localized
+                                                      $ (" and press the" " og tryk knappen")
+                                                      (br.,)
+                                                        localized
+                                                      $ ( "button near the bottom of this page.)"
+                                                          "nederst på siden.)"
+                                                        )
                                               )
                                           |     listToThreeColumnTable$!wrkfls
                                               : ?stable
-                                            & (     linksAndLinked$(!stable.!exr)
+                                            & (       linksAndLinked
+                                                    $ (!stable.!exr.!Ofields)
                                                   : (?links.?linked)
                                                 &   !linkedWorkflows (!nt.!linked)
                                                   : ?linkedWorkflows
@@ -20795,7 +20811,6 @@ function main2(evt) {
                     & setLang$!G
                   | 
                   )
-                & log$(cmptblWrkflws items !items presels !presels Ofields !Ofields)
                 & cmptblWrkflws$(!items.!presels.!Ofields):?items
                 & ( !items
                   .     fieldset
@@ -20879,7 +20894,7 @@ function main2(evt) {
                                 (   ( 
                                     | !items:? (?.?.% ?) ?
                                     )
-                                  & mentionBookmarkedWorkflows$!items
+                                  & mentionBookmarkedWorkflows$(!items.!Ofields)
                                 | 
                                 )
                             )
@@ -20979,7 +20994,6 @@ function main2(evt) {
                     &   sourcesAndGoals$(!presels.!Ofields)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
                     & log$sourcesAndGoalsDONE
-                    & log$(itemGroupsExt !itemGroupsExt Items !Items)
                     & "The next line decides whether hiddendata will contain a single Item parameter or a CLOCK parameter.
                        The pattern (@.@.?) succeeds if there is only one file in itemGroupsExt. In that case, we'll have an Item parameter.
                        If the second part of itemGroupsExt contains two or more file names, the second @ fails. Then we'l have a CLOCK
@@ -21114,7 +21128,7 @@ function main2(evt) {
                           $ ( ( 
                               =   f v A Z
                                 .   !arg:(?f.?v)
-                                  & (   !computedInputFeatures:?A+(!f.?)+?Z
+                                  & (   !computedInputFeatures:?A+#*(!f.?)+?Z
                                       & !A+!Z:?computedInputFeatures
                                     | 
                                     )
@@ -21153,7 +21167,7 @@ function main2(evt) {
                     . !arg
                     )
             )
-          & log$NEW
+          & (|log$NEW)
           & log$specifyGoal-CREATELOGJE
           & log$(arg !arg)
           & convertISO639-3to-1-IfPossible$!arg:?arg
