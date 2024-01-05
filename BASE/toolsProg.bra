@@ -331,7 +331,9 @@ toolsProg=
               &   whl
                 ' ( !val:%?abBr^?spec+?val
                   & !table:? (?.!abBr.?) ?
-                  & !abbrs !abBr:?abbrs
+                  & ( !abbrs:? !abBr ?
+                    | !abbrs !abBr:?abbrs
+                    )
                   )
               )
           & !abbrs
@@ -2285,7 +2287,7 @@ toolsProg=
           & candidateList$(!reorderedworkflowlist.!topologicalOrderedTools)
       )
       ( makeWorkflowVisualisation
-      =   n o struct boxes getNodesAndLinks breaks
+      =   n o struct boxes getNodesAndLinks breaks nodes edges
         .   ( getNodesAndLinks
             =   titlelinks planettitles extractEdges
               .   ( extractEdges
@@ -2346,7 +2348,7 @@ toolsProg=
                 & extractEdges$!arg:?nameedges
                 &     map
                     $ ( ( 
-                        =   a b desc
+                        =   a b desc fr to
                           .   !arg:(?toolID,#%?fr #%?to.?desc)
                             & ( !planettitles:?+(!to.?)+?
                               |   (   !fr:0
@@ -2420,12 +2422,12 @@ toolsProg=
                     )
             )
           & ( boxes
-            =   nodes edges
+            =   nodes edges links
               .   !arg:(?nodes.?edges)
                 & 0:?links
                 &   map
                   $ ( ( 
-                      =   
+                      =   desc from to
                         .   !arg:(?desc,%?from %?to)
                           & (!from.!to.!desc)+!links:?links
                       )
@@ -2435,7 +2437,7 @@ toolsProg=
                   .   
                     ,   map
                       $ ( ( 
-                          =   
+                          =   no step name
                             .   !arg:(?no.?step.?name)
                               &   ( dt
                                   .   
@@ -2467,7 +2469,7 @@ toolsProg=
                                                       .   
                                                         ,   mop
                                                           $ ( ( 
-                                                              =   
+                                                              =   from desc
                                                                 .       !arg
                                                                       : ( ?from
                                                                         . !no
@@ -2524,7 +2526,7 @@ toolsProg=
                                                     .   
                                                       ,   mop
                                                         $ ( ( 
-                                                            =   
+                                                            =   to desc
                                                               .       !arg
                                                                     : (!no.?to.?)
                                                                   &   !nodes
@@ -5854,7 +5856,6 @@ try {
                       & (!so.!go)
                   )
                 & !arg:(?source.?goal.?reqtool,?fintool.?)
-                & log$(reqtool !reqtool fintool !fintool goal !goal)
                 & readTable$tooladm
                 & readTable$toolprop
                 & :?bridges
@@ -6463,7 +6464,6 @@ try {
                 & ( getImpliedGoals
                   =   allios tools fintool ios
                     .   !arg:(?tools.?fintool)
-                      & log$(getImpliedGoals fintool !fintool)
                       & :?allios
                       & !( 
                          ' ( whl
@@ -6592,7 +6592,6 @@ try {
                       & denumerizeSum$!goal
                   )
                 & !arg:(?source.?goal.?reqtool,?fintool.?superset)
-                & log$(goal !goal reqtool !reqtool fintool !fintool)
                 & readTable$toolprop
                 & getActiveTools$:?activeTools
                 & :?reasons
@@ -6787,7 +6786,6 @@ try {
           & ( !arg:? (fintool.?fintool) ?
             | :?fintool
             )
-          & log$(reqtool !reqtool fintool !fintool)
           & 0:?Npipes
           &     map
               $ ( ( 
@@ -9797,7 +9795,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$tooladm
           & (   !parms:?A (eye.?) ?Z
               & !A (bsubmit.eye) !Z:?parms
-              & log$parms
               & 
             | 
             )
@@ -10496,7 +10493,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?steps
           &     map
               $ ( ( 
-                  =   from to afrom ato text,kro x1 x2 y1 y2
+                  =   from to afrom ato text kro x1 x2 y1 y2
                     .   !arg:(?from.?to.?kro.?text)
                       &   !steps
                         :   ?
@@ -11435,7 +11432,7 @@ function main2(evt) {
           , some breuk F M/planets2 W dampeningDoneDhreshold
           , degrees dimensions epsilon freezing hasCrossing
           , iterations maxn nlinks noCrossing planets q
-          , evry
+          , evry planettitles titlelinks
           , NN lineno linkcolour linkcolours ll
           , planetcolour planetcolours planetstates plnt
           , strngth xx xxs xxyy yys
@@ -12734,7 +12731,7 @@ function main2(evt) {
                   : ?lines
                 &     map
                     $ ( ( 
-                        =   a b col planetcolour
+                        =   a b col planetcolour text Title
                           .   !arg:(?a.?b)
                             & 1+!nn:?nn
                             & 255+-1*div$(255*!nn*!MM,1):?col
@@ -13504,32 +13501,22 @@ function main2(evt) {
                 , parms nth batch Items mail2 ERR
                 , allpipes ViewDetails fintool
                 , returnCode struct whichButton
-                , reqtool sources bm err
+                , reqtool sources bm err msg
                 , goals topologicalOrderedTools wf
                 , getDetailedSource getDetailedGoal
               .   ( getDetailedSource
                   =   
-                    .   log$(getDetailedSource !arg)
-                      &   whl
-                        ' ( !arg:(%?arg %|(?arg,?))
-                          & log$(WHL !arg)
-                          )
-                      & log$(FIRST !arg)
+                    .   whl'(!arg:(%?arg %|(?arg,?)))
                       & !arg:(?.?.?arg.?)
-                      & log$(RETURN !arg)
                       & !arg
                   )
                 & ( getDetailedGoal
                   =   
-                    .   log$(getDetailedGoal !arg)
-                      &   whl
-                        ' (   !arg
-                            : (% ((?.?):%?arg)|(?,?arg))
-                          & log$(WHL !arg)
+                    .     whl
+                        ' ( !arg
+                          : (% ((?.?):%?arg)|(?,?arg))
                           )
-                      & log$(FIRST !arg)
                       & !arg:(?.?.?arg.?)
-                      & log$(RETURN !arg)
                       & !arg
                   )
                 & ( whichButton
@@ -13541,13 +13528,8 @@ function main2(evt) {
                               )
                           & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm.)
                         |   localized$!Bookmark:!Submit
-                          & lst$(struct,path$struct,NEW,RAW,WYD)
-                          & lst$(sources,path$sources,NEW RAW WYD)
-                          & lst$(goals,path$goals,NEW RAW WYD)
                           & getDetailedSource$!struct:?sources
                           & getDetailedGoal$!struct:?goals
-                          & lst$(sources,path$sources,APP RAW WYD)
-                          & lst$(goals,path$goals,APP RAW WYD)
                           & ((!sources.!goals).!struct):?wf
                           & (!wrkflws:|readTable$wrkflws)
                           &   ShowOnlyTheCurrentPipe
@@ -15845,7 +15827,6 @@ function main2(evt) {
                             &   whl
                               ' ( !Tables
                                 :   ( %?tab
-                                    & log$(saveTableA folder !folder tab !tab)
                                     & saveTable$(!folder.!tab)
                                     & !saved !tab:?saved
                                     )
@@ -15926,7 +15907,6 @@ function main2(evt) {
                               )
                             & ( !name:toolprop
                               |   !productioncontent:?!name
-                                & log$(saveTableB name !name)
                                 & saveTable$!name
                               )
                         )
@@ -17003,10 +16983,13 @@ function main2(evt) {
           , deleteToolButton UpdateButton PHPbutton
         .   clean$
           & ( checkParmsSimple
-            =   parms parm aBbr
+            =   parms parm aBbr tmp
               .   !arg:(?parms.?parm)
                 & !parms:? (!parm.%?aBbr) ?
-                & !hiddenData (!parm.!aBbr):?hiddenData
+                & (!parm.!aBbr):?tmp
+                & ( hiddenData:? !tmp ?
+                  | !hiddenData !tmp:?hiddenData
+                  )
                 & !aBbr
             )
           & "createBoilerPlate fails if user is  granted access."
@@ -17694,6 +17677,19 @@ function main2(evt) {
                     . (?NrRequiredAndOptional.?inout.?NrInOutAlternative.?aboutFeature)
                     . ?urlparms
                     )
+                &   log
+                  $ ( aFeature
+                      requireds
+                      !requireds
+                      NrRequiredAndOptional
+                      !NrRequiredAndOptional
+                      inout
+                      !inout
+                      NrInOutAlternative
+                      !NrInOutAlternative
+                      aboutFeature
+                      !aboutFeature
+                    )
                 &   !aboutFeature
                   : ? (short.?shortfeatname) ?
                   : ? (description.?featdescription) ?
@@ -17765,7 +17761,18 @@ function main2(evt) {
                 & tbl$(!featinoutOnE,0)
                 & tbl$(!featinout,0)
                 & tbl$(!featinoutSpec,0)
-                & (!FieldSet !additionalFieldSet.!requireds.!optionals !additionalOptionals)
+                & ( !FieldSet !additionalFieldSet
+                  . !requireds
+                  .   !optionals
+                        map
+                      $ ( ( 
+                          =   
+                            .   !optionals:? !arg ?&
+                              | !arg
+                          )
+                        . !additionalOptionals
+                        )
+                  )
             )
           & ( askFieldSet
             =     NrInOutAlternative additionalInoutpairs
@@ -17819,12 +17826,14 @@ function main2(evt) {
                                   & (   !required:(OnE.?required)
                                       & !required*!OnErequired:?OnErequired
                                     |   !required*!OnErequired:?OnErequired
-                                      &     (   !OnErequired:%*%
-                                              & (!OnErequired.OnE)
-                                            | !OnErequired
-                                            )
-                                          * !requireds
-                                        : ?requireds
+                                      &   (   !OnErequired:%*%
+                                            & (!OnErequired.OnE)
+                                          | !OnErequired
+                                          )
+                                        : ?required
+                                      & ( !requireds:?*!required*?
+                                        | !required*!requireds:?requireds
+                                        )
                                       & 1:?OnErequired
                                     )
                                   )
@@ -18278,9 +18287,10 @@ function main2(evt) {
                   )
             )
           & "Body of Register starts here"
-          & (|log$NEW)
+          & log$NEW
           & log$REGISTER
           & log$
+          & lst$(arg,path$"log.txt",RAW APP WYD)
           &   
             : ?servicedSources
             : ?servicedGoals
@@ -20855,8 +20865,6 @@ function main2(evt) {
                     & setLang$!G
                   | 
                   )
-                & lst$(goalPicklists,path$goalPicklists,NEW RAW WYD)
-                & lst$(Ofields,path$Ofields,NEW RAW WYD)
                 & cmptblWrkflws$(!items.!presels.!Ofields):?items
                 & ( !items
                   .     fieldset
@@ -21006,9 +21014,7 @@ function main2(evt) {
                 , hiddenData Items A Z Ofields
               .   !arg:(?presels.?hiddenData.?Items)
                 & log$"We are at the start. Show an input form."
-                & log$(A !hiddenData)
                 & (   !Items:
-                    & log$noitems
                     &   str
                       $ ( 200~~~
                             toML
@@ -21033,10 +21039,8 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?Ofields
-                    & log$(B !hiddenData)
                     &   sourcesAndGoals$(!presels.!Ofields)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
-                    & log$sourcesAndGoalsDONE
                     & "The next line decides whether hiddendata will contain a single Item parameter or a CLOCK parameter.
                        The pattern (@.@.?) succeeds if there is only one file in itemGroupsExt. In that case, we'll have an Item parameter.
                        If the second part of itemGroupsExt contains two or more file names, the second @ fails. Then we'l have a CLOCK
@@ -21057,7 +21061,6 @@ function main2(evt) {
                             )
                         )
                       : ?hiddenData
-                    & log$(C !hiddenData)
                     &     map
                         $ ( ( 
                             =   
@@ -21069,8 +21072,6 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?hiddenData
-                    & log$(D !hiddenData)
-                    & log$(linkedWorkflows !linkedWorkflows)
                     & !sourceAndGoal:?formFields
                     &   str
                       $ ( 200~~~
@@ -21116,18 +21117,17 @@ function main2(evt) {
                                             .   !arg:(?nt.?linkedWorkflows)
                                               &   form
                                                 $ ( chosenworkflow
-                                                  .   log$(E itms !nt)
-                                                    &     makeHiddenFields
-                                                        $ ( !hiddenData
-                                                            (     !hiddenData
-                                                                :   ?
-                                                                    (itms.?)
-                                                                    ?
-                                                              & 
-                                                            | (itms.!nt)
-                                                            )
+                                                  .     makeHiddenFields
+                                                      $ ( !hiddenData
+                                                          (     !hiddenData
+                                                              :   ?
+                                                                  (itms.?)
+                                                                  ?
+                                                            & 
+                                                          | (itms.!nt)
                                                           )
-                                                        !linkedWorkflows
+                                                        )
+                                                      !linkedWorkflows
                                                   )
                                           )
                                         . !linkedWorkflows
