@@ -2632,7 +2632,7 @@ toolsProg=
               \r\n
       )
       ( submit2
-      =   button name
+      =   button name title
         .   !arg:(?name.%?button ?title)
           &   ( input
               .     (type.submit)
@@ -5554,7 +5554,7 @@ try {
             : ?OP
           &   map
             $ ( ( 
-                =   short name table servicedGoalsTable,optgroups
+                =   short name table servicedGoalsTable optgroups help
                   .     !arg:(?.?short.?name.?table.)
                       & ( !servicedGoals:? (!short.?servicedGoalsTable) ?
                         |       selectServicedValues
@@ -5626,7 +5626,7 @@ try {
           & saveTable$recentTasks
       )
       ( Pipelines
-      =     i o o-SUpPLEMENT reqtool FP fP fp
+      =     i o o-SUpPLEMENT reqtool FP fP fp msg
           , superset userInput prunePipes windFW fintool
           , calls nth parms furtherCheck o2o extractIOfeaturesFromHTTParg
           , A Z reorderedworkflowlist topologicalOrderedTools
@@ -7156,7 +7156,7 @@ try {
                   If so, unification is done. If unification is not possible, the workflow is discarded by returning 0.
                   "
                 & ( wantThis
-                  =     sig nsig copySpecs
+                  =     sig nsig copySpecs Clashing clsh
                       , signatures unifySignaturesAtSpecLevel
                       , mergeOIbundlesWherePossible Nsig SubspecHarmonize
                       , separate signatureDotSep trySignatures unspec
@@ -9412,7 +9412,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !arg
       )
       ( deleteDepending
-      =   jobNr jobID
+      =   jobNr jobID CTBs
         .   !arg:(?jobNr.?jobID)
           & !( 
              ' (     map
@@ -13506,7 +13506,33 @@ function main2(evt) {
                 , returnCode struct whichButton
                 , reqtool sources bm err
                 , goals topologicalOrderedTools wf
-              .   ( whichButton
+                , getDetailedSource getDetailedGoal
+              .   ( getDetailedSource
+                  =   
+                    .   log$(getDetailedSource !arg)
+                      &   whl
+                        ' ( !arg:(%?arg %|(?arg,?))
+                          & log$(WHL !arg)
+                          )
+                      & log$(FIRST !arg)
+                      & !arg:(?.?.?arg.?)
+                      & log$(RETURN !arg)
+                      & !arg
+                  )
+                & ( getDetailedGoal
+                  =   
+                    .   log$(getDetailedGoal !arg)
+                      &   whl
+                        ' (   !arg
+                            : (% ((?.?):%?arg)|(?,?arg))
+                          & log$(WHL !arg)
+                          )
+                      & log$(FIRST !arg)
+                      & !arg:(?.?.?arg.?)
+                      & log$(RETURN !arg)
+                      & !arg
+                  )
+                & ( whichButton
                   =   bm
                     .   !arg:?bm
                       & (     !Submit
@@ -13515,6 +13541,13 @@ function main2(evt) {
                               )
                           & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm.)
                         |   localized$!Bookmark:!Submit
+                          & lst$(struct,path$struct,NEW,RAW,WYD)
+                          & lst$(sources,path$sources,NEW RAW WYD)
+                          & lst$(goals,path$goals,NEW RAW WYD)
+                          & getDetailedSource$!struct:?sources
+                          & getDetailedGoal$!struct:?goals
+                          & lst$(sources,path$sources,APP RAW WYD)
+                          & lst$(goals,path$goals,APP RAW WYD)
                           & ((!sources.!goals).!struct):?wf
                           & (!wrkflws:|readTable$wrkflws)
                           &   ShowOnlyTheCurrentPipe
@@ -14131,7 +14164,8 @@ function main2(evt) {
           | 
       )
       ( fixedMenuItems
-      =   dezilacol UILangNames wheretogo parameters A Z
+      =     dezilacol UILangNames wheretogo parameters A Z
+          , ContentType DestinationDir FieldName LocalFileName Name Size nofonts
         .   ( UILangNames
             =   G R
               .   readTable$linguae
@@ -16498,7 +16532,7 @@ function main2(evt) {
  */"
       ( poll
       =     n step secs steplinks links DOWNLOADPSEUDOCODE
-          , serviceurl title DOWNLOAD steptexts
+          , serviceurl title DOWNLOAD steptexts mode
           , runningParagraphs JobNr hours minutes
         .   ( steplinks
             =   links locJobs file step outp ServiceURL JobNr,seenInputs Title
@@ -18671,7 +18705,7 @@ function main2(evt) {
  * Called from showworkflows.java
  */"
       ( showworkflows
-      =     Tool parms Items NothingToDo Submit
+      =     Tool parms Items NothingToDo Submit Pfeats
           , presels errors BodyContainer topologicalOrderedTools
           , PIPE A Z TooManyWorkflows updateUploads 2or3things
           , ShowAllPipes rstr reorderedworkflowlist orgarg pipe
@@ -20116,7 +20150,7 @@ function main2(evt) {
                     )
             )
           & ( sourcesAndGoals
-            =     f name short Ofields
+            =     f name short Ofields activeTools
                 , servicedGoalsTable cmptblWrkflws
                 , servicedSourcesTable
                 , description itms Types linkedWorkflows
@@ -20130,6 +20164,15 @@ function main2(evt) {
               .   ( cmptblWrkflws
                   =   itemGroups presels Ofields
                     .   !arg:(?itemGroups.?presels.?Ofields)
+                      &   log
+                        $ ( cmptblWrkflws
+                            itemGroups
+                            !itemGroups
+                            presels
+                            !presels
+                            Ofields
+                            !Ofields
+                          )
                       & (!wrkflws|readTable$wrkflws)
                       &   map
                         $ ( ( 
@@ -20408,6 +20451,7 @@ function main2(evt) {
                                 , v6 v7 v8 v9 v10 v11
                                 , v7a v6-8 v6a v7m v7z
                               .     !arg:(?f.?v)
+                                  & str$!v:?v
                                   &   !R
                                     :   ?v1
                                         ( tr
@@ -20662,7 +20706,7 @@ function main2(evt) {
                 & readTable$features
                 &     map
                     $ ( ( 
-                        =   exr
+                        =   exr help
                           .     !arg:(?preselvals.?short.?name.?table.)
                               & (   !servicedSources
                                   : ? (!short.?servicedSourcesTable) ?
@@ -20811,6 +20855,8 @@ function main2(evt) {
                     & setLang$!G
                   | 
                   )
+                & lst$(goalPicklists,path$goalPicklists,NEW RAW WYD)
+                & lst$(Ofields,path$Ofields,NEW RAW WYD)
                 & cmptblWrkflws$(!items.!presels.!Ofields):?items
                 & ( !items
                   .     fieldset
@@ -20864,10 +20910,12 @@ function main2(evt) {
                                   & 0:?nt
                                   &   row
                                     $ (   cell
-                                        $ ( localized
-                                          $ ( "Inputs are dissimilar. Select a column."
-                                              "Inputs tilhører uens kategorier. Vælg en kolonne."
-                                            )
+                                        $ ( strong
+                                          .   
+                                            ,   localized
+                                              $ ( "Inputs are dissimilar. Select a column."
+                                                  "Inputs tilhører uens kategorier. Vælg en kolonne."
+                                                )
                                           )
                                           map
                                         $ ( ( 
@@ -20921,13 +20969,6 @@ function main2(evt) {
                             $ ( ". In general, more filled out fields = fewer workflow candidates."
                                 ". Generelt gælder: jo flere udfyldte feldter, desto færre foreslåede arbejdsgange."
                               )
-                            ( 
-                            |   (br.,)
-                                  localized
-                                $ ( "You can skip these fields and choose a tool instead, see below. In that case, the tool will be the last in the workflow."
-                                    "Du kan lade felterne stå tomme og i stedet vælge et værktøj i rubrikken forneden. I så fald er værktøjet det sidste i arbejdsgangen."
-                                  )
-                            )
                         .   Table
                           $ ( id,goal
                             . row$(cell$() cell$() cell$)
@@ -20965,6 +21006,7 @@ function main2(evt) {
                 , hiddenData Items A Z Ofields
               .   !arg:(?presels.?hiddenData.?Items)
                 & log$"We are at the start. Show an input form."
+                & log$(A !hiddenData)
                 & (   !Items:
                     & log$noitems
                     &   str
@@ -20991,6 +21033,7 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?Ofields
+                    & log$(B !hiddenData)
                     &   sourcesAndGoals$(!presels.!Ofields)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
                     & log$sourcesAndGoalsDONE
@@ -21014,6 +21057,7 @@ function main2(evt) {
                             )
                         )
                       : ?hiddenData
+                    & log$(C !hiddenData)
                     &     map
                         $ ( ( 
                             =   
@@ -21025,6 +21069,8 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?hiddenData
+                    & log$(D !hiddenData)
+                    & log$(linkedWorkflows !linkedWorkflows)
                     & !sourceAndGoal:?formFields
                     &   str
                       $ ( 200~~~
@@ -21070,9 +21116,18 @@ function main2(evt) {
                                             .   !arg:(?nt.?linkedWorkflows)
                                               &   form
                                                 $ ( chosenworkflow
-                                                  .     makeHiddenFields
-                                                      $ (!hiddenData (itms.!nt))
-                                                      !linkedWorkflows
+                                                  .   log$(E itms !nt)
+                                                    &     makeHiddenFields
+                                                        $ ( !hiddenData
+                                                            (     !hiddenData
+                                                                :   ?
+                                                                    (itms.?)
+                                                                    ?
+                                                              & 
+                                                            | (itms.!nt)
+                                                            )
+                                                          )
+                                                        !linkedWorkflows
                                                   )
                                           )
                                         . !linkedWorkflows
@@ -21167,7 +21222,7 @@ function main2(evt) {
                     . !arg
                     )
             )
-          & (|log$NEW)
+          & log$NEW
           & log$specifyGoal-CREATELOGJE
           & log$(arg !arg)
           & convertISO639-3to-1-IfPossible$!arg:?arg
