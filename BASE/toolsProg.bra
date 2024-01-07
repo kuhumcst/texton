@@ -3778,9 +3778,6 @@ catch (SystemExit $e)
                 "ExternalURI    : "
                 getBoilerPlate$(!toolid.ExternalURI)
                 \n
-                "XMLparms       : "
-                getBoilerPlate$(!toolid.XMLparms)
-                \n
                 "PostData       : "
                 getBoilerPlate$(!toolid.PostData)
                 \n
@@ -5548,7 +5545,7 @@ try {
       ( createGoalPickLists
       =   preselvalsrows,expandedSelectLists including OP
         .   !arg:(?preselvalsrows.?expandedSelectLists.?including)
-          & "When called from sourcesAndGoals, including is set to 'including'.
+          & "When called from sourcesAndGoals including is set to 'including'.
              When called from ShowZoomedInForm, including is empty.
              So initially we create O parameters. When zooming in, P parameters.
              e.g. first Ofacet=lem*tok and then, when zooming in, Pfacet=lem*pos*tok"
@@ -14703,7 +14700,7 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby res A B makeList,req servurl xmlparms
+      =   JobNr jobID jobby res A B makeList req servurl
         .   str
           $ (   !arg:(@(?:? #?JobNr).?jobID.?arg)
               & (!jobs|readTable$jobs)
@@ -14737,60 +14734,39 @@ function main2(evt) {
                         )
                     & !jobby:(?.?servurl.?req.?)
                     & readTable$tooladm
-                    &   !tooladm
-                      :   ?
-                        + ( ? (ServiceURL.!servurl) ?
-                          : ? (XMLparms.?xmlparms) ?
-                          )
-                        + ?
+                    & !tooladm:?+(? (ServiceURL.!servurl) ?)+?
                     &     str
-                        $ (   !xmlparms:on
-                            & ( makeList
-                              =   el sub
-                                .   mop
+                        $ ( ( makeList
+                            =   B prefix
+                              .   !arg:(?prefix.?arg)
+                                &   mop
                                   $ ( ( 
                                       =   
-                                        .     !arg:(?el.?sub)
-                                            & (!el.,makeList$!sub)
-                                          | !arg
+                                        .     !arg:(?arg.?B)
+                                            &   ( !prefix:
+                                                | (!prefix,!arg)
+                                                )
+                                                makeList$(!prefix !arg.!B)
+                                          | !prefix:
+                                          | (!prefix,!arg)
                                       )
                                     . !arg
                                     . (=+)
                                     )
-                              )
-                            & makeList$(parms.!req):?res
-                            & !res
-                          |   ( makeList
-                              =   B prefix
-                                .   !arg:(?prefix.?arg)
-                                  &   mop
-                                    $ ( ( 
-                                        =   
-                                          .     !arg:(?arg.?B)
-                                              &   ( !prefix:
-                                                  | (!prefix,!arg)
-                                                  )
-                                                  makeList$(!prefix !arg.!B)
-                                            | !prefix:
-                                            | (!prefix,!arg)
-                                        )
-                                      . !arg
-                                      . (=+)
-                                      )
-                              )
-                            & makeList$(.!req):?res
-                            & !res:(?A,?B) ?res
-                            &   !A
-                                "="
-                                !B
-                                  map
-                                $ ( ( 
-                                    =   
-                                      .   !arg:(?A,?B)
-                                        & "&" !A "=" !B
-                                    )
-                                  . !res
+                            )
+                          & makeList$(.!req):?res
+                          & !res:(?A,?B) ?res
+                          &   !A
+                              "="
+                              !B
+                                map
+                              $ ( ( 
+                                  =   
+                                    .   !arg:(?A,?B)
+                                      & "&" !A "=" !B
                                   )
+                                . !res
+                                )
                           )
                       : ?arg
                   | filename&!jobby:(?.?.?.?arg)
@@ -16971,7 +16947,7 @@ function main2(evt) {
           , ToolName ToolVersion FullToolName PassWord password
           , ToolURL ToolPublisher ContentProvider passwordAsHandle
           , ToolCreator InfoAbout ToolDescription mail2
-          , ToolExternalURI ToolXMLparms aFeature askOptional
+          , ToolExternalURI aFeature askOptional
           , ToolPostData ToolInactive askOnE checkParmsSimple
           , additionalFormFields additionalMetadata
           , formFields storeTool handle saveToolTable
@@ -16997,7 +16973,7 @@ function main2(evt) {
             =     ToolName ToolVersion FullToolName
                 , URL Publisher ContentProvider
                 , Creator InfoAbout Description
-                , ExternalURI XMLparms url-password
+                , ExternalURI url-password
                 , PostData Inactive pval toggles
                 , liste a z urlparm var val like
                 , PassWord url-ToolName
@@ -17044,7 +17020,6 @@ function main2(evt) {
                             : ? (InfoAbout.?InfoAbout) ?
                             : ? (Description.?Description) ?
                             : ? (ExternalURI.?ExternalURI) ?
-                            : ? (XMLparms.?XMLparms) ?
                             : ? (PostData.?PostData) ?
                             : ? (Inactive.?Inactive) ?
                             )
@@ -17070,7 +17045,6 @@ function main2(evt) {
                         : ?InfoAbout
                         : ?Description
                         : ?ExternalURI
-                        : ?XMLparms
                         : ?PostData
                       & on:?Inactive
                     )
@@ -17098,9 +17072,7 @@ function main2(evt) {
                         (dscrptn.!Description)
                         (xuri.!ExternalURI)
                     : ?liste
-                  &     (xmlprms.!XMLparms)
-                        (pstdt.!PostData)
-                        (|(nctv.!Inactive))
+                  &   (pstdt.!PostData) (|(nctv.!Inactive))
                     : ?toggles
                   &   (     !urlparm
                           : ? (handle.?handle) ?
@@ -17319,18 +17291,6 @@ function main2(evt) {
                                 . ToolPostData
                                 . makeCheckboxFormField
                                 . 
-                                )
-                                staticField
-                              $ ( !arg
-                                . "parameters as XML (if POST):"
-                                . xmlprms
-                                . ToolXMLparms
-                                . makeCheckboxFormField
-                                . desc
-                                .   localized
-                                  $ ( "Check if parameters must be sent in XML format"
-                                      "Marker hvis parametre skal sendes i XML-format"
-                                    )
                                 )
                                 staticField
                               $ ( !arg
@@ -17904,7 +17864,7 @@ function main2(evt) {
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
-                , ToolExternalURI ToolXMLparms mayNotBeEmpty
+                , ToolExternalURI mayNotBeEmpty
                 , ToolPostData ToolInactive Nazn dNazn
               .     !arg
                   : ( ?ToolName
@@ -17918,7 +17878,6 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
-                    . ?ToolXMLparms
                     . ?ToolPostData
                     . ?ToolInactive
                     . ?Submit
@@ -18025,16 +17984,6 @@ function main2(evt) {
                           )
                         (br.,)
                   | !ToolDescription:&mayNotBeEmpty$Description
-                  |   !ToolPostData:
-                    & !ToolXMLparms:on
-                    &   ( "XMLparms ("
-                          !ToolXMLparms
-                            localized
-                          $ ( ") must not be checked if 'POST' is not checked"
-                              ") skal være umarkeret hvis 'POST' er umarkeret"
-                            )
-                        )
-                        (br.,)
                   )
             )
           & ( saveToolTable
@@ -18048,7 +17997,7 @@ function main2(evt) {
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
-                , ToolExternalURI ToolXMLparms removeEmptyValues
+                , ToolExternalURI removeEmptyValues
                 , ToolPostData ToolInactive sortFacets
                 , ContactEmail otherToolprop thisToolProp
                 , Combine IOFeatComb IOcomb IOcombine Ocomb
@@ -18067,7 +18016,6 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
-                    . ?ToolXMLparms
                     . ?ToolPostData
                     . ?ToolInactive
                     . ?ZZ
@@ -18261,7 +18209,6 @@ function main2(evt) {
                               (InfoAbout.!InfoAbout)
                               (Description.!ToolDescription)
                               (ExternalURI.!ToolExternalURI)
-                              (XMLparms.!ToolXMLparms)
                               (PostData.!ToolPostData)
                               (Inactive.!ToolInactive)
                           : ?admdata
@@ -18515,7 +18462,6 @@ function main2(evt) {
                                   . !InfoAbout
                                   . !ToolDescription
                                   . !ToolExternalURI
-                                  . !ToolXMLparms
                                   . !ToolPostData
                                   . !ToolInactive
                                   . !Submit
@@ -18535,7 +18481,6 @@ function main2(evt) {
                                     . !InfoAbout
                                     . !ToolDescription
                                     . !ToolExternalURI
-                                    . !ToolXMLparms
                                     . !ToolPostData
                                     . !ToolInactive
                                     .     !Submit:!storeToolButton
@@ -19351,7 +19296,7 @@ function main2(evt) {
           , A itms orgarg buildItemListFromForeignData updatePreselsWithUserAmendments
           , "We are at the start. Show an input form."
         .   ( buildItemListFromForeignData
-            =     A Z N name Items nofonts ContentType feats
+            =     A Z N name Items nofonts ContentType feats preSelectedOutputSpec
                 , DestinationDir LocalFileName language date analyseContentType
               .   ( analyseContentType
                   =     R spec nofonts ct DestinationDir LocalFileName anateip5
@@ -20154,7 +20099,7 @@ function main2(evt) {
                 , table presel L retrieveServicedOutputFeaturesAndTheirValues
                 , preselvalsrows items item spec
                 , preselvals presels
-                , G sourcePicklists
+                , G sourcePicklists preSelectedOutputSpec
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
                 , features links addOutputWishesFrom3rdParty
@@ -20343,100 +20288,110 @@ function main2(evt) {
                         )
                   )
                 & ( mentionBookmarkedWorkflows
-                  =   items Ofields
-                    .   !arg:(?items.?Ofields)
-                      & ( tr
-                        .   (class.specialrow)
-                          ,     cell
-                              $ ( submit2
-                                $ ( eye
-                                  .   localized$!updateAvailableWorkflows
-                                        localized
-                                      $ ( "If you have redacted the input fields, use this button to search for relevant bookmarked workflows."
-                                          "Hvis du har ændret noget i inputfelterne, brug knappen for at søge efter passende markerede arbejdsgange."
-                                        )
-                                  )
-                                )
-                                map
-                              $ ( ( 
-                                  =   nt wrkfls exr stable,links linked
-                                    .   !arg:(?nt.?arg.?wrkfls)
-                                      & (   !items:% %
-                                          & (exr=";" !nt)
-                                        | :?exr
-                                        )
-                                      &   cell
-                                        $ (   !wrkfls:
-                                            & ( span
-                                              .   (class.smallfont)
-                                                ,       !Ofields
-                                                      : ? (?.~) ?
-                                                    &     localized
-                                                        $ ( "(No workflows have already been defined for this"
-                                                            "(Der ikke endnu nogen arbejdsgange der passer til "
-                                                          )
-                                                        (br.,)
-                                                          localized
-                                                        $ ( "combination of input and output specs. Specify "
-                                                            "denne kombination af input- og outputspecificationer. "
-                                                          )
-                                                        (br.,)
-                                                          localized
-                                                        $ ( "your goal the best you can and press the button"
-                                                            "Specificer dit mål så godt du kan og tryk knappen "
-                                                          )
-                                                        (br.,)
-                                                          localized
-                                                        $ ( "near the bottom of this page.)"
-                                                            "nederst på siden.)"
-                                                          )
-                                                  |     localized
-                                                      $ ( "(Be the first to bookmark a workflow for this kind of"
-                                                          "(Bliv den første til at markere en arbejdsgang til den her"
-                                                        )
-                                                      (br.,)
-                                                        localized
-                                                      $ ( "input. But for now, "
-                                                          "slags input. Men for nu: "
-                                                        )
-                                                      ( strong
-                                                      .   
-                                                        ,   localized
-                                                          $ ( "specify your goal"
-                                                              "specificer dit mål"
+                  =   items Ofields preSelectedOutputSpec
+                    .   !arg:(?items.?Ofields.?preSelectedOutputSpec)
+                      & (   ( !preSelectedOutputSpec:
+                            | !items:? (?.?.~) ?
+                            )
+                          & "Show row mentioning bookmarked workflows if the request does not come from 3rd party or if there are any bookmarked workflows to be mentioned.
+                               (This is to diminish the mental load on Switchboard users. Don't confront them with too many buttons.)"
+                          & ( tr
+                            .   (class.specialrow)
+                              ,     cell
+                                  $ ( submit2
+                                    $ ( eye
+                                      .   localized$!updateAvailableWorkflows
+                                            localized
+                                          $ ( "If you have redacted the input fields, use this button to search for relevant bookmarked workflows."
+                                              "Hvis du har ændret noget i inputfelterne, brug knappen for at søge efter passende markerede arbejdsgange."
+                                            )
+                                      )
+                                    )
+                                    map
+                                  $ ( ( 
+                                      =     nt wrkfls exr stable
+                                          , links linked
+                                        .   !arg:(?nt.?arg.?wrkfls)
+                                          & (   !items:% %
+                                              & (exr=";" !nt)
+                                            | :?exr
+                                            )
+                                          &   cell
+                                            $ (   !wrkfls:
+                                                & ( span
+                                                  .   (class.smallfont)
+                                                    ,       !Ofields
+                                                          : ? (?.~) ?
+                                                        &     localized
+                                                            $ ( "(No workflows have already been defined for this"
+                                                                "(Der ikke endnu nogen arbejdsgange der passer til "
+                                                              )
+                                                            (br.,)
+                                                              localized
+                                                            $ ( "combination of input and output specs. Specify "
+                                                                "denne kombination af input- og outputspecificationer. "
+                                                              )
+                                                            (br.,)
+                                                              localized
+                                                            $ ( "your goal the best you can and press the button"
+                                                                "Specificer dit mål så godt du kan og tryk knappen "
+                                                              )
+                                                            (br.,)
+                                                              localized
+                                                            $ ( "near the bottom of this page.)"
+                                                                "nederst på siden.)"
+                                                              )
+                                                      |     localized
+                                                          $ ( "(Be the first to bookmark a workflow for this kind of"
+                                                              "(Bliv den første til at markere en arbejdsgang til den her"
                                                             )
-                                                      )
-                                                        localized
-                                                      $ (" and press the" " og tryk knappen")
-                                                      (br.,)
-                                                        localized
-                                                      $ ( "button near the bottom of this page.)"
-                                                          "nederst på siden.)"
-                                                        )
+                                                          (br.,)
+                                                            localized
+                                                          $ ( "input. But for now, "
+                                                              "slags input. Men for nu: "
+                                                            )
+                                                          ( strong
+                                                          .   
+                                                            ,   localized
+                                                              $ ( "specify your goal"
+                                                                  "specificer dit mål"
+                                                                )
+                                                          )
+                                                            localized
+                                                          $ ( " and press the"
+                                                              " og tryk knappen"
+                                                            )
+                                                          (br.,)
+                                                            localized
+                                                          $ ( "button near the bottom of this page.)"
+                                                              "nederst på siden.)"
+                                                            )
+                                                  )
+                                              |     listToThreeColumnTable$!wrkfls
+                                                  : ?stable
+                                                & (       linksAndLinked
+                                                        $ (!stable.!exr.!Ofields)
+                                                      : (?links.?linked)
+                                                    &   !linkedWorkflows (!nt.!linked)
+                                                      : ?linkedWorkflows
+                                                    & !links
+                                                  | ( select
+                                                    .     ( tabindex
+                                                          .     1+!tabind
+                                                              : ?tabind
+                                                            & 0
+                                                          )
+                                                          (name.str$(workflow !exr))
+                                                      ,   makeOptionListSimple
+                                                        $ (!stable.bookmarked-)
+                                                    )
+                                                  )
                                               )
-                                          |     listToThreeColumnTable$!wrkfls
-                                              : ?stable
-                                            & (       linksAndLinked
-                                                    $ (!stable.!exr.!Ofields)
-                                                  : (?links.?linked)
-                                                &   !linkedWorkflows (!nt.!linked)
-                                                  : ?linkedWorkflows
-                                                & !links
-                                              | ( select
-                                                .     ( tabindex
-                                                      .     1+!tabind
-                                                          : ?tabind
-                                                        & 0
-                                                      )
-                                                      (name.str$(workflow !exr))
-                                                  ,   makeOptionListSimple
-                                                    $ (!stable.bookmarked-)
-                                                )
-                                              )
-                                          )
-                                  )
-                                . !items
-                                )
+                                      )
+                                    . !items
+                                    )
+                            )
+                        | 
                         )
                   )
                 & ( addOutputWishesFrom3rdParty
@@ -20569,7 +20524,7 @@ function main2(evt) {
                           )
                       & !collector
                   )
-                & !arg:(?presels.?Ofields)
+                & !arg:(?presels.?Ofields.?preSelectedOutputSpec)
                 & :?linkedWorkflows:?items
                 & readTable$features
                 & log$featuresRead
@@ -20934,12 +20889,8 @@ function main2(evt) {
                                 | 
                                 )
                                 !sourcePicklists
-                                (   ( 
-                                    | !items:? (?.?.% ?) ?
-                                    )
-                                  & mentionBookmarkedWorkflows$(!items.!Ofields)
-                                | 
-                                )
+                                  mentionBookmarkedWorkflows
+                                $ (!items.!Ofields.!preSelectedOutputSpec)
                             )
                         )
                         fieldset
@@ -20998,8 +20949,8 @@ function main2(evt) {
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
                 , itemGroupsExt linkedWorkflows
-                , hiddenData Items A Z Ofields
-              .   !arg:(?presels.?hiddenData.?Items)
+                , hiddenData Items A Z Ofields preSelectedOutputSpec
+              .   !arg:(?presels.?hiddenData.?Items.?preSelectedOutputSpec)
                 & log$"We are at the start. Show an input form."
                 & (   !Items:
                     &   str
@@ -21026,7 +20977,7 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?Ofields
-                    &   sourcesAndGoals$(!presels.!Ofields)
+                    &   sourcesAndGoals$(!presels.!Ofields.!preSelectedOutputSpec)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
                     & "The next line decides whether hiddendata will contain a single Item parameter or a CLOCK parameter.
                        The pattern (@.@.?) succeeds if there is only one file in itemGroupsExt. In that case, we'll have an Item parameter.
@@ -21212,6 +21163,15 @@ function main2(evt) {
           & log$NEW
           & log$specifyGoal-CREATELOGJE
           & log$(arg !arg)
+          & (     !arg
+                : ~(? (action.?) ?)
+                : ~(? (fintool.?) ?)
+                : ? (@(?:O ?preSelectedOutputSpec).?) ?
+              & "Heuristic way of finding out that request comes from 'outside', e.g. Clarin Language Switchboard.
+                 In that case, do not show row for previously created workflows if there are no workflows to show."
+            | :?preSelectedOutputSpec
+            )
+          & log$(preSelectedOutputSpec !preSelectedOutputSpec)
           & convertISO639-3to-1-IfPossible$!arg:?arg
           & !arg:?orgarg
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
@@ -21227,7 +21187,8 @@ function main2(evt) {
                 : (?parms.?hiddenData.?batch)
               & updatePreselsWithUserAmendments$(!presels.!arg.!Items):(?presels.?Items)
               & readTable$tooladm
-              & "We are at the start. Show an input form."$(!presels.!hiddenData.!Items)
+              &   "We are at the start. Show an input form."
+                $ (!presels.!hiddenData.!Items.!preSelectedOutputSpec)
             )
       )
       "
