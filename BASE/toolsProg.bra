@@ -3796,7 +3796,7 @@ $toollog = '../log/"
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
+$params = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -3953,52 +3953,52 @@ try {
 
     function requestFile($requestParm) // e.g. \"IfacettokF\"
         {
+        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
+        $inputfiles = array();
         logit(\"requestFile({$requestParm})\");
 
-        if(isset($_REQUEST[$requestParm]))
+        if(isset($params[$requestParm]))
             {
-            $urlbase = isset($_REQUEST[\"base\"]) ? $_REQUEST[\"base\"] : \"http://localhost/toolsdata/\";
-
-            $item = $_REQUEST[$requestParm];
-            $url = $urlbase . urlencode($item);
-            logit(\"requestParm:$requestParm\");
-            logit(\"urlbase:$urlbase\");
-            logit(\"item:$item\");
-            logit(\"url[$url]\");
-
-            $handle = fopen($url, \"r\");
-            if($handle == false)
+            $urlbase = isset($params[\"base\"]) ? $params[\"base\"][0] : \"http://localhost/toolsdata/\";
+            $items = $params[$requestParm];
+            foreach($items as $item)
                 {
-                logit(\"Cannot open url[$url]\");
-                return \"\";
-                }
-            else
-                {
-                $tempfilename = tempFileName(\""
-                makeName$!toolid
-                "_{$requestParm}_\");
-                $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
+                $url = $urlbase . urlencode($item);
+
+                $handle = fopen($url, \"r\");
+                if($handle == false)
                     {
-                    fclose($handle);
-                    logit(\"handle closed. Cannot open $tempfilename\");
+                    logit(\"Cannot open url[$url]\");
                     return \"\";
                     }
                 else
                     {
-                    while (!feof($handle))
+                    $tempfilename = tempFileName(\""
+                    makeName$!toolid
+                    "_{$requestParm}_\");
+                    $temp_fh = fopen($tempfilename, 'w');
+                    if($temp_fh == false)
                         {
-                        $read = fread($handle, 8192);
-                        fwrite($temp_fh, $read);
+                        fclose($handle);
+                        logit(\"handle closed. Cannot open $tempfilename\");
+                        return \"\";
                         }
-                    fclose($temp_fh);
-                    fclose($handle);
-                    return $tempfilename;
+                    else
+                        {
+                        while (!feof($handle))
+                            {
+                            $read = fread($handle, 8192);
+                            fwrite($temp_fh, $read);
+                            }
+                        fclose($temp_fh);
+                        fclose($handle);
+                        $inputfiles[$tempfilename] = $item;
+                        //return $tempfilename;
+                        }
                     }
                 }
             }
-        logit(\"empty\");
-        return \"\";
+        return $inputfiles;
         }
 "
             : ?helperFunctions
