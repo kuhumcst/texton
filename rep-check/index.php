@@ -38,6 +38,8 @@ $toollog = '../log/CSTRep.log'; /* Used by the logit() function. TODO make sure 
 $dodelete = true;
 $tobedeleted = array();
 
+$params = array();
+
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -52,7 +54,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -140,50 +142,48 @@ try {
 
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile({$requestParm})");
-
-        if(isset($_REQUEST[$requestParm]))
+        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
+        $inputfiles = array();
+        if(isset($params[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
-
-            $item = $_REQUEST[$requestParm];
-            $url = $urlbase . urlencode($item);
-            logit("requestParm:$requestParm");
-            logit("urlbase:$urlbase");
-            logit("item:$item");
-            logit("url[$url]");
-
-            $handle = fopen($url, "r");
-            if($handle == false)
+            $urlbase = isset($params["base"]) ? $params["base"][0] : "http://localhost/toolsdata/";
+            $items = $params[$requestParm];
+            foreach($items as $item)
                 {
-                logit("Cannot open url[$url]");
-                return "";
-                }
-            else
-                {
-                $tempfilename = tempFileName("CSTRep_{$requestParm}_");
-                $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
+                $url = $urlbase . urlencode($item);
+                        
+                $handle = fopen($url, "r");
+                if($handle == false)
                     {
-                    fclose($handle);
-                    logit("handle closed. Cannot open $tempfilename");
+                    logit("Cannot open url[$url]");
                     return "";
                     }
                 else
                     {
-                    while (!feof($handle))
+                    $tempfilename = tempFileName("CSTRep_{$requestParm}_");
+                    $temp_fh = fopen($tempfilename, 'w');
+                    if($temp_fh == false)
                         {
-                        $read = fread($handle, 8192);
-                        fwrite($temp_fh, $read);
+                        fclose($handle);
+                        logit("handle closed. Cannot open $tempfilename");
+                        return "";
                         }
-                    fclose($temp_fh);
-                    fclose($handle);
-                    return $tempfilename;
+                    else
+                        {
+                        while (!feof($handle))
+                            {
+                            $read = fread($handle, 8192);
+                            fwrite($temp_fh, $read);
+                            }
+                        fclose($temp_fh);
+                        fclose($handle);
+                        $inputfiles[$tempfilename] = $item;
+//                        return $tempfilename;
+                        }
                     }
                 }
             }
-        logit("empty");
-        return "";
+        return $inputfiles;
         }
 
     function gentagelseschecker($filename)
@@ -192,15 +192,25 @@ try {
         global $tobedeleted;
         global $mode;
         if($dodelete)
-            $tobedeleted["$filename.html"] = true;
+            foreach($filename as $name => $value)
+                {
+                $tobedeleted["$name.html"] = true;
+                }
+
+        $arr = array();
+        foreach($filename as $name => $value)
+            {
+            $arr[] = $name;
+            }
+        $filenames = implode(' ',$arr);
 
         if($mode == 'dry')
             {
-            scrip("../bin/repver -w6 $filename");
+            scrip("../bin/repver -w6 $filenames");
             }
         else
             {
-            $command = '../bin/repver -w6 ' . $filename;
+            $command = '../bin/repver -w6 ' . $filenames;
             $command = trim($command);
 
             logit("$command");
@@ -392,7 +402,6 @@ try {
             }
         else
             {
-            logit("F:" . $F);
             $CSTRepfile = gentagelseschecker($F);
             }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRepfile
@@ -421,6 +430,15 @@ try {
             }
         }
     loginit();
+    $query  = explode('&', $_SERVER['QUERY_STRING']);
+    foreach( $query as $param )
+        {
+        if(strpos($param, '=') === false)
+            $param += '=';
+
+        list($name, $value) = explode('=', $param, 2);
+        $params[urldecode($name)][] = urldecode($value);
+        }
     do_CSTRep();
     }
 catch (SystemExit $e)

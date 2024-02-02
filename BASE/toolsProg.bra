@@ -4103,7 +4103,7 @@ try {
                         "/* "
                         ( Input
                           (   !featname:
-                            & " (ONLY used if there is exactly ONE input to this workflow step)"
+                            & " (ONLY used if there is exactly ONE kind of input to this workflow step)"
                           |   " with "
                               low$(getFeatName$!featname)
                               " "
@@ -8850,7 +8850,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !in:?In
               &   getDepsAndAddInputsToRequestString$(!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
-              & log$(dep !dep)
               &     !dep
                     ( :?files
                     & ( !requestString:?+(F.?)+?
@@ -8899,8 +8898,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ?requestString
                             )
                       )
-                    & log$(files !files)
-                    & log$(dep2 !dep)
                     & (     !requestString
                           : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
                             | ?+(F.?)+?
@@ -8910,11 +8907,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       |   log$forceFeed
                         & !requestString+forceFeed$!Items:?requestString
                       )
-                    & log$(files2 !files)
                     & !files
                     )
                 : ?inputs
-              & log$(IJNPUTS !inputs)
               & compact$!requestString+(mode.!dryORrun):?requestString
               &     !newJobs
                     ( !jobNr
@@ -11373,11 +11368,10 @@ function main2(evt) {
  *
  * Called from util.java, workflow.java
  */"
-      ( abortJob
-      =   abort JobNr jobID todelete
-        .   readTable$jobs
-          & log$("abortJob " !arg)
-          & !arg:(@(?:? #?JobNr).?jobID)
+      ( abort-job
+      =   abort JobNr jobID todelete jobs
+        .   log$abort-job
+          & !arg:(?jobs.?JobNr.?jobID)
           & (!JobNr.!jobID):?todelete
           & ( abort
             =     JobNr jobID jobid2 A Z ZZ a z
@@ -11418,6 +11412,14 @@ function main2(evt) {
             )
           &   whl
             ' (log$(iterDO !todelete)&abort$!todelete:?todelete)
+          & !jobs
+      )
+      ( abortJob
+      =   abort JobNr jobID todelete
+        .   readTable$jobs
+          & log$("abortJob " !arg)
+          & !arg:(@(?:? #?JobNr).%?jobID ?)
+          & abort-job$(!jobs.!JobNr.!jobID):?jobs
           & saveTable$jobs
       )
       ( workflowSVG
@@ -13308,6 +13310,9 @@ function main2(evt) {
                   |   convert2URLs
                     $ (!jobNr..!JobStack.toolsdataURL$.toolsUploadURL$.!Items.!dryORrun)
                   )
+                & readTable$jobs
+                & handleToolsTakingBatchesOfInput$(!jobNr.!jobs):?jobs
+                & saveTable$jobs
                 & (readTable$jobAbout|:?jobAbout)
                 & makeWorkflowVisualisation$!struct:(?tXt.?SVG)
                 &     ( !JobNr
@@ -14686,6 +14691,121 @@ function main2(evt) {
           | !arg:password&!password
           | 
       )
+      ( handleToolsTakingBatchesOfInput
+      =     A B surl collapse lastjobid jobby jobs JobNr jobID
+          , ext newou more dp rl a I b O base jb mode post2 ou
+        .   !arg:(?JobNr.?jobs)
+          & (   readTable$tooladm
+              &   !jobs
+                :   ?
+                    ( !JobNr
+                    . ?jobID
+                    .   ( ?
+                        .   ?surl
+                          &   !tooladm
+                            :   ?
+                              + ( ? (ServiceURL.!surl) ?
+                                : ? (Multi.~1) ?
+                                )
+                              + ?
+                        . ?
+                        )
+                      : ?jobby
+                    )
+                    ?
+              & ( collapse
+                =     jobby jobs dep url A I B O lastjobid more
+                    , base job mode post2 output JobNr jobID
+                  .   !arg:(?jobby.?jobs.?JobNr.?jobID)
+                    &   !jobby
+                      : ( ?dep
+                        . ?url
+                        .   ?A
+                          + (I.?I)
+                          + ?B
+                          + (O.?O)
+                          + (base.?base)
+                          + (job.?job)
+                          + (mode.?mode)
+                          + (post2.?post2)
+                        . ?output
+                        )
+                    & :?lastjobid
+                    & (   map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : ( !JobNr
+                                      . ?jobid
+                                      . ?dp
+                                      . ?rl
+                                      .   ?a
+                                        + (I.!I)
+                                        + ?b
+                                        + (O.!O)
+                                        + (base.!base)
+                                        + (job.?jb)
+                                        + (mode.!mode)
+                                        + (post2.!post2)
+                                      . ?ou
+                                      )
+                                  & ( !lastjobid:
+                                    | abort-job$(!jobs.!JobNr.!lastjobid):?jobs
+                                    )
+                                  & !jobid:?lastjobid
+                                  &   (!a:~0|)
+                                      (!b:~0|)
+                                | 
+                            )
+                          . !jobs
+                          )
+                      . !lastjobid
+                      . !jobs
+                      )
+                )
+              & collapse$(!jobby.!jobs.!JobNr.!jobID):(?AB.?lastjobid.?jobs)
+              &   !jobs
+                :   ?A
+                    ( !JobNr
+                    . !lastjobid ?more
+                    . ?dp
+                    . ?rl
+                    .   ?a
+                      + (I.?I)
+                      + ?b
+                      + (O.?O)
+                      + (base.?base)
+                      + (job.?jb)
+                      + (mode.?mode)
+                      + (post2.?post2)
+                    . ?ou
+                    )
+                    ?B
+              &     !A
+                    ( !JobNr
+                    . !lastjobid !more
+                    . !dp
+                    . !rl
+                    .   list2sum$!AB
+                      + (I.!I)
+                      + (O.!O)
+                      + (base.!base)
+                      + (job.!jb)
+                      + (mode.!mode)
+                      + (post2.!post2)
+                    .     !AB:% %
+                        & @(!ou:? ("-" !JobNr "-" !lastjobid ?:?ext))
+                        & str$(combined !ext):?newou
+                        & sub$(!B.!ou.!newou):?B
+                        & !newou
+                      | !ou
+                    )
+                    !B
+                : ?jobs
+            | 
+            )
+          & !jobs
+      )
       "
 /**
  * getJobArg
@@ -14700,80 +14820,61 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby res A B makeList req servurl
-        .   str
-          $ (   !arg:(@(?:? #?JobNr).?jobID.?arg)
-              & (!jobs|readTable$jobs)
-              & !jobs:? (!JobNr.!jobID ?.?jobby) ?
-              &   !arg
-                : ( endpoint&!jobby:(?.?arg.?)
-                  |   method
-                    & !jobby:(?.?arg.?)
-                    & readTable$tooladm
-                    &   !tooladm
-                      :   ?
-                        + ( ? (ServiceURL.!arg) ?
-                          : ? (PostData.?arg) ?
-                          )
-                        + ?
-                    &   ( !arg:on&POST
-                        | GET
+      =   JobNr jobID jobby makeList req servurl
+        .     !arg:(@(?:? #?JobNr).?jobID.?arg)
+            & (!jobs|readTable$jobs)
+            & !jobs:? (!JobNr.!jobID ?.?jobby) ?
+            &   !arg
+              : ( endpoint&!jobby:(?.?arg.?)
+                |   method
+                  & !jobby:(?.?arg.?)
+                  & readTable$tooladm
+                  &   !tooladm
+                    :   ?
+                      + ( ? (ServiceURL.!arg) ?
+                        : ? (PostData.?arg) ?
                         )
-                      : ?arg
-                  |   requestString
-                    &   1+!runningThreads
-                      : ?runningThreads
-                      : (>!maxRunningThreads:?maxRunningThreads|?)
-                    &   log
-                      $ ( str
-                        $ ( "getJobArg:runningThreads:"
-                            !runningThreads
-                            " maxRunningThreads:"
-                            !maxRunningThreads
-                          )
+                      + ?
+                  &   (!arg:on&POST|GET)
+                    : ?arg
+                |   requestString
+                  &   1+!runningThreads
+                    : ?runningThreads
+                    : (>!maxRunningThreads:?maxRunningThreads|?)
+                  &   log
+                    $ ( str
+                      $ ( "getJobArg:runningThreads:"
+                          !runningThreads
+                          " maxRunningThreads:"
+                          !maxRunningThreads
                         )
-                    & !jobby:(?.?servurl.?req.?)
-                    & readTable$tooladm
-                    & !tooladm:?+(? (ServiceURL.!servurl) ?)+?
-                    &     str
-                        $ ( ( makeList
-                            =   B prefix
-                              .   !arg:(?prefix.?arg)
-                                &   mop
-                                  $ ( ( 
-                                      =   
-                                        .     !arg:(?arg.?B)
-                                            &   ( !prefix:
-                                                | (!prefix,!arg)
-                                                )
-                                                makeList$(!prefix !arg.!B)
-                                          | !prefix:
-                                          | (!prefix,!arg)
-                                      )
-                                    . !arg
-                                    . (=+)
-                                    )
+                      )
+                  & !jobby:(?.?servurl.?req.?)
+                  & readTable$tooladm
+                  & !tooladm:?+(? (ServiceURL.!servurl) ?)+?
+                  & ( makeList
+                    =   B prefix
+                      .   !arg:(?prefix.?arg)
+                        &   mop
+                          $ ( ( 
+                              =   
+                                .     !arg:(?arg.?B)
+                                    &   ( !prefix:
+                                        | "&" !prefix "=" !arg
+                                        )
+                                        makeList$(!prefix !arg.!B)
+                                  | !prefix:
+                                  | "&" !prefix "=" !arg
+                              )
+                            . !arg
+                            . (=+)
                             )
-                          & makeList$(.!req):?res
-                          & !res:(?A,?B) ?res
-                          &   !A
-                              "="
-                              !B
-                                map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(?A,?B)
-                                      & "&" !A "=" !B
-                                  )
-                                . !res
-                                )
-                          )
-                      : ?arg
-                  | filename&!jobby:(?.?.?.?arg)
-                  )
-              & !arg
-            | SOMETHINGWRONG
-            )
+                    )
+                  & makeList$(.!req):("&" ?arg|?arg)
+                | filename&!jobby:(?.?.?.?arg)
+                )
+            & str$!arg
+          | SOMETHINGWRONG
       )
       "
 /**
