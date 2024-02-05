@@ -3561,12 +3561,15 @@ catch (SystemExit $e)
           & readTable$periods
           & ( getBoilerPlate
             =   id field val
-              .   !arg:(?id.?field)
-                &   !tooladm
-                  :   ?
-                    + (? (ToolID.!id) ?:? (!field.?val) ?)
-                    + ?
-                & !val
+              .     !arg:(?id.?field)
+                  &   !tooladm
+                    :   ?
+                      + ( ? (ToolID.!id) ?
+                        : ? (!field.?val) ?
+                        )
+                      + ?
+                  & !val
+                | 
             )
           & ( getFeatTable
             =   table
@@ -3734,6 +3737,109 @@ catch (SystemExit $e)
                     )
                   )
             )
+          &   (   getBoilerPlate$(!toolid.MultiInp):(y|#>1)
+                &   "    function requestFile($requestParm) // e.g. \"IfacettokF\"
+        {
+        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
+        $inputfiles = array();
+        logit(\"requestFile({$requestParm})\");
+
+        if(isset($params[$requestParm]))
+            {
+            $urlbase = isset($params[\"base\"]) ? $params[\"base\"][0] : \"http://localhost/toolsdata/\";
+            $items = $params[$requestParm];
+            foreach($items as $item)
+                {
+                $url = $urlbase . urlencode($item);
+
+                $handle = fopen($url, \"r\");
+                if($handle == false)
+                    {
+                    logit(\"Cannot open url[$url]\");
+                    return \"\";
+                    }
+                else
+                    {
+                    $tempfilename = tempFileName(\""
+                    makeName$!toolid
+                    "_{$requestParm}_\");
+                    $temp_fh = fopen($tempfilename, 'w');
+                    if($temp_fh == false)
+                        {
+                        fclose($handle);
+                        logit(\"handle closed. Cannot open $tempfilename\");
+                        return \"\";
+                        }
+                    else
+                        {
+                        while (!feof($handle))
+                            {
+                            $read = fread($handle, 8192);
+                            fwrite($temp_fh, $read);
+                            }
+                        fclose($temp_fh);
+                        fclose($handle);
+                        $inputfiles[$tempfilename] = $item;
+                        //return $tempfilename;
+                        }
+                    }
+                }
+            }
+        return $inputfiles;
+        }
+"
+              |   "    function requestFile($requestParm) // e.g. \"IfacettokF\"
+        {
+        logit(\"requestFile({$requestParm})\");
+
+        if(isset($_REQUEST[$requestParm]))
+            {
+            $urlbase = isset($_REQUEST[\"base\"]) ? $_REQUEST[\"base\"] : \"http://localhost/toolsdata/\";
+
+            $item = $_REQUEST[$requestParm];
+            $url = $urlbase . urlencode($item);
+            logit(\"requestParm:$requestParm\");
+            logit(\"urlbase:$urlbase\");
+            logit(\"item:$item\");
+            logit(\"url[$url]\");
+
+            $handle = fopen($url, \"r\");
+            if($handle == false)
+                {
+                logit(\"Cannot open url[$url]\");
+                return \"\";
+                }
+            else
+                {
+                $tempfilename = tempFileName(\""
+                  makeName$!toolid
+                  "_{$requestParm}_\");
+                $temp_fh = fopen($tempfilename, 'w');
+                if($temp_fh == false)
+                    {
+                    fclose($handle);
+                    logit(\"handle closed. Cannot open $tempfilename\");
+                    return \"\";
+                    }
+                else
+                    {
+                    while (!feof($handle))
+                        {
+                        $read = fread($handle, 8192);
+                        fwrite($temp_fh, $read);
+                        }
+                    fclose($temp_fh);
+                    fclose($handle);
+                    return $tempfilename;
+                    }
+                }
+            }
+        logit(\"empty\");
+        return \"\";
+        }
+"
+              )
+            : ?function-requestFile
           &     "/*"
                 \n
                 "ToolID         : "
@@ -3778,6 +3884,9 @@ catch (SystemExit $e)
                 "ExternalURI    : "
                 getBoilerPlate$(!toolid.ExternalURI)
                 \n
+                "MultiInp       : "
+                getBoilerPlate$(!toolid.MultiInp)
+                \n
                 "PostData       : "
                 getBoilerPlate$(!toolid.PostData)
                 \n
@@ -3796,8 +3905,13 @@ $toollog = '../log/"
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-$params = array();
-
+"
+                (   getBoilerPlate$(!toolid.MultiInp):(y|#>1)
+                  & "$params = array();
+"
+                | 
+                )
+                "
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
     global $toollog,$ftemp;
@@ -3928,7 +4042,7 @@ try {
         */
         $query  = explode('&', $_SERVER['QUERY_STRING']);
 
-        foreach( $query as $param )
+        foreach( F )
             {
             list($name, $value) = explode('=', $param);
             if("
@@ -3951,56 +4065,8 @@ try {
         return $tmpno;
         }
 
-    function requestFile($requestParm) // e.g. \"IfacettokF\"
-        {
-        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
-        $inputfiles = array();
-        logit(\"requestFile({$requestParm})\");
-
-        if(isset($params[$requestParm]))
-            {
-            $urlbase = isset($params[\"base\"]) ? $params[\"base\"][0] : \"http://localhost/toolsdata/\";
-            $items = $params[$requestParm];
-            foreach($items as $item)
-                {
-                $url = $urlbase . urlencode($item);
-
-                $handle = fopen($url, \"r\");
-                if($handle == false)
-                    {
-                    logit(\"Cannot open url[$url]\");
-                    return \"\";
-                    }
-                else
-                    {
-                    $tempfilename = tempFileName(\""
-                    makeName$!toolid
-                    "_{$requestParm}_\");
-                    $temp_fh = fopen($tempfilename, 'w');
-                    if($temp_fh == false)
-                        {
-                        fclose($handle);
-                        logit(\"handle closed. Cannot open $tempfilename\");
-                        return \"\";
-                        }
-                    else
-                        {
-                        while (!feof($handle))
-                            {
-                            $read = fread($handle, 8192);
-                            fwrite($temp_fh, $read);
-                            }
-                        fclose($temp_fh);
-                        fclose($handle);
-                        $inputfiles[$tempfilename] = $item;
-                        //return $tempfilename;
-                        }
-                    }
-                }
-            }
-        return $inputfiles;
-        }
 "
+                !function-requestFile
             : ?helperFunctions
           &     "
 /***************
@@ -4103,7 +4169,13 @@ try {
                         "/* "
                         ( Input
                           (   !featname:
-                            & " (ONLY used if there is exactly ONE kind of input to this workflow step)"
+                            &   " (ONLY used if there is exactly ONE "
+                                (     getBoilerPlate$(!toolid.MultiInp)
+                                    : (y|#>1)
+                                  & "kind of "
+                                | 
+                                )
+                                "input to this workflow step)"
                           |   " with "
                               low$(getFeatName$!featname)
                               " "
@@ -4371,7 +4443,8 @@ try {
                 !outputFileName
                 ";
         global $dodelete;
-        global $tobedeleted;"
+        global $tobedeleted;
+        global $mode;"
                 !declarations
                 !basejobpost2mode
                 !DATATEXT
@@ -4444,6 +4517,19 @@ try {
         }
     loginit();
     "
+                (   getBoilerPlate$(!toolid.MultiInp):(y|#>1)
+                  & "$query  = explode('&', $_SERVER['QUERY_STRING']);
+    foreach( $query as $param )
+        {
+        if(strpos($param, '=') === false)
+            $param .= '=';
+
+        list($name, $value) = explode('=', $param, 2);
+        $params[urldecode($name)][] = urldecode($value);
+        }
+    "
+                | 
+                )
                 !mainfunc
                 "();\n"
                 !lastWord
@@ -5545,7 +5631,7 @@ try {
       ( createGoalPickLists
       =   preselvalsrows,expandedSelectLists including OP
         .   !arg:(?preselvalsrows.?expandedSelectLists.?including)
-          & "When called from sourcesAndGoals including is set to 'including'.
+          & "When called from sourcesAndGoals, including is set to 'including'.
              When called from ShowZoomedInForm, including is empty.
              So initially we create O parameters. When zooming in, P parameters.
              e.g. first Ofacet=lem*tok and then, when zooming in, Pfacet=lem*pos*tok"
@@ -8850,6 +8936,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !in:?In
               &   getDepsAndAddInputsToRequestString$(!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
+              & log$(dep !dep)
               &     !dep
                     ( :?files
                     & ( !requestString:?+(F.?)+?
@@ -8898,6 +8985,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ?requestString
                             )
                       )
+                    & log$(files !files)
+                    & log$(dep2 !dep)
                     & (     !requestString
                           : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
                             | ?+(F.?)+?
@@ -8907,9 +8996,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       |   log$forceFeed
                         & !requestString+forceFeed$!Items:?requestString
                       )
+                    & log$(files2 !files)
                     & !files
                     )
                 : ?inputs
+              & log$(IJNPUTS !inputs)
               & compact$!requestString+(mode.!dryORrun):?requestString
               &     !newJobs
                     ( !jobNr
@@ -11387,10 +11478,8 @@ function main2(evt) {
                       . ?ZZ
                       )
                       ?Z
-                & log$(going to abort !JobNr !jobID)
                 &   !A (!JobNr.!jobID aborted.!items.!URL.!ZZ) !Z
                   : ?jobs
-                & log$(aborted !JobNr !jobID)
                 &   whl
                   ' (   !jobs
                       :   ?A
@@ -11401,17 +11490,13 @@ function main2(evt) {
                           . ?ZZ
                           )
                           ?Z
-                    & log$(depending !JobNr !jobid2)
                     &   !A (!JobNr.!jobid2.!a !jobID !z.!URL.!ZZ) !Z
                       : ?jobs
                     & (!JobNr.!jobid2) !todelete:?todelete
-                    & log$(todelete !todelete)
                     )
-                & log$(delete !todelete)
                 & !todelete
             )
-          &   whl
-            ' (log$(iterDO !todelete)&abort$!todelete:?todelete)
+          & whl'(abort$!todelete:?todelete)
           & !jobs
       )
       ( abortJob
@@ -14705,7 +14790,7 @@ function main2(evt) {
                           &   !tooladm
                             :   ?
                               + ( ? (ServiceURL.!surl) ?
-                                : ? (Multi.~1) ?
+                                : ? (MultiInp.y|#>1) ?
                                 )
                               + ?
                         . ?
@@ -14820,7 +14905,7 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby makeList req servurl
+      =   JobNr jobID jobby res A B makeList req servurl
         .     !arg:(@(?:? #?JobNr).?jobID.?arg)
             & (!jobs|readTable$jobs)
             & !jobs:? (!JobNr.!jobID ?.?jobby) ?
@@ -17048,7 +17133,7 @@ function main2(evt) {
           , ToolName ToolVersion FullToolName PassWord password
           , ToolURL ToolPublisher ContentProvider passwordAsHandle
           , ToolCreator InfoAbout ToolDescription mail2
-          , ToolExternalURI aFeature askOptional
+          , ToolExternalURI ToolMultiInp aFeature askOptional
           , ToolPostData ToolInactive askOnE checkParmsSimple
           , additionalFormFields additionalMetadata
           , formFields storeTool handle saveToolTable
@@ -17074,7 +17159,7 @@ function main2(evt) {
             =     ToolName ToolVersion FullToolName
                 , URL Publisher ContentProvider
                 , Creator InfoAbout Description
-                , ExternalURI url-password
+                , ExternalURI MultiInp url-password
                 , PostData Inactive pval toggles
                 , liste a z urlparm var val like
                 , PassWord url-ToolName
@@ -17121,6 +17206,7 @@ function main2(evt) {
                             : ? (InfoAbout.?InfoAbout) ?
                             : ? (Description.?Description) ?
                             : ? (ExternalURI.?ExternalURI) ?
+                            : ? (MultiInp.?MultiInp) ?
                             : ? (PostData.?PostData) ?
                             : ? (Inactive.?Inactive) ?
                             )
@@ -17146,6 +17232,7 @@ function main2(evt) {
                         : ?InfoAbout
                         : ?Description
                         : ?ExternalURI
+                        : ?MultiInp
                         : ?PostData
                       & on:?Inactive
                     )
@@ -17173,7 +17260,9 @@ function main2(evt) {
                         (dscrptn.!Description)
                         (xuri.!ExternalURI)
                     : ?liste
-                  &   (pstdt.!PostData) (|(nctv.!Inactive))
+                  &     (multiinp.!MultiInp)
+                        (pstdt.!PostData)
+                        (|(nctv.!Inactive))
                     : ?toggles
                   &   (     !urlparm
                           : ? (handle.?handle) ?
@@ -17392,6 +17481,18 @@ function main2(evt) {
                                 . ToolPostData
                                 . makeCheckboxFormField
                                 . 
+                                )
+                                staticField
+                              $ ( !arg
+                                . "Takes multiple inputs:"
+                                . multiinp
+                                . ToolMultiInp
+                                . makeCheckboxFormField
+                                . desc
+                                .   localized
+                                  $ ( "Check if tool takes more than one input of the same type"
+                                      "Marker hvis værktøjet tager to eller flere filer af samme type"
+                                    )
                                 )
                                 staticField
                               $ ( !arg
@@ -17965,7 +18066,7 @@ function main2(evt) {
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
-                , ToolExternalURI mayNotBeEmpty
+                , ToolExternalURI ToolMultiInp mayNotBeEmpty
                 , ToolPostData ToolInactive Nazn dNazn
               .     !arg
                   : ( ?ToolName
@@ -17979,6 +18080,7 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
+                    . ?ToolMultiInp
                     . ?ToolPostData
                     . ?ToolInactive
                     . ?Submit
@@ -18098,7 +18200,7 @@ function main2(evt) {
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
-                , ToolExternalURI removeEmptyValues
+                , ToolExternalURI ToolMultiInp removeEmptyValues
                 , ToolPostData ToolInactive sortFacets
                 , ContactEmail otherToolprop thisToolProp
                 , Combine IOFeatComb IOcomb IOcombine Ocomb
@@ -18117,6 +18219,7 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
+                    . ?ToolMultiInp
                     . ?ToolPostData
                     . ?ToolInactive
                     . ?ZZ
@@ -18310,6 +18413,7 @@ function main2(evt) {
                               (InfoAbout.!InfoAbout)
                               (Description.!ToolDescription)
                               (ExternalURI.!ToolExternalURI)
+                              (MultiInp.!ToolMultiInp)
                               (PostData.!ToolPostData)
                               (Inactive.!ToolInactive)
                           : ?admdata
@@ -18563,6 +18667,7 @@ function main2(evt) {
                                   . !InfoAbout
                                   . !ToolDescription
                                   . !ToolExternalURI
+                                  . !ToolMultiInp
                                   . !ToolPostData
                                   . !ToolInactive
                                   . !Submit
@@ -18582,6 +18687,7 @@ function main2(evt) {
                                     . !InfoAbout
                                     . !ToolDescription
                                     . !ToolExternalURI
+                                    . !ToolMultiInp
                                     . !ToolPostData
                                     . !ToolInactive
                                     .     !Submit:!storeToolButton
@@ -21273,7 +21379,6 @@ function main2(evt) {
                  If fewer than 3 output specs are given, the user is regarded as 'advanced' and the bookmark line is shown."
             | :?preSelectedOutputSpec
             )
-          & log$(preSelectedOutputSpec !preSelectedOutputSpec)
           & convertISO639-3to-1-IfPossible$!arg:?arg
           & !arg:?orgarg
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg

@@ -14,7 +14,7 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : CST-Rep
-PassWord       :
+PassWord       : 
 Version        : 0
 Title          : Repetitiveness checker
 Path in URL    : rep-check/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
@@ -23,10 +23,10 @@ ContentProvider: cst.ku.dk
 Creator        : Bart Jongejan
 InfoAbout      : https://nlpweb01.nors.ku.dk/online/rep_check/
 Description    : Uses a statistical method to find repetitions in a text.
-ExternalURI    :
-XMLparms       :
-PostData       :
-Inactive       :
+ExternalURI    : 
+MultiInp       : y
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -37,9 +37,7 @@ $toollog = '../log/CSTRep.log'; /* Used by the logit() function. TODO make sure 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 $params = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -54,7 +52,6 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-//    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -124,7 +121,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -144,6 +141,8 @@ try {
         {
         global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
         $inputfiles = array();
+        logit("requestFile({$requestParm})");
+
         if(isset($params[$requestParm]))
             {
             $urlbase = isset($params["base"]) ? $params["base"][0] : "http://localhost/toolsdata/";
@@ -151,7 +150,7 @@ try {
             foreach($items as $item)
                 {
                 $url = $urlbase . urlencode($item);
-                        
+
                 $handle = fopen($url, "r");
                 if($handle == false)
                     {
@@ -178,7 +177,7 @@ try {
                         fclose($temp_fh);
                         fclose($handle);
                         $inputfiles[$tempfilename] = $item;
-//                        return $tempfilename;
+                        //return $tempfilename;
                         }
                     }
                 }
@@ -265,7 +264,7 @@ try {
         $input = "";	/* List of all input features. */
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $F = "";	/* Input (ONLY used if there is exactly ONE kind of input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacet_lem_seg = false;	/* Type of content in input is lemmas (lemmaer) and segments (sætningssegmenter) if true */
         $Ifacet_pos_seg = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (sætningssegmenter) if true */
@@ -303,7 +302,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -394,6 +393,7 @@ try {
         pclose($cmd);
 /*/
 // YOUR CODE STARTS HERE.
+//        TODO your code!
         $CSTRepfile = tempFileName("CSTRep-results");
         if($mode == 'dry')
             {
@@ -434,7 +434,7 @@ try {
     foreach( $query as $param )
         {
         if(strpos($param, '=') === false)
-            $param += '=';
+            $param .= '=';
 
         list($name, $value) = explode('=', $param, 2);
         $params[urldecode($name)][] = urldecode($value);
