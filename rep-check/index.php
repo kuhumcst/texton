@@ -185,7 +185,7 @@ try {
         return $inputfiles;
         }
 
-    function gentagelseschecker($filename)
+    function gentagelseschecker($filename,$job)
         {
         global $dodelete;
         global $tobedeleted;
@@ -231,6 +231,14 @@ try {
                 }
 
             fclose($fpo);
+            $job = strstr($job, "tep", true);
+            foreach($filename as $name => $value)
+                {
+                $name  = str_replace("/","\/", $name );
+                $value = str_replace("/","\/", $value);
+                $value = strstr($value, "-".$job, true);
+                system("sed -i 's/{$name}/{$value}/' $tmpo");
+                }
 
             pclose($cmd);
             }
@@ -402,7 +410,7 @@ try {
             }
         else
             {
-            $CSTRepfile = gentagelseschecker($F);
+            $CSTRepfile = gentagelseschecker($F,$job);
             }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRepfile
 //*/
