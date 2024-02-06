@@ -24,7 +24,7 @@ Creator        : Bart Jongejan
 InfoAbout      : https://nlpweb01.nors.ku.dk/online/rep_check/
 Description    : Uses a statistical method to find repetitions in a text.
 ExternalURI    : 
-MultiInp       : y
+MultiInp       : 
 PostData       : 
 Inactive       : 
 */
@@ -37,7 +37,6 @@ $toollog = '../log/CSTRep.log'; /* Used by the logit() function. TODO make sure 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-$params = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -139,50 +138,50 @@ try {
 
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
-        $inputfiles = array();
         logit("requestFile({$requestParm})");
 
-        if(isset($params[$requestParm]))
+        if(isset($_REQUEST[$requestParm]))
             {
-            $urlbase = isset($params["base"]) ? $params["base"][0] : "http://localhost/toolsdata/";
-            $items = $params[$requestParm];
-            foreach($items as $item)
-                {
-                $url = $urlbase . urlencode($item);
+            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
-                $handle = fopen($url, "r");
-                if($handle == false)
+            $item = $_REQUEST[$requestParm];
+            $url = $urlbase . urlencode($item);
+            logit("requestParm:$requestParm");
+            logit("urlbase:$urlbase");
+            logit("item:$item");
+            logit("url[$url]");
+
+            $handle = fopen($url, "r");
+            if($handle == false)
+                {
+                logit("Cannot open url[$url]");
+                return "";
+                }
+            else
+                {
+                $tempfilename = tempFileName("CSTRep_{$requestParm}_");
+                $temp_fh = fopen($tempfilename, 'w');
+                if($temp_fh == false)
                     {
-                    logit("Cannot open url[$url]");
+                    fclose($handle);
+                    logit("handle closed. Cannot open $tempfilename");
                     return "";
                     }
                 else
                     {
-                    $tempfilename = tempFileName("CSTRep_{$requestParm}_");
-                    $temp_fh = fopen($tempfilename, 'w');
-                    if($temp_fh == false)
+                    while (!feof($handle))
                         {
-                        fclose($handle);
-                        logit("handle closed. Cannot open $tempfilename");
-                        return "";
+                        $read = fread($handle, 8192);
+                        fwrite($temp_fh, $read);
                         }
-                    else
-                        {
-                        while (!feof($handle))
-                            {
-                            $read = fread($handle, 8192);
-                            fwrite($temp_fh, $read);
-                            }
-                        fclose($temp_fh);
-                        fclose($handle);
-                        $inputfiles[$tempfilename] = $item;
-                        //return $tempfilename;
-                        }
+                    fclose($temp_fh);
+                    fclose($handle);
+                    return $tempfilename;
                     }
                 }
             }
-        return $inputfiles;
+        logit("empty");
+        return "";
         }
 
     function gentagelseschecker($filename,$job)
@@ -191,25 +190,15 @@ try {
         global $tobedeleted;
         global $mode;
         if($dodelete)
-            foreach($filename as $name => $value)
-                {
-                $tobedeleted["$name.html"] = true;
-                }
-
-        $arr = array();
-        foreach($filename as $name => $value)
-            {
-            $arr[] = $name;
-            }
-        $filenames = implode(' ',$arr);
+            $tobedeleted["$filename.html"] = true;
 
         if($mode == 'dry')
             {
-            scrip("../bin/repver -w6 $filenames");
+            scrip("../bin/repver -w4 <filename>");
             }
         else
             {
-            $command = '../bin/repver -w6 ' . $filenames;
+            $command = '../bin/repver -w4 ' . $filename;
             $command = trim($command);
 
             logit("$command");
@@ -272,7 +261,7 @@ try {
         $input = "";	/* List of all input features. */
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $F = "";	/* Input (ONLY used if there is exactly ONE kind of input to this workflow step) */
+        $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacet_lem_seg = false;	/* Type of content in input is lemmas (lemmaer) and segments (sætningssegmenter) if true */
         $Ifacet_pos_seg = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (sætningssegmenter) if true */
@@ -406,10 +395,11 @@ try {
         if($mode == 'dry')
             {
             scripinit($inputF,$input,$output);
-            gentagelseschecker("\$F");
+            gentagelseschecker("\$F",$job);
             }
         else
             {
+            logit("F is [$F] job is {$job}");
             $CSTRepfile = gentagelseschecker($F,$job);
             }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRepfile
@@ -438,15 +428,6 @@ try {
             }
         }
     loginit();
-    $query  = explode('&', $_SERVER['QUERY_STRING']);
-    foreach( $query as $param )
-        {
-        if(strpos($param, '=') === false)
-            $param .= '=';
-
-        list($name, $value) = explode('=', $param, 2);
-        $params[urldecode($name)][] = urldecode($value);
-        }
     do_CSTRep();
     }
 catch (SystemExit $e)
