@@ -527,7 +527,7 @@ try {
             $output = $output . ($Oformatflatutf8 ? " \$Oformatflatutf8" : "") ;
             }
 
-//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+/* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $CSTNERfile = tempFileName("CSTNER-results");
         $command = "echo $echos >> $CSTNERfile";
         logit($command);
@@ -547,8 +547,9 @@ try {
 //        TODO your code!
         $CSTNERfile = tempFileName("CSTNER-results");
         if($mode === 'dry')
+            {
             scripinit($inputF,$input,$output);
-        }
+            }
         $parms = php_fix_raw_query();
         ob_start();
         var_dump($_REQUEST);
@@ -560,35 +561,35 @@ try {
         logit($dump);
 
         if($F != "")
-        {
+            {
             logit("F:" . $F);
             if($mode == 'dry')
                 navnegenkenderCSTNER($F,"\$CSTNERfile");
             else
                 $CSTNERfile = navnegenkenderCSTNER($F,"\$CSTNERfile");
-        }
+            }
         else
-        {
-            if($IfacetsegF != '')
             {
-                if($IfacettokF != '')
+            if($IfacetsegF != '')
                 {
-                    if($mode == 'dry')
+                if($IfacettokF != '')
                     {
+                    if($mode == 'dry')
+                        {
                         combine("\$IfacettokF","\$IfacetsegF");
                         navnegenkenderCSTNER("\$plaintext","\$nerfileRAW");
                         NERannotation("\$IfacettokF","\$nerfileRAW","\$plaintext");
-                    }
+                        }
                     else
-                    {
+                        {
                         $plaintext = combine($IfacettokF,$IfacetsegF);
                         copy($plaintext,"plaintext");
                         $nerfileRAW = navnegenkenderCSTNER($plaintext,"\$nerfileRAW");
                         $CSTNERfile = NERannotation($IfacettokF,$nerfileRAW,$plaintext);
+                        }
                     }
                 }
             }
-        }
         // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTNERfile
         //*/
         $tmpf = fopen($CSTNERfile,'r');
@@ -616,16 +617,16 @@ try {
     }
     // START SPECIFIC CODE
     function combine($IfacettokF,$IfacetsegF)
-    {
+        {
         global $mode;
         logit( "combine(" . $IfacettokF . "," . $IfacetsegF . ")\n");
         if($mode == 'dry')
-        {
+            {
             $plaintext = "combine-tokseg-attribute";
             scrip("../bin/bracmat '(inputTok=\"\$IfacettokF\") (inputSeg=\"\$IfacetsegF\") (output=\"\$plaintext\") (lowercase=\"no\") (get\$\"../shared_scripts/tokseg2sent.bra\")'");
-        }
+            }
         else
-        {
+            {
             $plaintext = tempFileName("combine-tokseg-attribute");
             $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputSeg=\"$IfacetsegF\") (output=\"$plaintext\") (lowercase=\"no\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
             logit($command);
@@ -633,23 +634,23 @@ try {
                 exit(1);
 
             while($read = fgets($cmd))
-            {
+                {
+                }
             }
-        }
         return $plaintext;
-    }
+        }
 
     function NERannotation($IfacettokF,$nerfileRAW,$plaintext)
-    {
+        {
         global $mode;
         logit( "NERannotation(" . $IfacettokF . "," . $nerfileRAW . "," . $plaintext . ")\n");
         if($mode == 'dry')
-        {
+            {
             $nerfile = "NERannotation-nerf-attribute";
             scrip("../bin/bracmat '(inputTok=\"\$IfacettokF\") (inputNER=\"\$nerfileRAW\") (uploadfileTokens=\"\$plaintext\") (output=\"\$CSTNERfile\") (get\$\"bracstnerf.bra\")'");
-        }
+            }
         else
-        {
+            {
             $nerfile = tempFileName("NERannotation-nerf-attribute");
             $command = "../bin/bracmat '(inputTok=\"$IfacettokF\") (inputNER=\"$nerfileRAW\") (uploadfileTokens=\"$plaintext\") (output=\"$nerfile\") (get\$\"bracstnerf.bra\")'";
             logit($command);
@@ -657,11 +658,11 @@ try {
                 exit(1);
 
             while($read = fgets($cmd))
-            {
+                {
+                }
             }
-        }
         return $nerfile;
-    }
+        }
     // END SPECIFIC CODE
     loginit();
     do_CSTNER();
