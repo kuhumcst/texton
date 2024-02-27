@@ -297,8 +297,12 @@ try {
 
         logit("c=" . $c);
 
+        $v = "";
         $x = "";
+        $z = "";
+
         $flexrules = "flexrules";
+
 
         if($language == 'af')
             {
@@ -384,6 +388,11 @@ try {
                     {
                     $flexrulessubdir = "/links";
                     $x = "-x'$toolres/da/lemmatiser/tags/c21/translationTable'";
+                    if($Oambiguna)
+                        {
+                        $z = "-z'$toolres/da/lemmatiser/tags/c21/lemmatags'";
+                        //$v = "-v'$toolres/da/lemmatiser/tags/c21/friends'";
+                        }
                     }
                 }
             }
@@ -410,6 +419,11 @@ try {
                 }
             if($toptarg == '')
                 $x = "-x'$toolres/en/lemmatiser/tags/translation'";
+            if($toptarg == '')
+                {
+                $z = "-z'$toolres/en/lemmatiser/tags/lemmatags'";
+                $v = "-v'$toolres/en/lemmatiser/tags/friends'";
+                }
             }
         else if($language == 'es')
             {
@@ -745,14 +759,15 @@ try {
                 }
             }
 
-        if($language == 'en')
-            if($toptarg == '')
-                {
-                $command = $command . " -z'$toolres/en/lemmatiser/tags/lemmatags' -v'$toolres/en/lemmatiser/tags/friends'";
-                }
+        if($z != "")
+            $command = $command . " " . $z;
+
+        if($v != "")
+            $command = $command . " " . $v;
 
         if($x != "")
             $command = $command . " " . $x;
+
 
         $command = $command . $sep;
 
