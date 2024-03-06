@@ -12,7 +12,73 @@ X=
         )
       & lst$(nw,nw,NEW,RAW)
       & (morf=.)
+      & new$hash:?closed
       & ( (!la:la|!nw:Parole)
+        &     altimens
+              at
+              bare
+              blot
+              da
+              dengang
+              dersom
+              des
+              desto
+              efter
+              eftersom
+              end
+              endskønt
+              engang
+              enten
+              for
+              fordi
+              forinden
+              fra
+              før
+              førend
+              gange
+              hvis
+              hvisårsag
+              hvorvidt
+              idet
+              ifald
+              ihvorvel
+              imedens
+              imens
+              inden
+              indtil
+              jo
+              ligesom
+              medens
+              medmindre
+              men
+              mens
+              minus
+              nu
+              når
+              om
+              omend
+              omendskønt
+              plus
+              qua
+              selvom
+              siden
+              sidst
+              skønt
+              som
+              straks
+              så
+              såfremt
+              såsom
+              thi
+              til
+              uagtet
+              uden
+              undtagen
+          : ?UKONJ
+        &   map
+          $ ( (=.(closed..insert)$(!arg.UKONJ))
+            . !UKONJ
+            )
         & ( morf
           =   from pos mo k v
             .     !arg
@@ -127,422 +193,97 @@ X=
                   & (   morf$(!a.!e):?mrf
                       & (   !nw:Parole
                           & word$!a:?Word
-                          & !pos\L!mrf+!posmrf:?posmrf
-                          &   (   !pos:ADJ
-                                & (     !mrf
-                                      : ? (Case.Gen) ?
-                                    & "ADJ_GEN"
-                                  | ADJ
-                                  )
-                              |   !pos:ADP
-                                & (     !word
-                                      : (end|som)
-                                    & UKONJ
-                                  | PRÆP
-                                  )
-                              | !pos:ADV
-                              |   !pos:(AUX|VERB)
-                                & (     !mrf
-                                      : ? (VerbForm.Ger) ?
-                                    & "V_GERUND"
-                                  |     !mrf
-                                      : ? (Mood.Imp) ?
-                                    & "V_IMP"
-                                  |     !mrf
-                                      : ? (Voice.Pass) ?
+                          & (   !Word:#
+                              & (!a.NUM.)
+                            |   @(!Word:#% ".")
+                              & (!a."NUM_ORD".)
+                            |   !pos\L!mrf+!posmrf:?posmrf
+                              &   (   !pos:ADJ
                                     & (     !mrf
+                                          : ? (Case.Gen) ?
+                                        & "ADJ_GEN"
+                                      | ADJ
+                                      )
+                                  |   !pos:ADP
+                                    & (     ~ !word
+                                          : (end|som)
+                                        & UKONJ
+                                      | PRÆP
+                                      )
+                                  | !pos:ADV
+                                  |     !pos
+                                      : (AUX|VERB)
+                                    & (     !mrf
+                                          :   ?
+                                              (VerbForm.Ger)
+                                              ?
+                                        & "V_GERUND"
+                                      |     !mrf
+                                          : ? (Mood.Imp) ?
+                                        & "V_IMP"
+                                      |     !mrf
+                                          : ? (Voice.Pass) ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (VerbForm.Inf)
+                                                  ?
+                                            & "V_INF_PAS"
+                                          |     !mrf
+                                              :   ?
+                                                  (Tense.Pres)
+                                                  ?
+                                            & "V_PRES_PAS"
+                                          |     !mrf
+                                              :   ?
+                                                  (Tense.Past)
+                                                  ?
+                                            & "V_PAST_PAS"
+                                          )
+                                      |     !mrf
+                                          : ? (Tense.Past) ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (VerbForm.Part)
+                                                  ?
+                                            & (   @(!Word:? es)
+                                                & "V_MED_PARTC_PAST"
+                                              | "V_PARTC_PAST"
+                                              )
+                                          |   @(!Word:? es)
+                                            & "V_MED_PAST"
+                                          | "V_PAST"
+                                          )
+                                      |     !mrf
+                                          : ? (Tense.Pres) ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (VerbForm.Part)
+                                                  ?
+                                            & "V_PARTC_PRES"
+                                          |   @(!Word:? es)
+                                            & "V_MED_PRES"
+                                          | "V_PRES"
+                                          )
+                                      |     !mrf
                                           :   ?
                                               (VerbForm.Inf)
                                               ?
-                                        & "V_INF_PAS"
-                                      |     !mrf
-                                          : ? (Tense.Pres) ?
-                                        & "V_PRES_PAS"
-                                      |     !mrf
-                                          : ? (Tense.Past) ?
-                                        & "V_PAST_PAS"
+                                        & (   @( !Word
+                                               : ( ? es
+                                                 | ? ås
+                                                 )
+                                               )
+                                            & "V_MED_INF"
+                                          | "V_INF"
+                                          )
                                       )
-                                  |     !mrf
-                                      : ? (Tense.Past) ?
+                                  |   !pos:CCONJ
+                                    & SKONJ
+                                  |   !pos:DET
                                     & (     !mrf
-                                          :   ?
-                                              (VerbForm.Part)
-                                              ?
-                                        & (   @(!Word:? es)
-                                            & "V_MED_PARTC_PAST"
-                                          | "V_PARTC_PAST"
-                                          )
-                                      |   @(!Word:? es)
-                                        & "V_MED_PAST"
-                                      | "V_PAST"
-                                      )
-                                  |     !mrf
-                                      : ? (Tense.Pres) ?
-                                    & (     !mrf
-                                          :   ?
-                                              (VerbForm.Part)
-                                              ?
-                                        & "V_PARTC_PRES"
-                                      |   @(!Word:? es)
-                                        & "V_MED_PRES"
-                                      | "V_PRES"
-                                      )
-                                  |     !mrf
-                                      : ? (VerbForm.Inf) ?
-                                    & (   @( !Word
-                                           : ( ? es
-                                             | ? ås
-                                             )
-                                           )
-                                        & "V_MED_INF"
-                                      | "V_INF"
-                                      )
-                                  )
-                              | !pos:CCONJ&SKONJ
-                              |   !pos:DET
-                                & (     !mrf
-                                      : ? (Case.Gen) ?
-                                    & ens
-                                    & "PRON_UBST_GEN_S"
-                                  |     !mrf
-                                      : ? (Poss.Yes) ?
-                                    & (     !mrf
-                                          : ? (Number.Sing) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Gender.Com)
-                                                  ?
-                                            & (     !mrf
-                                                  :   ?
-                                                      (Person.1)
-                                                      ?
-                                                & min
-                                                & "PRON_POSS_1S"
-                                              |     !mrf
-                                                  :   ?
-                                                      (Person.2)
-                                                      ?
-                                                & din
-                                                & "PRON_POSS_2S"
-                                              |     !mrf
-                                                  :   ?
-                                                      (Person.3)
-                                                      ?
-                                                & sin
-                                                & "PRON_POSS_3S"
-                                              )
-                                          |     !mrf
-                                              :   ?
-                                                  (Gender.Neut)
-                                                  ?
-                                            & (     !mrf
-                                                  :   ?
-                                                      (Person.1)
-                                                      ?
-                                                & mit
-                                                & "PRON_POSS_1S"
-                                              |     !mrf
-                                                  :   ?
-                                                      (Person.2)
-                                                      ?
-                                                & dit
-                                                & "PRON_POSS_2S"
-                                              |     !mrf
-                                                  :   ?
-                                                      (Person.3)
-                                                      ?
-                                                & sit
-                                                & "PRON_POSS_3S"
-                                              )
-                                          )
-                                      |     !mrf
-                                          : ? (Number.Plur) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Person.1)
-                                                  ?
-                                            & (     !mrf
-                                                  :   ?
-                                                      (Number[psor].Plur)
-                                                      ?
-                                                & vore
-                                                & "PRON_POSS_1P"
-                                              |     !mrf
-                                                  :   ?
-                                                      (Number[psor].Sing)
-                                                      ?
-                                                & mine
-                                                & "PRON_POSS_1P"
-                                              )
-                                          |     !mrf
-                                              :   ?
-                                                  (Person.2)
-                                                  ?
-                                            & dine
-                                            & "PRON_POSS_2P"
-                                          |     !mrf
-                                              :   ?
-                                                  (Person.3)
-                                                  ?
-                                            &   !mrf
-                                              :   ?
-                                                  (Number[psor].Sing)
-                                                  ?
-                                            & sine
-                                            & "PRON_POSS_3P"
-                                          )
-                                      |     !mrf
-                                          : ? (Person.1) ?
-                                        & vores
-                                        & "PRON_POSS_1"
-                                      |     !mrf
-                                          : ? (Person.2) ?
-                                        & jeres
-                                        & "PRON_POSS_2"
-                                      |     !mrf
-                                          : ? (Person.3) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Number[psor].Plur)
-                                                  ?
-                                            & (   !Word:Deres
-                                                & "PRON_POSS_2"
-                                              |   !Word:deres
-                                                & "PRON_POSS_3"
-                                              )
-                                          |     !mrf
-                                              :   ?
-                                                  (Number[psor].Sing)
-                                                  ?
-                                            & hendes
-                                            & "PRON_POSS_3"
-                                          )
-                                      )
-                                  |     !mrf
-                                      : ? (PronType.Dem) ?
-                                    & (     !mrf
-                                          : ? (Number.Sing) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Gender.Com)
-                                                  ?
-                                            & den
-                                            & "PRON_DEMO_S"
-                                          |     !mrf
-                                              :   ?
-                                                  (Gender.Neut)
-                                                  ?
-                                            & det
-                                            & "PRON_DEMO_S"
-                                          )
-                                      |     !mrf
-                                          : ? (Number.Plur) ?
-                                        & "PRON_DEMO_P"
-                                      | selv&"PRON_DEMO"
-                                      )
-                                  |     !mrf
-                                      : ? (PronType.Ind) ?
-                                    & (     !mrf
-                                          : ? (Number.Sing) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Gender.Com)
-                                                  ?
-                                            & een en enhver hvert
-                                            & "PRON_UBST_S"
-                                          |     !mrf
-                                              :   ?
-                                                  (Gender.Neut)
-                                                  ?
-                                            &   alting
-                                                et
-                                                ethvert
-                                                noget
-                                            & "PRON_UBST_S"
-                                          )
-                                      |     !mrf
-                                          : ? (Number.Plur) ?
-                                        & nogle
-                                        & "PRON_UBST_P"
-                                      )
-                                  )
-                              |   !pos:INTJ
-                                &   Ja
-                                    Jo
-                                    a
-                                    ah
-                                    ja
-                                    jo
-                                    nej
-                                    værsgo
-                                & INTERJ
-                              |   !pos:NOUN
-                                & (     (     !mrf
-                                            :   ?
-                                                (Definite.Def)
-                                                ?
-                                          & "_DEF"
-                                        |     !mrf
-                                            :   ?
-                                                (Definite.Ind)
-                                                ?
-                                          & "_INDEF"
-                                        | 
-                                        )
-                                      : ?definite
-                                    &   (     !mrf
-                                            :   ?
-                                                (Number.Plur)
-                                                ?
-                                          & "_PLU"
-                                        |     !mrf
-                                            :   ?
-                                                (Number.Sing)
-                                                ?
-                                          & "_SING"
-                                        )
-                                      : ?number
-                                    &   (     !mrf
-                                            : ? (Case.Gen) ?
-                                          & "_GEN"
-                                        | 
-                                        )
-                                      : ?case
-                                    &   str
-                                      $ (N !definite !number !case)
-                                  | "N_SING"
-                                  )
-                              |   !pos:NUM
-                                & (     !mrf
-                                      : ? (NumType.Card) ?
-                                    & NUM
-                                  | "NUM_ORD"
-                                  )
-                              |   !pos:PART
-                                &   !mrf
-                                  : ? (PartType.Inf) ?
-                                & at
-                                & UNIK
-                              |   !pos:PRON
-                                & (     !mrf
-                                      : ? (PronType.Prs) ?
-                                    & (     !mrf
-                                          : ? (Case.Nom) ?
-                                        &   !mrf
-                                          : ? (Gender.Com) ?
-                                        &   !mrf
-                                          : ? (Number.Plur) ?
-                                        &   !mrf
-                                          : ? (Person.1) ?
-                                        & vi
-                                        & "PRON_PERS_1P"
-                                      |     !mrf
-                                          : ? (Case.Acc) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Gender.Neut)
-                                                  ?
-                                            &   !mrf
-                                              :   ?
-                                                  (Number.Sing)
-                                                  ?
-                                            &   !mrf
-                                              :   ?
-                                                  (Person.3)
-                                                  ?
-                                            & det
-                                            & "PRON_PERS_3S"
-                                          |     !mrf
-                                              :   ?
-                                                  (Gender.Com)
-                                                  ?
-                                            & (     !mrf
-                                                  :   ?
-                                                      (Number.Sing)
-                                                      ?
-                                                & (     !mrf
-                                                      :   ?
-                                                          (Person.1)
-                                                          ?
-                                                    & mig
-                                                    & "PRON_PERS_1S"
-                                                  |     !mrf
-                                                      :   ?
-                                                          (Person.2)
-                                                          ?
-                                                    & !Word:dig
-                                                    & "PRON_PERS_2S"
-                                                  |     !mrf
-                                                      :   ?
-                                                          (Person.3)
-                                                          ?
-                                                    & ham hende
-                                                    & "PRON_PERS_3S"
-                                                  )
-                                              |     !mrf
-                                                  :   ?
-                                                      (Number.Plur)
-                                                      ?
-                                                & (     !mrf
-                                                      :   ?
-                                                          (Person.1)
-                                                          ?
-                                                    & os
-                                                    & "PRON_PERS_1P"
-                                                  |     !mrf
-                                                      :   ?
-                                                          (Person.2)
-                                                          ?
-                                                    & jer
-                                                    & "PRON_PERS_2P"
-                                                  )
-                                              )
-                                          |     !mrf
-                                              :   ?
-                                                  (Person.3)
-                                                  ?
-                                            & (     !mrf
-                                                  :   ?
-                                                      (Number.Plur)
-                                                      ?
-                                                & dem
-                                                & "PRON_PERS_3P"
-                                              |     !mrf
-                                                  :   ?
-                                                      (Reflex.Yes)
-                                                      ?
-                                                & sig
-                                                & "PRON_PERS_3"
-                                              )
-                                          )
-                                      |     !mrf
-                                          : ? (Case.Nom) ?
-                                        & (     !mrf
-                                              :   ?
-                                                  (Person.1)
-                                                  ?
-                                            & jeg
-                                            & "PRON_PERS_1S"
-                                          |     !mrf
-                                              :   ?
-                                                  (Person.2)
-                                                  ?
-                                            & du
-                                            & "PRON_PERS_2S"
-                                          |     !mrf
-                                              :   ?
-                                                  (Person.3)
-                                                  ?
-                                            & (     !mrf
-                                                  :   ?
-                                                      (Number.Plur)
-                                                      ?
-                                                & de
-                                                & "PRON_PERS_3P"
-                                              |   han hun
-                                                & "PRON_PERS_3S"
-                                              )
-                                          )
+                                          : ? (Case.Gen) ?
+                                        & ens
+                                        & "PRON_UBST_GEN_S"
                                       |     !mrf
                                           : ? (Poss.Yes) ?
                                         & (     !mrf
@@ -557,26 +298,431 @@ X=
                                                       :   ?
                                                           (Person.1)
                                                           ?
+                                                    & min
+                                                    & "PRON_POSS_1S"
+                                                  |     !mrf
+                                                      :   ?
+                                                          (Person.2)
+                                                          ?
+                                                    & din
+                                                    & "PRON_POSS_2S"
+                                                  |     !mrf
+                                                      :   ?
+                                                          (Person.3)
+                                                          ?
+                                                    & sin
+                                                    & "PRON_POSS_3S"
+                                                  )
+                                              |     !mrf
+                                                  :   ?
+                                                      (Gender.Neut)
+                                                      ?
+                                                & (     !mrf
+                                                      :   ?
+                                                          (Person.1)
+                                                          ?
+                                                    & mit
+                                                    & "PRON_POSS_1S"
+                                                  |     !mrf
+                                                      :   ?
+                                                          (Person.2)
+                                                          ?
+                                                    & dit
+                                                    & "PRON_POSS_2S"
+                                                  |     !mrf
+                                                      :   ?
+                                                          (Person.3)
+                                                          ?
+                                                    & sit
+                                                    & "PRON_POSS_3S"
+                                                  )
+                                              )
+                                          |     !mrf
+                                              :   ?
+                                                  (Number.Plur)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Person.1)
+                                                      ?
+                                                & (     !mrf
+                                                      :   ?
+                                                          ( Number[psor]
+                                                          . Plur
+                                                          )
+                                                          ?
+                                                    & vore
+                                                    & "PRON_POSS_1P"
+                                                  |     !mrf
+                                                      :   ?
+                                                          ( Number[psor]
+                                                          . Sing
+                                                          )
+                                                          ?
+                                                    & mine
+                                                    & "PRON_POSS_1P"
+                                                  )
+                                              |     !mrf
+                                                  :   ?
+                                                      (Person.2)
+                                                      ?
+                                                & dine
+                                                & "PRON_POSS_2P"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Person.3)
+                                                      ?
+                                                &   !mrf
+                                                  :   ?
+                                                      (Number[psor].Sing)
+                                                      ?
+                                                & sine
+                                                & "PRON_POSS_3P"
+                                              )
+                                          |     !mrf
+                                              :   ?
+                                                  (Person.1)
+                                                  ?
+                                            & vores
+                                            & "PRON_POSS_1"
+                                          |     !mrf
+                                              :   ?
+                                                  (Person.2)
+                                                  ?
+                                            & jeres
+                                            & "PRON_POSS_2"
+                                          |     !mrf
+                                              :   ?
+                                                  (Person.3)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Number[psor].Plur)
+                                                      ?
+                                                & (   !Word:Deres
+                                                    & "PRON_POSS_2"
+                                                  |   !Word:deres
+                                                    & "PRON_POSS_3"
+                                                  )
+                                              |     !mrf
+                                                  :   ?
+                                                      (Number[psor].Sing)
+                                                      ?
+                                                & hendes
+                                                & "PRON_POSS_3"
+                                              )
+                                          )
+                                      |     !mrf
+                                          :   ?
+                                              (PronType.Dem)
+                                              ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (Number.Sing)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Gender.Com)
+                                                      ?
+                                                & den
+                                                & "PRON_DEMO_S"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Gender.Neut)
+                                                      ?
+                                                & det
+                                                & "PRON_DEMO_S"
+                                              )
+                                          |     !mrf
+                                              :   ?
+                                                  (Number.Plur)
+                                                  ?
+                                            & "PRON_DEMO_P"
+                                          | selv&"PRON_DEMO"
+                                          )
+                                      |     !mrf
+                                          :   ?
+                                              (PronType.Ind)
+                                              ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (Number.Sing)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Gender.Com)
+                                                      ?
+                                                &   een
+                                                    en
+                                                    enhver
+                                                    hvert
+                                                & "PRON_UBST_S"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Gender.Neut)
+                                                      ?
+                                                &   alting
+                                                    et
+                                                    ethvert
+                                                    noget
+                                                & "PRON_UBST_S"
+                                              )
+                                          |     !mrf
+                                              :   ?
+                                                  (Number.Plur)
+                                                  ?
+                                            & nogle
+                                            & "PRON_UBST_P"
+                                          )
+                                      )
+                                  |   !pos:INTJ
+                                    &   Ja
+                                        Jo
+                                        a
+                                        ah
+                                        ja
+                                        jo
+                                        nej
+                                        værsgo
+                                    & INTERJ
+                                  |   !pos:NOUN
+                                    & (     (     !mrf
+                                                :   ?
+                                                    (Definite.Def)
+                                                    ?
+                                              & "_DEF"
+                                            |     !mrf
+                                                :   ?
+                                                    (Definite.Ind)
+                                                    ?
+                                              & "_INDEF"
+                                            | 
+                                            )
+                                          : ?definite
+                                        &   (     !mrf
+                                                :   ?
+                                                    (Number.Plur)
+                                                    ?
+                                              & "_PLU"
+                                            |     !mrf
+                                                :   ?
+                                                    (Number.Sing)
+                                                    ?
+                                              & "_SING"
+                                            )
+                                          : ?number
+                                        &   (     !mrf
+                                                :   ?
+                                                    (Case.Gen)
+                                                    ?
+                                              & "_GEN"
+                                            | 
+                                            )
+                                          : ?case
+                                        &   str
+                                          $ (N !definite !number !case)
+                                      | "N_SING"
+                                      )
+                                  |   !pos:NUM
+                                    & (     !mrf
+                                          :   ?
+                                              (NumType.Card)
+                                              ?
+                                        & NUM
+                                      | "NUM_ORD"
+                                      )
+                                  |   !pos:PART
+                                    &   !mrf
+                                      : ? (PartType.Inf) ?
+                                    & at
+                                    & UNIK
+                                  |   !pos:PRON
+                                    & (     !mrf
+                                          :   ?
+                                              (PronType.Prs)
+                                              ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (Case.Nom)
+                                                  ?
+                                            &   !mrf
+                                              :   ?
+                                                  (Gender.Com)
+                                                  ?
+                                            &   !mrf
+                                              :   ?
+                                                  (Number.Plur)
+                                                  ?
+                                            &   !mrf
+                                              :   ?
+                                                  (Person.1)
+                                                  ?
+                                            & vi
+                                            & "PRON_PERS_1P"
+                                          |     !mrf
+                                              :   ?
+                                                  (Case.Acc)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Gender.Neut)
+                                                      ?
+                                                &   !mrf
+                                                  :   ?
+                                                      (Number.Sing)
+                                                      ?
+                                                &   !mrf
+                                                  :   ?
+                                                      (Person.3)
+                                                      ?
+                                                & det
+                                                & "PRON_PERS_3S"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Gender.Com)
+                                                      ?
+                                                & (     !mrf
+                                                      :   ?
+                                                          (Number.Sing)
+                                                          ?
                                                     & (     !mrf
+                                                          :   ?
+                                                              (Person.1)
+                                                              ?
+                                                        & mig
+                                                        & "PRON_PERS_1S"
+                                                      |     !mrf
+                                                          :   ?
+                                                              (Person.2)
+                                                              ?
+                                                        & !Word:dig
+                                                        & "PRON_PERS_2S"
+                                                      |     !mrf
+                                                          :   ?
+                                                              (Person.3)
+                                                              ?
+                                                        & ham hende
+                                                        & "PRON_PERS_3S"
+                                                      )
+                                                  |     !mrf
+                                                      :   ?
+                                                          (Number.Plur)
+                                                          ?
+                                                    & (     !mrf
+                                                          :   ?
+                                                              (Person.1)
+                                                              ?
+                                                        & os
+                                                        & "PRON_PERS_1P"
+                                                      |     !mrf
+                                                          :   ?
+                                                              (Person.2)
+                                                              ?
+                                                        & jer
+                                                        & "PRON_PERS_2P"
+                                                      )
+                                                  )
+                                              |     !mrf
+                                                  :   ?
+                                                      (Person.3)
+                                                      ?
+                                                & (     !mrf
+                                                      :   ?
+                                                          (Number.Plur)
+                                                          ?
+                                                    & dem
+                                                    & "PRON_PERS_3P"
+                                                  |     !mrf
+                                                      :   ?
+                                                          (Reflex.Yes)
+                                                          ?
+                                                    & sig
+                                                    & "PRON_PERS_3"
+                                                  )
+                                              )
+                                          |     !mrf
+                                              :   ?
+                                                  (Case.Nom)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Person.1)
+                                                      ?
+                                                & jeg
+                                                & "PRON_PERS_1S"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Person.2)
+                                                      ?
+                                                & du
+                                                & "PRON_PERS_2S"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Person.3)
+                                                      ?
+                                                & (     !mrf
+                                                      :   ?
+                                                          (Number.Plur)
+                                                          ?
+                                                    & de
+                                                    & "PRON_PERS_3P"
+                                                  |   han hun
+                                                    & "PRON_PERS_3S"
+                                                  )
+                                              )
+                                          |     !mrf
+                                              :   ?
+                                                  (Poss.Yes)
+                                                  ?
+                                            & (     !mrf
+                                                  :   ?
+                                                      (Number.Sing)
+                                                      ?
+                                                & (     !mrf
+                                                      :   ?
+                                                          (Gender.Com)
+                                                          ?
+                                                    & (     !mrf
+                                                          :   ?
+                                                              (Person.1)
+                                                              ?
+                                                        & (     !mrf
+                                                              :   ?
+                                                                  ( Number[psor]
+                                                                  . Sing
+                                                                  )
+                                                                  ?
+                                                            &   !Word
+                                                              : min
+                                                            & "PRON_POSS_1S"
+                                                          |     !mrf
+                                                              :   ?
+                                                                  ( Number[psor]
+                                                                  . Plur
+                                                                  )
+                                                                  ?
+                                                            &   !Word
+                                                              : mine
+                                                            & "PRON_POSS_1P"
+                                                          )
+                                                      |     !mrf
+                                                          :   ?
+                                                              (Person.3)
+                                                              ?
                                                           :   ?
                                                               ( Number[psor]
                                                               . Sing
                                                               )
                                                               ?
-                                                        & !Word:min
-                                                        & "PRON_POSS_1S"
-                                                      |     !mrf
                                                           :   ?
-                                                              ( Number[psor]
-                                                              . Plur
-                                                              )
+                                                              (Reflex.Yes)
                                                               ?
-                                                        & !Word:mine
-                                                        & "PRON_POSS_1P"
+                                                        & !Word:sin
+                                                        & "PRON_POSS_3S"
                                                       )
                                                   |     !mrf
                                                       :   ?
-                                                          (Person.3)
+                                                          (Gender.Neut)
                                                           ?
                                                       :   ?
                                                           ( Number[psor]
@@ -584,14 +730,17 @@ X=
                                                           )
                                                           ?
                                                       :   ?
+                                                          (Person.3)
+                                                          ?
+                                                      :   ?
                                                           (Reflex.Yes)
                                                           ?
-                                                    & !Word:sin
+                                                    & !Word:sit
                                                     & "PRON_POSS_3S"
                                                   )
                                               |     !mrf
                                                   :   ?
-                                                      (Gender.Neut)
+                                                      (Number.Plur)
                                                       ?
                                                   :   ?
                                                       (Number[psor].Sing)
@@ -602,180 +751,164 @@ X=
                                                   :   ?
                                                       (Reflex.Yes)
                                                       ?
-                                                & !Word:sit
-                                                & "PRON_POSS_3S"
+                                                & !Word:sine
+                                                & "PRON_POSS_3P"
+                                              |     !mrf
+                                                  :   ?
+                                                      (Number[psor].Sing)
+                                                      ?
+                                                  :   ?
+                                                      (Person.3)
+                                                      ?
+                                                & !Word:hendes
+                                                & "PRON_POSS_3"
                                               )
+                                          |     !mrf
+                                              :   ?
+                                                  (Person.2)
+                                                  ?
+                                              :   ?
+                                                  (Polite.Form)
+                                                  ?
+                                              :   ?
+                                                  (Poss.Yes)
+                                                  ?
+                                            & (   !Word:deres
+                                                & "PRON_POSS_3"
+                                              |   !Word:jeres
+                                                & "PRON_POSS_2"
+                                              )
+                                          )
+                                      |     !mrf
+                                          :   ?
+                                              (PronType.Dem)
+                                              ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (Number.Plur)
+                                                  ?
+                                            & de
+                                            & "PRON_DEMO_P"
+                                          |     !mrf
+                                              :   ?
+                                                  (Number.Sing)
+                                                  ?
+                                            & den
+                                            & "PRON_DEMO_S"
+                                          | selv&"PRON_DEMO"
+                                          )
+                                      |     !mrf
+                                          :   ?
+                                              (PronType.Rcp)
+                                              ?
+                                        &   !mrf
+                                          : ? (Number.Plur) ?
+                                        & hinanden
+                                        & "PRON_REC"
+                                      |     !mrf
+                                          :   ?
+                                              (PronType.Ind)
+                                              ?
+                                        & (     !mrf
+                                              :   ?
+                                                  (Gender.Com)
+                                                  ?
+                                            &   anden
+                                                hver
+                                                ingen
+                                                nogen
+                                            & "PRON_UBST_S"
+                                          |     !mrf
+                                              :   ?
+                                                  (Gender.Neut)
+                                                  ?
+                                            &   andet
+                                                ingenting
+                                                intet
+                                                noget
+                                            & "PRON_UBST_S"
                                           |     !mrf
                                               :   ?
                                                   (Number.Plur)
                                                   ?
-                                              :   ?
-                                                  (Number[psor].Sing)
-                                                  ?
-                                              :   ?
-                                                  (Person.3)
-                                                  ?
-                                              :   ?
-                                                  (Reflex.Yes)
-                                                  ?
-                                            & !Word:sine
-                                            & "PRON_POSS_3P"
-                                          |     !mrf
-                                              :   ?
-                                                  (Number[psor].Sing)
-                                                  ?
-                                              :   ?
-                                                  (Person.3)
-                                                  ?
-                                            & !Word:hendes
-                                            & "PRON_POSS_3"
+                                            & andre
+                                            & "PRON_UBST_P"
                                           )
                                       |     !mrf
-                                          : ? (Person.2) ?
-                                          : ? (Polite.Form) ?
-                                          : ? (Poss.Yes) ?
-                                        & (   !Word:deres
-                                            & "PRON_POSS_3"
-                                          |   !Word:jeres
-                                            & "PRON_POSS_2"
-                                          )
+                                          :   ?
+                                              (PronType."Int,Rel")
+                                              ?
+                                        & hvad hvilken hvilket
+                                        & "PRON_INTER_REL_S"
+                                      |     !mrf
+                                          :   ?
+                                              (PartType.Inf)
+                                              ?
+                                        & der som
+                                        & UNIK
                                       )
-                                  |     !mrf
-                                      : ? (PronType.Dem) ?
+                                  |   !pos:PROPN
                                     & (     !mrf
-                                          : ? (Number.Plur) ?
-                                        & de
-                                        & "PRON_DEMO_P"
-                                      |     !mrf
-                                          : ? (Number.Sing) ?
-                                        & den
-                                        & "PRON_DEMO_S"
-                                      | selv&"PRON_DEMO"
+                                          : ? (Case.Gen) ?
+                                        & "EGEN_GEN"
+                                      |   !Word:"hr."
+                                        & FORK
+                                      | EGEN
                                       )
-                                  |     !mrf
-                                      : ? (PronType.Rcp) ?
-                                    &   !mrf
-                                      : ? (Number.Plur) ?
-                                    & hinanden
-                                    & "PRON_REC"
-                                  |     !mrf
-                                      : ? (PronType.Ind) ?
-                                    & (     !mrf
-                                          : ? (Gender.Com) ?
-                                        & anden hver ingen nogen
-                                        & "PRON_UBST_S"
-                                      |     !mrf
-                                          : ? (Gender.Neut) ?
-                                        &   andet
-                                            ingenting
-                                            intet
-                                            noget
-                                        & "PRON_UBST_S"
-                                      |     !mrf
-                                          : ? (Number.Plur) ?
-                                        & andre
-                                        & "PRON_UBST_P"
+                                  |   !pos:SCONJ
+                                    & (       (closed..find)
+                                            $ (low$!Word)
+                                          : ? (?.UKONJ) ?
+                                        & UKONJ
+                                      |     !Word
+                                          : ( altså
+                                            | bagefter
+                                            | "bl.a"
+                                            | cirka
+                                            | derfra
+                                            | eksempelvis
+                                            | fra
+                                            | givetvis
+                                            | henholdsvis
+                                            | hvadenten
+                                            | hvorend
+                                            | hvornår
+                                            | hvorom
+                                            | hvortil
+                                            | hvv
+                                            | langtfra
+                                            | muligvis
+                                            | naturligvis
+                                            | nødvendigvis
+                                            | også
+                                            | straks
+                                            | vidt
+                                            )
+                                        & ADV
+                                      | ~&SKONJ
                                       )
-                                  |     !mrf
-                                      :   ?
-                                          (PronType."Int,Rel")
-                                          ?
-                                    & hvad hvilken hvilket
-                                    & "PRON_INTER_REL_S"
-                                  |     !mrf
-                                      : ? (PartType.Inf) ?
-                                    & der som
-                                    & UNIK
+                                  |   !pos:PUNCT
+                                    & TEGN
+                                  |   !pos:SYM
+                                    & SYMBOL
+                                  |   !pos:X
+                                    & (     !morf
+                                          : ? (Abbr.Yes) ?
+                                        & FORK
+                                      | XX
+                                      )
+                                  |     !pos\L(!mrf^!Word)+!uncertain
+                                      : ?uncertain
+                                    & N
                                   )
-                              |   !pos:PROPN
-                                & (     !mrf
-                                      : ? (Case.Gen) ?
-                                    & "EGEN_GEN"
-                                  | EGEN
-                                  )
-                              |   !pos:SCONJ
-                                & (     !Word
-                                      : ( at
-                                        | da
-                                        | dengang
-                                        | efter
-                                        | eftersom
-                                        | end
-                                        | endskønt
-                                        | enten
-                                        | fordi
-                                        | før
-                                        | førend
-                                        | hvis
-                                        | hvorvidt
-                                        | idet
-                                        | imens
-                                        | inden
-                                        | indtil
-                                        | ~<>jo
-                                        | ligesom
-                                        | medens
-                                        | medmindre
-                                        | mens
-                                        | når
-                                        | om
-                                        | omend
-                                        | qua
-                                        | selvom
-                                        | siden
-                                        | skønt
-                                        | så
-                                        | såfremt
-                                        | såsom
-                                        | til
-                                        )
-                                    & UKONJ
-                                  |     !Word
-                                      : ( altså
-                                        | bagefter
-                                        | "bl.a"
-                                        | cirka
-                                        | derfra
-                                        | eksempelvis
-                                        | fra
-                                        | givetvis
-                                        | henholdsvis
-                                        | hvadenten
-                                        | hvorend
-                                        | hvornår
-                                        | hvorom
-                                        | hvortil
-                                        | hvv
-                                        | langtfra
-                                        | muligvis
-                                        | naturligvis
-                                        | nødvendigvis
-                                        | også
-                                        | straks
-                                        | vidt
-                                        )
-                                    & ADV
-                                  | ~&SKONJ
-                                  )
-                              | !pos:PUNCT&TEGN
-                              | !pos:SYM&SYMBOL
-                              |   !pos:X
-                                & (     !morf
-                                      : ? (Abbr.Yes) ?
-                                    & FORK
-                                  | XX
-                                  )
-                              |     !pos\L(!mrf^!Word)+!uncertain
-                                  : ?uncertain
-                                & N
-                              )
-                            : ?POS
-                          & (   @(!POS:PRON ?)
-                              &   !POS\L(!mrf^!Word)+!prons
-                                : ?prons
-                            | 
+                                : ?POS
+                              & (   @(!POS:PRON ?)
+                                  &   !POS\L(!mrf^!Word)+!prons
+                                    : ?prons
+                                | 
+                                )
+                              & (!a.!POS.)
                             )
-                          & (!a.!POS.)
                         |   :?pp
                           & 0:?mms
                           &   map
