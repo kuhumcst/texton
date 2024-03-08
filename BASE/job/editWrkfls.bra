@@ -1,0 +1,60 @@
+{editWrkfls.bra
+𝕌𝕋𝔽-𝟠
+
+Extract, add or delete workflow}
+
+X=
+  (extract=nyparlamint)
+  (add=)
+  (delete=)
+  ( doit
+  =   
+    .   get$wrkflws:?wrkflws
+      & (   !(its.extract):~:?extract
+          & !wrkflws:? ((!extract.?):?wrkflw) ?
+          & lst$(wrkflw,!extract,NEW,RAW,WYD)
+        | 
+        )
+      & (   !(its.delete):~:?delete
+          & !wrkflws:?a (!delete.?) ?z
+          & !a !z:?wrkflws
+          & lst$(wrkflws,wrkflws,NEW,RAW,WYD)
+        | 
+        )
+      & (   !(its.add):~:?add
+          & get$!add:?toadd
+          & !toadd !wrkflws:?wrkflws
+          & lst$(wrkflws,wrkflws,NEW,RAW,WYD)
+        | 
+        )
+      & (   !(its.delete):~:?delete
+          & !wrkflws:?a (!delete.?) ?z
+          & !a !z:?wrkflws
+          & lst$(wrkflws,wrkflws,NEW,RAW,WYD)
+        | 
+        )
+  )
+  (new=.~|(its.doit)$);
+
+r=
+  get'("editWrkfls.bra",TXT)
+& rmv$(str$(editWrkfls ".bak"))
+& ren$("editWrkfls.bra".str$(editWrkfls ".bak"))
+&   put
+  $ ( "{editWrkfls.bra
+𝕌𝕋𝔽-𝟠
+
+Extract, add or delete workflow}
+
+"
+    , "editWrkfls.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"editWrkfls.bra",APP)
+& put'(\n,"editWrkfls.bra",APP,BIN)
+& lst'(r,"editWrkfls.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"editWrkfls.bra",APP,BIN)
+& ;
+
+new'X;
