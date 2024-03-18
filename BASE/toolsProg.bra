@@ -14905,27 +14905,42 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby res A B makeList req servurl
+      =   JobNr jobID jobby res A B makeList req servurl loggy
         .     !arg:(@(?:? #?JobNr).?jobID.?arg)
-            & (!jobs|readTable$jobs)
-            & !jobs:? (!JobNr.!jobID ?.?jobby) ?
+            & "\na:" !JobNr "/" !jobID:?loggy
+            & ( !jobs
+              | \n "b:readTable$jobs" !loggy:?loggy&readTable$jobs
+              )
+            & !( 
+               ' ($jobs:? ($JobNr.$jobID ?.?jobby) ?)
+               )
+            & "\nc:Found" !loggy:?loggy
             &   !arg
-              : ( endpoint&!jobby:(?.?arg.?)
-                |   method
+              : (   endpoint
+                  & \n "d:endpoint" !loggy:?loggy
                   & !jobby:(?.?arg.?)
-                  & readTable$tooladm
+                |   method
+                  & "\nd:method" !loggy:?loggy
+                  & !jobby:(?.?arg.?)
+                  & ( !tooladm:~
+                    |   \n "e:readTable$tooladm" !loggy:?loggy
+                      & readTable$tooladm
+                    )
                   &   !tooladm
                     :   ?
                       + ( ? (ServiceURL.!arg) ?
                         : ? (PostData.?arg) ?
                         )
                       + ?
+                  & "\nf:" !arg !loggy:?loggy
                   &   (!arg:on&POST|GET)
                     : ?arg
                 |   requestString
+                  & \n "g:requestString" !loggy:?loggy
                   &   1+!runningThreads
                     : ?runningThreads
                     : (>!maxRunningThreads:?maxRunningThreads|?)
+                  & \n "h:maxRunningThreads:" !maxRunningThreads !loggy:?loggy
                   &   log
                     $ ( str
                       $ ( "getJobArg:runningThreads:"
@@ -14935,7 +14950,10 @@ function main2(evt) {
                         )
                       )
                   & !jobby:(?.?servurl.?req.?)
-                  & readTable$tooladm
+                  & ( !tooladm:~
+                    |   \n "i:readTable$tooladm" !loggy:?loggy
+                      & readTable$tooladm
+                    )
                   & !tooladm:?+(? (ServiceURL.!servurl) ?)+?
                   & ( makeList
                     =   B prefix
@@ -14955,11 +14973,14 @@ function main2(evt) {
                             . (=+)
                             )
                     )
+                  & \n "j:makeList$" !req !loggy:?loggy
                   & makeList$(.!req):("&" ?arg|?arg)
-                | filename&!jobby:(?.?.?.?arg)
+                |   filename
+                  & \n "g:filename" !loggy:?loggy
+                  & !jobby:(?.?.?.?arg)
                 )
             & str$!arg
-          | SOMETHINGWRONG
+          | str$("SOMETHINGWRONG:[[" \n !loggy \n]])
       )
       "
 /**
