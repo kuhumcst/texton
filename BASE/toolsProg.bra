@@ -13851,7 +13851,7 @@ function main2(evt) {
       ( cleanup
       =     jobNr jobID jobstatus files toolURL parms file
           , A Z a z F deleteDependingJobs existingFiles
-          , feats item meta nr stagingName
+          , feats item meta nr stagingName LeN
         .   ( deleteDependingJobs
             =   A Z jobNr locJobs,file files jobID jobstatus parms toolURL
               .   !arg:(?arg.?locJobs)
@@ -13888,7 +13888,17 @@ function main2(evt) {
                     )
                 & !locJobs
             )
-          & log$(cleanup !arg)
+          & !arg:? [?LeN
+          &   log
+            $ ( str
+              $ ( cleanup
+                    map
+                  $ ( (=." " !arg)
+                    .   !LeN:<5&!arg
+                      | !arg:?A [2 ? [-2 ?Z&!A "..." !Z
+                    )
+                )
+              )
           & readTable$ItemGroupsCache
           & readTable$Uploads
           & readTable$jobs
@@ -14907,7 +14917,7 @@ function main2(evt) {
       ( getJobArg
       =   JobNr jobID jobby res A B makeList req servurl loggy
         .     !arg:(@(?:? #?JobNr).?jobID.?arg)
-            & "\na:" !JobNr "/" !jobID:?loggy
+            & "\na:" !JobNr "/" !jobID "/" !arg:?loggy
             & ( !jobs
               | \n "b:readTable$jobs" !loggy:?loggy&readTable$jobs
               )
@@ -14980,7 +14990,8 @@ function main2(evt) {
                   & !jobby:(?.?.?.?arg)
                 )
             & str$!arg
-          | str$("SOMETHINGWRONG:[[" \n !loggy \n]])
+          |   lst$(jobs,path$jobsError,NEW,WYD,RAW)
+            & str$("SOMETHINGWRONG:[[" \n !loggy \n]])
       )
       "
 /**
@@ -15009,7 +15020,6 @@ function main2(evt) {
                       ?Z
                 & -15:?err
                 & (   !test:justtesting
-                    & -16:?err
                     & -17:?err
                     & !jobID
                   |     !A (!arg.!jobID starting.!dep.!g) !Z
