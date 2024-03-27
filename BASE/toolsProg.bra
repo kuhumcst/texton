@@ -8609,7 +8609,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( convert2URLs
       =     requestString Items items file files newJobs feats
           , base post2 val vals JobStack Val item In
-          , jobIDoffset A OffSet addOutputsToRequestString
+          , jobIDoffset A M Z OffSet addOutputsToRequestString
           , extension ID forceFeed jobNr jobID maxjobID
           , Short DiscerningFeature getDisFe
           , DATE Tool URL dep discerningFeature
@@ -8785,16 +8785,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         )
                                       &   getCompatibleInputFile$(!Items.!Uploads.!FiLfeats)
                                         : ?fileitem
-                                      & log$(Compatible !fileitem)
                                       & !dep !fileitem:?dep
                                       & (F.!fileitem):?fileTerm
                                     |   (%@?val^?spec.@?file)
                                       & OffSet$!file:?file
                                       & !dep (!file,pending):?dep
                                       & (   !newJobs
-                                          :   ?
-                                              (!jobNr.!file.?.?.?.?file)
-                                              ?
+                                          : ? (!file.?.?.?.?file) ?
                                         | log$(OOPS1 !jobNr file !file)
                                         )
                                       & (F.!file):?fileTerm
@@ -8804,9 +8801,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         |   OffSet$!file:?file
                                           & !dep (!file,pending):?dep
                                           & (   !newJobs
-                                              :   ?
-                                                  (!jobNr.!file.?.?.?.?file)
-                                                  ?
+                                              : ? (!file.?.?.?.?file) ?
                                             | log$(OOPS2 !jobNr file !file)
                                             )
                                           & (F.!file):?fileTerm
@@ -8936,7 +8931,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !in:?In
               &   getDepsAndAddInputsToRequestString$(!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
-              & log$(dep !dep)
               &     !dep
                     ( :?files
                     & ( !requestString:?+(F.?)+?
@@ -8985,26 +8979,20 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ?requestString
                             )
                       )
-                    & log$(files !files)
-                    & log$(dep2 !dep)
                     & (     !requestString
                           : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
                             | ?+(F.?)+?
                             )
-                        & log$simpleInput
                         & simpleInput$!requestString:?requestString
                       |   log$forceFeed
                         & !requestString+forceFeed$!Items:?requestString
                       )
-                    & log$(files2 !files)
                     & !files
                     )
                 : ?inputs
-              & log$(IJNPUTS !inputs)
               & compact$!requestString+(mode.!dryORrun):?requestString
               &     !newJobs
-                    ( !jobNr
-                    . !jobID
+                    ( !jobID
                     . !inputs
                     . !URL
                     . !requestString
@@ -9030,7 +9018,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 : ?newJobs
               )
-          & !jobs !newJobs:?jobs
+          &   (   !jobs:?A (!jobNr.?M) ?Z
+                & !A (!jobNr.!M !newJobs) !Z
+              | !jobs (!jobNr.!newJobs)
+              )
+            : ?jobs
           & saveTable$jobs
           & !maxjobID
       )
@@ -9495,6 +9487,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( deleteDepending
       =   jobNr jobID CTBs
         .   !arg:(?jobNr.?jobID)
+          & log$(deleteDepending !jobNr !jobID)
           & !( 
              ' (     map
                    $ ( ( 
@@ -9544,9 +9537,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & str$!arg
             )
           & ( Steps
-            =   x items tool JobNr JobId,format I O format stage
-              .       !arg
-                    : (?JobNr.@(?:? #?JobId).?x.?items.?tool.?I.?O.?stage)
+            =   x items tool JobId,format I O format stage
+              .     !arg:(@(?:? #?JobId).?x.?items.?tool.?I.?O.?stage)
                   & ( step
                     .   
                       ,   (JobNr.,!JobNr)
@@ -9574,12 +9566,20 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !arg:?JobNr
           & readTable$jobs
           & :?filelist
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(!JobNr.?arg)&!arg
+                      | 
+                  )
+                . !jobs
+                )
+            : ?myjobs
           &   whl
             ' ( :?aborted:?done
-              &   !jobs
+              &   !myjobs
                 :   ?
-                    ( !JobNr
-                    .   %@?JobId
+                    (   %@?JobId
                         ( aborted:?aborted&:?done
                         | done:?done&:?aborted
                         |   (|starting|waiting)
@@ -9591,10 +9591,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | ?&:?I:?O
                     . ?filename
                     )
-                    ?jobs
+                    ?myjobs
               &     !filelist
-                    ( !JobNr
-                    . !JobId
+                    ( !JobId
                     .   !aborted:aborted&fejl
                       | !filename
                     . !items
@@ -9602,8 +9601,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     . !I
                     . !O
                     .     ( !aborted:aborted
-                          |   !jobs
-                            : ? (!JobNr.?.? !JobId ?.?) ?
+                          |   !myjobs
+                            : ? (?.? !JobId ?.?) ?
                           )
                         & 
                       | LAST
@@ -9613,7 +9612,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (workflow.,!workflow) (steps.,map$(Steps.!filelist))
       )
       ( doneAllJobSub
-      =   JobNr
+      =   JobNr myjobs
         .   readTable$jobs
           & @(!arg:? #?JobNr)
           & readTable$CTBs
@@ -9621,8 +9620,16 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &     map
               $ ( ( 
                   =   JobId
-                    .     !arg:(!JobNr.%@?JobId ?.?.?.?.?)
-                        & deleteDepending$(!JobNr.!JobId)
+                    .     !arg:(!JobNr.?myjobs)
+                        &   map
+                          $ ( ( 
+                              =   
+                                .   !arg:(%@?JobId ?.?.?.?.?)
+                                  & deleteDepending$(!JobNr.!JobId)
+                                  & 
+                              )
+                            . !myjobs
+                            )
                         & 
                       | !arg
                   )
@@ -11460,40 +11467,64 @@ function main2(evt) {
  * Called from util.java, workflow.java
  */"
       ( abort-job
-      =   abort JobNr jobID todelete jobs
+      =   abort JobNr jobID todelete jobs myjobs seen
         .   log$abort-job
           & !arg:(?jobs.?JobNr.?jobID)
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(!JobNr.?arg)&!arg
+                      | 
+                  )
+                . !jobs
+                )
+            : ?myjobs
+          & notseen:?seen
+          &     map
+              $ ( ( 
+                  =   
+                    .     !arg:(!JobNr.?)
+                        & (   !seen:notseen
+                            & seen:?seen
+                            & (!JobNr.!myjobs)
+                          | 
+                          )
+                      | !arg
+                  )
+                . !jobs
+                )
+            : ?jobs
           & (!JobNr.!jobID):?todelete
           & ( abort
-            =     JobNr jobID jobid2 A Z ZZ a z
+            =     JobNr jobID jobid2 A Z B Y ZZ a z
                 , URL tool items todelete
               .   !arg:(?JobNr.?jobID) ?todelete
                 & log$(abort !arg)
-                &   !jobs
-                  :   ?A
-                      ( !JobNr
-                      . !jobID ~aborted
+                & !jobs:?A (!JobNr.?myjobs) ?Z
+                &   !myjobs
+                  :   ?B
+                      ( !jobID ~aborted
                       . ?items&inputResources$!items:?items
                       . ?URL&toolName$!URL:?tool
                       . ?ZZ
                       )
-                      ?Z
-                &   !A (!JobNr.!jobID aborted.!items.!URL.!ZZ) !Z
-                  : ?jobs
+                      ?Y
+                &   !B (!jobID aborted.!items.!URL.!ZZ) !Y
+                  : ?myjobs
                 &   whl
-                  ' (   !jobs
-                      :   ?A
-                          ( !JobNr
-                          . %?jobid2 ?
+                  ' (   !myjobs
+                      :   ?B
+                          ( %?jobid2 ?
                           . ?a (!jobID,pending) ?z
                           . ?URL&toolName$!URL:?tool
                           . ?ZZ
                           )
-                          ?Z
-                    &   !A (!JobNr.!jobid2.!a !jobID !z.!URL.!ZZ) !Z
-                      : ?jobs
+                          ?Y
+                    &   !B (!jobid2.!a !jobID !z.!URL.!ZZ) !Y
+                      : ?myjobs
                     & (!JobNr.!jobid2) !todelete:?todelete
                     )
+                & !A (!JobNr.!myjobs) !Z:?jobs
                 & !todelete
             )
           & whl'(abort$!todelete:?todelete)
@@ -13855,6 +13886,7 @@ function main2(evt) {
         .   ( deleteDependingJobs
             =   A Z jobNr locJobs,file files jobID jobstatus parms toolURL
               .   !arg:(?arg.?locJobs)
+                & log$(deleteDependingJobs !arg)
                 &   whl
                   ' (   !locJobs
                       :   ?A
@@ -13951,6 +13983,7 @@ function main2(evt) {
                                 ?
                             )
                         & log$(notCached !arg)
+                        & 
                       | !arg
                   )
                 . !ItemGroupsCache
@@ -13983,40 +14016,62 @@ function main2(evt) {
           &     map
               $ ( ( 
                   =   
-                    .     !arg
-                        : (?jobNr.%?jobID ?jobstatus.?files.?toolURL.?parms.?file)
-                      & (   (   !files
-                              :   ?
-                                  (%@?F&~(!existingFiles:? !F ?))
-                                  ?
-                            | ~(!existingFiles:? !file ?)
+                    .   !arg:(?jobNr.?myjobs)
+                      &     map
+                          $ ( ( 
+                              =   
+                                .     !arg
+                                    : ( %?jobID ?jobstatus
+                                      . ?files
+                                      . ?toolURL
+                                      . ?parms
+                                      . ?file
+                                      )
+                                  & (   (   !files
+                                          :   ?
+                                              ( %@?F
+                                              & ~(!existingFiles:? !F ?)
+                                              )
+                                              ?
+                                        | ~(!existingFiles:? !file ?)
+                                        )
+                                      & deleteDepending$(!jobNr.!jobID)
+                                      & 
+                                    | !arg
+                                    )
+                              )
+                            . !myjobs
                             )
-                          & deleteDepending$(!jobNr.!jobID)
-                          & 
-                        | !arg
-                        )
+                        : ?myjobs
+                      & (!myjobs:|(!jobNr.!myjobs))
                   )
                 . !jobs
                 )
             : ?jobs
-          &   whl
-            ' (   !CTBs
-                :   ?a
-                    ( (?jobNr.?jobID.?)
-                    & ~(!jobs:? (!jobNr.!jobID ?.?) ?)
-                    )
-                    ?z
-              & !a !z:?CTBs
-              )
-          &   whl
-            ' (   !jobAbout
-                :   ?a
-                    ( (?jobNr.?)
-                    & ~(!jobs:? (!jobNr.?) ?)
-                    )
-                    ?z
-              & !a !z:?jobAbout
-              )
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(?jobNr.?jobID.?)
+                      & (   !jobs:? (!jobNr.!jobID ?.?) ?
+                          & !arg
+                        | 
+                        )
+                  )
+                . !CTBs
+                )
+            : ?CTBs
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(?jobNr.?)
+                      & (   !jobs:? (!jobNr.?) ?
+                          & !arg
+                        | 
+                        )
+                  )
+                . !jobAbout
+                )
+            : ?jobAbout
           & saveTable$Uploads
           & saveTable$jobs
           & saveTable$CTBs
@@ -14039,7 +14094,7 @@ function main2(evt) {
  * Called from util.java
  */"
       ( doneJob
-      =     A Z JobNr jobID ZZ jobid2 a z files S
+      =     A B Y Z JobNr jobID ZZ jobid2 a z files S
           , prevTitle
           , ctb ctbid CTBID filename status
           , toolURL parms file TITLE SPANGRPS
@@ -14085,75 +14140,72 @@ function main2(evt) {
             & readTable$Uploads
             & readTable$facets
             & :?toolURL
-            &     map
-                $ ( ( 
-                    =   
-                      .     !arg
-                          : ( !JobNr
-                            .   !jobID
-                                ( ( 
-                                  | starting
-                                  | waiting
-                                  | done
-                                  )
-                                : ?status
-                                )
-                            . ?files
-                            . ?toolURL
-                            . ?parms
-                            . ?filename
+            &   !jobs
+              :   ?A
+                  ( !JobNr
+                  .   ?B
+                      (   !jobID
+                          ( ( 
+                            | starting
+                            | waiting
+                            | done
                             )
-                        & ( !status:done
-                          |   (!JobNr.!jobID done.!files.!toolURL.!parms.!filename)
-                            : ?arg
+                          : ?status
                           )
-                        & ( !CTBs:? (!JobNr.!jobID.!EMAIL.!CTBID) ?
-                          |   (!CTBs|) (!JobNr.!jobID.!EMAIL.!CTBID)
-                            : ?CTBs
-                          )
-                        & :?prevTitle
-                        &   whl
-                          ' ( !files:%?file ?files
-                            & (     !CTBs
-                                  : ? (!JobNr.!file.?ctb.?ctbid) ?
-                                & ( !ITEMS:? !ctb "::" !ctbid ?
-                                  |     !ITEMS
-                                        (!ITEMS:|" ")
-                                        !ctb
-                                        "::"
-                                        !ctbid
-                                    : ?ITEMS
-                                  )
-                              | 
-                              )
-                            )
-                        & ( !parms:?+(O.?+(lang.?LANGUAGE.?)+?)+?
-                          | 
-                          )
-                        & !arg
-                    )
-                  . !jobs
+                      . ?files
+                      . ?toolURL
+                      . ?parms
+                      . ?filename
+                      )
+                      ?Y
                   )
-              : ?jobs
+                  ?Z
+            & ( !status:done
+              |     !A
+                    ( !JobNr
+                    .   !B
+                        (!jobID done.!files.!toolURL.!parms.!filename)
+                        !Y
+                    )
+                    !Z
+                : ?jobs
+              )
+            & ( !CTBs:? (!JobNr.!jobID.!EMAIL.!CTBID) ?
+              | (!CTBs|) (!JobNr.!jobID.!EMAIL.!CTBID):?CTBs
+              )
+            & :?prevTitle
+            &   whl
+              ' ( !files:%?file ?files
+                & (   !CTBs:? (!JobNr.!file.?ctb.?ctbid) ?
+                    & ( !ITEMS:? !ctb "::" !ctbid ?
+                      |     !ITEMS
+                            (!ITEMS:|" ")
+                            !ctb
+                            "::"
+                            !ctbid
+                        : ?ITEMS
+                      )
+                  | 
+                  )
+                )
+            & (!parms:?+(O.?+(lang.?LANGUAGE.?)+?)+?|)
             & (   !toolURL:
                 &   !jobs
-                  : ? (!JobNr.!jobID done.?.?toolURL.?.?) ?
+                  :   ?
+                      (!JobNr.? (!jobID done.?.?toolURL.?.?) ?)
+                      ?
               | 
               )
+            & !jobs:?A (!JobNr.?myjobs) ?Z
             &   whl
-              ' (   !jobs
-                  :   ?A
-                      ( !JobNr
-                      . %@?jobid2 ?S
-                      . ?a (!jobID,pending) ?z
-                      . ?ZZ
-                      )
-                      ?Z
-                &     !A
-                      (!JobNr.!jobid2 !S.!a !jobID !z.!ZZ)
-                      !Z
-                  : ?jobs
+              ' (   !myjobs
+                  :   ?B
+                      (%@?jobid2 ?S.?a (!jobID,pending) ?z.?ZZ)
+                      ?Y
+                &   !B (!jobid2 !S.!a !jobID !z.!ZZ) !Y
+                  : ?myjobs
                 )
+            & !A (!JobNr.!myjobs) !Z:?jobs
             & saveTable$CTBs
             & saveTable$jobs
             & (     ( !SPANGRPfil:
@@ -14787,30 +14839,35 @@ function main2(evt) {
           | 
       )
       ( handleToolsTakingBatchesOfInput
-      =     A B surl collapse lastjobid jobby jobs JobNr jobID
+      =     A B Y Z surl collapse lastjobid jobby jobs JobNr jobID
           , ext newou more dp rl a I b O base jb mode post2 ou
         .   !arg:(?JobNr.?jobs)
           & (   readTable$tooladm
               &   !jobs
                 :   ?
                     ( !JobNr
-                    . ?jobID
-                    .   ( ?
-                        .   ?surl
-                          &   !tooladm
-                            :   ?
-                              + ( ? (ServiceURL.!surl) ?
-                                : ? (MultiInp.y|#>1) ?
-                                )
-                              + ?
-                        . ?
+                    .   ?
+                        ( ?jobID
+                        .   ( ?
+                            .   ?surl
+                              &   !tooladm
+                                :   ?
+                                  + ( ? (ServiceURL.!surl) ?
+                                    :   ?
+                                        (MultiInp.y|#>1)
+                                        ?
+                                    )
+                                  + ?
+                            . ?
+                            )
+                          : ?jobby
                         )
-                      : ?jobby
+                        ?
                     )
                     ?
               & ( collapse
                 =     jobby jobs dep url A I B O lastjobid more
-                    , base job mode post2 output JobNr jobID
+                    , base job mode post2 output JobNr jobID myjobs
                   .   !arg:(?jobby.?jobs.?JobNr.?jobID)
                     &   !jobby
                       : ( ?dep
@@ -14826,12 +14883,12 @@ function main2(evt) {
                         . ?output
                         )
                     & :?lastjobid
+                    & !jobs:? (!JobNr.?myjobs) ?
                     & (   map
                         $ ( ( 
                             =   
                               .       !arg
-                                    : ( !JobNr
-                                      . ?jobid
+                                    : ( ?jobid
                                       . ?dp
                                       . ?rl
                                       .   ?a
@@ -14852,7 +14909,7 @@ function main2(evt) {
                                       (!b:~0|)
                                 | 
                             )
-                          . !jobs
+                          . !myjobs
                           )
                       . !lastjobid
                       . !jobs
@@ -14862,40 +14919,48 @@ function main2(evt) {
               &   !jobs
                 :   ?A
                     ( !JobNr
-                    . !lastjobid ?more
-                    . ?dp
-                    . ?rl
-                    .   ?a
-                      + (I.?I)
-                      + ?b
-                      + (O.?O)
-                      + (base.?base)
-                      + (job.?jb)
-                      + (mode.?mode)
-                      + (post2.?post2)
-                    . ?ou
+                    .   ?B
+                        ( !lastjobid ?more
+                        . ?dp
+                        . ?rl
+                        .   ?a
+                          + (I.?I)
+                          + ?b
+                          + (O.?O)
+                          + (base.?base)
+                          + (job.?jb)
+                          + (mode.?mode)
+                          + (post2.?post2)
+                        . ?ou
+                        )
+                        ?Y
                     )
-                    ?B
+                    ?Z
               &     !A
                     ( !JobNr
-                    . !lastjobid !more
-                    . !dp
-                    . !rl
-                    .   list2sum$!AB
-                      + (I.!I)
-                      + (O.!O)
-                      + (base.!base)
-                      + (job.!jb)
-                      + (mode.!mode)
-                      + (post2.!post2)
-                    .     !AB:% %
-                        & @(!ou:? ("-" !JobNr "-" !lastjobid ?:?ext))
-                        & str$(combined !ext):?newou
-                        & sub$(!B.!ou.!newou):?B
-                        & !newou
-                      | !ou
+                    .   !B
+                        ( !lastjobid !more
+                        . !dp
+                        . !rl
+                        .   list2sum$!AB
+                          + (I.!I)
+                          + (O.!O)
+                          + (base.!base)
+                          + (job.!jb)
+                          + (mode.!mode)
+                          + (post2.!post2)
+                        .     !AB:% %
+                            & @( !ou
+                               : ? ("-" !JobNr "-" !lastjobid ?:?ext)
+                               )
+                            & str$(combined !ext):?newou
+                            & sub$(!Y.!ou.!newou):?Y
+                            & !newou
+                          | !ou
+                        )
+                        !Y
                     )
-                    !B
+                    !Z
                 : ?jobs
             | 
             )
@@ -14922,7 +14987,11 @@ function main2(evt) {
               | \n "b:readTable$jobs" !loggy:?loggy&readTable$jobs
               )
             & !( 
-               ' ($jobs:? ($JobNr.$jobID ?.?jobby) ?)
+               ' ( $jobs
+                 :   ?
+                     ($JobNr.? ($jobID ?.?jobby) ?)
+                     ?
+                 )
                )
             & "\nc:Found" !loggy:?loggy
             &   !arg
@@ -15005,9 +15074,8 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getNextJobID
-      =   A Z jobID dep g test err
-        .     log$(getNextJobID !arg)
-            & -11:?err
+      =   A B Y Z jobID dep g test err
+        .     -11:?err
             & !arg:(?arg.?test)
             & -12:?err
             & @(!arg:? #?arg)
@@ -15016,13 +15084,19 @@ function main2(evt) {
             & -14:?err
             & (     !jobs
                   :   ?A
-                      (!arg.@?jobID.~(? (?,pending) ?):?dep.?g)
+                      ( !arg
+                      .   ?B
+                          (@?jobID.~(? (?,pending) ?):?dep.?g)
+                          ?Y
+                      )
                       ?Z
                 & -15:?err
                 & (   !test:justtesting
                     & -17:?err
                     & !jobID
-                  |     !A (!arg.!jobID starting.!dep.!g) !Z
+                  |       !A
+                          (!arg.!B (!jobID starting.!dep.!g) !Y)
+                          !Z
                       : ?jobs
                     & -18:?err
                     & (   -19:?err
@@ -16148,24 +16222,27 @@ function main2(evt) {
           & (     !jobs
                 :   ?
                     ( !JobNr
-                    . !jobID ?
-                    . ?
-                    . ?
                     .   ?
-                      + ( O
+                        ( !jobID ?
+                        . ?
+                        . ?
                         .   ?
-                          + ( format
-                            .   ( txtann
-                                | txtbasis
-                                | teip5
+                          + ( O
+                            .   ?
+                              + ( format
+                                .   ( txtann
+                                    | txtbasis
+                                    | teip5
+                                    )
+                                  : ?format
+                                . ?
                                 )
-                              : ?format
-                            . ?
+                              + ?
                             )
                           + ?
+                        . ?
                         )
-                      + ?
-                    . ?
+                        ?
                     )
                     ?
               & !format
@@ -16198,9 +16275,11 @@ function main2(evt) {
           , find jobNrParm stagingName stem
         .   ( find
             =   x T L R
-              .   !arg:(?x.?T)&!x:!T
-                |   !T:?L_?R
-                  & (find$(!x.!L)|find$(!x.!R))
+              .   !arg:(?x.?T)
+                & ( !x:!T
+                  |   !T:?L_?R
+                    & (find$(!x.!L)|find$(!x.!R))
+                  )
             )
           & log$(keep !arg)
           & !arg:(?stagingName.?jobNrParm)
@@ -16216,29 +16295,47 @@ function main2(evt) {
             |   !jobNrParm:
               & (     !jobs
                     :   ?
-                        ( (?jobNr.%?jobID ?jobstatus.?files.?toolURL.?parms.?file)
-                        & ( !files:? !stagingName ?
-                          | !file:!stagingName
-                          |   !parms:?+(I.?parms)+?
-                            & find$(!stagingName.!parms)
-                          )
-                        &   !jobstatus
-                          : (|waiting|starting)
+                        ( ?jobNr
+                        .   ?
+                            ( (%?jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                            & ( !files:? !stagingName ?
+                              | !file:!stagingName
+                              |   !parms:?+(I.?parms)+?
+                                & find$(!stagingName.!parms)
+                              )
+                            &   !jobstatus
+                              : (|waiting|starting)
+                            )
+                            ?
                         )
                         ?
                   & yes
                 |       map
                       $ ( ( 
                           =   jobNr jobID files file
-                            .       !arg
-                                  : ( (?jobNr.%?jobID ?.?files.?.?.?file)
-                                    & ( !files:? !stagingName ?
-                                      | !file:!stagingName
+                            .   !arg:(?jobNr.?myjobs)
+                              &     map
+                                  $ ( ( 
+                                      =   
+                                        .       !arg
+                                              : ( ( %?jobID ?
+                                                  . ?files
+                                                  . ?
+                                                  . ?
+                                                  . ?file
+                                                  )
+                                                & ( !files:? !stagingName ?
+                                                  | !file:!stagingName
+                                                  )
+                                                )
+                                            & deleteDepending$(!jobNr.!jobID)
+                                            & 
+                                          | !arg
                                       )
+                                    . !myjobs
                                     )
-                                & deleteDepending$(!jobNr.!jobID)
-                                & 
-                              | !arg
+                                : ?myjobs
+                              & (!myjobs:|(!jobNr.!myjobs))
                           )
                         . !jobs
                         )
@@ -16268,22 +16365,30 @@ function main2(evt) {
                 )
             |     !jobs
                 :   ?
-                    ( (!jobNrParm.?.?files.?.?parms.?file)
-                    & ( !files:? !stagingName ?
-                      | !file:!stagingName
-                      |   !parms:?+(I.?parms)+?
-                        & find$(!stagingName.!parms)
-                      )
+                    ( !jobNrParm
+                    .   ?
+                        ( (?.?files.?.?parms.?file)
+                        & ( !files:? !stagingName ?
+                          | !file:!stagingName
+                          |   !parms:?+(I.?parms)+?
+                            & find$(!stagingName.!parms)
+                          )
+                        )
+                        ?
                     )
                     ?
               & ~( !jobs
                  :   ?
-                     ( (~!jobNrParm.?.?files.?.?parms.?file)
-                     & ( !files:? !stagingName ?
-                       | !file:!stagingName
-                       |   !parms:?+(I.?parms)+?
-                         & find$(!stagingName.!parms)
-                       )
+                     ( ~!jobNrParm
+                     .   ?
+                         ( (?.?files.?.?parms.?file)
+                         & ( !files:? !stagingName ?
+                           | !file:!stagingName
+                           |   !parms:?+(I.?parms)+?
+                             & find$(!stagingName.!parms)
+                           )
+                         )
+                         ?
                      )
                      ?
                  )
@@ -16612,8 +16717,7 @@ function main2(evt) {
           & "type == () | TEI | UserProvided"
           & readTable$fileFormats
           & readTable$Uploads
-          &   (letterData$!arg|doneAllJobSub$!arg)
-            : (workflow.,?workflow) (steps.,?steps)
+          & letterData$!arg:(workflow.,?workflow) (steps.,?steps)
           & :?resources:?files
           &     toML
               $ ( html
@@ -16648,7 +16752,6 @@ function main2(evt) {
                       )
                 )
             : ?html
-          & log$(NUfiles !files)
           & str$(!files !html)
       )
       "
@@ -16706,16 +16809,16 @@ function main2(evt) {
       ( poll
       =     n step secs steplinks links DOWNLOADPSEUDOCODE
           , serviceurl title DOWNLOAD steptexts mode
-          , runningParagraphs JobNr hours minutes
+          , runningParagraphs JobNr hours minutes myjobs
         .   ( steplinks
-            =   links locJobs file step outp ServiceURL JobNr,seenInputs Title
+            =     links locJobs file step outp ServiceURL JobNr
+                , seenInputs Title myjobs
               .   !arg:(?JobNr.?locJobs)
-                & log$steplinks
-                & log$(JobNr !JobNr)
+                & !locJobs:? (!JobNr.?myjobs) ?
                 & !( 
-                   ' ( $locJobs
+                   ' ( $myjobs
                      :   ?
-                         ( ($JobNr.step1 ?.?file.?.?.?outp) ?
+                         ( (step1 ?.?file.?.?.?outp) ?
                          : ?locJobs
                          )
                      )
@@ -16724,7 +16827,7 @@ function main2(evt) {
                 &       map
                       $ ( ( 
                           =   files status
-                            .     !arg:(!JobNr.?status.?files.?.?.?)
+                            .     !arg:(?status.?files.?.?.?)
                                 &   map
                                   $ ( ( 
                                       =   
@@ -16770,7 +16873,7 @@ function main2(evt) {
                       $ ( ( 
                           =   
                             .       !arg
-                                  : (!JobNr.?step done.?.?ServiceURL.?.?file)
+                                  : (?step done.?.?ServiceURL.?.?file)
                                 &   !tooladm
                                   :   ?
                                     + ( ? (ServiceURL.!ServiceURL) ?
@@ -16833,8 +16936,6 @@ function main2(evt) {
             =     links locJobs file step outp ServiceURL JobNr Title feat inputs
                 , rapport vals
               .   !arg:(?JobNr.?locJobs)
-                & log$steptexts
-                & log$(JobNr !JobNr)
                 & !( 
                    ' ( $locJobs
                      :   ?
@@ -16843,7 +16944,6 @@ function main2(evt) {
                          )
                      )
                    )
-                & log$(locJobs !locJobs)
                 &     map
                     $ ( ( 
                         =   src I
@@ -16861,12 +16961,10 @@ function main2(evt) {
                                     : ? (Title.?Title) ?
                                     )
                                   + ?
-                              & log$(Title !Title)
                               &   ( get$(str$(data/ !file),STR)
                                   | str$("Received " !file)
                                   )
                                 : ?rapport
-                              & log$(rapport !rapport)
                               &   paragraph$(str$(!step ":") " " !Title)
                                     paragraph
                                   $ ( str
@@ -16908,9 +17006,7 @@ function main2(evt) {
                                               . !inputs
                                               . '$inputs
                                               )
-                                        |   log$"single input"
-                                          & log$(src !src)
-                                          & " " !src
+                                        | log$"single input"&" " !src
                                         )
                                       )
                                     )
@@ -16941,32 +17037,20 @@ function main2(evt) {
             | readTable$tooladm&readTable$Uploads
             )
           & div$(!deleteAfterMillisec*86400000^-1*24*60.1):?minutes
-          & ( !jobs:? (!JobNr.?.?.?.?+(mode.?mode)+?.?) ?
+          & (   !jobs
+              : ? (!JobNr.? (?.?.?.?+(mode.?mode)+?.?) ?) ?
             | niks:?mode
             )
-          & log$(MODE !mode)
           &   ( !mode:dry&steptexts$(!JobNr.!jobs)
               | steplinks$(!JobNr.!jobs)
               )
             : ?links
-          &     ( 
-                =   locJobs n JobNr
-                  .   0:?n
-                    & !arg:(?locJobs.?JobNr)
-                    &   whl
-                      ' ( !locJobs:? (!JobNr.?) ?locJobs
-                        & 1+!n:?n
-                        )
-                    & !n
-                )
-              $ (!jobs.!JobNr)
-            : ?n
+          & !jobs:? (!JobNr.? [?n:?myjobs) ?
           &     map
               $ ( ( 
                   =   serviceurl title step
                     .       !arg
-                          : ( !JobNr
-                            .   %@?step
+                          : (   %@?step
                                 (|starting|waiting)
                             . ~(? (?,pending) ?)
                             . ?serviceurl
@@ -16992,7 +17076,7 @@ function main2(evt) {
                             )
                       | 
                   )
-                . !jobs
+                . !myjobs
                 )
             : ?runningParagraphs
           & ( DOWNLOAD
@@ -19996,7 +20080,7 @@ function main2(evt) {
                                 & (   @( !input
                                        : ("%PDF" ?|"%pdf" ?)
                                        )
-                                    &     (   !nofonts:true
+                                    &     (   !nofonts:t
                                             & (app.rom)
                                           | (app.nrm)
                                           )
@@ -21757,16 +21841,24 @@ function main2(evt) {
  * Called from upload.java
  */"
       ( upload
-      =   jobNr jobID jobstatus JOB,A Z files toolURL parms file
+      =   jobNr jobID jobstatus JOB,A B Y Z files toolURL parms file
         .     !arg:? (job.@(?:?jobNr "-" ?jobID)) ?
             & (   readTable$jobs
                 & (     !jobs
                       :   ?A
-                          (!jobNr.!jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                          ( !jobNr
+                          .   ?B
+                              (!jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                              ?Y
+                          )
                           ?Z
                     & (   !jobstatus:(waiting|starting)
                         &     !A
-                              (!jobNr.!jobID done.!files.!toolURL.!parms.!file)
+                              ( !jobNr
+                              .   !B
+                                  (!jobID done.!files.!toolURL.!parms.!file)
+                                  !Y
+                              )
                               !Z
                           : ?jobs
                         & saveTable$jobs
@@ -21850,14 +21942,18 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( waitingJob
-      =   A Z JobNr jobID ZZ jobstatus
+      =   A B Y Z JobNr jobID ZZ jobstatus
         .     readTable$jobs
             & log$("waitingJob " !arg)
             & !arg:(@(?:? #?JobNr).?jobID)
             &   whl
-              ' ( !jobs:?A (!JobNr.!jobID ?jobstatus.?ZZ) ?Z
+              ' (   !jobs
+                  :   ?A
+                      (!JobNr.?B (!jobID ?jobstatus.?ZZ) ?Y)
+                      ?Z
                 & !jobstatus:(|starting)
-                & !A (!JobNr.!jobID waiting.!ZZ) !Z:?jobs
+                &   !A (!JobNr.!B (!jobID waiting.!ZZ) !Y) !Z
+                  : ?jobs
                 )
             & saveTable$jobs
             & 
