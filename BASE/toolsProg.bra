@@ -9465,7 +9465,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &   map
             $ ( ( 
                 =   item TITLE
-                  .       !Uploads
+                  .   !arg:(item.?)
+                    |     !Uploads
                         :   ?
                             (?.?item.!arg.? (TITLE.?TITLE) ?.?)
                             ?
@@ -9522,13 +9523,23 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?arg.?features)
                 &     mop
                     $ ( ( 
-                        =   
-                          .   !arg:(?feature.?featvals.?)
-                            &   getFeatAndValueNames$(!feature,!featvals)
-                              : (?featname,?featdesc)
-                            & ( !featdesc:
-                              | ", " localized$!featname "=" !featdesc
-                              )
+                        =   featsum Feats
+                          .   !arg:(?feature.?featsum)
+                            &     mop
+                                $ ( ( 
+                                    =   
+                                      .   !arg:(?featvals.?)
+                                        &   getFeatAndValueNames$(!feature,!featvals)
+                                          : (?featname,?featdesc)
+                                        & ( !featdesc:
+                                          | "/" !featdesc
+                                          )
+                                    )
+                                  . !featsum
+                                  . (=+)
+                                  )
+                              : ("/" ?Feats|?Feats)
+                            & ", " localized$!featname "=" !Feats
                         )
                       . !arg
                       . (=+)
@@ -9594,7 +9605,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     ?myjobs
               &     !filelist
                     ( !JobId
-                    .   !aborted:aborted&fejl
+                    .     !aborted:aborted
+                        & (   !items:(|(item.?))
+                            & skipped
+                          | fejl
+                          )
                       | !filename
                     . !items
                     . !tool
@@ -13871,56 +13886,32 @@ function main2(evt) {
  *
  * Delete all references to files that no longer exist.
  * Argument: a list of the files that still exist in the Staging area.
+ * cleanup$ does not delete any files. See keep$.
  * Affected tables:
- *      Uploads.table
- *      jobs.table
- *      CTBs.table
- *      jobAbout.table
+ * A    zippedresults
+ *          All mentioned files must exist.
+ * B    Uploads
+ *          All mentioned files must exist.
+ *      Loop:
+ * C        ItemGroupsCache
+ *              All mentioned files must be mentioned in Uploads.
+ * D        jobs
+ *              All input files must be mentioned in Uploads. If not, all of job must be deleted.
+ *              If a job has two or more inputs, and not all input files are in a single entry in ItemGroupsCache, then these files must be removed from Uploads.
+ * E    CTBs
+ *          All jobNr/jobID pairs must occur in jobs.
+ * F    jobAbout
+ *          All jobNr must occur in jobs.
+ *
+ * It is not the case that all uploaded (Uploads) and grouped (ItemGroupsCache) files must occur in jobs
  *
  * Called from cleanup.java
  */"
       ( cleanup
       =     jobNr jobID jobstatus files toolURL parms file
-          , A Z a z F deleteDependingJobs existingFiles
-          , feats item meta nr stagingName LeN
-        .   ( deleteDependingJobs
-            =   A Z jobNr locJobs,file files jobID jobstatus parms toolURL
-              .   !arg:(?arg.?locJobs)
-                & log$(deleteDependingJobs !arg)
-                &   whl
-                  ' (   !locJobs
-                      :   ?A
-                          ( ?jobNr
-                          . %?jobID ?jobstatus
-                          . ? !arg ?
-                          . ?toolURL
-                          . ?parms
-                          . ?file
-                          )
-                          ?Z
-                    & deleteDepending$(!jobNr.!jobID)
-                    &     map
-                        $ ( ( 
-                            =   
-                              .       !arg
-                                    : ( !jobNr
-                                      . %?jobID ?jobstatus
-                                      . ?files
-                                      . ?toolURL
-                                      . ?parms
-                                      . ?file
-                                      )
-                                  & deleteDepending$(!jobNr.!jobID)
-                                  & 
-                                | !arg
-                            )
-                          . !A !Z
-                          )
-                      : ?locJobs
-                    )
-                & !locJobs
-            )
-          & !arg:? [?LeN
+          , A Z a z F existingFiles
+          , feats item meta nr stagingName LeN removedFromUploads
+        .   !arg:? [?LeN
           &   log
             $ ( str
               $ ( cleanup
@@ -13937,6 +13928,8 @@ function main2(evt) {
           & readTable$CTBs
           & readTable$jobAbout
           & !arg:?existingFiles
+          & "--A-- zippedresults: All mentioned files must exist."
+          & log$"--A--"
           &   ( 
               =   existingFiles zippedresults
                 .   !arg:?existingFiles
@@ -13946,7 +13939,8 @@ function main2(evt) {
                           =   
                             .     !existingFiles:? !arg ?
                                 & !arg
-                              | 
+                              |   log$(str$("Remove " !arg " from zippedresults"))
+                                & 
                           )
                         . !zippedresults
                         )
@@ -13954,124 +13948,185 @@ function main2(evt) {
                   & saveTable$zippedresults
               )
             $ !existingFiles
-          &     map
-              $ ( ( 
-                  =   
-                    .       !arg
-                          : ( ?
-                            .   ?
-                                ( ?
-                                .   ?
-                                    ( %@?item
-                                    &   !Uploads
-                                      : ( ~(? (?.!item.?) ?)
-                                        |   ?
-                                            ( ?
-                                            . !item
-                                            .   ?stagingName
-                                              & ~( !existingFiles
-                                                 : ? !stagingName ?
-                                                 )
-                                            . ?
-                                            )
-                                            ?
-                                        )
-                                    )
-                                    ?
-                                . 
-                                )
-                                ?
-                            )
-                        & log$(notCached !arg)
-                        & 
-                      | !arg
-                  )
-                . !ItemGroupsCache
-                )
-            : ?ItemGroupsCache
+          & "--B--  Uploads: All mentioned files must exist."
+          & log$"--B--"
           &     map
               $ ( ( 
                   =   
                     .   !arg:(?nr.?item.?stagingName.?meta.?feats)
-                      & (   ~(!existingFiles:? !stagingName ?)
-                          &     map
-                              $ ( ( 
-                                  =   
-                                    .       !arg
-                                          : (?.? (?.? !item ?) ?)
-                                        & 
-                                      | !arg
-                                  )
-                                . !ItemGroupsCache
-                                )
-                            : ?ItemGroupsCache
-                          & deleteDependingJobs$(!stagingName.!jobs):?jobs
+                      & ( !existingFiles:? !stagingName ?&!arg
+                        |   log$(str$("Remove " !stagingName " from Uploads"))
                           & 
-                        | !arg
                         )
                   )
                 . !Uploads
                 )
             : ?Uploads
-          &     map
-              $ ( ( 
-                  =   
-                    .   !arg:(?jobNr.?myjobs)
-                      &     map
-                          $ ( ( 
-                              =   
-                                .     !arg
-                                    : ( %?jobID ?jobstatus
-                                      . ?files
-                                      . ?toolURL
-                                      . ?parms
-                                      . ?file
+          &   whl
+            ' ( "--C-- ItemGroupsCache: All mentioned files must be mentioned in Uploads."
+              & log$"--C--"
+              & "Note: ItemGroupsCache mentions original file names. The same file can be uploaded several times, each time under a slightly different staging name."
+              & :?removedFromUploads
+              &     map
+                  $ ( ( 
+                      =   2bremoved
+                        .       !arg
+                              : ( ?
+                                .     ?
+                                      ( ?
+                                      .   ?
+                                          ( %@?item
+                                          & log$(Is !item in Uploads)
+                                          &   !Uploads
+                                            : ~(? (?.!item.?) ?)
+                                          & log$"No, it isn't"
+                                          )
+                                          ?
+                                      . ?
                                       )
-                                  & (   (   !files
-                                          :   ?
-                                              ( %@?F
-                                              & ~(!existingFiles:? !F ?)
+                                      ?
+                                  : ?2bremoved
+                                )
+                            & log$(2bremoved !2bremoved)
+                            & 
+                          | !arg
+                      )
+                    . !ItemGroupsCache
+                    )
+                : ?ItemGroupsCache
+              & "--D-- jobs
+                        All input files must be mentioned in Uploads. If not, all of job must be deleted.
+                        If a job has two or more inputs, and not all input files are in a single entry in ItemGroupsCache, then these files must be removed from Uploads."
+              & log$"--D--"
+              &     map
+                  $ ( ( 
+                      =   steps outs inps removedFU
+                        .   !arg:(?jobNr.?steps)
+                          & :?outs:?removedFU
+                          &     map
+                              $ ( ( 
+                                  =   in ou ins jobId
+                                    .     !arg
+                                        : (%@?jobId ?.?in.?.?.?ou)
+                                      &     map
+                                          $ ( ( 
+                                              =   OU
+                                                .   (   !arg
+                                                      : ( item
+                                                        .   
+                                                          ,   ?
+                                                              (id.,?arg)
+                                                              ?
+                                                        )
+                                                    | 
+                                                    )
+                                                  &   log
+                                                    $ (   str
+                                                        $ ( "WhatAbout "
+                                                            !arg
+                                                            " when outs is "
+                                                          )
+                                                        !outs
+                                                      )
+                                                  & (   !( 
+                                                         ' ( $outs
+                                                           :   ?
+                                                               ( ($arg.?)
+                                                               | ( ?
+                                                                 . @( ?OU
+                                                                    : ? ()$arg ?
+                                                                    )
+                                                                 )
+                                                               )
+                                                               ?
+                                                           )
+                                                         )
+                                                      &   log$(str$"     Is output ")
+                                                          !OU
+                                                          " from previous step"
+                                                      & 
+                                                    |   log$"     is really input"
+                                                      & !arg
+                                                    )
                                               )
-                                              ?
-                                        | ~(!existingFiles:? !file ?)
-                                        )
-                                      & deleteDepending$(!jobNr.!jobID)
-                                      & 
-                                    | !arg
+                                            . !in
+                                            )
+                                        : ?ins
+                                      & (!jobId.!ou) !outs:?outs
+                                      & !ins
+                                  )
+                                . !steps
+                                )
+                            : ?inps
+                          & log$(inps !inps)
+                          & (     !inps
+                                :   ?
+                                    ( %@?in
+                                    & !Uploads:~(? (?.?.!in.?) ?)
+                                    & log$(str$(!in " is not in Upload"))
                                     )
-                              )
-                            . !myjobs
+                                    ?
+                              & !in:?removedFU
+                              & "An input is missing in Uploads? Then remove all inputs used in this job."
+                              & log$("Remove all " !inps)
+                              &     map
+                                  $ ( ( 
+                                      =   file
+                                        .     !arg:(?.?.?file.?)
+                                            & !('($inps:? ()$file ?))
+                                            & !file !removedFU:?removedFU
+                                            & 
+                                          | !arg
+                                      )
+                                    . !Uploads
+                                    )
+                                : ?Uploads
+                            | log$("Do not remove " !inps)
                             )
-                        : ?myjobs
-                      & (!myjobs:|(!jobNr.!myjobs))
-                  )
-                . !jobs
-                )
-            : ?jobs
+                          & ( !removedFU:&!arg
+                            |   !removedFU !removedFromUploads:?removedFromUploads
+                              &   log
+                                $ "This forces a new iteration. Remove job completely if one or more inputs are missing"
+                              & 
+                            )
+                      )
+                    . !jobs
+                    )
+                : ?jobs
+              & !removedFromUploads:~
+              )
+          & "--E--  CTBs: All jobNr/jobID pairs must occur in jobs."
+          & log$"--E--"
           &     map
               $ ( ( 
                   =   
                     .   !arg:(?jobNr.?jobID.?)
-                      & (   !jobs:? (!jobNr.!jobID ?.?) ?
+                      & (     !jobs
+                            :   ?
+                                (!jobNr.? (!jobID ?.?) ?)
+                                ?
                           & !arg
-                        | 
+                        | log$(str$("Remove CTB " !arg))&
                         )
                   )
                 . !CTBs
                 )
             : ?CTBs
+          & "--F-- jobAbout: All jobNr must occur in jobs."
+          & log$"--F--"
           &     map
               $ ( ( 
                   =   
                     .   !arg:(?jobNr.?)
                       & (   !jobs:? (!jobNr.?) ?
                           & !arg
-                        | 
+                        | log$(str$("remove from jobAbout " !jobNr))&
                         )
                   )
                 . !jobAbout
                 )
             : ?jobAbout
+          & log$SAVE
           & saveTable$Uploads
           & saveTable$jobs
           & saveTable$CTBs
@@ -14795,7 +14850,6 @@ function main2(evt) {
                               (password.!password."Empty string as password.")
                               (salt.!salt.)
                           : ?properties
-                        & log$(properties !properties)
                       | 
                       )
                     &   (   lst$(!tabs,path$!AAA,NEW)
@@ -14840,7 +14894,7 @@ function main2(evt) {
       )
       ( handleToolsTakingBatchesOfInput
       =     A B Y Z surl collapse lastjobid jobby jobs JobNr jobID
-          , ext newou more dp rl a I b O base jb mode post2 ou
+          , ext newou more dp rl a I b O base jb mode post2 t
         .   !arg:(?JobNr.?jobs)
           & (   readTable$tooladm
               &   !jobs
@@ -14940,7 +14994,16 @@ function main2(evt) {
                     ( !JobNr
                     .   !B
                         ( !lastjobid !more
-                        . !dp
+                        .     map
+                            $ ( ( 
+                                =   
+                                  .     !arg
+                                      : (%@?arg ?.?.?.?+(base.!base)+?.?)
+                                    & !arg
+                                )
+                              . !B
+                              )
+                            !dp
                         . !rl
                         .   list2sum$!AB
                           + (I.!I)
@@ -16188,7 +16251,6 @@ function main2(evt) {
                             :   ?
                               + (   ?tid
                                   & !missingToolprop:? !tid ?
-                                  & log$(tid !tid is missing)
                                 . ?tdata
                                 )
                               + ?prodtoolprop
@@ -16253,20 +16315,12 @@ function main2(evt) {
 /**
  * keep
  *
- * Check whether a result from a tool in the staging area can be deleted.
+ * Check whether a file in the staging area can be deleted.
  *
- * Results that for some reason are needed by other tasks must be kept.
+ * Files that are still needed in other tasks must be kept.
  * The function looks for outstanding jobs that take the argument as input.
  * Argument: file name, may be preceded by a slash
  *      /19231210291
- *
- * NOTICE: If the file need not be kept, the file's name is deleted from
- * several tables, so calling keep has side effects!
- * Affected tables:
- *      jobs.table
- *      Uploads.table
- *      CTBs.table
- *      jobAbout.table
  *
  * Called from cleanup.java
  */"
@@ -16291,6 +16345,7 @@ function main2(evt) {
             | 
             )
           & (   @(!stagingName:!jobNrParm ("-all"|"-final") ".zip")
+              & "Zip-files must die after some days."
               & no
             |   !jobNrParm:
               & (     !jobs
@@ -16309,63 +16364,16 @@ function main2(evt) {
                             ?
                         )
                         ?
+                  & "Some job is still using this file. Keep it."
+                  & log$(!stagingName yes)
                   & yes
-                |       map
-                      $ ( ( 
-                          =   jobNr jobID files file
-                            .   !arg:(?jobNr.?myjobs)
-                              &     map
-                                  $ ( ( 
-                                      =   
-                                        .       !arg
-                                              : ( ( %?jobID ?
-                                                  . ?files
-                                                  . ?
-                                                  . ?
-                                                  . ?file
-                                                  )
-                                                & ( !files:? !stagingName ?
-                                                  | !file:!stagingName
-                                                  )
-                                                )
-                                            & deleteDepending$(!jobNr.!jobID)
-                                            & 
-                                          | !arg
-                                      )
-                                    . !myjobs
-                                    )
-                                : ?myjobs
-                              & (!myjobs:|(!jobNr.!myjobs))
-                          )
-                        . !jobs
-                        )
-                    : ?jobs
-                  &     map
-                      $ ( ( 
-                          =   Name
-                            .     !arg:(?.?Name.!stagingName.?)
-                                &     map
-                                    $ ( ( 
-                                        =   
-                                          .       !arg
-                                                : (?.? (?.? !Name ?) ?)
-                                              & 
-                                            | !arg
-                                        )
-                                      . !ItemGroupsCache
-                                      )
-                                  : ?ItemGroupsCache
-                                & 
-                              | !arg
-                          )
-                        . !Uploads
-                        )
-                    : ?Uploads
+                |   "There are no unfinished jobs using this file. Time to let the file go."
+                  & log$(!stagingName no)
                   & no
                 )
             |     !jobs
                 :   ?
-                    ( !jobNrParm
+                    ( ~!jobNrParm
                     .   ?
                         ( (?.?files.?.?parms.?file)
                         & ( !files:? !stagingName ?
@@ -16377,23 +16385,12 @@ function main2(evt) {
                         ?
                     )
                     ?
-              & ~( !jobs
-                 :   ?
-                     ( ~!jobNrParm
-                     .   ?
-                         ( (?.?files.?.?parms.?file)
-                         & ( !files:? !stagingName ?
-                           | !file:!stagingName
-                           |   !parms:?+(I.?parms)+?
-                             & find$(!stagingName.!parms)
-                           )
-                         )
-                         ?
-                     )
-                     ?
-                 )
+              & "The user wants to delete everything from this job, but another job is still using the file. So, no. Keep it."
+              & log$(!stagingName !jobNrParm yes)
+              & yes
+            |   "The user's wish can be fulfilled."
+              & log$(!stagingName !jobNrParm no)
               & no
-            | yes
             )
       )
       "
@@ -16465,7 +16462,6 @@ function main2(evt) {
                                   )
                                 )
                             & (   @(!filename:fejl ?)
-                                & log$fejl
                                 &   ( h2
                                     .   
                                       ,   localized
@@ -16483,6 +16479,22 @@ function main2(evt) {
                                           )
                                           (dd.,!tool)
                                     )
+                              |   @(!filename:skipped ?)
+                                & ( dl
+                                  .   
+                                    ,   ( dt
+                                        .   
+                                          , ( strong
+                                            .   
+                                              , ( s
+                                                .   
+                                                  ,   str
+                                                    $ (localized$("Step " "Trin ") !JobId)
+                                                )
+                                            )
+                                        )
+                                        (dd.,(s.,!tool))
+                                  )
                               |   ( !shortletter:~y
                                   | !stage:LAST
                                   )
@@ -16837,7 +16849,6 @@ function main2(evt) {
                                                  )
                                                )
                                             & (   !seenInputs:? !arg ?
-                                                & log$seen
                                                 & 
                                               |   !arg !seenInputs:?seenInputs
                                                 &   paragraph
@@ -16970,7 +16981,6 @@ function main2(evt) {
                                   $ ( str
                                     $ ( "source:"
                                         (   !src:% %
-                                          & log$"multiple sources"
                                           &   !I
                                             : ?+(?feat.%+%:?vals)+?
                                           & 0:?inputs
@@ -16996,7 +17006,6 @@ function main2(evt) {
                                                 )
                                               . !src
                                               )
-                                          & log$(inputs !inputs)
                                           &   mop
                                             $ ( ( 
                                                 =   
@@ -17006,7 +17015,7 @@ function main2(evt) {
                                               . !inputs
                                               . '$inputs
                                               )
-                                        | log$"single input"&" " !src
+                                        | " " !src
                                         )
                                       )
                                     )
@@ -17210,11 +17219,21 @@ function main2(evt) {
  */"
       ( readJobTables
       =   
-        .   readTable$jobs
-          & readTable$Uploads
-          & readTable$CTBs
-          & readTable$jobAbout
-          & readTable$ItemGroupsCache
+        .   ( readTable$jobs
+            | :?jobs&saveTable$jobs
+            )
+          & ( readTable$Uploads
+            | :?Uploads&saveTable$Uploads
+            )
+          & ( readTable$CTBs
+            | :?CTBs&saveTable$CTBs
+            )
+          & ( readTable$jobAbout
+            | :?jobAbout&saveTable$jobAbout
+            )
+          & ( readTable$ItemGroupsCache
+            | :?ItemGroupsCache&saveTable$ItemGroupsCache
+            )
       )
       "
 /**
