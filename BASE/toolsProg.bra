@@ -9742,17 +9742,26 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               $ ( ( 
                   =   a v nt CLOCK wfs items
                     .     !arg:(@(?:?a ";" ?nt).?v)
+                        & log$(map a !a nt !nt)
                         & ( !nt:!itms&(!a.!v)
                           | 
                           )
-                      |       ( !arg:(Item|itms.?)
+                      |       (   !arg:(Item.?)
+                                & log$(arg Item !arg)
+                                & !arg
+                              |   !arg:(itms.?)
+                                & log$(arg Item or itms !arg)
+                                & (itms.1)
                               |   !arg:(CLOCK.?CLOCK)
+                                & log$(CLOCK !CLOCK itms !itms)
                                 &   !ItemGroupsCache
                                   :   ?
                                       (!CLOCK.? (!itms.?items.?wfs) ?)
                                       ?
+                                & log$(FOUND items !items wfs !wfs)
                                 &   map$((=.Item.!arg).!items)
                                   : ?Items
+                                & log$(Items !Items)
                                 & !arg
                               | 
                               )
@@ -21149,6 +21158,21 @@ function main2(evt) {
                   | 
                   )
                 & cmptblWrkflws$(!items.!presels.!Ofields):?items
+                & log$(HIDDENDATA !hiddenData)
+                &     map
+                    $ ( ( 
+                        =   
+                          .     !arg
+                              : ~(   reqtool
+                                   | fintool
+                                   | SuperSet-facet
+                                 . ?
+                                 )
+                            | 
+                        )
+                      . !hiddenData
+                      )
+                  : ?hiddenData
                 & ( !items
                   .     fieldset
                       $ ( ( div
@@ -21394,7 +21418,7 @@ function main2(evt) {
                                                       $ ( !hiddenData
                                                           (     !hiddenData
                                                               :   ?
-                                                                  (itms.?)
+                                                                  (itms.?itms)
                                                                   ?
                                                             & 
                                                           | (itms.!nt)
@@ -21528,6 +21552,7 @@ function main2(evt) {
                 : (?parms.?hiddenData.?batch)
               & updatePreselsWithUserAmendments$(!presels.!arg.!Items):(?presels.?Items)
               & readTable$tooladm
+              & log$(presels !presels hiddenData !hiddenData Items !Items)
               &   "We are at the start. Show an input form."
                 $ (!presels.!hiddenData.!Items.!preSelectedOutputSpec)
             )
