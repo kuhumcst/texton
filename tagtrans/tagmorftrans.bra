@@ -6,11 +6,12 @@ X=
   ( doit
   =   in ou od nw A att posspans Z wrd
     .   !arg:(?in.?wrd.?mrf.?ou.?la.?od.?nw)
-      & 0:?posmrf:?prons
-      & ( get$uncertain:?uncertain
-        | 0:?uncertain
+      & ( 
+        |   (get$posmrf|0):?posmrf
+          & ( get$uncertain:?uncertain
+            | 0:?uncertain
+            )
         )
-      & lst$(nw,nw,NEW,RAW)
       & (morf=.)
       & new$hash:?closed
       & ( (!la:la|!nw:Parole)
@@ -320,7 +321,9 @@ X=
                               & (!a.NUM.)
                             |   @(!Word:#% ".")
                               & (!a."NUM_ORD".)
-                            |   !pos\L!mrf+!posmrf:?posmrf
+                            |   ( 
+                                | !pos\L!mrf+!posmrf:?posmrf
+                                )
                               &   (   !pos:ADJ
                                     & (     !mrf
                                           : ? (Case.Gen) ?
@@ -328,7 +331,7 @@ X=
                                       | ADJ
                                       )
                                   |   !pos:ADP
-                                    & (     ~ !word
+                                    & (     !word
                                           : (end|som)
                                         & UKONJ
                                       | PRÆP
@@ -1067,8 +1070,10 @@ X=
                                         & FORK
                                       | XX
                                       )
-                                  |     !pos\L(!mrf^!Word)+!uncertain
-                                      : ?uncertain
+                                  |   ( 
+                                      |   !pos\L(!mrf^!Word)+!uncertain
+                                        : ?uncertain
+                                      )
                                     & N
                                   )
                                 : ?POS
@@ -1150,15 +1155,18 @@ X=
                                 )
                             | 
                             )
-                          & !pos\L!mrf+!posmrf:?posmrf
+                          & ( 
+                            | !pos\L!mrf+!posmrf:?posmrf
+                            )
                           & (   ~
                               &   !pos
                                 : ( ADJ
                                   | NOUN
                                   | VERB
                                   )
-                            |   !pos\L(!mrf^word$!a)+!uncertain
-                              : ?uncertain
+                            |   ~
+                              &   !pos\L(!mrf^word$!a)+!uncertain
+                                : ?uncertain
                             | 
                             )
                           & (   !nw:Parole
@@ -1173,7 +1181,10 @@ X=
             . !posspans
             )
         : ?posmorfs
-      & lst$(uncertain,uncertain,NEW,RAW,WYD)
+      & ( 
+        |   lst$(uncertain,uncertain,NEW,RAW,WYD)
+          & lst$(posmrf,posmrf,NEW,RAW,WYD)
+        )
       &   ( spanGrp
           .   !attag
             ,   map
@@ -1215,37 +1226,15 @@ X=
   ( new
   =   
     .   ~
-      |   ~
-        &   (its.doit)
-          $ ( "470-5.org-4262-step7.json"
-            . "470-5.org-4262-step7.json"
-            . uit
-            . da
-            . DSL
-            . Menotas
-            )
-      |   ~
-        &   (its.doit)
-          $ ( IfacetposF
-            . IfacetlemF
-            . IfacetmrfF
-            . tagtrans-results
-            . la
-            . Uni
-            . Uni
-            . Menota
-            . Menota
-            )
-      |   lst$(arg,arg,NEW,RAW)
-        &   (its.doit)
-          $ ( arg$
-            . arg$
-            . arg$
-            . arg$
-            . arg$
-            . arg$
-            . arg$
-            )
+      |   (its.doit)
+        $ ( arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          )
   );
 
 r=
