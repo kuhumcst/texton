@@ -14,7 +14,7 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : Lapos
-PassWord       :
+PassWord       : 
 Version        : 0.1.2
 Title          : Lapos
 Path in URL    : lapos	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
@@ -23,10 +23,10 @@ ContentProvider: Perseus
 Creator        : Yoshimasa Tsuruoka, Yusuke Miyao, and Jun'ichi Kazama
 InfoAbout      : https://github.com/cltk/lapos
 Description    : Fork of the Lookahead Part-Of-Speech (Lapos) Tagger
-ExternalURI    :
-XMLparms       :
-PostData       :
-Inactive       :
+ExternalURI    : 
+MultiInp       : 
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -38,10 +38,8 @@ $toollog = '../log/Lapos.log'; /* Used by the logit() function. TODO make sure t
 $dodelete = true;
 $tobedeleted = array();
 
-
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +51,6 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -123,7 +120,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -224,6 +221,7 @@ try {
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
+        $Ilanggml = false;	/* Language in input is Middle Low German (middelnedertysk) if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
@@ -236,12 +234,14 @@ try {
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
+        $Olanggml = false;	/* Language in output is Middle Low German (middelnedertysk) if true */
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $OfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in output is DSL-tagset if true */
+        $OfacetposHiNTS = false;	/* Style of type of content PoS-tags (PoS-tags) in output is HiNTS (Historisches-Niederdeutsch-Tagset) if true */
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
 
         if( hasArgument("base") )
@@ -268,7 +268,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -279,7 +279,7 @@ try {
         if( hasArgument("IfacetsegF") )
             {
             $IfacetsegF = requestFile("IfacetsegF");
-            if($IfacetsegF == '')
+            if($IfacetsegF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
@@ -290,7 +290,7 @@ try {
         if( hasArgument("IfacettokF") )
             {
             $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF == '')
+            if($IfacettokF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
@@ -326,9 +326,10 @@ try {
         if( hasArgument("Ilang") )
             {
             $Ilangda = existsArgumentWithValue("Ilang", "da");
+            $Ilanggml = existsArgumentWithValue("Ilang", "gml");
             $Ilangla = existsArgumentWithValue("Ilang", "la");
-            $echos = $echos . "Ilangda=$Ilangda " . "Ilangla=$Ilangla ";
-            $input = $input . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangla ? " \$Ilangla" : "") ;
+            $echos = $echos . "Ilangda=$Ilangda " . "Ilanggml=$Ilanggml " . "Ilangla=$Ilangla ";
+            $input = $input . ($Ilangda ? " \$Ilangda" : "")  . ($Ilanggml ? " \$Ilanggml" : "")  . ($Ilangla ? " \$Ilangla" : "") ;
             }
         if( hasArgument("Iperiod") )
             {
@@ -368,9 +369,10 @@ try {
         if( hasArgument("Olang") )
             {
             $Olangda = existsArgumentWithValue("Olang", "da");
+            $Olanggml = existsArgumentWithValue("Olang", "gml");
             $Olangla = existsArgumentWithValue("Olang", "la");
-            $echos = $echos . "Olangda=$Olangda " . "Olangla=$Olangla ";
-            $output = $output . ($Olangda ? " \$Olangda" : "")  . ($Olangla ? " \$Olangla" : "") ;
+            $echos = $echos . "Olangda=$Olangda " . "Olanggml=$Olanggml " . "Olangla=$Olangla ";
+            $output = $output . ($Olangda ? " \$Olangda" : "")  . ($Olanggml ? " \$Olanggml" : "")  . ($Olangla ? " \$Olangla" : "") ;
             }
         if( hasArgument("Operiod") )
             {
@@ -393,9 +395,10 @@ try {
         if( hasArgument("Ofacetpos") )
             {
             $OfacetposDSL = existsArgumentWithValue("Ofacetpos", "DSL");
+            $OfacetposHiNTS = existsArgumentWithValue("Ofacetpos", "HiNTS");
             $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
-            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposUni=$OfacetposUni ";
-            $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
+            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposHiNTS=$OfacetposHiNTS " . "OfacetposUni=$OfacetposUni ";
+            $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposHiNTS ? " \$OfacetposHiNTS" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
@@ -417,81 +420,108 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         if($mode == 'dry')
-        {
+            {
             $Laposfile = tempFileName("Lapos-results");
             scripinit($inputF,$input,$output);
-        }
+            }
         $toolres = "../texton-linguistic-resources";
         if($F != "")
-        {
-            if($mode == 'dry')
             {
+            if($mode == 'dry')
+                {
                 if($Olangla)
                     scrip("../bin/lapos -m $toolres/la/lapos < \$F");
                 else if($Olangda)
-                {
+                    {
                     if($Operiodc13)
                         scrip("../bin/lapos -m $toolres/da/lapos/c13 < \$F > \$Laposfile");
                     else if($Operiodc20)
                         scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$F > \$Laposfile");
                     else if($Operiodc21)
                         scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$F > \$Laposfile");
+                    }
+                else if($Olanggml)
+                    {
+                    /*if($Operiodc13)*/
+                        scrip("../bin/lapos -m $toolres/gml/lapos/c13 < \$F > \$Laposfile");
+                    /*else if($Operiodc20)
+                        scrip("../bin/lapos -m $toolres/gml/lapos/c20 < \$F > \$Laposfile");
+                    else if($Operiodc21)
+                        scrip("../bin/lapos -m $toolres/gml/lapos/c21 < \$F > \$Laposfile");*/
+                    }
                 }
-            }
             else
-            {
+                {
                 logit("F $F");
                 if($Olangla)
                     $command = "../bin/lapos -m $toolres/la/lapos < $F";
                 else if($Olangda)
-                {
+                    {
                     if($Operiodc13)
                         $command = "../bin/lapos -m $toolres/da/lapos/c13 < $F";
                     else if($Operiodc20)
                         $command = "../bin/lapos -m $toolres/da/lapos/c20 < $F";
                     else if($Operiodc21)
                         $command = "../bin/lapos -m $toolres/da/lapos/c21 < $F";
-                }
+                    }
+                else if($Olanggml)
+                    {
+/*                    if($Operiodc13)*/
+                        $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $F";
+                    /*else if($Operiodc20)
+                        $command = "../bin/lapos -m $toolres/da/lapos/c20 < $F";
+                    else if($Operiodc21)
+                        $command = "../bin/lapos -m $toolres/da/lapos/c21 < $F";*/
+                    }
                 logit($command);
 
                 if($mode != 'dry')
                     $Laposfile = /*"laposfile";//*/ tempFileName("Lapos-results");
                 if(($cmd = popen($command, "r")) == NULL)
-                {
+                    {
                     throw new SystemExit(); // instead of exit()
-                }
+                    }
 
                 $tmpf = fopen($Laposfile,'w');
                 while($read = fgets($cmd))
-                {
+                    {
                     fwrite($tmpf, $read);
-                }
+                    }
                 fclose($tmpf);
                 pclose($cmd);
+                }
             }
-        }
         else
-        { /*Code inspired by OpenNLPtagger service, uses stand off annotations. */
+            { /*Code inspired by OpenNLPtagger service, uses stand off annotations. */
             if($mode == 'dry')
-            {
+                {
                 combine($IfacettokF,$IfacetsegF);
 
                 if($Olangla)
                     scrip("../bin/lapos -m $toolres/la/lapos < \$plainfile > \$LaposfileRaw");
                 else if($Olangda)
-                {
+                    {
                     if($Operiodc13)
                         scrip("../bin/lapos -m $toolres/da/lapos/c13 < \$plainfile > \$LaposfileRaw");
                     else if($Operiodc20)
                         scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$plainfile > \$LaposfileRaw");
                     else if($Operiodc21)
                         scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$plainfile > \$LaposfileRaw");
-                }
+                    }
+                else if($Olanggml)
+                    {
+//                    if($Operiodc13)
+                        scrip("../bin/lapos -m $toolres/gml/lapos/c13 < \$plainfile > \$LaposfileRaw");
+  /*                  else if($Operiodc20)
+                        scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$plainfile > \$LaposfileRaw");
+                    else if($Operiodc21)
+                        scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$plainfile > \$LaposfileRaw");*/
+                    }
 
                 postagannotation("\$IfacettokF","\$LaposfileRaw","\$plainfile");
-            }
+                }
             else
-            {
+                {
                 logit("Lapos($IfacetsegF,$IfacettokF)");
                 $plainfile = combine($IfacettokF,$IfacetsegF);
                 $LaposfileRaw = tempFileName("Lapos-raw");
@@ -502,14 +532,23 @@ try {
                 if($Olangla)
                     $command = "../bin/lapos -m $toolres/la/lapos < $plainfile";
                 else if($Olangda)
-                {
+                    {
                     if($Operiodc13)
                         $command = "../bin/lapos -m $toolres/da/lapos/c13 < $plainfile";
                     else if($Operiodc20)
                         $command = "../bin/lapos -m $toolres/da/lapos/c20 < $plainfile";
                     else if($Operiodc21)
                         $command = "../bin/lapos -m $toolres/da/lapos/c21 < $plainfile";
-                }
+                    }
+                else if($Olanggml)
+                    {
+//                    if($Operiodc13)
+                        $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $plainfile";
+  /*                  else if($Operiodc20)
+                        $command = "../bin/lapos -m $toolres/da/lapos/c20 < $plainfile";
+                    else if($Operiodc21)
+                        $command = "../bin/lapos -m $toolres/da/lapos/c21 < $plainfile";*/
+                    }
 
                 logit($command);
 
