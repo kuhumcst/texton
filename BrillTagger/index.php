@@ -14,7 +14,7 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : Brill-tagger
-PassWord       :
+PassWord       : 
 Version        : 1cst
 Title          : Brill tagger
 Path in URL    : BrillTagger/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
@@ -23,15 +23,15 @@ ContentProvider: cst.ku.dk
 Creator        : Brill
 InfoAbout      : https://nlpweb01.nors.ku.dk/download/tagger/
 Description    : Part-of-speech tagger: Marks each word in a text with information about word class and morphological features.
-ExternalURI    :
-XMLparms       :
-PostData       :
-Inactive       :
- */
+ExternalURI    : 
+MultiInput     : 
+PostData       : 
+Inactive       : 
+*/
 
 /*******************
- * helper functions *
- *******************/
+* helper functions *
+*******************/
 $toollog = '../log/BrillTagger.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
@@ -40,35 +40,35 @@ $tobedeleted = array();
 
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
-{
-    //    return;
+    {
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
-    {
+        {
         fwrite($ftemp,$toollog . "\n");
         fclose($ftemp);
+        }
     }
-}
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
-{
-    //    return;
+    {
+    return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
-    {
+        {
         fwrite($ftemp,$str . "\n");
         fclose($ftemp);
+        }
     }
-}
 
 function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
-{
+    {
     global $fscrip, $BrillTaggerfile;
     $fscrip = fopen($BrillTaggerfile,'w');
     if($fscrip)
-    {
+        {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : Brill-tagger\n");
         fwrite($fscrip," * Version          : 1cst\n");
@@ -86,65 +86,65 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         fwrite($fscrip," */\n");
         fwrite($fscrip,"\ncd " . getcwd() . "\n");
         fclose($fscrip);
+        }
     }
-}
 
 function scrip($str) /* TODO send comments and command line instructions. Don't forget to terminate string with new line character, if needed.*/
-{
+    {
     global $fscrip, $BrillTaggerfile;
     $fscrip = fopen($BrillTaggerfile,'a');
     if($fscrip)
-    {
+        {
         fwrite($fscrip,$str . "\n");
         fclose($fscrip);
+        }
     }
-}
 
 class SystemExit extends Exception {}
 try {
     function hasArgument ($parameterName)
-    {
+        {
         return isset($_REQUEST["$parameterName"]);
-    }
+        }
 
     function getArgument ($parameterName)
-    {
+        {
         return isset($_REQUEST["$parameterName"]) ? $_REQUEST["$parameterName"] : "";
-    }
+        }
 
     function existsArgumentWithValue ($parameterName, $parameterValue)
-    {
+        {
         /* Check whether there is an argument <parameterName> that has value
-        <parameterValue>.
-        There may be any number of arguments with name <parameterName> !
-         */
+           <parameterValue>.
+           There may be any number of arguments with name <parameterName> !
+        */
         $query  = explode('&', $_SERVER['QUERY_STRING']);
 
         foreach( $query as $param )
-        {
+            {
             list($name, $value) = explode('=', $param);
             if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
                 return true;
-        }
+            }
         return false;
-    }
+        }
 
     function tempFileName($suff) /* TODO Use this to create temporary files, if needed. */
-    {
+        {
         global $dodelete;
         global $tobedeleted;
         $tmpno = tempnam('/tmp', $suff);
         if($dodelete)
             $tobedeleted[$tmpno] = true;
         return $tmpno;
-    }
+        }
 
     function requestFile($requestParm) // e.g. "IfacettokF"
-    {
+        {
         logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
-        {
+            {
             $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
 
             $item = $_REQUEST[$requestParm];
@@ -156,39 +156,39 @@ try {
 
             $handle = fopen($url, "r");
             if($handle == false)
-            {
+                {
                 logit("Cannot open url[$url]");
                 return "";
-            }
+                }
             else
-            {
+                {
                 $tempfilename = tempFileName("BrillTagger_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
                 if($temp_fh == false)
-                {
+                    {
                     fclose($handle);
                     logit("handle closed. Cannot open $tempfilename");
                     return "";
-                }
+                    }
                 else
-                {
-                    while (!feof($handle))
                     {
+                    while (!feof($handle))
+                        {
                         $read = fread($handle, 8192);
                         fwrite($temp_fh, $read);
-                    }
+                        }
                     fclose($temp_fh);
                     fclose($handle);
                     return $tempfilename;
+                    }
                 }
             }
-        }
         logit("empty");
         return "";
-    }
+        }
 
     function php_fix_raw_query()
-    {
+        {
         //logit(" php_fix_raw_query");
         $post = '';
 
@@ -198,33 +198,33 @@ try {
         //logit("A");
         // Try globals variable
         if (!$post)
-        {
+            {
             $post = file_get_contents('php://input');
             if(!isset($post))
                 $post = '';
-        }
+            }
         //logit("B");
         // Try stream
         if (!$post)
-        {
-            if (!function_exists('file_get_contents'))
             {
+            if (!function_exists('file_get_contents'))
+                {
                 $fp = fopen("php://input", "r");
                 if ($fp)
-                {
+                    {
                     $post = '';
 
                     while (!feof($fp))
                         $post = fread($fp, 1024);
 
                     fclose($fp);
+                    }
+                }
+            else
+                {
+                $post = "" . file_get_contents("php://input");
                 }
             }
-            else
-            {
-                $post = "" . file_get_contents("php://input");
-            }
-        }
         //logit("C");
         $raw = !empty($_SERVER['QUERY_STRING']) ? sprintf('%s&%s', $_SERVER['QUERY_STRING'], $post) : $post;
 
@@ -235,46 +235,46 @@ try {
         //logit("K");
         //logit("K");
         foreach($pairs as $i)
-        {
-            if(!empty($i))
             {
+            if(!empty($i))
+                {
                 list($name, $value) = explode('=', $i, 2);
                 //logit("name=".$name." value=".$value);
                 if (isset($arr[$name]) )
-                {
+                    {
                     //logit("isset(" .$arr[$name].")");
                     if (is_array($arr[$name]) )
-                    {
+                        {
                         //logit("is_array(" .$name.")");
                         $arr[$name] = array_merge($arr[$name], array($value));
                         //logit("Merge: " . var_export($arr[$name], true));
-                    }
+                        }
                     else
-                    {
+                        {
                         $arr[$name] = array($arr[$name], $value);
+                        }
                     }
-                }
                 else
-                {
+                    {
                     $arr[$name] = $value;
+                    }
                 }
             }
-        }
         $_REQUEST = $arr;
         # optionally return result array
         return $arr;
-    }
+        }
 
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
-    {
+        {
         global $mode;
         if($mode == 'dry')
-        {
+            {
             scrip("python3 ../shared_scripts/pysplit.py $filename \$BrillTaggerfile $ancestor $element $attribute $annotation $idprefix Spos");
             return "\$BrillTaggerfile";
-        }
+            }
         else
-        {
+            {
             $posfile = tempFileName("split-".$attribute);
             $command = "python3 ../shared_scripts/pysplit.py $filename $posfile $ancestor $element $attribute $annotation $idprefix Spos";
             logit($command);
@@ -283,14 +283,14 @@ try {
                 exit(1);
 
             while($read = fgets($cmd))
-            {
-            }
+                {
+                }
             return $posfile;
+            }
         }
-    }
 
     function tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$tmpni,$language,$tempattribute,$period,$tmpno)
-    {
+        {
         global $mode;
         logit("Yyy/ period $period");
         $lexicon = "";
@@ -299,69 +299,69 @@ try {
 
         $contextrules = "";
         if($mode == 'dry')
-        {
+            {
             //$tmpno = "";
-        }
+            }
         else
-        {
+            {
             $tmpno = tempFileName("tagger-results");
             $fpo = fopen($tmpno,"w");
             if(!$fpo)
                 exit(1);
-        }
+            }
         $taggerprog = '../bin/taggerXML';
 
         logit("X period $period");
 
         if($language == "da")
-        {
-            if($period == "c13")
             {
+            if($period == "c13")
+                {
                 $subdir = "UTF8/c13/";
                 $n = "sb";
                 $p = "prop";
-            }
+                }
             else if($period == "c19")
-            {
+                {
                 $subdir = "UTF8/c19/";
                 $n = "sb";
                 $p = "propr";
-            }
+                }
             else if($period == "c20")
-            {
+                {
                 $subdir = "UTF8/c20/";
                 $n = "sb";
                 $p = "propr";
-            }
+                }
             else
-            {
+                {
                 $subdir = "UTF8/c21/";
                 $n = "N_INDEF_SING";
                 $p = "EGEN";
-            }
+                }
             $subdir = $toolres . $language . "/tagger/" . $subdir;
             $lexicon = $subdir . "FINAL.LEXICON";
             $bigrams = $subdir . "BIGBIGRAMLIST";
             $lexrules = $subdir . "LEXRULEOUTFILE";
             $contextrules = $subdir . "CONTEXT-RULEFILE";
-        }
+            }
         else if($language == "en")
-        {
+            {
             $lexicon = $toolres . $language . "/tagger/" . "LEXICON.BROWN";
             $bigrams = $toolres . $language . "/tagger/" . "BIGRAMS";
             $lexrules = $toolres . $language . "/tagger/" . "LEXICALRULEFILE.BROWN";
             $contextrules = $toolres . $language . "/tagger/" . "CONTEXTUALRULEFILE.BROWN";
             $n = "NN";
             $p = "NNP";
-        }
+            }
         else if($language == "la")
-        {
-            if($period == "c13")
             {
+            if($period == "c13")
+                {
                 $subdir = "c13/";
                 $n = "NOUN";
                 $p = "PROPN";
-            }
+                }
             else
                 exit(1);
             $subdir = $toolres . $language . "/tagger/" . $subdir;
@@ -369,34 +369,49 @@ try {
             $bigrams = $subdir . "BIGBIGRAMLIST";
             $lexrules = $subdir . "LEXRULEOUTFILE";
             $contextrules = $subdir . "CONTEXT-RULEFILE";
-        }
+            }
+        else if($language == "gml")
+            {
+            if($period == "c13")
+                {
+                $subdir = "c13/";
+                $n = "NA";
+                $p = "NE";
+                }
+            else
+                exit(1);
+            $subdir = $toolres . $language . "/tagger/" . $subdir;
+            $lexicon = $subdir . "FINAL.LEXICON";
+            $bigrams = $subdir . "BIGBIGRAMLIST";
+            $lexrules = $subdir . "LEXRULEOUTFILE";
+            $contextrules = $subdir . "CONTEXT-RULEFILE";
+            }
         else
             exit(1);
         /* 20180925 added -f to convert first letter in first word to lower case*/
         if($Iformattxtann)
-        {
+            {
             $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p .' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' -Xp' . $tempattribute . ' ';
             if($ancestor != '')
-            {
+                {
                 $command = $command . ' -Xa' . $ancestor;
-            }
+                }
             if($element != '')
-            {
+                {
                 $command = $command . ' -Xe' . $element;
+                }
             }
-        }
         else
-        {
+            {
             $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p . ' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' ';
-        }
-
+            }
         if($mode == 'dry')
-        {
+            {
             logit("Dry:$command");
             scrip("$command > $tmpno");
-        }
+            }
         else
-        {
+            {
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 exit(1);
@@ -406,19 +421,19 @@ try {
             // terminated).
 
             while($read = fgets($cmd))
-            {
+                {
                 fwrite($fpo, $read);
-            }
+                }
             fclose($fpo);
             // Close pipe and print return value of cmd.
             //                                printf("\nProcess returned %d\n", pclose(cmd));
             pclose($cmd);
-        }
+            }
         return $tmpno;
-    }
+        }
 
     function combine($toolbin,$IfacettokF,$IfacetsegF,$attribute,$element,$idprefix,$ancestor)
-    {
+        {
         global $mode;
         logit( "combine(" . $IfacettokF . "," . $IfacetsegF . "," . $attribute . "," . $element . "," . $idprefix . "," . $ancestor . ")\n");
 
@@ -428,47 +443,47 @@ try {
             $posfile = tempFileName("combine-" . $attribute . "-attribute");
 
         if($idprefix == '')
-        {
+            {
             $command = "../bin/bracmat \"get\$\\\"pytokseg.bra\\\"\" $IfacettokF $IfacetsegF $posfile $attribute $ancestor $element -";
-        }
+            }
         else
-        {
+            {
             $command = "../bin/bracmat \"get\$\\\"pytokseg.bra\\\"\" $IfacettokF $IfacetsegF $posfile $attribute $ancestor $element \"xml:id\"";
-        }
+            }
         if($mode == 'dry')
             scrip($command);
         else
-        {
+            {
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 exit(1);
 
             while($read = fgets($cmd))
-            {
-            }
+                {
+                }
             return $posfile;
+            }
         }
-    }
 
     function do_BrillTagger()
-    {
+        {
         global $mode;
         global $BrillTaggerfile;
         global $dodelete;
         global $tobedeleted;
-        /***************
-         * declarations *
-         ***************/
+/***************
+* declarations *
+***************/
 
-        /*
-         * TODO Use the variables defined below to configure your tool for the right
-         * input files and the right settings.
-         * The input files are local files that your tool can open and close like any
-         * other file.
-         * If your tool needs to create temporary files, use the tempFileName()
-         * function. It can mark the temporary files for deletion when the webservice
-         * is done. (See the global dodelete variable.)
-         */
+/*
+ * TODO Use the variables defined below to configure your tool for the right
+ * input files and the right settings.
+ * The input files are local files that your tool can open and close like any
+ * other file.
+ * If your tool needs to create temporary files, use the tempFileName()
+ * function. It can mark the temporary files for deletion when the webservice
+ * is done. (See the global dodelete variable.)
+ */
         $base = "";	/* URL from where this web service downloads input. The generated script takes care of that, so you can ignore this variable. */
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
@@ -495,6 +510,7 @@ try {
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
+        $Ilanggml = false;	/* Language in input is Middle Low German (middelnedertysk) if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
@@ -512,6 +528,7 @@ try {
         $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
+        $Olanggml = false;	/* Language in output is Middle Low German (middelnedertysk) if true */
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
         $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
@@ -521,94 +538,95 @@ try {
         $Ifacet_seg_tok__tok_PT = false;	/* Style of type of content segments (sætningssegmenter) and tokens (tokens) in input is Penn Treebank for the tokens (tokens) component if true */
         $IfacettokPT = false;	/* Style of type of content tokens (tokens) in input is Penn Treebank if true */
         $OfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in output is DSL-tagset if true */
+        $OfacetposHiNTS = false;	/* Style of type of content PoS-tags (PoS-tags) in output is HiNTS (Historisches-Niederdeutsch-Tagset) if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
         $OfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in output is CST-tagset if true */
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
 
         if( hasArgument("base") )
-        {
+            {
             $base = getArgument("base");
-        }
+            }
         if( hasArgument("job") )
-        {
+            {
             $job = getArgument("job");
-        }
+            }
         if( hasArgument("post2") )
-        {
+            {
             $post2 = getArgument("post2");
-        }
+            }
         if( hasArgument("mode") )
-        {
+            {
             $mode = getArgument("mode");
-        }
+            }
         $echos = "base=$base job=$job post2=$post2 mode=$mode ";
 
-        /*********
-         * input  *
-         *********/
+/*********
+* input  *
+*********/
         if( hasArgument("F") )
-        {
+            {
             $F = requestFile("F");
             if($F == '')
-            {
+                {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "F=$F ";
             $inputF = $inputF . " \$F ";
-        }
+            }
         if( hasArgument("IfacetnerF") )
-        {
+            {
             $IfacetnerF = requestFile("IfacetnerF");
             if($IfacetnerF == '')
-            {
+                {
                 header("HTTP/1.0 404 Input with type of content 'name entities (navne)' not found (IfacetnerF parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "IfacetnerF=$IfacetnerF ";
             $inputF = $inputF . " \$IfacetnerF ";
-        }
+            }
         if( hasArgument("IfacetsegF") )
-        {
+            {
             $IfacetsegF = requestFile("IfacetsegF");
             if($IfacetsegF == '')
-            {
+                {
                 header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
             $inputF = $inputF . " \$IfacetsegF ";
-        }
+            }
         if( hasArgument("IfacettokF") )
-        {
+            {
             $IfacettokF = requestFile("IfacettokF");
             if($IfacettokF == '')
-            {
+                {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
-            }
+                }
             $echos = $echos . "IfacettokF=$IfacettokF ";
             $inputF = $inputF . " \$IfacettokF ";
-        }
+            }
 
-        /************************
-         * input/output features *
-         ************************/
+/************************
+* input/output features *
+************************/
         if( hasArgument("Iambig") )
-        {
+            {
             $Iambiguna = existsArgumentWithValue("Iambig", "una");
             $echos = $echos . "Iambiguna=$Iambiguna ";
             $input = $input . ($Iambiguna ? " \$Iambiguna" : "") ;
-        }
+            }
         if( hasArgument("Iapp") )
-        {
+            {
             $Iappnrm = existsArgumentWithValue("Iapp", "nrm");
             $Iappunn = existsArgumentWithValue("Iapp", "unn");
             $echos = $echos . "Iappnrm=$Iappnrm " . "Iappunn=$Iappunn ";
             $input = $input . ($Iappnrm ? " \$Iappnrm" : "")  . ($Iappunn ? " \$Iappunn" : "") ;
-        }
+            }
         if( hasArgument("Ifacet") )
-        {
+            {
             $Ifacet_ner_par_seg_tok = existsArgumentWithValue("Ifacet", "_ner_par_seg_tok");
             $Ifacet_ner_seg_tok = existsArgumentWithValue("Ifacet", "_ner_seg_tok");
             $Ifacet_par_seg_tok = existsArgumentWithValue("Ifacet", "_par_seg_tok");
@@ -618,51 +636,52 @@ try {
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
             $echos = $echos . "Ifacet_ner_par_seg_tok=$Ifacet_ner_par_seg_tok " . "Ifacet_ner_seg_tok=$Ifacet_ner_seg_tok " . "Ifacet_par_seg_tok=$Ifacet_par_seg_tok " . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacetner=$Ifacetner " . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
             $input = $input . ($Ifacet_ner_par_seg_tok ? " \$Ifacet_ner_par_seg_tok" : "")  . ($Ifacet_ner_seg_tok ? " \$Ifacet_ner_seg_tok" : "")  . ($Ifacet_par_seg_tok ? " \$Ifacet_par_seg_tok" : "")  . ($Ifacet_seg_tok ? " \$Ifacet_seg_tok" : "")  . ($Ifacetner ? " \$Ifacetner" : "")  . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacettok ? " \$Ifacettok" : "") ;
-        }
+            }
         if( hasArgument("Iformat") )
-        {
+            {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
             $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
             $echos = $echos . "Iformatflat=$Iformatflat " . "Iformattxtann=$Iformattxtann ";
             $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
-        }
+            }
         if( hasArgument("Ilang") )
-        {
+            {
             $Ilangda = existsArgumentWithValue("Ilang", "da");
             $Ilangen = existsArgumentWithValue("Ilang", "en");
+            $Ilanggml = existsArgumentWithValue("Ilang", "gml");
             $Ilangla = existsArgumentWithValue("Ilang", "la");
-            $echos = $echos . "Ilangda=$Ilangda " . "Ilangen=$Ilangen " . "Ilangla=$Ilangla ";
-            $input = $input . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilangla ? " \$Ilangla" : "") ;
-        }
+            $echos = $echos . "Ilangda=$Ilangda " . "Ilangen=$Ilangen " . "Ilanggml=$Ilanggml " . "Ilangla=$Ilangla ";
+            $input = $input . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilanggml ? " \$Ilanggml" : "")  . ($Ilangla ? " \$Ilangla" : "") ;
+            }
         if( hasArgument("Iperiod") )
-        {
+            {
             $Iperiodc13 = existsArgumentWithValue("Iperiod", "c13");
             $Iperiodc20 = existsArgumentWithValue("Iperiod", "c20");
             $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
             $echos = $echos . "Iperiodc13=$Iperiodc13 " . "Iperiodc20=$Iperiodc20 " . "Iperiodc21=$Iperiodc21 ";
             $input = $input . ($Iperiodc13 ? " \$Iperiodc13" : "")  . ($Iperiodc20 ? " \$Iperiodc20" : "")  . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
-        }
+            }
         if( hasArgument("Ipres") )
-        {
+            {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
             $echos = $echos . "Ipresnml=$Ipresnml ";
             $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
-        }
+            }
         if( hasArgument("Oambig") )
-        {
+            {
             $Oambiguna = existsArgumentWithValue("Oambig", "una");
             $echos = $echos . "Oambiguna=$Oambiguna ";
             $output = $output . ($Oambiguna ? " \$Oambiguna" : "") ;
-        }
+            }
         if( hasArgument("Oapp") )
-        {
+            {
             $Oappnrm = existsArgumentWithValue("Oapp", "nrm");
             $Oappunn = existsArgumentWithValue("Oapp", "unn");
             $echos = $echos . "Oappnrm=$Oappnrm " . "Oappunn=$Oappunn ";
             $output = $output . ($Oappnrm ? " \$Oappnrm" : "")  . ($Oappunn ? " \$Oappunn" : "") ;
-        }
+            }
         if( hasArgument("Ofacet") )
-        {
+            {
             $Ofacetcls = existsArgumentWithValue("Ofacet", "cls");
             $Ofacetpar = existsArgumentWithValue("Ofacet", "par");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
@@ -670,67 +689,69 @@ try {
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
             $echos = $echos . "Ofacetcls=$Ofacetcls " . "Ofacetpar=$Ofacetpar " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacettok=$Ofacettok ";
             $output = $output . ($Ofacetcls ? " \$Ofacetcls" : "")  . ($Ofacetpar ? " \$Ofacetpar" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
-        }
+            }
         if( hasArgument("Oformat") )
-        {
+            {
             $Oformatflat = existsArgumentWithValue("Oformat", "flat");
             $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
             $echos = $echos . "Oformatflat=$Oformatflat " . "Oformattxtann=$Oformattxtann ";
             $output = $output . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformattxtann ? " \$Oformattxtann" : "") ;
-        }
+            }
         if( hasArgument("Olang") )
-        {
+            {
             $Olangda = existsArgumentWithValue("Olang", "da");
             $Olangen = existsArgumentWithValue("Olang", "en");
+            $Olanggml = existsArgumentWithValue("Olang", "gml");
             $Olangla = existsArgumentWithValue("Olang", "la");
-            $echos = $echos . "Olangda=$Olangda " . "Olangen=$Olangen " . "Olangla=$Olangla ";
-            $output = $output . ($Olangda ? " \$Olangda" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olangla ? " \$Olangla" : "") ;
-        }
+            $echos = $echos . "Olangda=$Olangda " . "Olangen=$Olangen " . "Olanggml=$Olanggml " . "Olangla=$Olangla ";
+            $output = $output . ($Olangda ? " \$Olangda" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olanggml ? " \$Olanggml" : "")  . ($Olangla ? " \$Olangla" : "") ;
+            }
         if( hasArgument("Operiod") )
-        {
+            {
             $Operiodc13 = existsArgumentWithValue("Operiod", "c13");
             $Operiodc20 = existsArgumentWithValue("Operiod", "c20");
             $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
             $echos = $echos . "Operiodc13=$Operiodc13 " . "Operiodc20=$Operiodc20 " . "Operiodc21=$Operiodc21 ";
             $output = $output . ($Operiodc13 ? " \$Operiodc13" : "")  . ($Operiodc20 ? " \$Operiodc20" : "")  . ($Operiodc21 ? " \$Operiodc21" : "") ;
-        }
+            }
         if( hasArgument("Opres") )
-        {
+            {
             $Opresnml = existsArgumentWithValue("Opres", "nml");
             $echos = $echos . "Opresnml=$Opresnml ";
             $output = $output . ($Opresnml ? " \$Opresnml" : "") ;
-        }
+            }
 
-        /*******************************
-         * input/output features styles *
-         *******************************/
+/*******************************
+* input/output features styles *
+*******************************/
         if( hasArgument("Ifacet_par_seg_tok") )
-        {
+            {
             $Ifacet_par_seg_tok__tok_PT = existsArgumentWithValue("Ifacet_par_seg_tok", "__tok_PT");
             $echos = $echos . "Ifacet_par_seg_tok__tok_PT=$Ifacet_par_seg_tok__tok_PT ";
             $input = $input . ($Ifacet_par_seg_tok__tok_PT ? " \$Ifacet_par_seg_tok__tok_PT" : "") ;
-        }
+            }
         if( hasArgument("Ifacet_seg_tok") )
-        {
+            {
             $Ifacet_seg_tok__tok_PT = existsArgumentWithValue("Ifacet_seg_tok", "__tok_PT");
             $echos = $echos . "Ifacet_seg_tok__tok_PT=$Ifacet_seg_tok__tok_PT ";
             $input = $input . ($Ifacet_seg_tok__tok_PT ? " \$Ifacet_seg_tok__tok_PT" : "") ;
-        }
+            }
         if( hasArgument("Ifacettok") )
-        {
+            {
             $IfacettokPT = existsArgumentWithValue("Ifacettok", "PT");
             $echos = $echos . "IfacettokPT=$IfacettokPT ";
             $input = $input . ($IfacettokPT ? " \$IfacettokPT" : "") ;
-        }
+            }
         if( hasArgument("Ofacetpos") )
-        {
+            {
             $OfacetposDSL = existsArgumentWithValue("Ofacetpos", "DSL");
+            $OfacetposHiNTS = existsArgumentWithValue("Ofacetpos", "HiNTS");
             $OfacetposPT = existsArgumentWithValue("Ofacetpos", "PT");
             $OfacetposPar = existsArgumentWithValue("Ofacetpos", "Par");
             $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
-            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposPT=$OfacetposPT " . "OfacetposPar=$OfacetposPar " . "OfacetposUni=$OfacetposUni ";
-            $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposPT ? " \$OfacetposPT" : "")  . ($OfacetposPar ? " \$OfacetposPar" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
-        }
+            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposHiNTS=$OfacetposHiNTS " . "OfacetposPT=$OfacetposPT " . "OfacetposPar=$OfacetposPar " . "OfacetposUni=$OfacetposUni ";
+            $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposHiNTS ? " \$OfacetposHiNTS" : "")  . ($OfacetposPT ? " \$OfacetposPT" : "")  . ($OfacetposPar ? " \$OfacetposPar" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
+            }
 
         /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $BrillTaggerfile = tempFileName("BrillTagger-results");
@@ -748,23 +769,23 @@ try {
         logit($dump);
 
         if(($cmd = popen($command, "r")) == NULL)
-        {
-        throw new SystemExit(); // instead of exit()
-        }
+            {
+            throw new SystemExit(); // instead of exit()
+            }
 
         while($read = fgets($cmd))
-        {
-        }
+            {
+            }
 
         pclose($cmd);
         /*/
         // YOUR CODE STARTS HERE.
         //        TODO your code!
         if($mode == 'dry')
-        {
+            {
             $BrillTaggerfile = tempFileName("BrillTagger-results");
             scripinit($inputF,$input,$output);
-        }
+            }
         /*
         $parms = php_fix_raw_query();
         ob_start();
@@ -781,6 +802,8 @@ try {
             $language = "la";
         else if($Ilangen)
             $language = "en";
+        else if($Ilanggml)
+            $language = "gml";
         else
             $language = "da";
 
@@ -796,12 +819,12 @@ try {
 
         $period = "";
         if($Iperiodc20 || $Operiodc20)
-        {
+            {
             /*if($Iappnrm)
             $period = "c20"; // Early 20th century
             else*/
             $period = "c19"; // Late modern, but not following official orthografic rules. 19th century.
-        }
+            }
         else if($Iperiodc13 || $Operiodc13) // medieval
             $period = "c13";
         else
@@ -815,52 +838,51 @@ try {
             $BrillTaggerfile = '';
 
         if($Iformattxtann)
-        {
-            if($IfacettokF != "" && $IfacetsegF != "")
             {
+            if($IfacettokF != "" && $IfacetsegF != "")
+                {
                 logit('combine token and segment files and add POS attribute');
                 $tempattribute = 'POS';
                 if($mode == 'dry')
-                {
+                    {
                     combine($toolbin,"\$IfacettokF","\$IfacetsegF",$tempattribute,$element,$idprefix,$ancestor);
-                }
+                    }
                 else
                     $POSinputfile = combine($toolbin,$IfacettokF,$IfacetsegF,$tempattribute,$element,$idprefix,$ancestor);
-
                 logit('POStagger:' . $POSinputfile);
 
                 if($mode == 'dry')
-                {
+                    {
                     tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,"\$POSinputfile",$language,$tempattribute,$period,"\$tempfile");
                     logit('isolate POS tags in spanGrp');
                     splits($toolbin,"\$tempfile",$tempattribute,$annotation,$idprefix,$ancestor,$element);
-                }
+                    }
                 else
-                {
+                    {
                     $filename = tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$POSinputfile,$language,$tempattribute,$period,"");
                     logit('isolate POS tags in spanGrp');
                     $BrillTaggerfile = splits($toolbin,$filename,$tempattribute,$annotation,$idprefix,$ancestor,$element);
-                }
+                    }
                 logit('all processing done');
-            }
+                }
             else
-            {
-                if($IfacettokF == '')
                 {
+                if($IfacettokF == '')
+                    {
                     $message = "Tagger expects parameter IfacettokF (tokens). ";
                     logit($message);
-                }
+                    }
                 if($IfacetsegF == '')
-                {
+                    {
                     $message .= "Tagger expects parameter IfacetsegF (annotation of sentence boundaries). ";
                     logit($message);
+                    }
                 }
             }
-        }
         else
-        {
-            if($mode == 'dry')
             {
+            if($mode == 'dry')
+                {
                 $input = '$F';
                 if($input == '')
                     $input = '$IfacetnerF';
@@ -868,9 +890,9 @@ try {
                     $input = '$IfacetsegF';
                 if($input == '')
                     $input = '$IfacettokF';
-            }
+                }
             else
-            {
+                {
                 $input = $F;
                 if($input == '')
                     $input = $IfacetnerF;
@@ -878,27 +900,27 @@ try {
                     $input = $IfacetsegF;
                 if($input == '')
                     $input = $IfacettokF;
-            }
+                }
 
             if($input == '')
-            {
+                {
                 $message = "Tagger expects parameter IF, IfacetnerF, IfacetsegF, or IfacettokF.";
                 logit($message);
-            }
+                }
             else
-            {
+                {
                 logit('POStagger');
                 if($mode == 'dry')
-                {
+                    {
                     tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$input,$language,"",$period,"\$BrillTaggerfile");
-                }
+                    }
                 else
-                {
+                    {
                     $BrillTaggerfile = tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$input,$language,"",$period,"");
-                }
+                    }
                 logit('write POS tags after tokens, separated by slash.');
+                }
             }
-        }
 
         if($message != '')
             header("HTTP/1.0 404 Not Found. " . $message);
@@ -908,34 +930,34 @@ try {
         $tmpf = fopen($BrillTaggerfile,'r');
 
         if($tmpf)
-        {
+            {
             //logit('output from BrillTagger:');
             while($line = fgets($tmpf))
-            {
+                {
                 //logit($line);
                 print $line;
-            }
+                }
             fclose($tmpf);
-        }
+            }
 
         if($dodelete)
-        {
-            foreach ($tobedeleted as $filename => $dot)
             {
+            foreach ($tobedeleted as $filename => $dot)
+                {
                 if($dot)
                     unlink($filename);
-            }
+                }
             unset($tobedeleted);
+            }
         }
-    }
     loginit();
     do_BrillTagger();
-}
+    }
 catch (SystemExit $e)
-{
+    {
     header('HTTP/1.0 404 An error occurred: ' . $ERROR);
     logit('An error occurred' . $ERROR);
     echo $ERROR;
-}
+    }
 ?>
 
