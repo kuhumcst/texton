@@ -3775,8 +3775,8 @@ catch (SystemExit $e)
                 "ExternalURI    : "
                 getBoilerPlate$(!toolid.ExternalURI)
                 \n
-                "XMLparms       : "
-                getBoilerPlate$(!toolid.XMLparms)
+                "MultiInput     : "
+                getBoilerPlate$(!toolid.MultiInp)
                 \n
                 "PostData       : "
                 getBoilerPlate$(!toolid.PostData)
@@ -14680,7 +14680,7 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby res A B makeList,req servurl xmlparms
+      =   JobNr jobID jobby res A B makeList req servurl multiinp
         .   str
           $ (   !arg:(@(?:? #?JobNr).?jobID.?arg)
               & (!jobs|readTable$jobs)
@@ -14713,15 +14713,18 @@ function main2(evt) {
                           )
                         )
                     & !jobby:(?.?servurl.?req.?)
-                    & readTable$tooladm
-                    &   !tooladm
-                      :   ?
-                        + ( ? (ServiceURL.!servurl) ?
-                          : ? (XMLparms.?xmlparms) ?
-                          )
-                        + ?
+                    & ( 
+                      |   readTable$tooladm
+                        &   !tooladm
+                          :   ?
+                            + ( ? (ServiceURL.!servurl) ?
+                              : ? (MultiInp.?multiinp) ?
+                              )
+                            + ?
+                      )
                     &     str
-                        $ (   !xmlparms:on
+                        $ (   ~
+                            & !multiinp:on
                             & ( makeList
                               =   el sub
                                 .   mop
@@ -16950,7 +16953,7 @@ function main2(evt) {
           , ToolName ToolVersion FullToolName PassWord password
           , ToolURL ToolPublisher ContentProvider passwordAsHandle
           , ToolCreator InfoAbout ToolDescription mail2
-          , ToolExternalURI ToolXMLparms aFeature askOptional
+          , ToolExternalURI ToolMultiInp aFeature askOptional
           , ToolPostData ToolInactive askOnE checkParmsSimple
           , additionalFormFields additionalMetadata
           , formFields storeTool handle saveToolTable
@@ -16973,7 +16976,7 @@ function main2(evt) {
             =     ToolName ToolVersion FullToolName
                 , URL Publisher ContentProvider
                 , Creator InfoAbout Description
-                , ExternalURI XMLparms url-password
+                , ExternalURI MultiInp url-password
                 , PostData Inactive pval toggles
                 , liste a z urlparm var val like
                 , PassWord url-ToolName
@@ -17020,7 +17023,7 @@ function main2(evt) {
                             : ? (InfoAbout.?InfoAbout) ?
                             : ? (Description.?Description) ?
                             : ? (ExternalURI.?ExternalURI) ?
-                            : ? (XMLparms.?XMLparms) ?
+                            : ? (MultiInp.?MultiInp) ?
                             : ? (PostData.?PostData) ?
                             : ? (Inactive.?Inactive) ?
                             )
@@ -17046,7 +17049,7 @@ function main2(evt) {
                         : ?InfoAbout
                         : ?Description
                         : ?ExternalURI
-                        : ?XMLparms
+                        : ?MultiInp
                         : ?PostData
                       & on:?Inactive
                     )
@@ -17074,7 +17077,7 @@ function main2(evt) {
                         (dscrptn.!Description)
                         (xuri.!ExternalURI)
                     : ?liste
-                  &     (xmlprms.!XMLparms)
+                  &     (multiinp.!MultiInp)
                         (pstdt.!PostData)
                         (|(nctv.!Inactive))
                     : ?toggles
@@ -17298,14 +17301,14 @@ function main2(evt) {
                                 )
                                 staticField
                               $ ( !arg
-                                . "parameters as XML (if POST):"
-                                . xmlprms
-                                . ToolXMLparms
+                                . ">1 same signature input:"
+                                . multiinp
+                                . ToolMultiInp
                                 . makeCheckboxFormField
                                 . desc
                                 .   localized
-                                  $ ( "Check if parameters must be sent in XML format"
-                                      "Marker hvis parametre skal sendes i XML-format"
+                                  $ ( "Check if tool accepts more than one file of same signature"
+                                      "Marker hvis værktæjet gerne modtager flere filer af samme signatur"
                                     )
                                 )
                                 staticField
@@ -17867,7 +17870,7 @@ function main2(evt) {
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
-                , ToolExternalURI ToolXMLparms mayNotBeEmpty
+                , ToolExternalURI ToolMultiInp mayNotBeEmpty
                 , ToolPostData ToolInactive Nazn dNazn
               .     !arg
                   : ( ?ToolName
@@ -17881,7 +17884,7 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
-                    . ?ToolXMLparms
+                    . ?ToolMultiInp
                     . ?ToolPostData
                     . ?ToolInactive
                     . ?Submit
@@ -17988,16 +17991,6 @@ function main2(evt) {
                           )
                         (br.,)
                   | !ToolDescription:&mayNotBeEmpty$Description
-                  |   !ToolPostData:
-                    & !ToolXMLparms:on
-                    &   ( "XMLparms ("
-                          !ToolXMLparms
-                            localized
-                          $ ( ") must not be checked if 'POST' is not checked"
-                              ") skal være umarkeret hvis 'POST' er umarkeret"
-                            )
-                        )
-                        (br.,)
                   )
             )
           & ( saveToolTable
@@ -18011,7 +18004,7 @@ function main2(evt) {
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
-                , ToolExternalURI ToolXMLparms removeEmptyValues
+                , ToolExternalURI ToolMultiInp removeEmptyValues
                 , ToolPostData ToolInactive sortFacets
                 , ContactEmail otherToolprop thisToolProp
                 , Combine IOFeatComb IOcomb IOcombine Ocomb
@@ -18030,7 +18023,7 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
-                    . ?ToolXMLparms
+                    . ?ToolMultiInp
                     . ?ToolPostData
                     . ?ToolInactive
                     . ?ZZ
@@ -18224,7 +18217,7 @@ function main2(evt) {
                               (InfoAbout.!InfoAbout)
                               (Description.!ToolDescription)
                               (ExternalURI.!ToolExternalURI)
-                              (XMLparms.!ToolXMLparms)
+                              (MultiInp.!ToolMultiInp)
                               (PostData.!ToolPostData)
                               (Inactive.!ToolInactive)
                           : ?admdata
@@ -18477,7 +18470,7 @@ function main2(evt) {
                                   . !InfoAbout
                                   . !ToolDescription
                                   . !ToolExternalURI
-                                  . !ToolXMLparms
+                                  . !ToolMultiInp
                                   . !ToolPostData
                                   . !ToolInactive
                                   . !Submit
@@ -18497,7 +18490,7 @@ function main2(evt) {
                                     . !InfoAbout
                                     . !ToolDescription
                                     . !ToolExternalURI
-                                    . !ToolXMLparms
+                                    . !ToolMultiInp
                                     . !ToolPostData
                                     . !ToolInactive
                                     .     !Submit:!storeToolButton
