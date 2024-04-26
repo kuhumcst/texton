@@ -289,6 +289,48 @@ try {
             }
         }
 
+    function proper($language,$period)
+        {
+        if($language == "da")
+            {
+            if($period == "c13")
+                {
+                return "prop";
+                }
+            else if($period == "c19")
+                {
+                return "propr";
+                }
+            else if($period == "c20")
+                {
+                return "propr";
+                }
+            else
+                {
+                return "EGEN";
+                }
+            }
+        else if($language == "en")
+            {
+            return "NNP";
+            }
+        else if($language == "la")
+            {
+            if($period == "c13")
+                {
+                return "PROPN";
+                }
+            }
+        else if($language == "gml")
+            {
+            if($period == "c13")
+                {
+                return "NE";
+                }
+            }
+        return "prop";
+        }
+
     function tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$tmpni,$language,$tempattribute,$period,$tmpno)
         {
         global $mode;
@@ -313,31 +355,29 @@ try {
 
         logit("X period $period");
 
+        $p = proper($language,$period);
+
         if($language == "da")
             {
             if($period == "c13")
                 {
                 $subdir = "UTF8/c13/";
                 $n = "sb";
-                $p = "prop";
                 }
             else if($period == "c19")
                 {
                 $subdir = "UTF8/c19/";
                 $n = "sb";
-                $p = "propr";
                 }
             else if($period == "c20")
                 {
                 $subdir = "UTF8/c20/";
                 $n = "sb";
-                $p = "propr";
                 }
             else
                 {
                 $subdir = "UTF8/c21/";
                 $n = "N_INDEF_SING";
-                $p = "EGEN";
                 }
             $subdir = $toolres . $language . "/tagger/" . $subdir;
             $lexicon = $subdir . "FINAL.LEXICON";
@@ -352,7 +392,6 @@ try {
             $lexrules = $toolres . $language . "/tagger/" . "LEXICALRULEFILE.BROWN";
             $contextrules = $toolres . $language . "/tagger/" . "CONTEXTUALRULEFILE.BROWN";
             $n = "NN";
-            $p = "NNP";
             }
         else if($language == "la")
             {
@@ -360,7 +399,6 @@ try {
                 {
                 $subdir = "c13/";
                 $n = "NOUN";
-                $p = "PROPN";
                 }
             else
                 exit(1);
@@ -376,7 +414,6 @@ try {
                 {
                 $subdir = "c13/";
                 $n = "NA";
-                $p = "NE";
                 }
             else
                 exit(1);
@@ -847,10 +884,7 @@ try {
                 logit('combine token and segment files and add POS attribute');
                 $tempattribute = 'POS';
                 $nerattribute = "NE";
-                if($language == "da")
-                    $propn = "EGEN";
-                else
-                    $propn = "PROPN";
+                $propn = proper($language,$period);
 
                 if($mode == 'dry')
                     {
@@ -865,7 +899,7 @@ try {
                     }
                 
                 if($mode == 'dry')
-                {
+                    {
                     tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,"\$POSinputfile",$language,$tempattribute,$period,"\$tempfile");
                     logit('isolate POS tags in spanGrp');
                     splits($toolbin,"\$tempfile",$tempattribute,$annotation,$idprefix,$ancestor,$element);
