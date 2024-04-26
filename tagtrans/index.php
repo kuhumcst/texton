@@ -14,7 +14,7 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : tagtrans
-PassWord       :
+PassWord       : 
 Version        : 1
 Title          : PoS translator
 Path in URL    : tagtrans	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
@@ -23,10 +23,10 @@ ContentProvider: CST
 Creator        : Bart Jongejan
 InfoAbout      : -
 Description    : Translate from DSL's tag set to Menota
-ExternalURI    :
-XMLparms       :
-PostData       :
-Inactive       :
+ExternalURI    : 
+MultiInp       : 
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -37,7 +37,6 @@ $toollog = '../log/tagtrans.log'; /* Used by the logit() function. TODO make sur
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -121,7 +120,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -190,6 +189,7 @@ try {
         global $tagtransfile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -215,16 +215,19 @@ try {
         $IfacetlemF = "";	/* Input with type of content lemmas (lemmaer) */
         $IfacetmrfF = "";	/* Input with type of content morphological features (morfologiske træk) */
         $IfacetposF = "";	/* Input with type of content PoS-tags (PoS-tags) */
+        $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Iambigpru = false;	/* Ambiguity in input is pruned (beskåret) if true */
         $Ifacet_lem_pos_seg_tok = false;	/* Type of content in input is lemmas (lemmaer) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) if true */
         $Ifacetlem = false;	/* Type of content in input is lemmas (lemmaer) if true */
         $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
+        $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
+        $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
@@ -237,6 +240,7 @@ try {
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
+        $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $Ifacet_lem_pos_seg_tok__pos_DSL = false;	/* Style of type of content lemmas (lemmaer) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
         $IfacetmrfUni = false;	/* Style of type of content morphological features (morfologiske træk) in input is Universal Part-of-Speech Tagset if true */
@@ -244,6 +248,7 @@ try {
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
         $OfacetmrfMenota = false;	/* Style of type of content morphological features (morfologiske træk) in output is Menota if true */
         $OfacetposMenota = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Menota if true */
+        $OfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in output is CST-tagset if true */
 
         if( hasArgument("base") )
             {
@@ -269,7 +274,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -280,7 +285,7 @@ try {
         if( hasArgument("IfacetlemF") )
             {
             $IfacetlemF = requestFile("IfacetlemF");
-            if($IfacetlemF == '')
+            if($IfacetlemF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'lemmas (lemmaer)' not found (IfacetlemF parameter). ");
                 return;
@@ -291,7 +296,7 @@ try {
         if( hasArgument("IfacetmrfF") )
             {
             $IfacetmrfF = requestFile("IfacetmrfF");
-            if($IfacetmrfF == '')
+            if($IfacetmrfF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'morphological features (morfologiske træk)' not found (IfacetmrfF parameter). ");
                 return;
@@ -302,13 +307,24 @@ try {
         if( hasArgument("IfacetposF") )
             {
             $IfacetposF = requestFile("IfacetposF");
-            if($IfacetposF == '')
+            if($IfacetposF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetposF=$IfacetposF ";
             $inputF = $inputF . " \$IfacetposF ";
+            }
+        if( hasArgument("IfacettokF") )
+            {
+            $IfacettokF = requestFile("IfacettokF");
+            if($IfacettokF === '')
+                {
+                header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
+                return;
+                }
+            $echos = $echos . "IfacettokF=$IfacettokF ";
+            $inputF = $inputF . " \$IfacettokF ";
             }
 
 /************************
@@ -326,8 +342,9 @@ try {
             $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
             $Ifacetmrf = existsArgumentWithValue("Ifacet", "mrf");
             $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $echos = $echos . "Ifacet_lem_pos_seg_tok=$Ifacet_lem_pos_seg_tok " . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetpos=$Ifacetpos ";
-            $input = $input . ($Ifacet_lem_pos_seg_tok ? " \$Ifacet_lem_pos_seg_tok" : "")  . ($Ifacetlem ? " \$Ifacetlem" : "")  . ($Ifacetmrf ? " \$Ifacetmrf" : "")  . ($Ifacetpos ? " \$Ifacetpos" : "") ;
+            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $echos = $echos . "Ifacet_lem_pos_seg_tok=$Ifacet_lem_pos_seg_tok " . "Ifacetlem=$Ifacetlem " . "Ifacetmrf=$Ifacetmrf " . "Ifacetpos=$Ifacetpos " . "Ifacettok=$Ifacettok ";
+            $input = $input . ($Ifacet_lem_pos_seg_tok ? " \$Ifacet_lem_pos_seg_tok" : "")  . ($Ifacetlem ? " \$Ifacetlem" : "")  . ($Ifacetmrf ? " \$Ifacetmrf" : "")  . ($Ifacetpos ? " \$Ifacetpos" : "")  . ($Ifacettok ? " \$Ifacettok" : "") ;
             }
         if( hasArgument("Iformat") )
             {
@@ -346,8 +363,9 @@ try {
         if( hasArgument("Iperiod") )
             {
             $Iperiodc13 = existsArgumentWithValue("Iperiod", "c13");
-            $echos = $echos . "Iperiodc13=$Iperiodc13 ";
-            $input = $input . ($Iperiodc13 ? " \$Iperiodc13" : "") ;
+            $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
+            $echos = $echos . "Iperiodc13=$Iperiodc13 " . "Iperiodc21=$Iperiodc21 ";
+            $input = $input . ($Iperiodc13 ? " \$Iperiodc13" : "")  . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
             }
         if( hasArgument("Ipres") )
             {
@@ -388,8 +406,9 @@ try {
         if( hasArgument("Operiod") )
             {
             $Operiodc13 = existsArgumentWithValue("Operiod", "c13");
-            $echos = $echos . "Operiodc13=$Operiodc13 ";
-            $output = $output . ($Operiodc13 ? " \$Operiodc13" : "") ;
+            $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
+            $echos = $echos . "Operiodc13=$Operiodc13 " . "Operiodc21=$Operiodc21 ";
+            $output = $output . ($Operiodc13 ? " \$Operiodc13" : "")  . ($Operiodc21 ? " \$Operiodc21" : "") ;
             }
         if( hasArgument("Opres") )
             {
@@ -429,8 +448,9 @@ try {
         if( hasArgument("Ofacetpos") )
             {
             $OfacetposMenota = existsArgumentWithValue("Ofacetpos", "Menota");
-            $echos = $echos . "OfacetposMenota=$OfacetposMenota ";
-            $output = $output . ($OfacetposMenota ? " \$OfacetposMenota" : "") ;
+            $OfacetposPar = existsArgumentWithValue("Ofacetpos", "Par");
+            $echos = $echos . "OfacetposMenota=$OfacetposMenota " . "OfacetposPar=$OfacetposPar ";
+            $output = $output . ($OfacetposMenota ? " \$OfacetposMenota" : "")  . ($OfacetposPar ? " \$OfacetposPar" : "") ;
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
@@ -475,11 +495,13 @@ try {
         $outtag = 'Uni';
         if($OfacetposMenota)
             $outtag = 'Menota';
+        else if($OfacetposPar)
+            $outtag = 'Parole';
         if($mode == 'dry')
-        {
+            {
             scripinit($inputF,$input,$output);
             if($Ofacetmrf)
-            {
+                {
                 $outmrf = 'Uni';
                 if($OfacetmrfMenota)
                     $outmrf = 'Menota';
@@ -487,19 +509,21 @@ try {
                     scrip("../bin/bracmat 'get\$\"tagmorftrans.bra\"' '\$F' '\$F' '\$F' '\$tagtransfile' '$lang' $intag $inmrf $outtag $outmrf");
                 else
                     scrip("../bin/bracmat 'get\$\"tagmorftrans.bra\"' '\$IfacetposF' '\$IfacetlemF' '\$IfacetmrfF' '\$tagtransfile' '$lang' $intag $outtag");
-            }
+                }
             else
-            {
+                {
                 if($Iformatjson)
                     scrip("../bin/bracmat 'get\$\"tagtrans.bra\"' '\$F' '\$F' '\$tagtransfile' '$lang' $intag $outtag");
-                else
+                else if($IfacetlemF)
                     scrip("../bin/bracmat 'get\$\"tagtrans.bra\"' '\$IfacetposF' '\$IfacetlemF' '\$tagtransfile' '$lang' $intag $outtag");
+                else
+                    scrip("../bin/bracmat 'get\$\"tagmorftrans.bra\"' '\$IfacetposF' '\$IfacettokF' '\$IfacetmrfF' '\$tagtransfile' '$lang' $intag $outtag");
+                }
             }
-        }
         else
-        {
-            if($Ofacetmrf)
             {
+            if($Ofacetmrf)
+                {
                 $outmrf = 'Uni';
                 if($OfacetmrfMenota)
                     $outmrf = 'Menota';
@@ -507,14 +531,16 @@ try {
                     $command = "../bin/bracmat 'get\$\"tagmorftrans.bra\"' '$F' '$F' '$F' '$tagtransfile' '$lang' $intag $inmrf $outtag $outmrf";
                 else
                     $command = "../bin/bracmat 'get\$\"tagmorftrans.bra\"' '$IfacetposF' '$IfacetlemF' '$IfacetmrfF' '$tagtransfile' '$lang' $intag $outtag";
-            }
+                }
             else
-            {
+                {
                 if($Iformatjson)
                     $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$F' '$F' '$tagtransfile' '$lang' $intag $outtag";
-                else
+                else if($IfacetlemF)
                     $command = "../bin/bracmat 'get\$\"tagtrans.bra\"' '$IfacetposF' '$IfacetlemF' '$tagtransfile' '$lang' $intag $outtag";
-            }
+                else
+                    $command = "../bin/bracmat 'get\$\"tagmorftrans.bra\"' '$IfacetposF' '$IfacettokF' '$IfacetmrfF' '$tagtransfile' '$lang' $intag $outtag";
+                }
 
 
             logit($command);
@@ -523,11 +549,11 @@ try {
                 throw new SystemExit(); // instead of exit()
 
             while($read = fgets($cmd))
-            {
-            }
+                {
+                }
 
             pclose($cmd);
-        }
+            }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $tagtransfile
 //*/
         $tmpf = fopen($tagtransfile,'r');

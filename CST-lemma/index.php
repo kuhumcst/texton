@@ -123,7 +123,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -155,7 +155,7 @@ try {
             logit("url[$url]");
 
             $handle = fopen($url, "r");
-            if($handle == false)
+            if($handle === false)
                 {
                 logit("Cannot open url[$url]");
                 return "";
@@ -164,7 +164,7 @@ try {
                 {
                 $tempfilename = tempFileName("CSTLem_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
+                if($temp_fh === false)
                     {
                     fclose($handle);
                     logit("handle closed. Cannot open $tempfilename");
@@ -190,7 +190,7 @@ try {
     function splits($toolbin,$filename,$attribute,$annotation,$idprefix,$ancestor,$element)
         {
         global $mode;
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
             $lemfile = "\$CSTLemfile";
             scrip("python3 ../shared_scripts/pysplit.py $filename $lemfile $ancestor $element $attribute $annotation $idprefix Slem");
@@ -202,7 +202,7 @@ try {
 
             logit($command);
 
-            if(($cmd = popen($command, "r")) == NULL)
+            if(($cmd = popen($command, "r")) === NULL)
                 {
                 throw new SystemExit(); // instead of exit()
                 }
@@ -218,7 +218,7 @@ try {
         {
         global $fscrip, $CSTLemfile,$mode;
 
-        if($mode == 'dry')
+        if($mode === 'dry')
             $tmpno = '$CSTLemfile';
         else
             $tmpno = tempFileName("lemma-results");
@@ -229,7 +229,7 @@ try {
         //$c = "\$b1[[\$b~1]?\$B]";
         //$c = "\$b[[\$b0]?(\$B)]";
         $cx = "\$b1[[\$b?]~1\$B]";
-        if($Oformat == "flat" || $Oformat == "3cole")
+        if($Oformat === "flat" || $Oformat === "3cole")
             $sep = " -s'|' ";
         else
             $sep = " -s'\\011' ";
@@ -241,7 +241,7 @@ try {
         if($Ofacetlem && !$Ofacetpos && !$Ofacettok)
             $wt = "";
 
-        if($Oformat == "flat")
+        if($Oformat === "flat")
             $eind = "\$s";
         else
             $eind = "\$s\\n";
@@ -254,7 +254,7 @@ try {
                 {
                 if($Opresnml && !$ShowTag)
                     $c = "[[\$b?]0$wt\$b\$B\\t\$i$eind]";
-                else if($toptarg == '-')
+                else if($toptarg === '-')
                     $c = "[[\$b?]0$wt\$b\$B\\t\$i$eind]";
                 else
                     //$c = "$wt\$t\\t\$b[[\$b?]0\$B]\\t\$i$eind"; // word tag lemma info
@@ -264,20 +264,20 @@ try {
                 {
                 if($Opresnml && !$ShowTag)
                     $c = "[[\$b?]0$wt\$b\$B$eind]";
-                else if($toptarg == '-')
+                else if($toptarg === '-')
                     $c = "[[\$b?]0$wt\$b\$B$eind]";
                 else
                     //$c = "$wt\$t\\t\$b[[\$b?]0\$B]$eind"; // word tag lemma
                     $c = "[[\$b?]0$wt\$b\$B\\t\$t$eind]"; // word lemma tag
                 }
             }
-        else // $OOV == false;
+        else // $OOV === false;
             {
             if($i)
                 {
                 if($Opresnml && !$ShowTag)
                     $c = "$wt\$b[[\$b?]0\$B]\\t\$i$eind";
-                else if($toptarg == '-')
+                else if($toptarg === '-')
                     $c = "$wt\$b[[\$b?]0\$B]\\t\$i$eind";
                 else
                     //$c = "$wt\$t\\t\$b[[\$b?]0\$B]\\t\$i$eind"; // word tag lemma info
@@ -287,7 +287,7 @@ try {
                 {
                 if($Opresnml && !$ShowTag)
                     $c = "$wt\$b[[\$b?]0\$B]$eind";
-                else if($toptarg == '-')
+                else if($toptarg === '-')
                     $c = "$wt\$b[[\$b?]0\$B]$eind";
                 else
                     //$c = "$wt\$t\\t\$b[[\$b?]0\$B]$eind"; // word tag lemma
@@ -297,43 +297,47 @@ try {
 
         logit("c=" . $c);
 
+        $v = "";
         $x = "";
+        $z = "";
+
         $flexrules = "flexrules";
 
-        if($language == 'af')
+
+        if($language === 'af')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'ast')
+        else if($language === 'ast')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-ast.txt.swp-79.sort-393-step6.2cole_ziggurat_XC";
             }
-        else if($language == 'be')
+        else if($language === 'be')
             {
 //            $dict = "";
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.BE2.srt-208.txt-54-step1.2cole_XC";
             }
-        else if($language == 'bg')
+        else if($language === 'bg')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'ca')
+        else if($language === 'ca')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-ca.txt.swp-78.sort-393-step7.2cole_ziggurat_XD";
             }
-        else if($language == 'cs')
+        else if($language === 'cs')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'cy')
+        else if($language === 'cy')
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.lemmatization-cy.txt.swp-73.sort-393-step1.2cole_ziggurat_XD";
             }
-        else if($language == 'da')
+        else if($language === 'da')
             {
             if($Iperiodc20)
                 {
@@ -341,7 +345,7 @@ try {
                     {
                     $periodsubdir = "/c20n";
                     $flexrules = "flexrules.ods_170412.csv.corrected-lems.txt.ph_12_XC";
-                    if($pos == 'n')
+                    if($pos === 'n')
                         $flexrulessubdir = "/0";
                     else
                         {
@@ -354,7 +358,7 @@ try {
                     {
                     $periodsubdir = "/c19n";
                     $flexrules = "flexrules.ods_170412.csv.corrected.ph_12_XC";
-                    if($pos == 'n')
+                    if($pos === 'n')
                         $flexrulessubdir = "/0";
                     else
                         {
@@ -367,7 +371,7 @@ try {
             else if($Iperiodc13)
                 {
                 $periodsubdir = "/c13-c18";
-                if($pos == 'n')
+                if($pos === 'n')
                     $flexrulessubdir = "/1";
                 else // Not the case, currently (May 2018)
                     {
@@ -378,27 +382,32 @@ try {
             else
                 {
                 $periodsubdir = "/c21";
-                if($pos == 'n')
+                if($pos === 'n')
                     $flexrulessubdir = "/0";
                 else
                     {
                     $flexrulessubdir = "/links";
                     $x = "-x'$toolres/da/lemmatiser/tags/c21/translationTable'";
+                    if($Oambiguna)
+                        {
+                        $z = "-z'$toolres/da/lemmatiser/tags/c21/lemmatags'";
+                        //$v = "-v'$toolres/da/lemmatiser/tags/c21/friends'";
+                        }
                     }
                 }
             }
-        else if($language == 'de')
+        else if($language === 'de')
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.dict_de_without_doubles.ph_ziggurat_XC";
             }
-        else if($language == 'el')
+        else if($language === 'el')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'en')
+        else if($language === 'en')
             {
-            if($pos=='n')
+            if($pos==='n')
                 {
                 $flexrulessubdir = "/1";
                 $flexrules = "flexrules.dict_en_without_doubles_github_node-lemmatizer_additions-2-1070-step1.2cole_XC";
@@ -408,137 +417,142 @@ try {
                 $flexrulessubdir = "/links";
                 $flexrules = "flexrules";
                 }
-            if($toptarg == '')
+            if($toptarg === '')
                 $x = "-x'$toolres/en/lemmatiser/tags/translation'";
+            if($toptarg === '')
+                {
+                $z = "-z'$toolres/en/lemmatiser/tags/lemmatags'";
+                $v = "-v'$toolres/en/lemmatiser/tags/friends'";
+                }
             }
-        else if($language == 'es')
+        else if($language === 'es')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'et')
+        else if($language === 'et')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'fa')
+        else if($language === 'fa')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.fa-817.3col-752-step1.2cole_prefixed_XD";
             $dict = "/dict.fa";
             }
-        else if($language == 'fo')
+        else if($language === 'fo')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.edfm-WrdLemTag-Storasnid-196.sorted-39-step1.2cole_XC";
             }
-        else if($language == 'fr')
+        else if($language === 'fr')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.frlexambi.uden.dubletter.ph_XC";
           }
-        else if($language == 'ga')
+        else if($language === 'ga')
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.lemmatization-ga.txt.swp-77.sort-393-step2.2cole_ziggurat_XD";
             }
-        else if($language == 'gd')
+        else if($language === 'gd')
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.lemmatization-gd.txt.swp-76.sort-393-step3.2cole_ziggurat_XD";
             }
-        else if($language == 'gl')
+        else if($language === 'gl')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-gl.txt.swp-75.sort-393-step4.2cole_ziggurat_XD";
             }
-        else if($language == 'gv')
+        else if($language === 'gv')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-gv.txt.swp-74.sort-393-step5.2cole_ziggurat_XC";
             }
-        else if($language == 'hr')
+        else if($language === 'hr')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'hu')
+        else if($language === 'hu')
             {
             $flexrulessubdir = "/0";
             }
-        else if($language == 'is')
+        else if($language === 'is')
             {
             $flexrules = "icelandic.flexrules";
             }
-        else if($language == 'it')
+        else if($language === 'it')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'ka')
+        else if($language === 'ka')
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.ka-lemma.lex-393.txt-289-step1.2cole_XC";
             }
-        else if($language == 'la')
+        else if($language === 'la')
             {
             $flexrulessubdir = "/2";
             }
-        else if($language == 'mk')
+        else if($language === 'mk')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'nl')
+        else if($language === 'nl')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'no')
+        else if($language === 'no')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.trainingpairs_-172.plus_scarrie-16-step1.2cole_zigguratC_XC";
             }
-        else if($language == 'pl')
+        else if($language === 'pl')
             {
             $flexrulessubdir = "/0";
             $flexrules = "flexrules.polimorfologik.txt.ph_ziggurat_XC";
             }
-        else if($language == 'pt')
+        else if($language === 'pt')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'ro')
+        else if($language === 'ro')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'ru')
+        else if($language === 'ru')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.ru-lemma.tabru-msd-ru-lemma-cleaned.ph_XC";
             }
-        else if($language == 'sk')
+        else if($language === 'sk')
             {
             $flexrulessubdir = "/0";
             }
-        else if($language == 'sl')
+        else if($language === 'sl')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.clearedFile-40.sort-349-step1.2cole_ziggurat_XC";
             }
-        else if($language == 'sq')
+        else if($language === 'sq')
             {
             $flexrulessubdir = "/3";
             $flexrules = "flexrules.verbs_tagged_plus_albanian-everything-3.conllu-1072-step1.3col-4.txt-1075-step1.2cole_XE";
             }
-        else if($language == 'sr')
+        else if($language === 'sr')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'sv')
+        else if($language === 'sv')
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-sv-swedishroottable_without_doubles-UD.ph_ziggurat_XC";
             }
-        else if($language == 'tr')
+        else if($language === 'tr')
             {
             $flexrulessubdir = "/1";
             }
-        else if($language == 'uk')
+        else if($language === 'uk')
             {
             $flexrulessubdir = "";
             }
@@ -547,7 +561,7 @@ try {
             $flexrulessubdir = "";
             }
 
-        if($toptarg == '')
+        if($toptarg === '')
         // input is tagged
             {
             $Iflat = ''; // Important! '$w/$t\\s' does not find last occurrence of slash
@@ -696,8 +710,8 @@ try {
                 $command =             "-q-   -B'\$w'                -b'\$w'                -c'$c'              $Iflat";
                 }
             }
-        else if($emptyattribute != "")
-            if($posattribute != "")
+        else if($emptyattribute !== "")
+            if($posattribute !== "")
                 {
                 $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'                        -Xl$emptyattribute -Xp$posattribute";
                 }
@@ -705,7 +719,7 @@ try {
                 {
                 $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'             -I'\$w\\s' -Xl$emptyattribute";
                 }
-        else if($XMLinput == 'j')
+        else if($XMLinput === 'j')
             {
             $command =             "-q-   -B'\$w'                -b'\$w'                -c'$cx'             $Iflat -X";
             }
@@ -722,50 +736,51 @@ try {
             system("gunzip $toolres/$language/lemmatiser/$foptarg$periodsubdir$dict.gz");
             }
 
-        if($dict != "")
+        if($dict !== "")
             $command = $command . " -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict'";
 
         $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
         
         logit("commandB:" . $command);
 
-        if($XMLinput == 'j')
+        if($XMLinput === 'j')
             {
-            if($pos != 'n')
+            if($pos !== 'n')
                 {
                 $command = $command . " -Xppos";
                 }
-            if($ancestor != '')
+            if($ancestor !== '')
                 {
                 $command = $command . ' -Xa' . $ancestor;
                 }
-            if($element != '')
+            if($element !== '')
                 {
                 $command = $command . ' -Xe' . $element;
                 }
             }
 
-        if($language == 'en')
-            if($toptarg == '')
-                {
-                $command = $command . " -z'$toolres/en/lemmatiser/tags/lemmatags' -v'$toolres/en/lemmatiser/tags/friends'";
-                }
+        if($z !== "")
+            $command = $command . " " . $z;
 
-        if($x != "")
+        if($v !== "")
+            $command = $command . " " . $v;
+
+        if($x !== "")
             $command = $command . " " . $x;
+
 
         $command = $command . $sep;
 
         logit($command);
         // ../bin/cstlemma -L -eU -p -t- -U- -u- -H1 -l- -f'../texton-linguistic-resources/da/lemmatiser/notags/c21/0/flexrules' -d'../texton-linguistic-resources/da/lemmatiser/notags/c21/dict' -i /tmp/CSTLem_F_7338gJ -o /tmp/lemma-results3OobbI -qfwt -B'$f\t$w\t$W\n' -b'$f\t$w\t$W\n' -W'$f\t$w'       -I'$w\s' -s'|'
         logit(getcwd());
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
                 scrip("$command");
             }
         else
             {
-            if(($cmd = popen($command, "r")) == NULL)
+            if(($cmd = popen($command, "r")) === NULL)
                 {
                 throw new SystemExit(); // instead of exit()
                 }
@@ -783,7 +798,7 @@ try {
     function merge($toolbin,$uploadfile,$uploadfileAnnotation,$mergeattribute,$emptyattribute)
         {
         global $mode;
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
             $lemmainputfile = "\$lemmainputfile";
             scrip("python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $lemmainputfile $emptyattribute");
@@ -794,7 +809,7 @@ try {
             $command = "python3 pymerge.py $uploadfile $uploadfileAnnotation $mergeattribute $lemmainputfile $emptyattribute";
             logit($command);
 
-            if(($cmd = popen($command, "r")) == NULL)
+            if(($cmd = popen($command, "r")) === NULL)
                 {
                 throw new SystemExit(); // instead of exit()
                 }
@@ -812,21 +827,21 @@ try {
         global $ERROR;
         global $mode;
         $lemmainputfile = tempFileName("add-" . $attribute . "-attribute");
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
-            if($idprefix == '')
+            if($idprefix === '')
                 scrip("python3 pyaddatt.py $uploadfile \$lemmainputfile $attribute $ancestor $element -");
             else
                 scrip("python3 pyaddatt.py $uploadfile \$lemmainputfile $attribute $ancestor $element id");
             }
         else
             {
-            if($idprefix == '')
+            if($idprefix === '')
                 $command = "python3 pyaddatt.py $uploadfile $lemmainputfile $attribute $ancestor $element -";
             else
                 $command = "python3 pyaddatt.py $uploadfile $lemmainputfile $attribute $ancestor $element id";
             logit($command);
-            if(($cmd = popen($command, "r")) == NULL)
+            if(($cmd = popen($command, "r")) === NULL)
                 {
                 throw new SystemExit(); // instead of exit()
                 }
@@ -840,7 +855,7 @@ try {
                 if(($buffer = fgets($handle, 4096)) !== false)
                     {
                     //logit("buffer:[" . $buffer . "]");
-                    if(strncmp($buffer,"ERROR",5) == 0)
+                    if(strncmp($buffer,"ERROR",5) === 0)
                         {
                         fclose($handle);
                         $ERROR = $buffer;
@@ -1038,7 +1053,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -1049,7 +1064,7 @@ try {
         if( hasArgument("IfacetposF") )
             {
             $IfacetposF = requestFile("IfacetposF");
-            if($IfacetposF == '')
+            if($IfacetposF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
                 return;
@@ -1060,7 +1075,7 @@ try {
         if( hasArgument("IfacettokF") )
             {
             $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF == '')
+            if($IfacettokF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
@@ -1302,7 +1317,7 @@ try {
         $command = "echo $echos >> $CSTLemfile";
         logit($command);
 
-        if(($cmd = popen($command, "r")) == NULL)
+        if(($cmd = popen($command, "r")) === NULL)
             {
             throw new SystemExit(); // instead of exit()
             }
@@ -1328,7 +1343,7 @@ try {
             $OOV = true;
             }
         
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
             $CSTLemfile = tempFileName("CSTLem-results");
             scripinit($inputF,$input,$output);
@@ -1355,50 +1370,50 @@ try {
         else
             $Oformat = "flat";
 
-        if(   $language == ""
-          || (  $language != "af"
-             && $language != "ast"
-             && $language != "be"
-             && $language != "bg"
-             && $language != "ca"
-             && $language != "cs"
-             && $language != "cy"
-             && $language != "da"
-             && $language != "de"
+        if(   $language === ""
+          || (  $language !== "af"
+             && $language !== "ast"
+             && $language !== "be"
+             && $language !== "bg"
+             && $language !== "ca"
+             && $language !== "cs"
+             && $language !== "cy"
+             && $language !== "da"
+             && $language !== "de"
 
-             && $language != "el"
-             && $language != "en"
-             && $language != "es"
-             && $language != "et"
-             && $language != "fa"
+             && $language !== "el"
+             && $language !== "en"
+             && $language !== "es"
+             && $language !== "et"
+             && $language !== "fa"
 
-             && $language != "fo"
-             && $language != "fr"
-             && $language != "ga"
-             && $language != "gd"
-             && $language != "gl"
-             && $language != "gv"
-             && $language != "hu"
-             && $language != "is"
-             && $language != "it"
+             && $language !== "fo"
+             && $language !== "fr"
+             && $language !== "ga"
+             && $language !== "gd"
+             && $language !== "gl"
+             && $language !== "gv"
+             && $language !== "hu"
+             && $language !== "is"
+             && $language !== "it"
 
-             && $language != "ka"
-             && $language != "mk"
-             && $language != "la"
-             && $language != "nl"
-             && $language != "no"
-             && $language != "pl"
+             && $language !== "ka"
+             && $language !== "mk"
+             && $language !== "la"
+             && $language !== "nl"
+             && $language !== "no"
+             && $language !== "pl"
 
-             && $language != "pt"
-             && $language != "ro"
-             && $language != "ru"
-             && $language != "sk"
-             && $language != "sl"
+             && $language !== "pt"
+             && $language !== "ro"
+             && $language !== "ru"
+             && $language !== "sk"
+             && $language !== "sl"
 
-             && $language != "sr"
-             && $language != "sq"
-             && $language != "sv"
-             && $language != "uk"
+             && $language !== "sr"
+             && $language !== "sq"
+             && $language !== "sv"
+             && $language !== "uk"
              )
           )
             $language = "da";
@@ -1424,19 +1439,19 @@ try {
         //logit("doit($language,$ancestor,$element,$annotation,$idprefix)");
         $filename = '';
 
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
             $uploadfile = "\$F";
-            if($F == "")
+            if($F === "")
                 $uploadfile = "\$IfacettokF";
             }
         else
             {
             $uploadfile = $F;
-            if($uploadfile == "")
+            if($uploadfile === "")
                 $uploadfile = $IfacettokF;
             }
-        if($uploadfile == '')
+        if($uploadfile === '')
             {
             header("HTTP/1.0 404 Input tokens not found (F or IfacettokF parameter). ");
             return;
@@ -1451,7 +1466,7 @@ try {
             logit("ShowTag=$ShowTag");
             if($Iformattxtann)
                 {
-                if($mode == 'dry')
+                if($mode === 'dry')
                     {
                     $uploadfileAnnotation = '$IfacetposF';
                     merge($toolbin,$uploadfile,$uploadfileAnnotation,'pos','lemma');
@@ -1470,7 +1485,7 @@ try {
                 if($Iformatflat)
                     {
                     logit('lemmatise flat text that has pos tags embedded');
-                    if($mode == 'dry')
+                    if($mode === 'dry')
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','n',$Iperiodc13,$Iperiodc20);
@@ -1478,7 +1493,7 @@ try {
                 else
                     {
                     logit('lemmatise TEI-P5 (not an annotation file)');
-                    if($mode == 'dry')
+                    if($mode === 'dry')
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'','tags',$uploadfile,'j','','','j',$Iperiodc13,$Iperiodc20);
@@ -1492,7 +1507,7 @@ try {
             if($Iformattxtann)
                 {
                 logit('add lemma attribute');
-                if($mode == 'dry')
+                if($mode === 'dry')
                     {
                     add($toolbin,$uploadfile,'lemma',$element,$idprefix,$ancestor);
                     lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',"\$lemmainputfile",'n','','lemma','j',$Iperiodc13,$Iperiodc20);
@@ -1509,7 +1524,7 @@ try {
                 if($Iformatflat)
                     {
                     logit('lemmatise flat text');
-                    if($mode == 'dry')
+                    if($mode === 'dry')
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','n',$Iperiodc13,$Iperiodc20);
@@ -1517,7 +1532,7 @@ try {
                 else
                     {
                     logit('lemmatise TEI-P5 (not an annotation file)');
-                    if($mode == 'dry')
+                    if($mode === 'dry')
                         lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
                     else
                         $CSTLemfile = lemmatiser($Oformat,$Ofacetlem,$Ofacetpos,$Ofacetseg,$Ofacettok,$ShowTag, $Ipresnml, $Opresalf ,$Opresfrq,$OOV,$Opresnml, $Oambiguna, $Iappnrm,$element,$ancestor,$toolres,$toolbin,$language,'-','notags',$uploadfile,'n','','','j',$Iperiodc13,$Iperiodc20);
@@ -1526,9 +1541,9 @@ try {
             }
 
         logit("CSTLemfile $CSTLemfile");
-        if($Oformat == "txtann")
+        if($Oformat === "txtann")
             {
-            if($mode == 'dry')
+            if($mode === 'dry')
                 splits($toolbin,"\$CSTLemfile",'lemma',$annotation,$idprefix,$ancestor,$element);
             else
                 $CSTLemfile = splits($toolbin,$CSTLemfile,'lemma',$annotation,$idprefix,$ancestor,$element);

@@ -391,7 +391,7 @@ try {
         /* 20180925 added -f to convert first letter in first word to lower case*/
         if($Iformattxtann)
             {
-            $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p .' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' -Xp' . $tempattribute . ' ';
+            $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p .' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' -Xp' . $tempattribute . ' -XtNE ';
             if($ancestor != '')
                 {
                 $command = $command . ' -Xa' . $ancestor;
@@ -432,10 +432,10 @@ try {
         return $tmpno;
         }
 
-    function combine($toolbin,$IfacettokF,$IfacetsegF,$attribute,$element,$idprefix,$ancestor)
+    function combine($toolbin,$IfacettokF,$IfacetsegF,$IfacetnerF,$attribute,$element,$idprefix,$ancestor,$nerattribute,$propn)
         {
         global $mode;
-        logit( "combine(" . $IfacettokF . "," . $IfacetsegF . "," . $attribute . "," . $element . "," . $idprefix . "," . $ancestor . ")\n");
+        logit( "combine(" . $IfacettokF . "," . $IfacetsegF . "," . $IfacetnerF . "," . $attribute . "," . $element . "," . $idprefix . "," . $ancestor . $nerattribute . "," . $propn . ")\n");
 
         if($mode == 'dry')
             $posfile = "\$POSinputfile";
@@ -444,17 +444,17 @@ try {
 
         if($idprefix == '')
             {
-            $command = "../bin/bracmat \"get\$\\\"pytokseg.bra\\\"\" $IfacettokF $IfacetsegF $posfile $attribute $ancestor $element -";
+            $command = "../bin/bracmat \"get\$\\\"pytokseg.bra\\\"\" $IfacettokF $IfacetsegF $IfacetnerF $posfile $attribute $ancestor $element - $nerattribute $propn";
             }
         else
             {
-            $command = "../bin/bracmat \"get\$\\\"pytokseg.bra\\\"\" $IfacettokF $IfacetsegF $posfile $attribute $ancestor $element \"xml:id\"";
+            $command = "../bin/bracmat \"get\$\\\"pytokseg.bra\\\"\" $IfacettokF $IfacetsegF $IfacetnerF $posfile $attribute $ancestor $element \"xml:id\" $nerattribute $propn";
             }
+        logit($command);
         if($mode == 'dry')
             scrip($command);
         else
             {
-            logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 exit(1);
 
@@ -837,22 +837,35 @@ try {
         if($mode != 'dry')
             $BrillTaggerfile = '';
 
+        if($IfacetnerF == "")
+            $IfacetnerF = "\"*\"";
+
         if($Iformattxtann)
             {
             if($IfacettokF != "" && $IfacetsegF != "")
                 {
                 logit('combine token and segment files and add POS attribute');
                 $tempattribute = 'POS';
-                if($mode == 'dry')
-                    {
-                    combine($toolbin,"\$IfacettokF","\$IfacetsegF",$tempattribute,$element,$idprefix,$ancestor);
-                    }
+                $nerattribute = "NE";
+                if($language == "da")
+                    $propn = "EGEN";
                 else
-                    $POSinputfile = combine($toolbin,$IfacettokF,$IfacetsegF,$tempattribute,$element,$idprefix,$ancestor);
-                logit('POStagger:' . $POSinputfile);
+                    $propn = "PROPN";
 
                 if($mode == 'dry')
                     {
+                    if($IfacetnerF == "")
+                        combine($toolbin,"\$IfacettokF","\$IfacetsegF","\"*\"",$tempattribute,$element,$idprefix,$ancestor,$nerattribute,$propn);
+                    else
+                        combine($toolbin,"\$IfacettokF","\$IfacetsegF","\$IfacetnerF",$tempattribute,$element,$idprefix,$ancestor,$nerattribute,$propn);
+                    }
+                else
+                    {
+                    $POSinputfile = combine($toolbin,$IfacettokF,$IfacetsegF,$IfacetnerF,$tempattribute,$element,$idprefix,$ancestor,$nerattribute,$propn);
+                    }
+                
+                if($mode == 'dry')
+                {
                     tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,"\$POSinputfile",$language,$tempattribute,$period,"\$tempfile");
                     logit('isolate POS tags in spanGrp');
                     splits($toolbin,"\$tempfile",$tempattribute,$annotation,$idprefix,$ancestor,$element);

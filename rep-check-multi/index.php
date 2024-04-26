@@ -13,18 +13,18 @@ header('Content-type:text/plain; charset=UTF-8');
  * Places in this script that require your attention are marked 'TODO'.
  */
 /*
-ToolID         : CST-Rep
+ToolID         : CST-Ver
 PassWord       : 
 Version        : 0
-Title          : Repetitiveness checker
-Path in URL    : rep-check/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
+Title          : Document similarity checker
+Path in URL    : rep-check-multi/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
 ContentProvider: cst.ku.dk
 Creator        : Bart Jongejan
 InfoAbout      : https://nlpweb01.nors.ku.dk/online/rep_check/
-Description    : Uses a statistical method to find repetitions in a text.
+Description    : Uses a statistical method to find phrases that are found in each of the input documents.
 ExternalURI    : 
-MultiInp       : 
+MultiInp       : y
 PostData       : 
 Inactive       : 
 */
@@ -32,11 +32,12 @@ Inactive       :
 /*******************
 * helper functions *
 *******************/
-$toollog = '../log/CSTRep.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
+$toollog = '../log/CSTVer.log'; /* Used by the logit() function. TODO make sure the folder exists and is writable. Adapt if needed */
 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
+$params = array();
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -62,20 +63,20 @@ function logit($str) /* TODO You can use this function to write strings to the l
 
 function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
     {
-    global $fscrip, $CSTRepfile;
-    $fscrip = fopen($CSTRepfile,'w');
+    global $fscrip, $CSTVerfile;
+    $fscrip = fopen($CSTVerfile,'w');
     if($fscrip)
         {
         fwrite($fscrip,"/*\n");
-        fwrite($fscrip," * ToolID           : CST-Rep\n");
+        fwrite($fscrip," * ToolID           : CST-Ver\n");
         fwrite($fscrip," * Version          : 0\n");
-        fwrite($fscrip," * Title            : Repetitiveness checker\n");
-        fwrite($fscrip," * ServiceURL       : http://localhost/rep-check/\n");
+        fwrite($fscrip," * Title            : Document similarity checker\n");
+        fwrite($fscrip," * ServiceURL       : http://localhost/rep-check-multi/\n");
         fwrite($fscrip," * Publisher        : CST\n");
         fwrite($fscrip," * ContentProvider  : cst.ku.dk\n");
         fwrite($fscrip," * Creator          : Bart Jongejan\n");
         fwrite($fscrip," * InfoAbout        : https://nlpweb01.nors.ku.dk/online/rep_check/\n");
-        fwrite($fscrip," * Description      : Uses a statistical method to find repetitions in a text.\n");
+        fwrite($fscrip," * Description      : Uses a statistical method to find phrases that are found in each of the input documents.\n");
         fwrite($fscrip," * ExternalURI      : \n");
         fwrite($fscrip," * inputF " . $inputF . "\n");
         fwrite($fscrip," * input  " . $input  . "\n");
@@ -88,8 +89,8 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
 
 function scrip($str) /* TODO send comments and command line instructions. Don't forget to terminate string with new line character, if needed.*/
     {
-    global $fscrip, $CSTRepfile;
-    $fscrip = fopen($CSTRepfile,'a');
+    global $fscrip, $CSTVerfile;
+    $fscrip = fopen($CSTVerfile,'a');
     if($fscrip)
         {
         fwrite($fscrip,$str . "\n");
@@ -138,50 +139,49 @@ try {
 
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        logit("requestFile({$requestParm})");
-
-        if(isset($_REQUEST[$requestParm]))
+        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
+        $inputfiles = array();
+        
+        if(isset($params[$requestParm]))
             {
-            $urlbase = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "http://localhost/toolsdata/";
-
-            $item = $_REQUEST[$requestParm];
-            $url = $urlbase . urlencode($item);
-            logit("requestParm:$requestParm");
-            logit("urlbase:$urlbase");
-            logit("item:$item");
-            logit("url[$url]");
-
-            $handle = fopen($url, "r");
-            if($handle == false)
+            $urlbase = isset($params["base"]) ? $params["base"][0] : "http://localhost/toolsdata/";
+            $items = $params[$requestParm];
+            foreach($items as $item)
                 {
-                logit("Cannot open url[$url]");
-                return "";
-                }
-            else
-                {
-                $tempfilename = tempFileName("CSTRep_{$requestParm}_");
-                $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
+                $url = $urlbase . urlencode($item);
+
+                $handle = fopen($url, "r");
+                if($handle == false)
                     {
-                    fclose($handle);
-                    logit("handle closed. Cannot open $tempfilename");
+                    logit("Cannot open url[$url]");
                     return "";
                     }
                 else
                     {
-                    while (!feof($handle))
+                    $tempfilename = tempFileName("CSTVer_{$requestParm}_");
+                    $temp_fh = fopen($tempfilename, 'w');
+                    if($temp_fh == false)
                         {
-                        $read = fread($handle, 8192);
-                        fwrite($temp_fh, $read);
+                        fclose($handle);
+                        logit("handle closed. Cannot open $tempfilename");
+                        return "";
                         }
-                    fclose($temp_fh);
-                    fclose($handle);
-                    return $tempfilename;
+                    else
+                        {
+                        while (!feof($handle))
+                            {
+                            $read = fread($handle, 8192);
+                            fwrite($temp_fh, $read);
+                            }
+                        fclose($temp_fh);
+                        fclose($handle);
+                        $inputfiles[$tempfilename] = $item;
+                        //return $tempfilename;
+                        }
                     }
                 }
             }
-        logit("empty");
-        return "";
+        return $inputfiles;
         }
 
     function gentagelseschecker($filename,$job)
@@ -190,22 +190,30 @@ try {
         global $tobedeleted;
         global $mode;
         if($dodelete)
-            $tobedeleted["$filename.html"] = true;
+            foreach($filename as $name => $value)
+                {
+                $tobedeleted["$name.html"] = true;
+                }
+
+        $arr = array();
+        foreach($filename as $name => $value)
+            {
+            $arr[] = $name;
+            }
+        $filenames = implode(' ',$arr);
 
         if($mode == 'dry')
             {
-            scrip("../bin/repver -w4 <filename>");
+            scrip("../bin/repver -w4 <filename> <filename> ...");
             }
         else
             {
-            $command = '../bin/repver -w4 ' . $filename;
+            $command = '../bin/repver -w4 ' . $filenames;
             $command = trim($command);
 
             logit("$command");
 
             $tmpo = tempFileName("REP");
-
-            logit("$tmpo");
 
             $fpo = fopen($tmpo,"w");
             if(!$fpo)
@@ -234,9 +242,9 @@ try {
         return $tmpo;
         }
 
-    function do_CSTRep()
+    function do_CSTVer()
         {
-        global $CSTRepfile;
+        global $CSTVerfile;
         global $dodelete;
         global $tobedeleted;
         global $mode;
@@ -261,7 +269,7 @@ try {
         $input = "";	/* List of all input features. */
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $F = "";	/* Input (ONLY used if there is exactly ONE kind of input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacet_lem_seg = false;	/* Type of content in input is lemmas (lemmaer) and segments (sætningssegmenter) if true */
         $Ifacet_pos_seg = false;	/* Type of content in input is PoS-tags (PoS-tags) and segments (sætningssegmenter) if true */
@@ -374,8 +382,8 @@ try {
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
-        $CSTRepfile = tempFileName("CSTRep-results");
-        $command = "echo $echos >> $CSTRepfile";
+        $CSTVerfile = tempFileName("CSTVer-results");
+        $command = "echo $echos >> $CSTVerfile";
         logit($command);
 
         if(($cmd = popen($command, "r")) == NULL)
@@ -391,7 +399,7 @@ try {
 /*/
 // YOUR CODE STARTS HERE.
 //        TODO your code!
-        $CSTRepfile = tempFileName("CSTRep-results");
+        $CSTVerfile = tempFileName("CSTVer-results");
         if($mode == 'dry')
             {
             scripinit($inputF,$input,$output);
@@ -399,16 +407,15 @@ try {
             }
         else
             {
-            logit("F is [$F] job is {$job}");
-            $CSTRepfile = gentagelseschecker($F,$job);
+            $CSTVerfile = gentagelseschecker($F,$job);
             }
-// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTRepfile
+// YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $CSTVerfile
 //*/
-        $tmpf = fopen($CSTRepfile,'r');
+        $tmpf = fopen($CSTVerfile,'r');
 
         if($tmpf)
             {
-            //logit('output from CSTRep:');
+            //logit('output from CSTVer:');
             while($line = fgets($tmpf))
                 {
                 //logit($line);
@@ -428,7 +435,16 @@ try {
             }
         }
     loginit();
-    do_CSTRep();
+    $query  = explode('&', $_SERVER['QUERY_STRING']);
+    foreach( $query as $param )
+        {
+        if(strpos($param, '=') === false)
+            $param .= '=';
+
+        list($name, $value) = explode('=', $param, 2);
+        $params[urldecode($name)][] = urldecode($value);
+        }
+    do_CSTVer();
     }
 catch (SystemExit $e)
     {

@@ -4,58 +4,74 @@ Create token annotation from Clarin Base Format file that already has token info
 
 X=
   ( doit
-  =     output tmp1 tmp2 A B C D E F G H
+  =       output
+          tmp1
+          tmp2
+          A
+          B
+          C
+          D
+          E
+          F
+          G
+          H
       , xmlseg xmltok lang period
     .   ( turnTEIP5intoCONLL
         =   
           .   !arg:(?inputtok.?inputseg)
-            &   !inputseg
-              :   ( span
-                  .     ? (from.@(?:"#" ?fr)) ?
-                      : ? (to.@(?:"#" ?to)) ?
-                      : ? ("xml:id".?Sid) ?
-                    , 
-                  )
-                  ?inputseg
-            & 1:?wno
-            & :?sep
-            &   map
-              $ ( ( 
-                  =   
-                    .     !arg
-                        : ( span
-                          .     ? (from.?from) ?
-                              : ? ("xml:id".?Tid) ?
-                            , ?word
-                          )
-                      &   !sep
-                          !wno
-                          \t
-                          ( (   !Tid:!to
-                              & 1:?wno
-                              & \n:?sep
-                              &   !inputseg
-                                :   ( span
-                                    .       ?
-                                            (from.@(?:"#" ?fr))
-                                            ?
-                                        :   ?
-                                            (to.@(?:"#" ?to))
-                                            ?
-                                        : ? ("xml:id".?Sid) ?
-                                      , 
-                                    )
-                                    ?inputseg
-                            |   1+!wno:?wno
-                              & :?sep
-                            )
-                          & !word
-                          )
-                          "\t_\t_\t_\t_"
-                          "\t_\t_\t_\t_\n"
-                  )
-                . !inputtok
-                )
+            & (     !inputseg
+                  :   ( span
+                      .     ? (from.@(?:"#" ?fr)) ?
+                          : ? (to.@(?:"#" ?to)) ?
+                          : ? ("xml:id".?Sid) ?
+                        , 
+                      )
+                      ?inputseg
+                & 1:?wno
+                & :?sep
+                &   map
+                  $ ( ( 
+                      =   
+                        .     !arg
+                            : ( span
+                              .     ? (from.?from) ?
+                                  : ? ("xml:id".?Tid) ?
+                                , ?word
+                              )
+                          &   !sep
+                              !wno
+                              \t
+                              ( (   !Tid:!to
+                                  & 1:?wno
+                                  & \n:?sep
+                                  &   !inputseg
+                                    :   ( span
+                                        .       ?
+                                                ( from
+                                                . @(?:"#" ?fr)
+                                                )
+                                                ?
+                                            :   ?
+                                                (to.@(?:"#" ?to))
+                                                ?
+                                            :   ?
+                                                ("xml:id".?Sid)
+                                                ?
+                                          , 
+                                        )
+                                        ?inputseg
+                                |   1+!wno:?wno
+                                  & :?sep
+                                )
+                              & !word
+                              )
+                              "\t_\t_\t_\t_"
+                              "\t_\t_\t_\t_\n"
+                      )
+                    . !inputtok
+                    )
+              | 
+              )
         )
       & ( turnCONLLintoTEIP5
         =   s segid sentnr S L P tfrom tto
@@ -95,7 +111,14 @@ X=
                                    \t
                                    ?
                                )
-                          &     (!from.!word.!lemma.!pos.!mrf.!to.!h)
+                          &     ( !from
+                                . !word
+                                . !lemma
+                                . !pos
+                                . !mrf
+                                . !to
+                                . !h
+                                )
                                 !s
                             : ?s
                           & 
@@ -107,94 +130,115 @@ X=
             &     map
                 $ ( ( 
                     =   prefix sentid con
-                      .   !arg:(.?con)
-                        & :?S:?L:?P
-                        & str$(!segid "." !sentnr):?sentid
-                        & str$(!segid "." !sentid "."):?prefix
-                        &   !xmlseg
-                          :   ( span
-                              .       ?
-                                      (from.@(?:"#" ?tfrom))
-                                      ?
-                                  : ( ? (to.@(?:"#" ?tto)) ?
-                                    | ?&!tfrom:?tto
-                                    )
-                                , 
-                              )
-                              ?xmlseg
-                        &   !xmltok
-                          :   ?
-                              ( span
-                              . ?a ("xml:id".!tfrom) ?b,?c
-                              )
-                              ?xmltok
-                        &     ( span
-                              . !a ("xml:id".!tfrom) !b,!c
-                              )
-                              ( !tto:!tfrom&
-                              |     !xmltok
-                                  :   ?M
+                      .     !arg:(.?con)
+                          & :?S:?L:?P
+                          & str$(!segid "." !sentnr):?sentid
+                          &   str$(!segid "." !sentid ".")
+                            : ?prefix
+                          &   !xmlseg
+                            :   ( span
+                                .       ?
+                                        (from.@(?:"#" ?tfrom))
+                                        ?
+                                    : (   ?
+                                          (to.@(?:"#" ?tto))
+                                          ?
+                                      |   ?
+                                        & !tfrom:?tto
+                                      )
+                                  , 
+                                )
+                                ?xmlseg
+                          &   !xmltok
+                            :   ?
+                                ( span
+                                .   ?a ("xml:id".!tfrom) ?b
+                                  , ?c
+                                )
+                                ?xmltok
+                          &     ( span
+                                .   !a ("xml:id".!tfrom) !b
+                                  , !c
+                                )
+                                ( !tto:!tfrom&
+                                |     !xmltok
+                                    :   ?M
+                                        ( span
+                                        .     ?d
+                                              ("xml:id".!tto)
+                                              ?e
+                                          , ?f
+                                        )
+                                        ?xmltok
+                                  &   !M
                                       ( span
-                                      .   ?d ("xml:id".!tto) ?e
-                                        , ?f
+                                      .   !d ("xml:id".!tto) !e
+                                        , !f
                                       )
-                                      ?xmltok
-                                &   !M
-                                    ( span
-                                    . !d ("xml:id".!tto) !e,!f
-                                    )
-                              )
-                          : ?toks
-                        &     map
-                            $ ( ( 
-                                =   
-                                  .     !arg
-                                      : ( ?from
-                                        . ?word
-                                        . ?lemma
-                                        . ?pos
-                                        . ?mrf
-                                        . ?to
-                                        . ?h
-                                        )
-                                    &   !toks
-                                      :   ( span
-                                          .   ? ("xml:id".?tid) ?
-                                            , !word
+                                )
+                            : ?toks
+                          &     map
+                              $ ( ( 
+                                  =   
+                                    .     !arg
+                                        : ( ?from
+                                          . ?word
+                                          . ?lemma
+                                          . ?pos
+                                          . ?mrf
+                                          . ?to
+                                          . ?h
                                           )
-                                          ?toks
-                                    & (!tid.!from.!lemma.!pos.!mrf.!to.!h)
-                                )
-                              . !con
-                              )
-                          : ?S
-                        &     map
-                            $ ( ( 
-                                =   
-                                  .     !arg
-                                      : ( ?tid
-                                        . ?from
-                                        . ?lemma
-                                        . ?pos
-                                        . ?mrf
-                                        . ?to
-                                        . ?h
+                                      &   !toks
+                                        :   ( span
+                                            .     ?
+                                                  ("xml:id".?tid)
+                                                  ?
+                                              , !word
+                                            )
+                                            ?toks
+                                      & ( !tid
+                                        . !from
+                                        . !lemma
+                                        . !pos
+                                        . !mrf
+                                        . !to
+                                        . !h
                                         )
-                                    & ( !tid
-                                      . !lemma
-                                      . !pos
-                                      . !mrf
-                                      .       !S
-                                            : ? (?nto.!to.?) ?
-                                          & !nto
-                                        | !to
-                                      . !h
-                                      )
+                                  )
+                                . !con
                                 )
-                              . !S
-                              )
-                          : ?S
-                        & !S
+                            : ?S
+                          &     map
+                              $ ( ( 
+                                  =   
+                                    .     !arg
+                                        : ( ?tid
+                                          . ?from
+                                          . ?lemma
+                                          . ?pos
+                                          . ?mrf
+                                          . ?to
+                                          . ?h
+                                          )
+                                      & ( !tid
+                                        . !lemma
+                                        . !pos
+                                        . !mrf
+                                        .       !S
+                                              :   ?
+                                                  (?nto.!to.?)
+                                                  ?
+                                            & !nto
+                                          | !to
+                                        . !h
+                                        )
+                                  )
+                                . !S
+                                )
+                            : ?S
+                          & !S
+                        | 
                     )
                   . !conllS
                   )
@@ -210,7 +254,13 @@ X=
                               $ ( ( 
                                   =   
                                     .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
+                                        : ( ?tid
+                                          . ?lemma
+                                          . ?pos
+                                          . ?mrf
+                                          . ?to
+                                          . ?h
+                                          )
                                       & ( span
                                         .   (from.str$("#" !tid))
                                           , !lemma
@@ -225,7 +275,13 @@ X=
                               $ ( ( 
                                   =   
                                     .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
+                                        : ( ?tid
+                                          . ?lemma
+                                          . ?pos
+                                          . ?mrf
+                                          . ?to
+                                          . ?h
+                                          )
                                       & ( span
                                         .   (from.str$("#" !tid))
                                           , !pos
@@ -240,7 +296,13 @@ X=
                               $ ( ( 
                                   =   
                                     .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
+                                        : ( ?tid
+                                          . ?lemma
+                                          . ?pos
+                                          . ?mrf
+                                          . ?to
+                                          . ?h
+                                          )
                                       & ( span
                                         .   (from.str$("#" !tid))
                                           , !mrf
@@ -255,18 +317,28 @@ X=
                               $ ( ( 
                                   =   
                                     .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
+                                        : ( ?tid
+                                          . ?lemma
+                                          . ?pos
+                                          . ?mrf
+                                          . ?to
+                                          . ?h
+                                          )
                                       & ( span
                                         .   (from.str$("#" !tid))
                                           ,   (     !to
                                                   : (0|)
                                                 & 
                                               | ( link
-                                                .   (target.str$("#" !to))
+                                                .   ( target
+                                                    . str$("#" !to)
+                                                    )
                                                   , 
                                                 )
                                               )
-                                              (term.,str$("ud-syn:" !h))
+                                              ( term
+                                              . ,str$("ud-syn:" !h)
+                                              )
                                         )
                                   )
                                 . !conllT
@@ -283,7 +355,9 @@ X=
               :   ?
                   ( !lang
                   .   ?p
-                    & (!p:|!p:? !period ?)
+                    & ( !p:
+                      | !p:? !period ?
+                      )
                   . ?Lingua
                   )
                   ?
@@ -300,14 +374,22 @@ X=
             & get$(!tmp2,STR)
         )
       &   !arg
-        : (?lang.?period.?inputtok.?inputseg.?output.?tmp1.?tmp2)
+        : ( ?lang
+          . ?period
+          . ?inputtok
+          . ?inputseg
+          . ?output
+          . ?tmp1
+          . ?tmp2
+          )
       & get$"langtable.bra":?langtable
       &   nestML$(get$(!inputtok,X ML TRM))
         : ? (spanGrp.?,?xmltok) ?
       &   nestML$(get$(!inputseg,X ML TRM))
         : ? (spanGrp.?,?xmlseg) ?
       & str$(turnTEIP5intoCONLL$(!xmltok.!xmlseg)):?conll1
-      & transform$(!lang.!period.!conll1.!tmp1.!tmp2):?conll2
+      &   transform$(!lang.!period.!conll1.!tmp1.!tmp2)
+        : ?conll2
       & turnCONLLintoTEIP5$(!conll2.!xmltok.!xmlseg):?annot
       & put$(toML$!annot,!output,NEW)
   )
@@ -315,12 +397,40 @@ X=
   =   
     .   ~
       |     (   ~
-              & (da.c21.IfacettokF.IfacetsegF."testout.xml".tmp1.tmp2)
-            | (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+              & ( da
+                . c21
+                . "notok.xml"
+                . "noseg.xml"
+                . "testout.xml"
+                . tmp1
+                . tmp2
+                )
+            | ( arg$
+              . arg$
+              . arg$
+              . arg$
+              . arg$
+              . arg$
+              . arg$
+              )
             )
-          : (?lang.?period.?inputtok.?inputseg.?output.?tmp1.?tmp2)
+          : ( ?lang
+            . ?period
+            . ?inputtok
+            . ?inputseg
+            . ?output
+            . ?tmp1
+            . ?tmp2
+            )
         &   (its.doit)
-          $ (!lang.!period.!inputtok.!inputseg.!output.!tmp1.!tmp2)
+          $ ( !lang
+            . !period
+            . !inputtok
+            . !inputseg
+            . !output
+            . !tmp1
+            . !tmp2
+            )
   );
 
 r=

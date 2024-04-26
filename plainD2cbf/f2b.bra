@@ -1,12 +1,22 @@
 {f2b.bra
 
-Take segmentized and tokenized with DEL as separator between tokens that tear the input word apart.}
+Take segmentized and tokenized text with DEL as separator between 'tokens' that belong to the same input word apart.
+Output a <text> element in TEI-P5 style.}
 
 X=
   ( doit
   =   
     .   0:?seg
       & chr$127:?DEL
+      & ( inv
+        =   L a
+          .   :?L
+            &   whl
+              ' ( !arg:%?a ?arg
+                & !a !L:?L
+                )
+            & !L
+        )
       & ( FF
         =   x y
           .   :?y
@@ -66,19 +76,19 @@ X=
                               | ":"
                               | ","
                               | "-"
-                              | ‚Äì
-                              | ‚Äî
-                              | ‚Ä¶
+                              | ñ
+                              | ó
+                              | Ö
                               | "!"
-                              | ‚Äπ
-                              | ‚Ä∫
-                              | ¬´
-                              | ¬ª
+                              | ã
+                              | õ
+                              | ´
+                              | ª
                               | "?"
-                              | ‚Äò
-                              | ‚Äô
-                              | ‚Äú
-                              | ‚Äù
+                              | ë
+                              | í
+                              | ì
+                              | î
                               | ";"
                               | "\\"
                               | "/"
@@ -105,7 +115,7 @@ X=
                   )
                 &     ( c
                       .     (S.!seg)
-                            (T.1+!tok:?tok)
+                            (T.!tok)
                             (type.p)
                         , str$!x
                       )
@@ -115,77 +125,72 @@ X=
                 )
             & ( !A:
               | str$!C:?C:
-              |   1+!tok:?tok
-                & cut$!C !O:?O
+              | cut$!C !O:?O
               )
             & :?OO
             &   whl
               ' (!O:%?A ?O&!A !OO:?OO)
+            & 1+!tok:?tok
             & !OO
+        )
+      & ( reindex
+        =   tok prefix i
+          .   0:?tok
+            & !arg:(?arg.?prefix)
+            & 0:?i
+            &   map
+              $ ( ( 
+                  =   e a c
+                    .     !arg:(?e.?a,?c)
+                        & (   !e:(w|c)
+                            &     map
+                                $ ( ( 
+                                    =   
+                                      .       !arg
+                                            : (   "xml:id"
+                                                | T
+                                                | S
+                                              . ?
+                                              )
+                                          & 
+                                        | !arg
+                                    )
+                                  . !a
+                                  )
+                              : ?a
+                            &     ( "xml:id"
+                                  .   str
+                                    $ (!prefix (1+!tok:?tok))
+                                  )
+                                  !a
+                              : ?a
+                            & ( !e
+                              . !a,reindex$(!c.!prefix !tok ".")
+                              )
+                          | ( !e
+                            .     (   !e:p
+                                    & (n.1+!par:?par)
+                                  | 
+                                  )
+                                  !a
+                              ,   reindex
+                                $ ( !c
+                                  .   !prefix
+                                      (   !e:s
+                                        & (1+!sen:?sen) "."
+                                      | 
+                                      )
+                                  )
+                            )
+                          )
+                      | !arg
+                  )
+                . !arg
+                )
         )
       & ( makeValidTEI
         =   E1 E2 S Sn
-          .   ( reindex
-              =   tok prefix i
-                .   0:?tok
-                  & !arg:(?arg.?prefix)
-                  & 0:?i
-                  &   map
-                    $ ( ( 
-                        =   e a c
-                          .     !arg:(?e.?a,?c)
-                              & (   !e:(w|c)
-                                  &     map
-                                      $ ( ( 
-                                          =   
-                                            .       !arg
-                                                  : (   "xml:id"
-                                                      | T
-                                                      | S
-                                                    . ?
-                                                    )
-                                                & 
-                                              | !arg
-                                          )
-                                        . !a
-                                        )
-                                    : ?a
-                                  &     ( "xml:id"
-                                        .   str
-                                          $ ( !prefix
-                                              (1+!tok:?tok)
-                                            )
-                                        )
-                                        !a
-                                    : ?a
-                                  & ( !e
-                                    .   !a
-                                      ,   reindex
-                                        $ (!c.!prefix !tok ".")
-                                    )
-                                | ( !e
-                                  .     (   !e:p
-                                          & (n.1+!par:?par)
-                                        | 
-                                        )
-                                        !a
-                                    ,   reindex
-                                      $ ( !c
-                                        .   !prefix
-                                            (   !e:s
-                                              &   (1+!sen:?sen)
-                                                  "."
-                                            | 
-                                            )
-                                        )
-                                  )
-                                )
-                            | !arg
-                        )
-                      . !arg
-                      )
-              )
-            & ( glue
+          .   ( glue
               =   E1 E2 T E1s
                 .     :?E1:?E1s
                     &   whl
@@ -248,15 +253,6 @@ X=
                 . !Sn
                 )
         )
-      & ( inv
-        =   L a
-          .   :?L
-            &   whl
-              ' ( !arg:%?a ?arg
-                & !a !L:?L
-                )
-            & !L
-        )
       & ( text
         .   
           , ( body
@@ -317,6 +313,12 @@ X=
   =   
     .   ~
       |   ~
+        &   put
+          $ ( toML$((its.doit)$"text-137-727-step1.plainD")
+            , "text-137-727-step1.plainD.out"
+            , NEW
+            )
+      |   ~
         & put$(toML$((its.doit)$F),"F.out",NEW)
       |   ~
         &   put
@@ -335,7 +337,8 @@ r=
 &   put
   $ ( "{f2b.bra
 
-Take segmentized and tokenized with DEL as separator between tokens that tear the input word apart.}
+Take segmentized and tokenized text with DEL as separator between 'tokens' that belong to the same input word apart.
+Output a <text> element in TEI-P5 style.}
 
 "
     , "f2b.bra"

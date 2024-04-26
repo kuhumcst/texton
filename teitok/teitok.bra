@@ -6,70 +6,17 @@ Get the casing right for Danish TEI P5 texts}
 X=
   ( teitok
   =     input abbreviations style language
-      ,   SentenceEndingAbbrSeen
-          COLLECT
-          IDgen
-          InsertS
-          RemoveSpace
-          RemoveSpaceFromS
-          Sen
-          Split
-          SplitAbbr
-          Tx
-          assignIDs
-          collectSvals
-          considerAbbrev
-          contr
-          contractwadddel
-          ecaps
-          findIDs
-          getAll
-          inc1
-          inc2
-          inverse
-          llAteg
-          moveLeadingAndTrailingSpacesOutside
-          perQlateS
-          rcontr
-          removeOutliers
-          removeSpacesIfNoTokens
-          removeSuperfluousSpaces
-          retrieveSsequences
-          sing
-          space
-          toksplit
-          trav
-          trim
-          trm
-          trq
-          vlooi
-      ,   AAA
-          DDD
-          Eabbr
-          ID
-          IDs
-          IS
-          Mabbr
-          Sseq
-          Sseq0
-          Sseq1
-          Sseq2
-          XXX
-          XYZ
-          YYY
-          nbody
-          nbody2
-          nmbody2
-          nnbody
-          sen
-          teiatt
-          text
-          textatt
-          tok
-          xml
-      , content tok-1
-      , complexTok peRlaT skweez smukkeser
-      , Sseq3 Sseq4
+      , SentenceEndingAbbrSeen COLLECT IDgen InsertS RemoveSpace RemoveSpaceFromS
+      , Sen Split SplitAbbr Tx assignIDs adjustDAordinal
+      , collectSvals considerAbbrev contr contractwadddel
+      , ecaps findIDs getAll inc1 inc2 inverse llAteg
+      , moveLeadingAndTrailingSpacesOutside perQlateS rcontr removeOutliers removeSpacesIfNoTokens
+      , removeSuperfluousSpaces retrieveSsequences sing space
+      , toksplit trav trim trm trq vlooi
+      , AAA DDD Eabbr ID IDs IS Mabbr Sseq Sseq0 Sseq1 Sseq2
+      , XXX XYZ YYY nbody nbody2 nmbody2 nnbody
+      , sen teiatt text textatt tok xml content tok-1
+      , complexTok peRlaT skweez smukkeser Sseq3 Sseq4
     .   ( Sen
         =   R
           .   !IS:?R
@@ -703,6 +650,8 @@ X=
                            (%@:~(#|"."|","))
                            ?
                          )
+                    & "An apparent Danish ordinal as fx 1987. followed by a lowercase word is a cardinal number and sentence ending period."
+                    & !A:?SentenceEndingAbbrSeen
                   |     !arg
                       : ? ((%@?kar&let$!kar) ?:?kars)
                     & str$!kars:?KRS
@@ -1156,6 +1105,20 @@ X=
             | !arg:% %&map$(perQlateS.!arg)
             | !arg
         )
+      & ( adjustDAordinal
+        =   e a t b c
+          .     !arg:? (?.? (T.@) ?,?) ?
+              & inverse$!arg:?arg
+              & (   !language:da
+                  & !arg:(?.?,".") (?.?,#) ?
+                  & !arg:(?e.?a (T.?t) ?b,?c) ?arg
+                  & (!e.!a (T.!t+1) !b,!c) !arg
+                | !arg
+                )
+            | !arg:(?e.?a,?c)&(!e.!a,adjustDAordinal$!c)
+            | !arg:% %&map$(adjustDAordinal.!arg)
+            | !arg
+        )
       & "Create a R attribute in all elements contained in <s> elements that have (a descendant having) a T attrubite. R's value is the set of T values."
       & ( peRlaT
         =   e a c T R
@@ -1185,7 +1148,7 @@ X=
       & ( skweez
         =   e a c u r1 r2 R t break
           .     !arg:? (?.? (R.@) ?,?) ?
-              & inverse$!arg:?u
+              & !arg:?u
               & noppes:?R
               & :?c:?t
               &   whl
@@ -1241,6 +1204,7 @@ X=
           .   !arg:@
             |   !arg:(?e.?a,?c)
               & (   !e:s
+                  & adjustDAordinal$!c:?c
                   & peRlaT$!c:?c
                   & (s.!a,skweez$!c)
                 | (!e.!a,complexTok$!c)
@@ -1587,7 +1551,7 @@ r=
 &   put
   $ ( "{teitok.bra
 𝕌𝕋𝔽-𝟠
-Takes a TEI P5 document and creates <w> and <c> elementsout
+Takes a TEI P5 document and creates <w> and <c> elements.
 Get the casing right for Danish TEI P5 texts}
 
 "

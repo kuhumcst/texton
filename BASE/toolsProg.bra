@@ -137,10 +137,11 @@ toolsProg=
       "Supergoals are goals that fulfil the user's goal, plus
        more. (If the user checks a box and thereby allows it.)"
       (servicedSuperGoals=)
+      (updateAvailableWorkflows=)
       ( (⟳ ⟳|"Re-check for bookmarks" "Tjek igen for bogmærker")
       : ?updateAvailableWorkflows
       )
-      (helpmespecifymygoal="Next: zoom in on goal." "Zoom ind med flere detaljer")
+      (helpmespecifymygoal="Zoom in" "Zoom ind")
       (Bookmark=Bookmark Marker)
       (Dryrun="Test workflow" "Test arbejdsgang")
       (Usermsg="Send feed back")
@@ -330,7 +331,9 @@ toolsProg=
               &   whl
                 ' ( !val:%?abBr^?spec+?val
                   & !table:? (?.!abBr.?) ?
-                  & !abbrs !abBr:?abbrs
+                  & ( !abbrs:? !abBr ?
+                    | !abbrs !abBr:?abbrs
+                    )
                   )
               )
           & !abbrs
@@ -2284,9 +2287,9 @@ toolsProg=
           & candidateList$(!reorderedworkflowlist.!topologicalOrderedTools)
       )
       ( makeWorkflowVisualisation
-      =   n o struct boxes getNodesAndLinks breaks
+      =   n o struct boxes getNodesAndLinks breaks nodes edges
         .   ( getNodesAndLinks
-            =   titlelinks planettitles extractEdges
+            =   titlelinks planettitles extractEdges nameedges
               .   ( extractEdges
                   =   volgnr trav collect ou
                     .   48:?volgnr
@@ -2345,7 +2348,7 @@ toolsProg=
                 & extractEdges$!arg:?nameedges
                 &     map
                     $ ( ( 
-                        =   a b desc
+                        =   a b desc fr to
                           .   !arg:(?toolID,#%?fr #%?to.?desc)
                             & ( !planettitles:?+(!to.?)+?
                               |   (   !fr:0
@@ -2419,12 +2422,12 @@ toolsProg=
                     )
             )
           & ( boxes
-            =   nodes edges
+            =   nodes edges links
               .   !arg:(?nodes.?edges)
                 & 0:?links
                 &   map
                   $ ( ( 
-                      =   
+                      =   desc from to
                         .   !arg:(?desc,%?from %?to)
                           & (!from.!to.!desc)+!links:?links
                       )
@@ -2434,7 +2437,7 @@ toolsProg=
                   .   
                     ,   map
                       $ ( ( 
-                          =   
+                          =   no step name
                             .   !arg:(?no.?step.?name)
                               &   ( dt
                                   .   
@@ -2466,7 +2469,7 @@ toolsProg=
                                                       .   
                                                         ,   mop
                                                           $ ( ( 
-                                                              =   
+                                                              =   from desc
                                                                 .       !arg
                                                                       : ( ?from
                                                                         . !no
@@ -2523,7 +2526,7 @@ toolsProg=
                                                     .   
                                                       ,   mop
                                                         $ ( ( 
-                                                            =   
+                                                            =   to desc
                                                               .       !arg
                                                                     : (!no.?to.?)
                                                                   &   !nodes
@@ -2631,7 +2634,7 @@ toolsProg=
               \r\n
       )
       ( submit2
-      =   button name
+      =   button name title
         .   !arg:(?name.%?button ?title)
           &   ( input
               .     (type.submit)
@@ -3558,12 +3561,15 @@ catch (SystemExit $e)
           & readTable$periods
           & ( getBoilerPlate
             =   id field val
-              .   !arg:(?id.?field)
-                &   !tooladm
-                  :   ?
-                    + (? (ToolID.!id) ?:? (!field.?val) ?)
-                    + ?
-                & !val
+              .     !arg:(?id.?field)
+                  &   !tooladm
+                    :   ?
+                      + ( ? (ToolID.!id) ?
+                        : ? (!field.?val) ?
+                        )
+                      + ?
+                  & !val
+                | 
             )
           & ( getFeatTable
             =   table
@@ -3731,6 +3737,109 @@ catch (SystemExit $e)
                     )
                   )
             )
+          &   (   getBoilerPlate$(!toolid.MultiInp):(y|#>1)
+                &   "    function requestFile($requestParm) // e.g. \"IfacettokF\"
+        {
+        global $params; // $params can contain multiple parameters with the same name. $_REQUEST and $_GET remove duplicates.
+        $inputfiles = array();
+        logit(\"requestFile({$requestParm})\");
+
+        if(isset($params[$requestParm]))
+            {
+            $urlbase = isset($params[\"base\"]) ? $params[\"base\"][0] : \"http://localhost/toolsdata/\";
+            $items = $params[$requestParm];
+            foreach($items as $item)
+                {
+                $url = $urlbase . urlencode($item);
+
+                $handle = fopen($url, \"r\");
+                if($handle == false)
+                    {
+                    logit(\"Cannot open url[$url]\");
+                    return \"\";
+                    }
+                else
+                    {
+                    $tempfilename = tempFileName(\""
+                    makeName$!toolid
+                    "_{$requestParm}_\");
+                    $temp_fh = fopen($tempfilename, 'w');
+                    if($temp_fh == false)
+                        {
+                        fclose($handle);
+                        logit(\"handle closed. Cannot open $tempfilename\");
+                        return \"\";
+                        }
+                    else
+                        {
+                        while (!feof($handle))
+                            {
+                            $read = fread($handle, 8192);
+                            fwrite($temp_fh, $read);
+                            }
+                        fclose($temp_fh);
+                        fclose($handle);
+                        $inputfiles[$tempfilename] = $item;
+                        //return $tempfilename;
+                        }
+                    }
+                }
+            }
+        return $inputfiles;
+        }
+"
+              |   "    function requestFile($requestParm) // e.g. \"IfacettokF\"
+        {
+        logit(\"requestFile({$requestParm})\");
+
+        if(isset($_REQUEST[$requestParm]))
+            {
+            $urlbase = isset($_REQUEST[\"base\"]) ? $_REQUEST[\"base\"] : \"http://localhost/toolsdata/\";
+
+            $item = $_REQUEST[$requestParm];
+            $url = $urlbase . urlencode($item);
+            logit(\"requestParm:$requestParm\");
+            logit(\"urlbase:$urlbase\");
+            logit(\"item:$item\");
+            logit(\"url[$url]\");
+
+            $handle = fopen($url, \"r\");
+            if($handle == false)
+                {
+                logit(\"Cannot open url[$url]\");
+                return \"\";
+                }
+            else
+                {
+                $tempfilename = tempFileName(\""
+                  makeName$!toolid
+                  "_{$requestParm}_\");
+                $temp_fh = fopen($tempfilename, 'w');
+                if($temp_fh == false)
+                    {
+                    fclose($handle);
+                    logit(\"handle closed. Cannot open $tempfilename\");
+                    return \"\";
+                    }
+                else
+                    {
+                    while (!feof($handle))
+                        {
+                        $read = fread($handle, 8192);
+                        fwrite($temp_fh, $read);
+                        }
+                    fclose($temp_fh);
+                    fclose($handle);
+                    return $tempfilename;
+                    }
+                }
+            }
+        logit(\"empty\");
+        return \"\";
+        }
+"
+              )
+            : ?function-requestFile
           &     "/*"
                 \n
                 "ToolID         : "
@@ -3775,7 +3884,7 @@ catch (SystemExit $e)
                 "ExternalURI    : "
                 getBoilerPlate$(!toolid.ExternalURI)
                 \n
-                "MultiInput     : "
+                "MultiInp       : "
                 getBoilerPlate$(!toolid.MultiInp)
                 \n
                 "PostData       : "
@@ -3796,8 +3905,13 @@ $toollog = '../log/"
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
-
+"
+                (   getBoilerPlate$(!toolid.MultiInp):(y|#>1)
+                  & "$params = array();
+"
+                | 
+                )
+                "
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
     global $toollog,$ftemp;
@@ -3933,9 +4047,9 @@ try {
             list($name, $value) = explode('=', $param);
             if("
                 !stringvar
-                "parameterName == urldecode($name) && "
+                "parameterName === urldecode($name) && "
                 !stringvar
-                "parameterValue == urldecode($value))
+                "parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -3951,56 +4065,8 @@ try {
         return $tmpno;
         }
 
-    function requestFile($requestParm) // e.g. \"IfacettokF\"
-        {
-        logit(\"requestFile({$requestParm})\");
-
-        if(isset($_REQUEST[$requestParm]))
-            {
-            $urlbase = isset($_REQUEST[\"base\"]) ? $_REQUEST[\"base\"] : \"http://localhost/toolsdata/\";
-
-            $item = $_REQUEST[$requestParm];
-            $url = $urlbase . urlencode($item);
-            logit(\"requestParm:$requestParm\");
-            logit(\"urlbase:$urlbase\");
-            logit(\"item:$item\");
-            logit(\"url[$url]\");
-
-            $handle = fopen($url, \"r\");
-            if($handle == false)
-                {
-                logit(\"Cannot open url[$url]\");
-                return \"\";
-                }
-            else
-                {
-                $tempfilename = tempFileName(\""
-                makeName$!toolid
-                "_{$requestParm}_\");
-                $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
-                    {
-                    fclose($handle);
-                    logit(\"handle closed. Cannot open $tempfilename\");
-                    return \"\";
-                    }
-                else
-                    {
-                    while (!feof($handle))
-                        {
-                        $read = fread($handle, 8192);
-                        fwrite($temp_fh, $read);
-                        }
-                    fclose($temp_fh);
-                    fclose($handle);
-                    return $tempfilename;
-                    }
-                }
-            }
-        logit(\"empty\");
-        return \"\";
-        }
 "
+                !function-requestFile
             : ?helperFunctions
           &     "
 /***************
@@ -4103,7 +4169,13 @@ try {
                         "/* "
                         ( Input
                           (   !featname:
-                            & " (ONLY used if there is exactly ONE input to this workflow step)"
+                            &   " (ONLY used if there is exactly ONE "
+                                (     getBoilerPlate$(!toolid.MultiInp)
+                                    : (y|#>1)
+                                  & "kind of "
+                                | 
+                                )
+                                "input to this workflow step)"
                           |   " with "
                               low$(getFeatName$!featname)
                               " "
@@ -4126,7 +4198,7 @@ try {
             if("
                         !var
                         !httpparm
-                        " == '')
+                        " === '')
                 {
                 header(\"HTTP/1.0 404 Input "
                         ( !featname:
@@ -4371,7 +4443,8 @@ try {
                 !outputFileName
                 ";
         global $dodelete;
-        global $tobedeleted;"
+        global $tobedeleted;
+        global $mode;"
                 !declarations
                 !basejobpost2mode
                 !DATATEXT
@@ -4409,7 +4482,7 @@ try {
                 "-results\");
         if("
                 !var
-                "mode == 'dry')
+                "mode === 'dry')
             scripinit($inputF,$input,$output);
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN "
                 !outputFileName
@@ -4444,6 +4517,19 @@ try {
         }
     loginit();
     "
+                (   getBoilerPlate$(!toolid.MultiInp):(y|#>1)
+                  & "$query  = explode('&', $_SERVER['QUERY_STRING']);
+    foreach( $query as $param )
+        {
+        if(strpos($param, '=') === false)
+            $param .= '=';
+
+        list($name, $value) = explode('=', $param, 2);
+        $params[urldecode($name)][] = urldecode($value);
+        }
+    "
+                | 
+                )
                 !mainfunc
                 "();\n"
                 !lastWord
@@ -5553,7 +5639,7 @@ try {
             : ?OP
           &   map
             $ ( ( 
-                =   short name table servicedGoalsTable,optgroups
+                =   short name table servicedGoalsTable optgroups help
                   .     !arg:(?.?short.?name.?table.)
                       & ( !servicedGoals:? (!short.?servicedGoalsTable) ?
                         |       selectServicedValues
@@ -5625,7 +5711,7 @@ try {
           & saveTable$recentTasks
       )
       ( Pipelines
-      =     i o o-SUpPLEMENT reqtool FP fP fp
+      =     i o o-SUpPLEMENT reqtool FP fP fp msg
           , superset userInput prunePipes windFW fintool
           , calls nth parms furtherCheck o2o extractIOfeaturesFromHTTParg
           , A Z reorderedworkflowlist topologicalOrderedTools
@@ -5853,7 +5939,6 @@ try {
                       & (!so.!go)
                   )
                 & !arg:(?source.?goal.?reqtool,?fintool.?)
-                & log$(reqtool !reqtool fintool !fintool goal !goal)
                 & readTable$tooladm
                 & readTable$toolprop
                 & :?bridges
@@ -6462,7 +6547,6 @@ try {
                 & ( getImpliedGoals
                   =   allios tools fintool ios
                     .   !arg:(?tools.?fintool)
-                      & log$(getImpliedGoals fintool !fintool)
                       & :?allios
                       & !( 
                          ' ( whl
@@ -6591,7 +6675,6 @@ try {
                       & denumerizeSum$!goal
                   )
                 & !arg:(?source.?goal.?reqtool,?fintool.?superset)
-                & log$(goal !goal reqtool !reqtool fintool !fintool)
                 & readTable$toolprop
                 & getActiveTools$:?activeTools
                 & :?reasons
@@ -6786,7 +6869,6 @@ try {
           & ( !arg:? (fintool.?fintool) ?
             | :?fintool
             )
-          & log$(reqtool !reqtool fintool !fintool)
           & 0:?Npipes
           &     map
               $ ( ( 
@@ -7155,7 +7237,7 @@ try {
                   If so, unification is done. If unification is not possible, the workflow is discarded by returning 0.
                   "
                 & ( wantThis
-                  =     sig nsig copySpecs
+                  =     sig nsig copySpecs Clashing clsh
                       , signatures unifySignaturesAtSpecLevel
                       , mergeOIbundlesWherePossible Nsig SubspecHarmonize
                       , separate signatureDotSep trySignatures unspec
@@ -8527,7 +8609,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( convert2URLs
       =     requestString Items items file files newJobs feats
           , base post2 val vals JobStack Val item In
-          , jobIDoffset A OffSet addOutputsToRequestString
+          , jobIDoffset A M Z OffSet addOutputsToRequestString
           , extension ID forceFeed jobNr jobID maxjobID
           , Short DiscerningFeature getDisFe
           , DATE Tool URL dep discerningFeature
@@ -8703,16 +8785,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         )
                                       &   getCompatibleInputFile$(!Items.!Uploads.!FiLfeats)
                                         : ?fileitem
-                                      & log$(Compatible !fileitem)
                                       & !dep !fileitem:?dep
                                       & (F.!fileitem):?fileTerm
                                     |   (%@?val^?spec.@?file)
                                       & OffSet$!file:?file
                                       & !dep (!file,pending):?dep
                                       & (   !newJobs
-                                          :   ?
-                                              (!jobNr.!file.?.?.?.?file)
-                                              ?
+                                          : ? (!file.?.?.?.?file) ?
                                         | log$(OOPS1 !jobNr file !file)
                                         )
                                       & (F.!file):?fileTerm
@@ -8722,9 +8801,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                                         |   OffSet$!file:?file
                                           & !dep (!file,pending):?dep
                                           & (   !newJobs
-                                              :   ?
-                                                  (!jobNr.!file.?.?.?.?file)
-                                                  ?
+                                              : ? (!file.?.?.?.?file) ?
                                             | log$(OOPS2 !jobNr file !file)
                                             )
                                           & (F.!file):?fileTerm
@@ -8854,7 +8931,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               & !in:?In
               &   getDepsAndAddInputsToRequestString$(!in.!nfiles.!requestString.!newJobs)
                 : (?dep.?requestString)
-              & log$(dep !dep)
               &     !dep
                     ( :?files
                     & ( !requestString:?+(F.?)+?
@@ -8903,26 +8979,20 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                               : ?requestString
                             )
                       )
-                    & log$(files !files)
-                    & log$(dep2 !dep)
                     & (     !requestString
                           : ( ?+(I.?+(?.?+(?.?+(F.?)+?)+?)+?)+?
                             | ?+(F.?)+?
                             )
-                        & log$simpleInput
                         & simpleInput$!requestString:?requestString
                       |   log$forceFeed
                         & !requestString+forceFeed$!Items:?requestString
                       )
-                    & log$(files2 !files)
                     & !files
                     )
                 : ?inputs
-              & log$(IJNPUTS !inputs)
               & compact$!requestString+(mode.!dryORrun):?requestString
               &     !newJobs
-                    ( !jobNr
-                    . !jobID
+                    ( !jobID
                     . !inputs
                     . !URL
                     . !requestString
@@ -8948,7 +9018,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     )
                 : ?newJobs
               )
-          & !jobs !newJobs:?jobs
+          &   (   !jobs:?A (!jobNr.?M) ?Z
+                & !A (!jobNr.!M !newJobs) !Z
+              | !jobs (!jobNr.!newJobs)
+              )
+            : ?jobs
           & saveTable$jobs
           & !maxjobID
       )
@@ -9391,7 +9465,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &   map
             $ ( ( 
                 =   item TITLE
-                  .       !Uploads
+                  .   !arg:(item.?)
+                    |     !Uploads
                         :   ?
                             (?.?item.!arg.? (TITLE.?TITLE) ?.?)
                             ?
@@ -9411,8 +9486,9 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !arg
       )
       ( deleteDepending
-      =   jobNr jobID
+      =   jobNr jobID CTBs
         .   !arg:(?jobNr.?jobID)
+          & log$(deleteDepending !jobNr !jobID)
           & !( 
              ' (     map
                    $ ( ( 
@@ -9447,13 +9523,23 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               .   !arg:(?arg.?features)
                 &     mop
                     $ ( ( 
-                        =   
-                          .   !arg:(?feature.?featvals.?)
-                            &   getFeatAndValueNames$(!feature,!featvals)
-                              : (?featname,?featdesc)
-                            & ( !featdesc:
-                              | ", " localized$!featname "=" !featdesc
-                              )
+                        =   featsum Feats
+                          .   !arg:(?feature.?featsum)
+                            &     mop
+                                $ ( ( 
+                                    =   
+                                      .   !arg:(?featvals.?)
+                                        &   getFeatAndValueNames$(!feature,!featvals)
+                                          : (?featname,?featdesc)
+                                        & ( !featdesc:
+                                          | "/" !featdesc
+                                          )
+                                    )
+                                  . !featsum
+                                  . (=+)
+                                  )
+                              : ("/" ?Feats|?Feats)
+                            & ", " localized$!featname "=" !Feats
                         )
                       . !arg
                       . (=+)
@@ -9462,9 +9548,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 & str$!arg
             )
           & ( Steps
-            =   x items tool JobNr JobId,format I O format stage
-              .       !arg
-                    : (?JobNr.@(?:? #?JobId).?x.?items.?tool.?I.?O.?stage)
+            =   x items tool JobId,format I O format stage
+              .     !arg:(@(?:? #?JobId).?x.?items.?tool.?I.?O.?stage)
                   & ( step
                     .   
                       ,   (JobNr.,!JobNr)
@@ -9492,12 +9577,20 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & !arg:?JobNr
           & readTable$jobs
           & :?filelist
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(!JobNr.?arg)&!arg
+                      | 
+                  )
+                . !jobs
+                )
+            : ?myjobs
           &   whl
             ' ( :?aborted:?done
-              &   !jobs
+              &   !myjobs
                 :   ?
-                    ( !JobNr
-                    .   %@?JobId
+                    (   %@?JobId
                         ( aborted:?aborted&:?done
                         | done:?done&:?aborted
                         |   (|starting|waiting)
@@ -9509,19 +9602,22 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                       | ?&:?I:?O
                     . ?filename
                     )
-                    ?jobs
+                    ?myjobs
               &     !filelist
-                    ( !JobNr
-                    . !JobId
-                    .   !aborted:aborted&fejl
+                    ( !JobId
+                    .     !aborted:aborted
+                        & (   !items:(|(item.?))
+                            & skipped
+                          | fejl
+                          )
                       | !filename
                     . !items
                     . !tool
                     . !I
                     . !O
                     .     ( !aborted:aborted
-                          |   !jobs
-                            : ? (!JobNr.?.? !JobId ?.?) ?
+                          |   !myjobs
+                            : ? (?.? !JobId ?.?) ?
                           )
                         & 
                       | LAST
@@ -9531,7 +9627,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (workflow.,!workflow) (steps.,map$(Steps.!filelist))
       )
       ( doneAllJobSub
-      =   JobNr
+      =   JobNr myjobs
         .   readTable$jobs
           & @(!arg:? #?JobNr)
           & readTable$CTBs
@@ -9539,8 +9635,16 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           &     map
               $ ( ( 
                   =   JobId
-                    .     !arg:(!JobNr.%@?JobId ?.?.?.?.?)
-                        & deleteDepending$(!JobNr.!JobId)
+                    .     !arg:(!JobNr.?myjobs)
+                        &   map
+                          $ ( ( 
+                              =   
+                                .   !arg:(%@?JobId ?.?.?.?.?)
+                                  & deleteDepending$(!JobNr.!JobId)
+                                  & 
+                              )
+                            . !myjobs
+                            )
                         & 
                       | !arg
                   )
@@ -9618,6 +9722,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & retrieveFeatures$(!Items.!errors):(?presels.?errors)
+          & log$(retrieveFeatures-presels !presels)
           & (!Items.!presels.!errors)
       )
       ( initialiseSpecifyGoalShowWorkflowsChosenWorkflow
@@ -9627,31 +9732,45 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & 0:?tabind
           & ?:?Tool
           & !arg:?parms
+          & log$(initialiseSpecifyGoalShowWorkflowsChosenWorkflow !arg)
           & ( !parms:? (itms.?itms) ?
             | 1:?itms
             )
+          & log$(itms !itms)
           & readTable$ItemGroupsCache
           &     map
               $ ( ( 
                   =   a v nt CLOCK wfs items
                     .     !arg:(@(?:?a ";" ?nt).?v)
+                        & log$(map a !a nt !nt)
                         & ( !nt:!itms&(!a.!v)
                           | 
                           )
-                      |       ( !arg:(Item|itms.?)
+                      |       (   !arg:(Item.?)
+                                & log$(arg Item !arg)
+                                & !arg
+                              |   !arg:(itms.?)
+                                & log$(arg Item or itms !arg)
+                                & (itms.1)
                               |   !arg:(CLOCK.?CLOCK)
+                                & log$(CLOCK !CLOCK itms !itms)
                                 &   !ItemGroupsCache
                                   :   ?
                                       (!CLOCK.? (!itms.?items.?wfs) ?)
                                       ?
+                                & log$(FOUND items !items wfs !wfs)
                                 &   map$((=.Item.!arg).!items)
                                   : ?Items
+                                & log$(Items !Items)
                                 & !arg
                               | 
                               )
                               !hiddenData
                           : ?hiddenData
-                        & (!arg:~(itms.?)|)
+                        & ( !arg
+                          | !arg:~(itms.?)
+                          | 
+                          )
                   )
                 . !parms
                 )
@@ -9790,7 +9909,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$tooladm
           & (   !parms:?A (eye.?) ?Z
               & !A (bsubmit.eye) !Z:?parms
-              & log$parms
               & 
             | 
             )
@@ -10010,7 +10128,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & ( centr
-            =   cx cy x1 x2 y1 y2 xs ys N
+            =   cx cy x1 x2 y1 y2 xs ys N points
               .     !arg:?+(cx.?cx)+?:?+(cy.?cy)+?
                   & (!cx.!cy)
                 |     !arg
@@ -10489,7 +10607,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?steps
           &     map
               $ ( ( 
-                  =   from to afrom ato text,kro x1 x2 y1 y2
+                  =   from to afrom ato text kro x1 x2 y1 y2
                     .   !arg:(?from.?to.?kro.?text)
                       &   !steps
                         :   ?
@@ -11372,51 +11490,76 @@ function main2(evt) {
  *
  * Called from util.java, workflow.java
  */"
-      ( abortJob
-      =   abort JobNr jobID todelete
-        .   readTable$jobs
-          & log$("abortJob " !arg)
-          & !arg:(@(?:? #?JobNr).?jobID)
+      ( abort-job
+      =   abort JobNr jobID todelete jobs myjobs seen
+        .   log$abort-job
+          & !arg:(?jobs.?JobNr.?jobID)
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(!JobNr.?arg)&!arg
+                      | 
+                  )
+                . !jobs
+                )
+            : ?myjobs
+          & notseen:?seen
+          &     map
+              $ ( ( 
+                  =   
+                    .     !arg:(!JobNr.?)
+                        & (   !seen:notseen
+                            & seen:?seen
+                            & (!JobNr.!myjobs)
+                          | 
+                          )
+                      | !arg
+                  )
+                . !jobs
+                )
+            : ?jobs
           & (!JobNr.!jobID):?todelete
           & ( abort
-            =     JobNr jobID jobid2 A Z ZZ a z
+            =     JobNr jobID jobid2 A Z B Y ZZ a z
                 , URL tool items todelete
               .   !arg:(?JobNr.?jobID) ?todelete
                 & log$(abort !arg)
-                &   !jobs
-                  :   ?A
-                      ( !JobNr
-                      . !jobID ~aborted
+                & !jobs:?A (!JobNr.?myjobs) ?Z
+                &   !myjobs
+                  :   ?B
+                      ( !jobID ~aborted
                       . ?items&inputResources$!items:?items
                       . ?URL&toolName$!URL:?tool
                       . ?ZZ
                       )
-                      ?Z
-                & log$(going to abort !JobNr !jobID)
-                &   !A (!JobNr.!jobID aborted.!items.!URL.!ZZ) !Z
-                  : ?jobs
-                & log$(aborted !JobNr !jobID)
+                      ?Y
+                &   !B (!jobID aborted.!items.!URL.!ZZ) !Y
+                  : ?myjobs
                 &   whl
-                  ' (   !jobs
-                      :   ?A
-                          ( !JobNr
-                          . %?jobid2 ?
+                  ' (   !myjobs
+                      :   ?B
+                          ( %?jobid2 ?
                           . ?a (!jobID,pending) ?z
                           . ?URL&toolName$!URL:?tool
                           . ?ZZ
                           )
-                          ?Z
-                    & log$(depending !JobNr !jobid2)
-                    &   !A (!JobNr.!jobid2.!a !jobID !z.!URL.!ZZ) !Z
-                      : ?jobs
+                          ?Y
+                    &   !B (!jobid2.!a !jobID !z.!URL.!ZZ) !Y
+                      : ?myjobs
                     & (!JobNr.!jobid2) !todelete:?todelete
-                    & log$(todelete !todelete)
                     )
-                & log$(delete !todelete)
+                & !A (!JobNr.!myjobs) !Z:?jobs
                 & !todelete
             )
-          &   whl
-            ' (log$(iterDO !todelete)&abort$!todelete:?todelete)
+          & whl'(abort$!todelete:?todelete)
+          & !jobs
+      )
+      ( abortJob
+      =   abort JobNr jobID todelete
+        .   readTable$jobs
+          & log$("abortJob " !arg)
+          & !arg:(@(?:? #?JobNr).%?jobID ?)
+          & abort-job$(!jobs.!JobNr.!jobID):?jobs
           & saveTable$jobs
       )
       ( workflowSVG
@@ -11428,7 +11571,7 @@ function main2(evt) {
           , some breuk F M/planets2 W dampeningDoneDhreshold
           , degrees dimensions epsilon freezing hasCrossing
           , iterations maxn nlinks noCrossing planets q
-          , evry
+          , evry planettitles titlelinks
           , NN lineno linkcolour linkcolours ll
           , planetcolour planetcolours planetstates plnt
           , strngth xx xxs xxyy yys
@@ -12727,7 +12870,7 @@ function main2(evt) {
                   : ?lines
                 &     map
                     $ ( ( 
-                        =   a b col planetcolour
+                        =   a b col planetcolour text Title
                           .   !arg:(?a.?b)
                             & 1+!nn:?nn
                             & 255+-1*div$(255*!nn*!MM,1):?col
@@ -13307,6 +13450,9 @@ function main2(evt) {
                   |   convert2URLs
                     $ (!jobNr..!JobStack.toolsdataURL$.toolsUploadURL$.!Items.!dryORrun)
                   )
+                & readTable$jobs
+                & handleToolsTakingBatchesOfInput$(!jobNr.!jobs):?jobs
+                & saveTable$jobs
                 & (readTable$jobAbout|:?jobAbout)
                 & makeWorkflowVisualisation$!struct:(?tXt.?SVG)
                 &     ( !JobNr
@@ -13497,9 +13643,25 @@ function main2(evt) {
                 , parms nth batch Items mail2 ERR
                 , allpipes ViewDetails fintool
                 , returnCode struct whichButton
-                , reqtool sources bm err
+                , reqtool sources bm err msg
                 , goals topologicalOrderedTools wf
-              .   ( whichButton
+                , getDetailedSource getDetailedGoal
+              .   ( getDetailedSource
+                  =   
+                    .   whl'(!arg:(%?arg %|(?arg,?)))
+                      & !arg:(?.?.?arg.?)
+                      & !arg
+                  )
+                & ( getDetailedGoal
+                  =   
+                    .     whl
+                        ' ( !arg
+                          : (% ((?.?):%?arg)|(?,?arg))
+                          )
+                      & !arg:(?.?.?arg.?)
+                      & !arg
+                  )
+                & ( whichButton
                   =   bm
                     .   !arg:?bm
                       & (     !Submit
@@ -13508,6 +13670,8 @@ function main2(evt) {
                               )
                           & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm.)
                         |   localized$!Bookmark:!Submit
+                          & getDetailedSource$!struct:?sources
+                          & getDetailedGoal$!struct:?goals
                           & ((!sources.!goals).!struct):?wf
                           & (!wrkflws:|readTable$wrkflws)
                           &   ShowOnlyTheCurrentPipe
@@ -13706,6 +13870,7 @@ function main2(evt) {
                           fct
                           flt
                           jsn
+                          let
                           nestML
                           out
                           sgn
@@ -13730,61 +13895,50 @@ function main2(evt) {
  *
  * Delete all references to files that no longer exist.
  * Argument: a list of the files that still exist in the Staging area.
+ * cleanup$ does not delete any files. See keep$.
  * Affected tables:
- *      Uploads.table
- *      jobs.table
- *      CTBs.table
- *      jobAbout.table
+ * A    zippedresults
+ *          All mentioned files must exist.
+ * B    Uploads
+ *          All mentioned files must exist.
+ *      Loop:
+ * C        ItemGroupsCache
+ *              All mentioned files must be mentioned in Uploads.
+ * D        jobs
+ *              All input files must be mentioned in Uploads. If not, all of job must be deleted.
+ *              If a job has two or more inputs, and not all input files are in a single entry in ItemGroupsCache, then these files must be removed from Uploads.
+ * E    CTBs
+ *          All jobNr/jobID pairs must occur in jobs.
+ * F    jobAbout
+ *          All jobNr must occur in jobs.
+ *
+ * It is not the case that all uploaded (Uploads) and grouped (ItemGroupsCache) files must occur in jobs
  *
  * Called from cleanup.java
  */"
       ( cleanup
       =     jobNr jobID jobstatus files toolURL parms file
-          , A Z a z F deleteDependingJobs existingFiles
-          , feats item meta nr stagingName
-        .   ( deleteDependingJobs
-            =   A Z jobNr locJobs,file files jobID jobstatus parms toolURL
-              .   !arg:(?arg.?locJobs)
-                &   whl
-                  ' (   !locJobs
-                      :   ?A
-                          ( ?jobNr
-                          . %?jobID ?jobstatus
-                          . ? !arg ?
-                          . ?toolURL
-                          . ?parms
-                          . ?file
-                          )
-                          ?Z
-                    & deleteDepending$(!jobNr.!jobID)
-                    &     map
-                        $ ( ( 
-                            =   
-                              .       !arg
-                                    : ( !jobNr
-                                      . %?jobID ?jobstatus
-                                      . ?files
-                                      . ?toolURL
-                                      . ?parms
-                                      . ?file
-                                      )
-                                  & deleteDepending$(!jobNr.!jobID)
-                                  & 
-                                | !arg
-                            )
-                          . !A !Z
-                          )
-                      : ?locJobs
+          , A Z a z F existingFiles
+          , feats item meta nr stagingName LeN removedFromUploads
+        .   !arg:? [?LeN
+          &   log
+            $ ( str
+              $ ( cleanup
+                    map
+                  $ ( (=." " !arg)
+                    .   !LeN:<5&!arg
+                      | !arg:?A [2 ? [-2 ?Z&!A "..." !Z
                     )
-                & !locJobs
-            )
-          & log$(cleanup !arg)
+                )
+              )
           & readTable$ItemGroupsCache
           & readTable$Uploads
           & readTable$jobs
           & readTable$CTBs
           & readTable$jobAbout
           & !arg:?existingFiles
+          & "--A-- zippedresults: All mentioned files must exist."
+          & log$"--A--"
           &   ( 
               =   existingFiles zippedresults
                 .   !arg:?existingFiles
@@ -13794,7 +13948,8 @@ function main2(evt) {
                           =   
                             .     !existingFiles:? !arg ?
                                 & !arg
-                              | 
+                              |   log$(str$("Remove " !arg " from zippedresults"))
+                                & 
                           )
                         . !zippedresults
                         )
@@ -13802,101 +13957,185 @@ function main2(evt) {
                   & saveTable$zippedresults
               )
             $ !existingFiles
-          &     map
-              $ ( ( 
-                  =   
-                    .       !arg
-                          : ( ?
-                            .   ?
-                                ( ?
-                                .   ?
-                                    ( %@?item
-                                    &   !Uploads
-                                      : ( ~(? (?.!item.?) ?)
-                                        |   ?
-                                            ( ?
-                                            . !item
-                                            .   ?stagingName
-                                              & ~( !existingFiles
-                                                 : ? !stagingName ?
-                                                 )
-                                            . ?
-                                            )
-                                            ?
-                                        )
-                                    )
-                                    ?
-                                . 
-                                )
-                                ?
-                            )
-                        & log$(notCached !arg)
-                      | !arg
-                  )
-                . !ItemGroupsCache
-                )
-            : ?ItemGroupsCache
+          & "--B--  Uploads: All mentioned files must exist."
+          & log$"--B--"
           &     map
               $ ( ( 
                   =   
                     .   !arg:(?nr.?item.?stagingName.?meta.?feats)
-                      & (   ~(!existingFiles:? !stagingName ?)
-                          &     map
-                              $ ( ( 
-                                  =   
-                                    .       !arg
-                                          : (?.? (?.? !item ?) ?)
-                                        & 
-                                      | !arg
-                                  )
-                                . !ItemGroupsCache
-                                )
-                            : ?ItemGroupsCache
-                          & deleteDependingJobs$(!stagingName.!jobs):?jobs
+                      & ( !existingFiles:? !stagingName ?&!arg
+                        |   log$(str$("Remove " !stagingName " from Uploads"))
                           & 
-                        | !arg
                         )
                   )
                 . !Uploads
                 )
             : ?Uploads
+          &   whl
+            ' ( "--C-- ItemGroupsCache: All mentioned files must be mentioned in Uploads."
+              & log$"--C--"
+              & "Note: ItemGroupsCache mentions original file names. The same file can be uploaded several times, each time under a slightly different staging name."
+              & :?removedFromUploads
+              &     map
+                  $ ( ( 
+                      =   2bremoved
+                        .       !arg
+                              : ( ?
+                                .     ?
+                                      ( ?
+                                      .   ?
+                                          ( %@?item
+                                          & log$(Is !item in Uploads)
+                                          &   !Uploads
+                                            : ~(? (?.!item.?) ?)
+                                          & log$"No, it isn't"
+                                          )
+                                          ?
+                                      . ?
+                                      )
+                                      ?
+                                  : ?2bremoved
+                                )
+                            & log$(2bremoved !2bremoved)
+                            & 
+                          | !arg
+                      )
+                    . !ItemGroupsCache
+                    )
+                : ?ItemGroupsCache
+              & "--D-- jobs
+                        All input files must be mentioned in Uploads. If not, all of job must be deleted.
+                        If a job has two or more inputs, and not all input files are in a single entry in ItemGroupsCache, then these files must be removed from Uploads."
+              & log$"--D--"
+              &     map
+                  $ ( ( 
+                      =   steps outs inps removedFU
+                        .   !arg:(?jobNr.?steps)
+                          & :?outs:?removedFU
+                          &     map
+                              $ ( ( 
+                                  =   in ou ins jobId
+                                    .     !arg
+                                        : (%@?jobId ?.?in.?.?.?ou)
+                                      &     map
+                                          $ ( ( 
+                                              =   OU
+                                                .   (   !arg
+                                                      : ( item
+                                                        .   
+                                                          ,   ?
+                                                              (id.,?arg)
+                                                              ?
+                                                        )
+                                                    | 
+                                                    )
+                                                  &   log
+                                                    $ (   str
+                                                        $ ( "WhatAbout "
+                                                            !arg
+                                                            " when outs is "
+                                                          )
+                                                        !outs
+                                                      )
+                                                  & (   !( 
+                                                         ' ( $outs
+                                                           :   ?
+                                                               ( ($arg.?)
+                                                               | ( ?
+                                                                 . @( ?OU
+                                                                    : ? ()$arg ?
+                                                                    )
+                                                                 )
+                                                               )
+                                                               ?
+                                                           )
+                                                         )
+                                                      &   log$(str$"     Is output ")
+                                                          !OU
+                                                          " from previous step"
+                                                      & 
+                                                    |   log$"     is really input"
+                                                      & !arg
+                                                    )
+                                              )
+                                            . !in
+                                            )
+                                        : ?ins
+                                      & (!jobId.!ou) !outs:?outs
+                                      & !ins
+                                  )
+                                . !steps
+                                )
+                            : ?inps
+                          & log$(inps !inps)
+                          & (     !inps
+                                :   ?
+                                    ( %@?in
+                                    & !Uploads:~(? (?.?.!in.?) ?)
+                                    & log$(str$(!in " is not in Upload"))
+                                    )
+                                    ?
+                              & !in:?removedFU
+                              & "An input is missing in Uploads? Then remove all inputs used in this job."
+                              & log$("Remove all " !inps)
+                              &     map
+                                  $ ( ( 
+                                      =   file
+                                        .     !arg:(?.?.?file.?)
+                                            & !('($inps:? ()$file ?))
+                                            & !file !removedFU:?removedFU
+                                            & 
+                                          | !arg
+                                      )
+                                    . !Uploads
+                                    )
+                                : ?Uploads
+                            | log$("Do not remove " !inps)
+                            )
+                          & ( !removedFU:&!arg
+                            |   !removedFU !removedFromUploads:?removedFromUploads
+                              &   log
+                                $ "This forces a new iteration. Remove job completely if one or more inputs are missing"
+                              & 
+                            )
+                      )
+                    . !jobs
+                    )
+                : ?jobs
+              & !removedFromUploads:~
+              )
+          & "--E--  CTBs: All jobNr/jobID pairs must occur in jobs."
+          & log$"--E--"
           &     map
               $ ( ( 
                   =   
-                    .     !arg
-                        : (?jobNr.%?jobID ?jobstatus.?files.?toolURL.?parms.?file)
-                      & (   (   !files
-                              :   ?
-                                  (%@?F&~(!existingFiles:? !F ?))
-                                  ?
-                            | ~(!existingFiles:? !file ?)
-                            )
-                          & deleteDepending$(!jobNr.!jobID)
-                          & 
-                        | !arg
+                    .   !arg:(?jobNr.?jobID.?)
+                      & (     !jobs
+                            :   ?
+                                (!jobNr.? (!jobID ?.?) ?)
+                                ?
+                          & !arg
+                        | log$(str$("Remove CTB " !arg))&
                         )
                   )
-                . !jobs
+                . !CTBs
                 )
-            : ?jobs
-          &   whl
-            ' (   !CTBs
-                :   ?a
-                    ( (?jobNr.?jobID.?)
-                    & ~(!jobs:? (!jobNr.!jobID ?.?) ?)
-                    )
-                    ?z
-              & !a !z:?CTBs
-              )
-          &   whl
-            ' (   !jobAbout
-                :   ?a
-                    ( (?jobNr.?)
-                    & ~(!jobs:? (!jobNr.?) ?)
-                    )
-                    ?z
-              & !a !z:?jobAbout
-              )
+            : ?CTBs
+          & "--F-- jobAbout: All jobNr must occur in jobs."
+          & log$"--F--"
+          &     map
+              $ ( ( 
+                  =   
+                    .   !arg:(?jobNr.?)
+                      & (   !jobs:? (!jobNr.?) ?
+                          & !arg
+                        | log$(str$("remove from jobAbout " !jobNr))&
+                        )
+                  )
+                . !jobAbout
+                )
+            : ?jobAbout
+          & log$SAVE
           & saveTable$Uploads
           & saveTable$jobs
           & saveTable$CTBs
@@ -13919,7 +14158,7 @@ function main2(evt) {
  * Called from util.java
  */"
       ( doneJob
-      =     A Z JobNr jobID ZZ jobid2 a z files S
+      =     A B Y Z JobNr jobID ZZ jobid2 a z files S
           , prevTitle
           , ctb ctbid CTBID filename status
           , toolURL parms file TITLE SPANGRPS
@@ -13965,75 +14204,72 @@ function main2(evt) {
             & readTable$Uploads
             & readTable$facets
             & :?toolURL
-            &     map
-                $ ( ( 
-                    =   
-                      .     !arg
-                          : ( !JobNr
-                            .   !jobID
-                                ( ( 
-                                  | starting
-                                  | waiting
-                                  | done
-                                  )
-                                : ?status
-                                )
-                            . ?files
-                            . ?toolURL
-                            . ?parms
-                            . ?filename
+            &   !jobs
+              :   ?A
+                  ( !JobNr
+                  .   ?B
+                      (   !jobID
+                          ( ( 
+                            | starting
+                            | waiting
+                            | done
                             )
-                        & ( !status:done
-                          |   (!JobNr.!jobID done.!files.!toolURL.!parms.!filename)
-                            : ?arg
+                          : ?status
                           )
-                        & ( !CTBs:? (!JobNr.!jobID.!EMAIL.!CTBID) ?
-                          |   (!CTBs|) (!JobNr.!jobID.!EMAIL.!CTBID)
-                            : ?CTBs
-                          )
-                        & :?prevTitle
-                        &   whl
-                          ' ( !files:%?file ?files
-                            & (     !CTBs
-                                  : ? (!JobNr.!file.?ctb.?ctbid) ?
-                                & ( !ITEMS:? !ctb "::" !ctbid ?
-                                  |     !ITEMS
-                                        (!ITEMS:|" ")
-                                        !ctb
-                                        "::"
-                                        !ctbid
-                                    : ?ITEMS
-                                  )
-                              | 
-                              )
-                            )
-                        & ( !parms:?+(O.?+(lang.?LANGUAGE.?)+?)+?
-                          | 
-                          )
-                        & !arg
-                    )
-                  . !jobs
+                      . ?files
+                      . ?toolURL
+                      . ?parms
+                      . ?filename
+                      )
+                      ?Y
                   )
-              : ?jobs
+                  ?Z
+            & ( !status:done
+              |     !A
+                    ( !JobNr
+                    .   !B
+                        (!jobID done.!files.!toolURL.!parms.!filename)
+                        !Y
+                    )
+                    !Z
+                : ?jobs
+              )
+            & ( !CTBs:? (!JobNr.!jobID.!EMAIL.!CTBID) ?
+              | (!CTBs|) (!JobNr.!jobID.!EMAIL.!CTBID):?CTBs
+              )
+            & :?prevTitle
+            &   whl
+              ' ( !files:%?file ?files
+                & (   !CTBs:? (!JobNr.!file.?ctb.?ctbid) ?
+                    & ( !ITEMS:? !ctb "::" !ctbid ?
+                      |     !ITEMS
+                            (!ITEMS:|" ")
+                            !ctb
+                            "::"
+                            !ctbid
+                        : ?ITEMS
+                      )
+                  | 
+                  )
+                )
+            & (!parms:?+(O.?+(lang.?LANGUAGE.?)+?)+?|)
             & (   !toolURL:
                 &   !jobs
-                  : ? (!JobNr.!jobID done.?.?toolURL.?.?) ?
+                  :   ?
+                      (!JobNr.? (!jobID done.?.?toolURL.?.?) ?)
+                      ?
               | 
               )
+            & !jobs:?A (!JobNr.?myjobs) ?Z
             &   whl
-              ' (   !jobs
-                  :   ?A
-                      ( !JobNr
-                      . %@?jobid2 ?S
-                      . ?a (!jobID,pending) ?z
-                      . ?ZZ
-                      )
-                      ?Z
-                &     !A
-                      (!JobNr.!jobid2 !S.!a !jobID !z.!ZZ)
-                      !Z
-                  : ?jobs
+              ' (   !myjobs
+                  :   ?B
+                      (%@?jobid2 ?S.?a (!jobID,pending) ?z.?ZZ)
+                      ?Y
+                &   !B (!jobid2 !S.!a !jobID !z.!ZZ) !Y
+                  : ?myjobs
                 )
+            & !A (!JobNr.!myjobs) !Z:?jobs
             & saveTable$CTBs
             & saveTable$jobs
             & (     ( !SPANGRPfil:
@@ -14123,7 +14359,8 @@ function main2(evt) {
           | 
       )
       ( fixedMenuItems
-      =   dezilacol UILangNames wheretogo parameters A Z
+      =     dezilacol UILangNames wheretogo parameters A Z
+          , ContentType DestinationDir FieldName LocalFileName Name Size nofonts
         .   ( UILangNames
             =   G R
               .   readTable$linguae
@@ -14151,7 +14388,6 @@ function main2(evt) {
                 & !R
             )
           & !arg:(?wheretogo.?parameters)
-          & lst$(parameters,path$"log.txt",APP)
           & (   !parameters:?A (UIlanguage.?) ?Z
               & !A !Z:?parameters
             | 
@@ -14623,7 +14859,6 @@ function main2(evt) {
                               (password.!password."Empty string as password.")
                               (salt.!salt.)
                           : ?properties
-                        & log$(properties !properties)
                       | 
                       )
                     &   (   lst$(!tabs,path$!AAA,NEW)
@@ -14666,6 +14901,143 @@ function main2(evt) {
           | !arg:password&!password
           | 
       )
+      ( handleToolsTakingBatchesOfInput
+      =     A B Y Z surl collapse lastjobid jobby jobs JobNr jobID
+          , ext newou more dp rl a I b O base jb mode post2 t
+        .   !arg:(?JobNr.?jobs)
+          & (   readTable$tooladm
+              &   !jobs
+                :   ?
+                    ( !JobNr
+                    .   ?
+                        ( ?jobID
+                        .   ( ?
+                            .   ?surl
+                              &   !tooladm
+                                :   ?
+                                  + ( ? (ServiceURL.!surl) ?
+                                    :   ?
+                                        (MultiInp.y|#>1)
+                                        ?
+                                    )
+                                  + ?
+                            . ?
+                            )
+                          : ?jobby
+                        )
+                        ?
+                    )
+                    ?
+              & ( collapse
+                =     jobby jobs dep url A I B O lastjobid more
+                    , base job mode post2 output JobNr jobID myjobs
+                  .   !arg:(?jobby.?jobs.?JobNr.?jobID)
+                    &   !jobby
+                      : ( ?dep
+                        . ?url
+                        .   ?A
+                          + (I.?I)
+                          + ?B
+                          + (O.?O)
+                          + (base.?base)
+                          + (job.?job)
+                          + (mode.?mode)
+                          + (post2.?post2)
+                        . ?output
+                        )
+                    & :?lastjobid
+                    & !jobs:? (!JobNr.?myjobs) ?
+                    & (   map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : ( ?jobid
+                                      . ?dp
+                                      . ?rl
+                                      .   ?a
+                                        + (I.!I)
+                                        + ?b
+                                        + (O.!O)
+                                        + (base.!base)
+                                        + (job.?jb)
+                                        + (mode.!mode)
+                                        + (post2.!post2)
+                                      . ?ou
+                                      )
+                                  & ( !lastjobid:
+                                    | abort-job$(!jobs.!JobNr.!lastjobid):?jobs
+                                    )
+                                  & !jobid:?lastjobid
+                                  &   (!a:~0|)
+                                      (!b:~0|)
+                                | 
+                            )
+                          . !myjobs
+                          )
+                      . !lastjobid
+                      . !jobs
+                      )
+                )
+              & collapse$(!jobby.!jobs.!JobNr.!jobID):(?AB.?lastjobid.?jobs)
+              &   !jobs
+                :   ?A
+                    ( !JobNr
+                    .   ?B
+                        ( !lastjobid ?more
+                        . ?dp
+                        . ?rl
+                        .   ?a
+                          + (I.?I)
+                          + ?b
+                          + (O.?O)
+                          + (base.?base)
+                          + (job.?jb)
+                          + (mode.?mode)
+                          + (post2.?post2)
+                        . ?ou
+                        )
+                        ?Y
+                    )
+                    ?Z
+              &     !A
+                    ( !JobNr
+                    .   !B
+                        ( !lastjobid !more
+                        .     map
+                            $ ( ( 
+                                =   
+                                  .     !arg
+                                      : (%@?arg ?.?.?.?+(base.!base)+?.?)
+                                    & !arg
+                                )
+                              . !B
+                              )
+                            !dp
+                        . !rl
+                        .   list2sum$!AB
+                          + (I.!I)
+                          + (O.!O)
+                          + (base.!base)
+                          + (job.!jb)
+                          + (mode.!mode)
+                          + (post2.!post2)
+                        .     !AB:% %
+                            & @( !ou
+                               : ? ("-" !JobNr "-" !lastjobid ?:?ext)
+                               )
+                            & str$(combined !ext):?newou
+                            & sub$(!Y.!ou.!newou):?Y
+                            & !newou
+                          | !ou
+                        )
+                        !Y
+                    )
+                    !Z
+                : ?jobs
+            | 
+            )
+          & !jobs
+      )
       "
 /**
  * getJobArg
@@ -14680,104 +15052,87 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby res A B makeList req servurl multiinp
-        .   str
-          $ (   !arg:(@(?:? #?JobNr).?jobID.?arg)
-              & (!jobs|readTable$jobs)
-              & !jobs:? (!JobNr.!jobID ?.?jobby) ?
-              &   !arg
-                : ( endpoint&!jobby:(?.?arg.?)
-                  |   method
-                    & !jobby:(?.?arg.?)
-                    & readTable$tooladm
-                    &   !tooladm
-                      :   ?
-                        + ( ? (ServiceURL.!arg) ?
-                          : ? (PostData.?arg) ?
-                          )
-                        + ?
-                    &   ( !arg:on&POST
-                        | GET
+      =   JobNr jobID jobby res A B makeList req servurl loggy
+        .     !arg:(@(?:? #?JobNr).?jobID.?arg)
+            & "\na:" !JobNr "/" !jobID "/" !arg:?loggy
+            & ( !jobs
+              | \n "b:readTable$jobs" !loggy:?loggy&readTable$jobs
+              )
+            & !( 
+               ' ( $jobs
+                 :   ?
+                     ($JobNr.? ($jobID ?.?jobby) ?)
+                     ?
+                 )
+               )
+            & "\nc:Found" !loggy:?loggy
+            &   !arg
+              : (   endpoint
+                  & \n "d:endpoint" !loggy:?loggy
+                  & !jobby:(?.?arg.?)
+                |   method
+                  & "\nd:method" !loggy:?loggy
+                  & !jobby:(?.?arg.?)
+                  & ( !tooladm:~
+                    |   \n "e:readTable$tooladm" !loggy:?loggy
+                      & readTable$tooladm
+                    )
+                  &   !tooladm
+                    :   ?
+                      + ( ? (ServiceURL.!arg) ?
+                        : ? (PostData.?arg) ?
                         )
-                      : ?arg
-                  |   requestString
-                    &   1+!runningThreads
-                      : ?runningThreads
-                      : (>!maxRunningThreads:?maxRunningThreads|?)
-                    &   log
-                      $ ( str
-                        $ ( "getJobArg:runningThreads:"
-                            !runningThreads
-                            " maxRunningThreads:"
-                            !maxRunningThreads
-                          )
+                      + ?
+                  & "\nf:" !arg !loggy:?loggy
+                  &   (!arg:on&POST|GET)
+                    : ?arg
+                |   requestString
+                  & \n "g:requestString" !loggy:?loggy
+                  &   1+!runningThreads
+                    : ?runningThreads
+                    : (>!maxRunningThreads:?maxRunningThreads|?)
+                  & \n "h:maxRunningThreads:" !maxRunningThreads !loggy:?loggy
+                  &   log
+                    $ ( str
+                      $ ( "getJobArg:runningThreads:"
+                          !runningThreads
+                          " maxRunningThreads:"
+                          !maxRunningThreads
                         )
-                    & !jobby:(?.?servurl.?req.?)
-                    & ( 
-                      |   readTable$tooladm
-                        &   !tooladm
-                          :   ?
-                            + ( ? (ServiceURL.!servurl) ?
-                              : ? (MultiInp.?multiinp) ?
-                              )
-                            + ?
                       )
-                    &     str
-                        $ (   ~
-                            & !multiinp:on
-                            & ( makeList
-                              =   el sub
-                                .   mop
-                                  $ ( ( 
-                                      =   
-                                        .     !arg:(?el.?sub)
-                                            & (!el.,makeList$!sub)
-                                          | !arg
-                                      )
-                                    . !arg
-                                    . (=+)
-                                    )
-                              )
-                            & makeList$(parms.!req):?res
-                            & !res
-                          |   ( makeList
-                              =   B prefix
-                                .   !arg:(?prefix.?arg)
-                                  &   mop
-                                    $ ( ( 
-                                        =   
-                                          .     !arg:(?arg.?B)
-                                              &   ( !prefix:
-                                                  | (!prefix,!arg)
-                                                  )
-                                                  makeList$(!prefix !arg.!B)
-                                            | !prefix:
-                                            | (!prefix,!arg)
+                  & !jobby:(?.?servurl.?req.?)
+                  & ( !tooladm:~
+                    |   \n "i:readTable$tooladm" !loggy:?loggy
+                      & readTable$tooladm
+                    )
+                  & !tooladm:?+(? (ServiceURL.!servurl) ?)+?
+                  & ( makeList
+                    =   B prefix
+                      .   !arg:(?prefix.?arg)
+                        &   mop
+                          $ ( ( 
+                              =   
+                                .     !arg:(?arg.?B)
+                                    &   ( !prefix:
+                                        | "&" !prefix "=" !arg
                                         )
-                                      . !arg
-                                      . (=+)
-                                      )
+                                        makeList$(!prefix !arg.!B)
+                                  | !prefix:
+                                  | "&" !prefix "=" !arg
                               )
-                            & makeList$(.!req):?res
-                            & !res:(?A,?B) ?res
-                            &   !A
-                                "="
-                                !B
-                                  map
-                                $ ( ( 
-                                    =   
-                                      .   !arg:(?A,?B)
-                                        & "&" !A "=" !B
-                                    )
-                                  . !res
-                                  )
-                          )
-                      : ?arg
-                  | filename&!jobby:(?.?.?.?arg)
-                  )
-              & !arg
-            | SOMETHINGWRONG
-            )
+                            . !arg
+                            . (=+)
+                            )
+                    )
+                  & \n "j:makeList$" !req !loggy:?loggy
+                  & makeList$(.!req):("&" ?arg|?arg)
+                |   filename
+                  & \n "g:filename" !loggy:?loggy
+                  & !jobby:(?.?.?.?arg)
+                )
+            & str$!arg
+          |   lst$(jobs,path$jobsError,NEW,WYD,RAW)
+            & str$("SOMETHINGWRONG:[[" \n !loggy \n]])
       )
       "
 /**
@@ -14791,9 +15146,8 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getNextJobID
-      =   A Z jobID dep g test err
-        .     log$(getNextJobID !arg)
-            & -11:?err
+      =   A B Y Z jobID dep g test err
+        .     -11:?err
             & !arg:(?arg.?test)
             & -12:?err
             & @(!arg:? #?arg)
@@ -14802,14 +15156,19 @@ function main2(evt) {
             & -14:?err
             & (     !jobs
                   :   ?A
-                      (!arg.@?jobID.~(? (?,pending) ?):?dep.?g)
+                      ( !arg
+                      .   ?B
+                          (@?jobID.~(? (?,pending) ?):?dep.?g)
+                          ?Y
+                      )
                       ?Z
                 & -15:?err
                 & (   !test:justtesting
-                    & -16:?err
                     & -17:?err
                     & !jobID
-                  |     !A (!arg.!jobID starting.!dep.!g) !Z
+                  |       !A
+                          (!arg.!B (!jobID starting.!dep.!g) !Y)
+                          !Z
                       : ?jobs
                     & -18:?err
                     & (   -19:?err
@@ -15807,7 +16166,6 @@ function main2(evt) {
                             &   whl
                               ' ( !Tables
                                 :   ( %?tab
-                                    & log$(saveTableA folder !folder tab !tab)
                                     & saveTable$(!folder.!tab)
                                     & !saved !tab:?saved
                                     )
@@ -15888,7 +16246,6 @@ function main2(evt) {
                               )
                             & ( !name:toolprop
                               |   !productioncontent:?!name
-                                & log$(saveTableB name !name)
                                 & saveTable$!name
                               )
                         )
@@ -15903,7 +16260,6 @@ function main2(evt) {
                             :   ?
                               + (   ?tid
                                   & !missingToolprop:? !tid ?
-                                  & log$(tid !tid is missing)
                                 . ?tdata
                                 )
                               + ?prodtoolprop
@@ -15937,24 +16293,27 @@ function main2(evt) {
           & (     !jobs
                 :   ?
                     ( !JobNr
-                    . !jobID ?
-                    . ?
-                    . ?
                     .   ?
-                      + ( O
+                        ( !jobID ?
+                        . ?
+                        . ?
                         .   ?
-                          + ( format
-                            .   ( txtann
-                                | txtbasis
-                                | teip5
+                          + ( O
+                            .   ?
+                              + ( format
+                                .   ( txtann
+                                    | txtbasis
+                                    | teip5
+                                    )
+                                  : ?format
+                                . ?
                                 )
-                              : ?format
-                            . ?
+                              + ?
                             )
                           + ?
+                        . ?
                         )
-                      + ?
-                    . ?
+                        ?
                     )
                     ?
               & !format
@@ -15965,20 +16324,12 @@ function main2(evt) {
 /**
  * keep
  *
- * Check whether a result from a tool in the staging area can be deleted.
+ * Check whether a file in the staging area can be deleted.
  *
- * Results that for some reason are needed by other tasks must be kept.
+ * Files that are still needed in other tasks must be kept.
  * The function looks for outstanding jobs that take the argument as input.
  * Argument: file name, may be preceded by a slash
  *      /19231210291
- *
- * NOTICE: If the file need not be kept, the file's name is deleted from
- * several tables, so calling keep has side effects!
- * Affected tables:
- *      jobs.table
- *      Uploads.table
- *      CTBs.table
- *      jobAbout.table
  *
  * Called from cleanup.java
  */"
@@ -15987,9 +16338,11 @@ function main2(evt) {
           , find jobNrParm stagingName stem
         .   ( find
             =   x T L R
-              .   !arg:(?x.?T)&!x:!T
-                |   !T:?L_?R
-                  & (find$(!x.!L)|find$(!x.!R))
+              .   !arg:(?x.?T)
+                & ( !x:!T
+                  |   !T:?L_?R
+                    & (find$(!x.!L)|find$(!x.!R))
+                  )
             )
           & log$(keep !arg)
           & !arg:(?stagingName.?jobNrParm)
@@ -16001,83 +16354,52 @@ function main2(evt) {
             | 
             )
           & (   @(!stagingName:!jobNrParm ("-all"|"-final") ".zip")
+              & "Zip-files must die after some days."
               & no
             |   !jobNrParm:
               & (     !jobs
                     :   ?
-                        ( (?jobNr.%?jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                        ( ?jobNr
+                        .   ?
+                            ( (%?jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                            & ( !files:? !stagingName ?
+                              | !file:!stagingName
+                              |   !parms:?+(I.?parms)+?
+                                & find$(!stagingName.!parms)
+                              )
+                            &   !jobstatus
+                              : (|waiting|starting)
+                            )
+                            ?
+                        )
+                        ?
+                  & "Some job is still using this file. Keep it."
+                  & log$(!stagingName yes)
+                  & yes
+                |   "There are no unfinished jobs using this file. Time to let the file go."
+                  & log$(!stagingName no)
+                  & no
+                )
+            |     !jobs
+                :   ?
+                    ( ~!jobNrParm
+                    .   ?
+                        ( (?.?files.?.?parms.?file)
                         & ( !files:? !stagingName ?
                           | !file:!stagingName
                           |   !parms:?+(I.?parms)+?
                             & find$(!stagingName.!parms)
                           )
-                        &   !jobstatus
-                          : (|waiting|starting)
                         )
                         ?
-                  & yes
-                |       map
-                      $ ( ( 
-                          =   jobNr jobID files file
-                            .       !arg
-                                  : ( (?jobNr.%?jobID ?.?files.?.?.?file)
-                                    & ( !files:? !stagingName ?
-                                      | !file:!stagingName
-                                      )
-                                    )
-                                & deleteDepending$(!jobNr.!jobID)
-                                & 
-                              | !arg
-                          )
-                        . !jobs
-                        )
-                    : ?jobs
-                  &     map
-                      $ ( ( 
-                          =   Name
-                            .     !arg:(?.?Name.!stagingName.?)
-                                &     map
-                                    $ ( ( 
-                                        =   
-                                          .       !arg
-                                                : (?.? (?.? !Name ?) ?)
-                                              & 
-                                            | !arg
-                                        )
-                                      . !ItemGroupsCache
-                                      )
-                                  : ?ItemGroupsCache
-                                & 
-                              | !arg
-                          )
-                        . !Uploads
-                        )
-                    : ?Uploads
-                  & no
-                )
-            |     !jobs
-                :   ?
-                    ( (!jobNrParm.?.?files.?.?parms.?file)
-                    & ( !files:? !stagingName ?
-                      | !file:!stagingName
-                      |   !parms:?+(I.?parms)+?
-                        & find$(!stagingName.!parms)
-                      )
                     )
                     ?
-              & ~( !jobs
-                 :   ?
-                     ( (~!jobNrParm.?.?files.?.?parms.?file)
-                     & ( !files:? !stagingName ?
-                       | !file:!stagingName
-                       |   !parms:?+(I.?parms)+?
-                         & find$(!stagingName.!parms)
-                       )
-                     )
-                     ?
-                 )
+              & "The user wants to delete everything from this job, but another job is still using the file. So, no. Keep it."
+              & log$(!stagingName !jobNrParm yes)
+              & yes
+            |   "The user's wish can be fulfilled."
+              & log$(!stagingName !jobNrParm no)
               & no
-            | yes
             )
       )
       "
@@ -16149,7 +16471,6 @@ function main2(evt) {
                                   )
                                 )
                             & (   @(!filename:fejl ?)
-                                & log$fejl
                                 &   ( h2
                                     .   
                                       ,   localized
@@ -16167,6 +16488,22 @@ function main2(evt) {
                                           )
                                           (dd.,!tool)
                                     )
+                              |   @(!filename:skipped ?)
+                                & ( dl
+                                  .   
+                                    ,   ( dt
+                                        .   
+                                          , ( strong
+                                            .   
+                                              , ( s
+                                                .   
+                                                  ,   str
+                                                    $ (localized$("Step " "Trin ") !JobId)
+                                                )
+                                            )
+                                        )
+                                        (dd.,(s.,!tool))
+                                  )
                               |   ( !shortletter:~y
                                   | !stage:LAST
                                   )
@@ -16401,8 +16738,7 @@ function main2(evt) {
           & "type == () | TEI | UserProvided"
           & readTable$fileFormats
           & readTable$Uploads
-          &   (letterData$!arg|doneAllJobSub$!arg)
-            : (workflow.,?workflow) (steps.,?steps)
+          & letterData$!arg:(workflow.,?workflow) (steps.,?steps)
           & :?resources:?files
           &     toML
               $ ( html
@@ -16437,7 +16773,6 @@ function main2(evt) {
                       )
                 )
             : ?html
-          & log$(NUfiles !files)
           & str$(!files !html)
       )
       "
@@ -16494,17 +16829,17 @@ function main2(evt) {
  */"
       ( poll
       =     n step secs steplinks links DOWNLOADPSEUDOCODE
-          , serviceurl title DOWNLOAD steptexts
-          , runningParagraphs JobNr hours minutes
+          , serviceurl title DOWNLOAD steptexts mode
+          , runningParagraphs JobNr hours minutes myjobs
         .   ( steplinks
-            =   links locJobs file step outp ServiceURL JobNr,seenInputs Title
+            =     links locJobs file step outp ServiceURL JobNr
+                , seenInputs Title myjobs
               .   !arg:(?JobNr.?locJobs)
-                & log$steplinks
-                & log$(JobNr !JobNr)
+                & !locJobs:? (!JobNr.?myjobs) ?
                 & !( 
-                   ' ( $locJobs
+                   ' ( $myjobs
                      :   ?
-                         ( ($JobNr.step1 ?.?file.?.?.?outp) ?
+                         ( (step1 ?.?file.?.?.?outp) ?
                          : ?locJobs
                          )
                      )
@@ -16513,7 +16848,7 @@ function main2(evt) {
                 &       map
                       $ ( ( 
                           =   files status
-                            .     !arg:(!JobNr.?status.?files.?.?.?)
+                            .     !arg:(?status.?files.?.?.?)
                                 &   map
                                   $ ( ( 
                                       =   
@@ -16523,7 +16858,6 @@ function main2(evt) {
                                                  )
                                                )
                                             & (   !seenInputs:? !arg ?
-                                                & log$seen
                                                 & 
                                               |   !arg !seenInputs:?seenInputs
                                                 &   paragraph
@@ -16559,7 +16893,7 @@ function main2(evt) {
                       $ ( ( 
                           =   
                             .       !arg
-                                  : (!JobNr.?step done.?.?ServiceURL.?.?file)
+                                  : (?step done.?.?ServiceURL.?.?file)
                                 &   !tooladm
                                   :   ?
                                     + ( ? (ServiceURL.!ServiceURL) ?
@@ -16622,8 +16956,6 @@ function main2(evt) {
             =     links locJobs file step outp ServiceURL JobNr Title feat inputs
                 , rapport vals
               .   !arg:(?JobNr.?locJobs)
-                & log$steptexts
-                & log$(JobNr !JobNr)
                 & !( 
                    ' ( $locJobs
                      :   ?
@@ -16632,7 +16964,6 @@ function main2(evt) {
                          )
                      )
                    )
-                & log$(locJobs !locJobs)
                 &     map
                     $ ( ( 
                         =   src I
@@ -16650,18 +16981,15 @@ function main2(evt) {
                                     : ? (Title.?Title) ?
                                     )
                                   + ?
-                              & log$(Title !Title)
                               &   ( get$(str$(data/ !file),STR)
                                   | str$("Received " !file)
                                   )
                                 : ?rapport
-                              & log$(rapport !rapport)
                               &   paragraph$(str$(!step ":") " " !Title)
                                     paragraph
                                   $ ( str
                                     $ ( "source:"
                                         (   !src:% %
-                                          & log$"multiple sources"
                                           &   !I
                                             : ?+(?feat.%+%:?vals)+?
                                           & 0:?inputs
@@ -16687,7 +17015,6 @@ function main2(evt) {
                                                 )
                                               . !src
                                               )
-                                          & log$(inputs !inputs)
                                           &   mop
                                             $ ( ( 
                                                 =   
@@ -16697,9 +17024,7 @@ function main2(evt) {
                                               . !inputs
                                               . '$inputs
                                               )
-                                        |   log$"single input"
-                                          & log$(src !src)
-                                          & " " !src
+                                        | " " !src
                                         )
                                       )
                                     )
@@ -16730,32 +17055,20 @@ function main2(evt) {
             | readTable$tooladm&readTable$Uploads
             )
           & div$(!deleteAfterMillisec*86400000^-1*24*60.1):?minutes
-          & ( !jobs:? (!JobNr.?.?.?.?+(mode.?mode)+?.?) ?
+          & (   !jobs
+              : ? (!JobNr.? (?.?.?.?+(mode.?mode)+?.?) ?) ?
             | niks:?mode
             )
-          & log$(MODE !mode)
           &   ( !mode:dry&steptexts$(!JobNr.!jobs)
               | steplinks$(!JobNr.!jobs)
               )
             : ?links
-          &     ( 
-                =   locJobs n JobNr
-                  .   0:?n
-                    & !arg:(?locJobs.?JobNr)
-                    &   whl
-                      ' ( !locJobs:? (!JobNr.?) ?locJobs
-                        & 1+!n:?n
-                        )
-                    & !n
-                )
-              $ (!jobs.!JobNr)
-            : ?n
+          & !jobs:? (!JobNr.? [?n:?myjobs) ?
           &     map
               $ ( ( 
                   =   serviceurl title step
                     .       !arg
-                          : ( !JobNr
-                            .   %@?step
+                          : (   %@?step
                                 (|starting|waiting)
                             . ~(? (?,pending) ?)
                             . ?serviceurl
@@ -16781,7 +17094,7 @@ function main2(evt) {
                             )
                       | 
                   )
-                . !jobs
+                . !myjobs
                 )
             : ?runningParagraphs
           & ( DOWNLOAD
@@ -16915,11 +17228,21 @@ function main2(evt) {
  */"
       ( readJobTables
       =   
-        .   readTable$jobs
-          & readTable$Uploads
-          & readTable$CTBs
-          & readTable$jobAbout
-          & readTable$ItemGroupsCache
+        .   ( readTable$jobs
+            | :?jobs&saveTable$jobs
+            )
+          & ( readTable$Uploads
+            | :?Uploads&saveTable$Uploads
+            )
+          & ( readTable$CTBs
+            | :?CTBs&saveTable$CTBs
+            )
+          & ( readTable$jobAbout
+            | :?jobAbout&saveTable$jobAbout
+            )
+          & ( readTable$ItemGroupsCache
+            | :?ItemGroupsCache&saveTable$ItemGroupsCache
+            )
       )
       "
 /**
@@ -16965,10 +17288,13 @@ function main2(evt) {
           , deleteToolButton UpdateButton PHPbutton
         .   clean$
           & ( checkParmsSimple
-            =   parms parm aBbr
+            =   parms parm aBbr tmp
               .   !arg:(?parms.?parm)
                 & !parms:? (!parm.%?aBbr) ?
-                & !hiddenData (!parm.!aBbr):?hiddenData
+                & (!parm.!aBbr):?tmp
+                & ( hiddenData:? !tmp ?
+                  | !hiddenData !tmp:?hiddenData
+                  )
                 & !aBbr
             )
           & "createBoilerPlate fails if user is  granted access."
@@ -17301,14 +17627,14 @@ function main2(evt) {
                                 )
                                 staticField
                               $ ( !arg
-                                . ">1 same signature input:"
+                                . "Takes multiple inputs:"
                                 . multiinp
                                 . ToolMultiInp
                                 . makeCheckboxFormField
                                 . desc
                                 .   localized
-                                  $ ( "Check if tool accepts more than one file of same signature"
-                                      "Marker hvis værktæjet gerne modtager flere filer af samme signatur"
+                                  $ ( "Check if tool takes more than one input of the same type"
+                                      "Marker hvis værktøjet tager to eller flere filer af samme type"
                                     )
                                 )
                                 staticField
@@ -17727,7 +18053,18 @@ function main2(evt) {
                 & tbl$(!featinoutOnE,0)
                 & tbl$(!featinout,0)
                 & tbl$(!featinoutSpec,0)
-                & (!FieldSet !additionalFieldSet.!requireds.!optionals !additionalOptionals)
+                & ( !FieldSet !additionalFieldSet
+                  . !requireds
+                  .   !optionals
+                        map
+                      $ ( ( 
+                          =   
+                            .   !optionals:? !arg ?&
+                              | !arg
+                          )
+                        . !additionalOptionals
+                        )
+                  )
             )
           & ( askFieldSet
             =     NrInOutAlternative additionalInoutpairs
@@ -17781,12 +18118,14 @@ function main2(evt) {
                                   & (   !required:(OnE.?required)
                                       & !required*!OnErequired:?OnErequired
                                     |   !required*!OnErequired:?OnErequired
-                                      &     (   !OnErequired:%*%
-                                              & (!OnErequired.OnE)
-                                            | !OnErequired
-                                            )
-                                          * !requireds
-                                        : ?requireds
+                                      &   (   !OnErequired:%*%
+                                            & (!OnErequired.OnE)
+                                          | !OnErequired
+                                          )
+                                        : ?required
+                                      & ( !requireds:?*!required*?
+                                        | !required*!requireds:?requireds
+                                        )
                                       & 1:?OnErequired
                                     )
                                   )
@@ -18148,25 +18487,31 @@ function main2(evt) {
                     & unfactorize$!thisToolProp:?thisToolProp
                     & removeNumFactors$!thisToolProp:?thisToolProp
                     & ( Combine
-                      =   A M Z AA ZZ Name Facet val1,Vals1 Vals2
+                      =     A M Z AA ZZ Name Facet val1
+                          , Vals1 Vals2 done
                         .     whl
-                            ' (   !arg
-                                :   ?A
-                                  + (?Name.?val1)
-                                  + ?M
-                                  + ( ?
-                                    .   ?AA
-                                        ( (?Facet,?Vals2) ?ZZ
-                                        &   !val1
-                                          : !AA (!Facet,?Vals1) !ZZ
+                            ' ( 0:?done
+                              &   whl
+                                ' (   !arg
+                                    :   ?A
+                                      + (?Name.?val1)
+                                      + ?M
+                                      + ( ?
+                                        .   ?AA
+                                            ( (?Facet,?Vals2) ?ZZ
+                                            &   !val1
+                                              : !AA (!Facet,?Vals1) !ZZ
+                                            )
                                         )
-                                    )
-                                  + ?Z
-                              &     !A
-                                  + (!Name.!AA (!Facet,!Vals1+!Vals2) !ZZ)
-                                  + !M
-                                  + !Z
-                                : ?arg
+                                      + ?Z
+                                  & !done+!A:?done
+                                  &     (!Name.!AA (!Facet,!Vals1+!Vals2) !ZZ)
+                                      + !M
+                                      + !Z
+                                    : ?arg
+                                  )
+                              & !done+!arg:?arg
+                              & !done:~0
                               )
                           & !arg
                       )
@@ -18230,9 +18575,10 @@ function main2(evt) {
                   )
             )
           & "Body of Register starts here"
-          & (|log$NEW)
+          & log$NEW
           & log$REGISTER
           & log$
+          & lst$(arg,path$"log.txt",RAW APP WYD)
           &   
             : ?servicedSources
             : ?servicedGoals
@@ -18657,7 +19003,7 @@ function main2(evt) {
  * Called from showworkflows.java
  */"
       ( showworkflows
-      =     Tool parms Items NothingToDo Submit
+      =     Tool parms Items NothingToDo Submit Pfeats
           , presels errors BodyContainer topologicalOrderedTools
           , PIPE A Z TooManyWorkflows updateUploads 2or3things
           , ShowAllPipes rstr reorderedworkflowlist orgarg pipe
@@ -19185,7 +19531,7 @@ function main2(evt) {
                 : (?parms.?Submit.?hiddenData.?batch)
               & "Add any info about the input that the user has provided, e.g. language of the resource."
               & ( updateUploads
-                =   A nr Item stagingName,meta feats Z parms
+                =   A nr Item stagingName meta feats Z parms
                   .   !arg:?parms
                     & readTable$Uploads:?Uploads
                     & readTable$features:?features
@@ -19304,13 +19650,13 @@ function main2(evt) {
       =     Tool item parms Items items presels convertISO639-3to-1-IfPossible
           , errors batch desiredTools sourcesAndGoals BodyContainer
           , A itms orgarg buildItemListFromForeignData updatePreselsWithUserAmendments
-          , "We are at the start. Show an input form."
+          , "We are at the start. Show an input form." preSelectedOutputSpec
         .   ( buildItemListFromForeignData
-            =     A Z N name Items nofonts ContentType feats
+            =     A Z N name Items nofonts ContentType feats preSelectedOutputSpec
                 , DestinationDir LocalFileName language date analyseContentType
               .   ( analyseContentType
-                  =     R spec nofonts ct DestinationDir LocalFileName
-                      , asDiplom input getInput asTabSeparated asConll txt
+                  =     R spec nofonts ct DestinationDir LocalFileName anateip5
+                      , asDiplom input getInput asTabSeparated asConll txt asText
                     .   !arg:(?arg.?nofonts.?DestinationDir.?LocalFileName)
                       & @( !arg
                          : ((%? "/" %?:?ct) ";" ?|?ct)
@@ -19768,7 +20114,7 @@ function main2(evt) {
                                 & (   @( !input
                                        : ("%PDF" ?|"%pdf" ?)
                                        )
-                                    &     (   !nofonts:true
+                                    &     (   !nofonts:t
                                             & (app.rom)
                                           | (app.nrm)
                                           )
@@ -20102,20 +20448,29 @@ function main2(evt) {
                     )
             )
           & ( sourcesAndGoals
-            =     f name short Ofields
+            =     f name short Ofields activeTools
                 , servicedGoalsTable cmptblWrkflws
                 , servicedSourcesTable
                 , description itms Types linkedWorkflows
                 , table presel L retrieveServicedOutputFeaturesAndTheirValues
                 , preselvalsrows items item spec
                 , preselvals presels
-                , G sourcePicklists
+                , G sourcePicklists preSelectedOutputSpec
                 , B C D E R hide n nt p prod x
                 , mentionBookmarkedWorkflows linksAndLinked
                 , features links addOutputWishesFrom3rdParty
               .   ( cmptblWrkflws
-                  =   itemGroups presels
-                    .   !arg:(?itemGroups.?presels)
+                  =   itemGroups presels Ofields
+                    .   !arg:(?itemGroups.?presels.?Ofields)
+                      &   log
+                        $ ( cmptblWrkflws
+                            itemGroups
+                            !itemGroups
+                            presels
+                            !presels
+                            Ofields
+                            !Ofields
+                          )
                       & (!wrkflws|readTable$wrkflws)
                       &   map
                         $ ( ( 
@@ -20158,6 +20513,28 @@ function main2(evt) {
                                                         . !knownInputFeatures
                                                         )
                                                     : !knownInputFeatures
+                                                  &     map
+                                                      $ ( ( 
+                                                          =   a b
+                                                            .       !arg
+                                                                  : (?a.?b)
+                                                                & ( !b:
+                                                                  |   !o
+                                                                    : (   ?
+                                                                          (!a,!b)
+                                                                          ?
+                                                                      | ~( ?
+                                                                           (!a,?)
+                                                                           ?
+                                                                         )
+                                                                      )
+                                                                  )
+                                                                & !arg
+                                                              | 
+                                                          )
+                                                        . !Ofields
+                                                        )
+                                                    : !Ofields
                                                   & !name
                                                 | 
                                                 )
@@ -20170,8 +20547,8 @@ function main2(evt) {
                           )
                   )
                 & ( linksAndLinked
-                  =   stable exr L itmgrp id
-                    .   !arg:(?stable.?exr)
+                  =   stable exr L itmgrp id Ofields
+                    .   !arg:(?stable.?exr.?Ofields)
                       & !exr:?itmgrp
                       & (!itmgrp:";" ?itmgrp|)
                       & (   !stable:%? [?L
@@ -20206,7 +20583,12 @@ function main2(evt) {
                                   )
                                   ( p
                                   .   (style."text-align: center;")
-                                    , localized$("for this type of input" "til denne type input")
+                                    ,     localized
+                                        $ ("for this type of input" "til denne type input")
+                                        (   !Ofields:? (?.~) ?
+                                          & localized$(" and output" " og output")
+                                        | 
+                                        )
                                   )
                             .   ( p
                                 .   (id.str$!id)
@@ -20262,113 +20644,127 @@ function main2(evt) {
                         )
                   )
                 & ( mentionBookmarkedWorkflows
-                  =   items
-                    .   !arg:?items
-                      & ( tr
-                        .   (class.specialrow)
-                          ,     cell
-                              $ ( submit2
-                                $ ( eye
-                                  .   localized$!updateAvailableWorkflows
-                                        localized
-                                      $ ( "If you have redacted the input fields, use this button to search for relevant bookmarked workflows."
-                                          "Hvis du har ændret noget i inputfelterne, brug knappen for at søge efter passende markerede arbejdsgange."
-                                        )
-                                  )
-                                )
-                              ( 
-                              |   cell
-                                $ ( ( div
-                                    .     (class.tooltip)
-                                          (tabindex.0)
-                                          ( title
-                                          .   str
-                                            $ ( localized
-                                              $ ( "You can ignore all form fields below if you choose a bookmarked workflow."
-                                                  "Du kan ignorere alle formularfelter hernede hvis du vælger en markeret workflow."
-                                                )
-                                              )
-                                          )
-                                      , (small.,(small.,chu$10068))
+                  =   items Ofields preSelectedOutputSpec
+                    .   !arg:(?items.?Ofields.?preSelectedOutputSpec)
+                      & (   ( !preSelectedOutputSpec:
+                            | !items:? (?.?.~) ?
+                            )
+                          & "Show row mentioning bookmarked workflows if the request does not come from 3rd party or if there are any bookmarked workflows to be mentioned.
+                               (This is to diminish the mental load on Switchboard users. Don't confront them with too many buttons.)"
+                          & ( tr
+                            .   (class.specialrow)
+                              ,     cell
+                                  $ ( submit2
+                                    $ ( eye
+                                      .   localized$!updateAvailableWorkflows
+                                            localized
+                                          $ ( "If you have redacted the input fields, use this button to search for relevant bookmarked workflows."
+                                              "Hvis du har ændret noget i inputfelterne, brug knappen for at søge efter passende markerede arbejdsgange."
+                                            )
+                                      )
                                     )
-                                  | 
-                                  )
-                              )
-                                map
-                              $ ( ( 
-                                  =   nt wrkfls exr stable,links linked
-                                    .   !arg:(?nt.?arg.?wrkfls)
-                                      & (   !items:% %
-                                          & (exr=";" !nt)
-                                        | :?exr
-                                        )
-                                      &   cell
-                                        $ (   !wrkfls:
-                                            & ( span
-                                              .   (class.smallfont)
-                                                ,     localized
-                                                    $ ( "(Be the first to bookmark a workflow for this kind of"
-                                                        "(Bliv den første til at markere en arbejdsgang til den her"
-                                                      )
-                                                    (br.,)
-                                                      localized
-                                                    $ ( "input. But for now, "
-                                                        "slags input. Men for nu: "
-                                                      )
-                                                    ( strong
-                                                    .   
-                                                      ,   localized
-                                                        $ ( "specify your goal"
-                                                            "specificer dit mål"
+                                    map
+                                  $ ( ( 
+                                      =     nt wrkfls exr stable
+                                          , links linked
+                                        .   !arg:(?nt.?arg.?wrkfls)
+                                          & (   !items:% %
+                                              & (exr=";" !nt)
+                                            | :?exr
+                                            )
+                                          &   cell
+                                            $ (   !wrkfls:
+                                                & ( span
+                                                  .   (class.smallfont)
+                                                    ,       !Ofields
+                                                          : ? (?.~) ?
+                                                        &     localized
+                                                            $ ( "(No workflows have already been defined for this"
+                                                                "(Der ikke endnu nogen arbejdsgange der passer til "
+                                                              )
+                                                            (br.,)
+                                                              localized
+                                                            $ ( "combination of input and output specs. Specify "
+                                                                "denne kombination af input- og outputspecificationer. "
+                                                              )
+                                                            (br.,)
+                                                              localized
+                                                            $ ( "your goal the best you can and press the button"
+                                                                "Specificer dit mål så godt du kan og tryk knappen "
+                                                              )
+                                                            (br.,)
+                                                              localized
+                                                            $ ( "near the bottom of this page.)"
+                                                                "nederst på siden.)"
+                                                              )
+                                                      |     localized
+                                                          $ ( "(Be the first to bookmark a workflow for this kind of"
+                                                              "(Bliv den første til at markere en arbejdsgang til den her"
+                                                            )
+                                                          (br.,)
+                                                            localized
+                                                          $ ( "input. But for now, "
+                                                              "slags input. Men for nu: "
+                                                            )
+                                                          ( strong
+                                                          .   
+                                                            ,   localized
+                                                              $ ( "specify your goal"
+                                                                  "specificer dit mål"
+                                                                )
                                                           )
+                                                            localized
+                                                          $ ( " and press the"
+                                                              " og tryk knappen"
+                                                            )
+                                                          (br.,)
+                                                            localized
+                                                          $ ( "button near the bottom of this page.)"
+                                                              "nederst på siden.)"
+                                                            )
+                                                  )
+                                              |     listToThreeColumnTable$!wrkfls
+                                                  : ?stable
+                                                & (       linksAndLinked
+                                                        $ (!stable.!exr.!Ofields)
+                                                      : (?links.?linked)
+                                                    &   !linkedWorkflows (!nt.!linked)
+                                                      : ?linkedWorkflows
+                                                    & !links
+                                                  | ( select
+                                                    .     ( tabindex
+                                                          .     1+!tabind
+                                                              : ?tabind
+                                                            & 0
+                                                          )
+                                                          (name.str$(workflow !exr))
+                                                      ,   makeOptionListSimple
+                                                        $ (!stable.bookmarked-)
                                                     )
-                                                      localized
-                                                    $ (" and press the" " og tryk knappen")
-                                                    (br.,)
-                                                      localized
-                                                    $ ( "button near the bottom of this page.)"
-                                                        "nederst på siden.)"
-                                                      )
+                                                  )
                                               )
-                                          |     listToThreeColumnTable$!wrkfls
-                                              : ?stable
-                                            & (     linksAndLinked$(!stable.!exr)
-                                                  : (?links.?linked)
-                                                &   !linkedWorkflows (!nt.!linked)
-                                                  : ?linkedWorkflows
-                                                & !links
-                                              | ( select
-                                                .     ( tabindex
-                                                      .     1+!tabind
-                                                          : ?tabind
-                                                        & 0
-                                                      )
-                                                      (name.str$(workflow !exr))
-                                                  ,   makeOptionListSimple
-                                                    $ (!stable.bookmarked-)
-                                                )
-                                              )
-                                          )
-                                  )
-                                . !items
-                                )
+                                      )
+                                    . !items
+                                    )
+                            )
+                        | 
                         )
                   )
                 & ( addOutputWishesFrom3rdParty
-                  =   R
-                    .   !arg:? (!LaNg.?R) ?
+                  =   R Ofields
+                    .   !arg:(?Ofields.? (!LaNg.?R) ?)
                       &   map
                         $ ( ( 
-                            =     f v v1 v2 v3 v4 v5
+                            =     f v v1 v2 v4 v5
                                 , v6 v7 v8 v9 v10 v11
                                 , v7a v6-8 v6a v7m v7z
                               .     !arg:(?f.?v)
+                                  & str$!v:?v
                                   &   !R
                                     :   ?v1
                                         ( tr
                                         .   
                                           ,   (td.,?v2)
-                                              (td.,?v3)
                                               ( td
                                               .   
                                                 ,   ?v4
@@ -20439,7 +20835,6 @@ function main2(evt) {
                                         ( tr
                                         .   
                                           ,   (td.,!v2)
-                                              (td.,!v3)
                                               ( td
                                               .   
                                                 ,   !v4
@@ -20485,7 +20880,7 @@ function main2(evt) {
                           )
                       & !collector
                   )
-                & !arg:(?presels.?Ofields)
+                & !arg:(?presels.?Ofields.?preSelectedOutputSpec)
                 & :?linkedWorkflows:?items
                 & readTable$features
                 & log$featuresRead
@@ -20619,7 +21014,7 @@ function main2(evt) {
                 & readTable$features
                 &     map
                     $ ( ( 
-                        =   exr
+                        =   exr help
                           .     !arg:(?preselvals.?short.?name.?table.)
                               & (   !servicedSources
                                   : ? (!short.?servicedSourcesTable) ?
@@ -20768,8 +21163,22 @@ function main2(evt) {
                     & setLang$!G
                   | 
                   )
-                & log$(cmptblWrkflws items !items presels !presels)
-                & cmptblWrkflws$(!items.!presels):?items
+                & cmptblWrkflws$(!items.!presels.!Ofields):?items
+                & log$(HIDDENDATA !hiddenData)
+                &     map
+                    $ ( ( 
+                        =   
+                          .     !arg
+                              : ~(   reqtool
+                                   | fintool
+                                   | SuperSet-facet
+                                 . ?
+                                 )
+                            | 
+                        )
+                      . !hiddenData
+                      )
+                  : ?hiddenData
                 & ( !items
                   .     fieldset
                       $ ( ( div
@@ -20822,10 +21231,12 @@ function main2(evt) {
                                   & 0:?nt
                                   &   row
                                     $ (   cell
-                                        $ ( localized
-                                          $ ( "Inputs are dissimilar. Select a column."
-                                              "Inputs tilhører uens kategorier. Vælg en kolonne."
-                                            )
+                                        $ ( strong
+                                          .   
+                                            ,   localized
+                                              $ ( "Inputs are dissimilar. Select a column."
+                                                  "Inputs tilhører uens kategorier. Vælg en kolonne."
+                                                )
                                           )
                                           map
                                         $ ( ( 
@@ -20849,47 +21260,30 @@ function main2(evt) {
                                 | 
                                 )
                                 !sourcePicklists
-                                (   ( 
-                                    | !items:? (?.?.% ?) ?
-                                    )
-                                  & mentionBookmarkedWorkflows$!items
-                                | 
-                                )
+                                  mentionBookmarkedWorkflows
+                                $ (!items.!Ofields.!preSelectedOutputSpec)
                             )
                         )
                         fieldset
                       $ (   ( span
                             .   (style."font-size: large")
                               ,   (span.(style."font-size: x-large"),"☞ ")
-                                  ( strong
-                                  . ,localized$("Specify your goal" "Specificer dit mål")
-                                  )
+                                  (strong.,localized$("Your goal" "Dit mål"))
                             )
                             (" ⸺ "|(br.,))
-                            localized$("Fill out only " "Udfyld ")
-                            (strong.,localized$(two to))
-                            localized$(" or " " eller ")
-                            (strong.,localized$(three tre))
                               localized
-                            $ ( " fields and leave the other fields "
-                                " felter og lad de øvrige felter være "
+                            $ ( "Fill out the fields that sketch out the desired result and leave the other fields "
+                                "Udfyld de felter som skitserer det ønskede resultat og lad de øvrige felter være "
                               )
                             (strong.,localized$(blank blanke))
                               localized
-                            $ ( ". In general, more filled out fields = fewer workflow candidates."
-                                ". Generelt gælder: jo flere udfyldte feldter, desto færre foreslåede arbejdsgange."
+                            $ ( ". In the next steps, Text Tonsorium will help you specify the smaller details and zoom in on a suitable workflow."
+                                ". I de næste trin hjælper Text Tonsorium dig med at præcisere dit mål og med at vælge en egnet arbejdsgang."
                               )
-                            ( 
-                            |   (br.,)
-                                  localized
-                                $ ( "You can skip these fields and choose a tool instead, see below. In that case, the tool will be the last in the workflow."
-                                    "Du kan lade felterne stå tomme og i stedet vælge et værktøj i rubrikken forneden. I så fald er værktøjet det sidste i arbejdsgangen."
-                                  )
-                            )
                         .   Table
                           $ ( id,goal
                             . row$(cell$() cell$() cell$)
-                            .   addOutputWishesFrom3rdParty$!goalPicklists
+                            .   addOutputWishesFrom3rdParty$(!Ofields.!goalPicklists)
                                 ( tr
                                 .   
                                   ,   ( td
@@ -20920,11 +21314,10 @@ function main2(evt) {
           & ( "We are at the start. Show an input form."
             =     formFields presels nt CLOCK sourceAndGoal
                 , itemGroupsExt linkedWorkflows
-                , hiddenData Items A Z Ofields
-              .   !arg:(?presels.?hiddenData.?Items)
+                , hiddenData Items A Z Ofields preSelectedOutputSpec
+              .   !arg:(?presels.?hiddenData.?Items.?preSelectedOutputSpec)
                 & log$"We are at the start. Show an input form."
                 & (   !Items:
-                    & log$noitems
                     &   str
                       $ ( 200~~~
                             toML
@@ -20949,10 +21342,8 @@ function main2(evt) {
                           . !hiddenData
                           )
                       : ?Ofields
-                    &   sourcesAndGoals$(!presels.!Ofields)
+                    &   sourcesAndGoals$(!presels.!Ofields.!preSelectedOutputSpec)
                       : (?itemGroupsExt.?sourceAndGoal.?linkedWorkflows)
-                    & log$sourcesAndGoalsDONE
-                    & log$(itemGroupsExt !itemGroupsExt Items !Items)
                     & "The next line decides whether hiddendata will contain a single Item parameter or a CLOCK parameter.
                        The pattern (@.@.?) succeeds if there is only one file in itemGroupsExt. In that case, we'll have an Item parameter.
                        If the second part of itemGroupsExt contains two or more file names, the second @ fails. Then we'l have a CLOCK
@@ -21030,7 +21421,15 @@ function main2(evt) {
                                               &   form
                                                 $ ( chosenworkflow
                                                   .     makeHiddenFields
-                                                      $ (!hiddenData (itms.!nt))
+                                                      $ ( !hiddenData
+                                                          (     !hiddenData
+                                                              :   ?
+                                                                  (itms.?itms)
+                                                                  ?
+                                                            & 
+                                                          | (itms.!nt)
+                                                          )
+                                                        )
                                                       !linkedWorkflows
                                                   )
                                           )
@@ -21087,7 +21486,7 @@ function main2(evt) {
                           $ ( ( 
                               =   f v A Z
                                 .   !arg:(?f.?v)
-                                  & (   !computedInputFeatures:?A+(!f.?)+?Z
+                                  & (   !computedInputFeatures:?A+#*(!f.?)+?Z
                                       & !A+!Z:?computedInputFeatures
                                     | 
                                     )
@@ -21129,6 +21528,21 @@ function main2(evt) {
           & log$NEW
           & log$specifyGoal-CREATELOGJE
           & log$(arg !arg)
+          & (     !arg
+                : ~(? (action.?) ?)
+                : ~(? (fintool.?) ?)
+                :   ?
+                    (@(?:O ?).?)
+                    ?
+                    (@(?:O ?).?)
+                    ?
+                    (@(?:O ?preSelectedOutputSpec).?)
+                    ?
+              & "Heuristic way of finding out that request comes from 'outside', e.g. Clarin Language Switchboard.
+                 In that case, do not show row for previously created workflows if there are no workflows to show.
+                 If fewer than 3 output specs are given, the user is regarded as 'advanced' and the bookmark line is shown."
+            | :?preSelectedOutputSpec
+            )
           & convertISO639-3to-1-IfPossible$!arg:?arg
           & !arg:?orgarg
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
@@ -21144,7 +21558,9 @@ function main2(evt) {
                 : (?parms.?hiddenData.?batch)
               & updatePreselsWithUserAmendments$(!presels.!arg.!Items):(?presels.?Items)
               & readTable$tooladm
-              & "We are at the start. Show an input form."$(!presels.!hiddenData.!Items)
+              & log$(presels !presels hiddenData !hiddenData Items !Items)
+              &   "We are at the start. Show an input form."
+                $ (!presels.!hiddenData.!Items.!preSelectedOutputSpec)
             )
       )
       "
@@ -21475,16 +21891,24 @@ function main2(evt) {
  * Called from upload.java
  */"
       ( upload
-      =   jobNr jobID jobstatus JOB,A Z files toolURL parms file
+      =   jobNr jobID jobstatus JOB,A B Y Z files toolURL parms file
         .     !arg:? (job.@(?:?jobNr "-" ?jobID)) ?
             & (   readTable$jobs
                 & (     !jobs
                       :   ?A
-                          (!jobNr.!jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                          ( !jobNr
+                          .   ?B
+                              (!jobID ?jobstatus.?files.?toolURL.?parms.?file)
+                              ?Y
+                          )
                           ?Z
                     & (   !jobstatus:(waiting|starting)
                         &     !A
-                              (!jobNr.!jobID done.!files.!toolURL.!parms.!file)
+                              ( !jobNr
+                              .   !B
+                                  (!jobID done.!files.!toolURL.!parms.!file)
+                                  !Y
+                              )
                               !Z
                           : ?jobs
                         & saveTable$jobs
@@ -21568,14 +21992,18 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( waitingJob
-      =   A Z JobNr jobID ZZ jobstatus
+      =   A B Y Z JobNr jobID ZZ jobstatus
         .     readTable$jobs
             & log$("waitingJob " !arg)
             & !arg:(@(?:? #?JobNr).?jobID)
             &   whl
-              ' ( !jobs:?A (!JobNr.!jobID ?jobstatus.?ZZ) ?Z
+              ' (   !jobs
+                  :   ?A
+                      (!JobNr.?B (!jobID ?jobstatus.?ZZ) ?Y)
+                      ?Z
                 & !jobstatus:(|starting)
-                & !A (!JobNr.!jobID waiting.!ZZ) !Z:?jobs
+                &   !A (!JobNr.!B (!jobID waiting.!ZZ) !Y) !Z
+                  : ?jobs
                 )
             & saveTable$jobs
             & 

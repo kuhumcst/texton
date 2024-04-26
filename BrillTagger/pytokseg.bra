@@ -6,87 +6,178 @@ Add an empty attribute where the POS-tagger can put its result.
 Parameter   Description
 inputTok    name of input file with tokens
 inputSeg    name of input file with segments
+inputNer    name of input file with Named Entities (optional: can be "*")
 output      name of output file
 attribute   name of attribute to add
 ancestor    name of ancestor element (optional)
 elem        name of element (optional)
-attr        name of attribute that has to be present (optional)}
-
+attr        name of attribute that has to be present (optional)
+ne          name of optional attribute for ner input
+propn       value of optional attribute for ner input}
 X=
   ( doit
   =   
     .     !arg
-        : (?inputTok.?inputSeg.?output.?attribute.?ancestor.?elem.?attr)
-      &   get$(!inputSeg,X ML)
-        : ?sentTree
-        : ? ((span.?) ?:?sentRoot)
+        : ( ?inputTok
+          . ?inputSeg
+          . ?inputNer
+          . ?output
+          . ?attribute
+          . ?ancestor
+          . ?elem
+          . ?attr
+          . ?ne
+          . ?propn
+          )
+      
+      & (   !inputNer:(|"*")
+          & :?NER
+        |   nestML$(get$(!inputNer,X ML))
+          : ? (spanGrp.?,?NER) ?
+        )
       & nestML$(get$(!inputTok,X ML)):?root
       & ( !root:?A (!ancestor.?at,?elements) ?Z
         |   !root:?elements
           & :?A:?Z:?at
         )
-      &   (   !elem:"-"
-            & (   !attr:"-"
-                & '(!x.($attribute.) !y,!z)
+      & get$(!inputSeg,X ML):?sentTree
+      & (     !sentTree
+            : ? ((span.?) ?:?sentRoot)
+          &   (   !elem:"-"
+                & (   !attr:"-"
+                    &   
+                      ' (!x.($attribute.) !y,!z)
+                  |   
+                    ' ( !y:? ($attr.?) ?
+                      & (!x.($attribute.) !y,!z)
+                      )
+                  )
+              |   !attr:"-"
+                &   
+                  ' ( $elem:!x
+                    & ( $elem
+                      . ($attribute.) !y,!z
+                      )
+                    )
               |   
                 ' ( !y:? ($attr.?) ?
-                  & (!x.($attribute.) !y,!z)
+                  & $elem:!x
+                  & ( $elem
+                    . ($attribute.) !y,!z
+                    )
                   )
+              | (=!arg)
               )
-          |   !attr:"-"
-            &   
-              ' ( $elem:!x
-                & ($elem.($attribute.) !y,!z)
+            : (=?expr)
+          &     map
+              $ ( ( 
+                  =   
+                    .     !arg:(?x.?y,?z)
+                        &   (   !y:? ("xml:id".?id) ?
+                              &   !sentRoot
+                                :   ( span
+                                    .     ?
+                                          (from.@(?:"#" !id))
+                                          ?
+                                      , ?
+                                    )
+                                    ?sentRoot
+                              & (br.,)
+                            | 
+                            )
+                            !expr
+                      | !arg
+                  )
+                . !elements
                 )
-          |   
-            ' ( !y:? ($attr.?) ?
-              & $elem:!x
-              & ($elem.($attribute.) !y,!z)
-              )
-          | (=!arg)
-          )
-        : (=?expr)
-      &     map
-          $ ( ( 
-              =   
-                .     !arg:(?x.?y,?z)
-                    &   (   !y:? ("xml:id".?id) ?
-                          &   !sentRoot
-                            :   ( span
-                                .   ? (from.@(?:"#" !id)) ?
-                                  , ?
+            : % ?elements
+          & :?LL
+          &   map
+            $ ( ( 
+                =   A B C D from to
+                  .       !arg
+                        : ( span
+                          .       ?
+                                  (from.@(?:"#" ?from))
+                                  ?
+                              : (   ?
+                                    (to.@(?:"#" ?to))
+                                    ?
+                                | ?&:?to
                                 )
-                                ?sentRoot
-                          & (br.,)
-                        | 
-                        )
-                        !expr
-                  | !arg
-              )
-            . !elements
-            )
-        : % ?elements
-      &   put
-        $ (   str
-            $ ( toML
-              $ (   !root:? (!ancestor.?,?) ?
-                  & !A (!ancestor.!at,!elements) !Z
-                | !elements
+                            , ?
+                          )
+                      &   !elements
+                        :   ?S
+                            ( span
+                            .     ? ("xml:id".!from) ?
+                                : ?D
+                              , ?C
+                            )
+                            ?elements
+                      &     ( 
+                            .     !to:
+                                & ( span
+                                  . (!ne.!propn) !D,!C
+                                  )
+                              |     ( span
+                                    . (!ne.!propn) !D,!C
+                                    )
+                                  : ?Ner
+                                &   whl
+                                  ' ( !elements:%?a ?elements
+                                    & (   !a:(span.?D,?C)
+                                        &   ( span
+                                            .   (!ne.!propn) !D
+                                              , !C
+                                            )
+                                          : ?a
+                                      | 
+                                      )
+                                    & !Ner !a:?Ner
+                                    &   !a
+                                      : ~( span
+                                         .   ? ("xml:id".!to) ?
+                                           , ?
+                                         )
+                                    )
+                                & !Ner
+                            )
+                            (.!S)
+                            !LL
+                        : ?LL
+                    | 
                 )
+              . !NER
               )
-          , !output
-          , NEW
-          )
-      & ( 
+          & (.!elements) !LL:?LL
+          & :?elements
+          &   whl
+            ' ( !LL:(.?a) ?LL
+              & !a !elements:?elements
+              )
+          &   put
+            $ (   str
+                $ ( toML
+                  $ (   !root:? (!ancestor.?,?) ?
+                      &   !A
+                          (!ancestor.(ana.!attribute),!elements)
+                          !Z
+                    | !elements
+                    )
+                  )
+              , !output
+              , NEW
+              )
         |   put
           $ (   str
               $ ( toML
-                $ (   !root:? (!ancestor.?,?) ?
-                    & !A (!ancestor.!at,!elements) !Z
-                  | !elements
+                $ ( !A
+                    (!ancestor.(ana.!attribute),!elements)
+                    !Z
                   )
                 )
-            , brillinput
+            , !output
             , NEW
             )
         )
@@ -94,17 +185,45 @@ X=
   )
   ( new
   =   
-    .     (its.doit)
-        $ ( temp-2BrillTagger-IfacettokF
-          . temp-1BrillTagger-IfacetsegF
-          . temp-3combine-POS-attribute
-          . POS
-          . spanGrp
-          . span
-          . "xml:id"
-          )
+    .   ~
+      |   ~
+        &   (its.doit)
+          $ ( "413-all/text-163-413-step4.xml"
+            . "413-all/text-163-413-step5.xml"
+            . 
+            . temp-3combine-POS-attribute
+            . POS
+            . spanGrp
+            . span
+            . "xml:id"
+            . NE
+            . EGEN
+            )
+      |   ~
+        &   (its.doit)
+          $ ( "399-all/text-159-399-step4.xml"
+            . "399-all/text-159-399-step5.xml"
+            . "399-all/text-159-399-step6meddled.xml"
+            . temp-3combine-POS-attribute
+            . POS
+            . spanGrp
+            . span
+            . "xml:id"
+            . NE
+            . EGEN
+            )
       |   (its.doit)
-        $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+        $ ( arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          )
   );
 
 r=
@@ -120,12 +239,14 @@ Add an empty attribute where the POS-tagger can put its result.
 Parameter   Description
 inputTok    name of input file with tokens
 inputSeg    name of input file with segments
+inputNer    name of input file with Named Entities (optional: can be \"*\")
 output      name of output file
 attribute   name of attribute to add
 ancestor    name of ancestor element (optional)
 elem        name of element (optional)
-attr        name of attribute that has to be present (optional)}
-
+attr        name of attribute that has to be present (optional)
+ne          name of optional attribute for ner input
+propn       value of optional attribute for ner input}
 "
     , "pytokseg.bra"
     , NEW
