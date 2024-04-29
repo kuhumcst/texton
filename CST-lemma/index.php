@@ -24,7 +24,7 @@ Creator        : CST
 InfoAbout      : cst.dk
 Description    : Produces the dictionary look-up form (or lemma) for each word, inflected or not, in the input.
 ExternalURI    : https://nlpweb01.nors.ku.dk/tools/
-XMLparms       : 
+MultiInp       : 
 PostData       : 
 Inactive       : 
 */
@@ -37,7 +37,6 @@ $toollog = '../log/CSTLem.log'; /* Used by the logit() function. TODO make sure 
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -155,7 +154,7 @@ try {
             logit("url[$url]");
 
             $handle = fopen($url, "r");
-            if($handle === false)
+            if($handle == false)
                 {
                 logit("Cannot open url[$url]");
                 return "";
@@ -164,7 +163,7 @@ try {
                 {
                 $tempfilename = tempFileName("CSTLem_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh === false)
+                if($temp_fh == false)
                     {
                     fclose($handle);
                     logit("handle closed. Cannot open $tempfilename");
@@ -463,6 +462,22 @@ try {
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules.lemmatization-gl.txt.swp-75.sort-393-step4.2cole_ziggurat_XD";
+            }
+        else if($language === 'gml')
+            {
+            $flexrulessubdir = "/1";
+            $flexrules = "flexrules";
+            if($Iperiodc13)
+                {
+                $periodsubdir = "/c13";
+                if($pos === 'n')
+                    $flexrulessubdir = "/1";
+                else
+                    {
+                    $flexrulessubdir = "/links";
+                    $x = "";
+                    }
+                }
             }
         else if($language === 'gv')
             {
@@ -874,19 +889,19 @@ try {
         global $dodelete;
         global $tobedeleted;
         global $mode;
-        /***************
-         * declarations *
-         ***************/
+/***************
+* declarations *
+***************/
 
-        /*
-         * TODO Use the variables defined below to configure your tool for the right
-         * input files and the right settings.
-         * The input files are local files that your tool can open and close like any
-         * other file.
-         * If your tool needs to create temporary files, use the tempFileName()
-         * function. It can mark the temporary files for deletion when the webservice
-         * is done. (See the global dodelete variable.)
-         */
+/*
+ * TODO Use the variables defined below to configure your tool for the right
+ * input files and the right settings.
+ * The input files are local files that your tool can open and close like any
+ * other file.
+ * If your tool needs to create temporary files, use the tempFileName()
+ * function. It can mark the temporary files for deletion when the webservice
+ * is done. (See the global dodelete variable.)
+ */
         $base = "";	/* URL from where this web service downloads input. The generated script takes care of that, so you can ignore this variable. */
         $job = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must have the name of the job. */
         $post2 = "";	/* Only used if this web service returns 201 and POSTs result later. In that case the uploaded file must be posted to this URL. */
@@ -929,6 +944,7 @@ try {
         $Ilangga = false;	/* Language in input is Irish (irsk) if true */
         $Ilanggd = false;	/* Language in input is Scottish Gaelic (skotsk gælisk) if true */
         $Ilanggl = false;	/* Language in input is Galician (galicisk) if true */
+        $Ilanggml = false;	/* Language in input is Middle Low German (middelnedertysk) if true */
         $Ilanggv = false;	/* Language in input is Manx (mansk) if true */
         $Ilanghr = false;	/* Language in input is Croatian (kroatisk) if true */
         $Ilanghu = false;	/* Language in input is Hungarian (ungarsk) if true */
@@ -984,6 +1000,7 @@ try {
         $Olangga = false;	/* Language in output is Irish (irsk) if true */
         $Olanggd = false;	/* Language in output is Scottish Gaelic (skotsk gælisk) if true */
         $Olanggl = false;	/* Language in output is Galician (galicisk) if true */
+        $Olanggml = false;	/* Language in output is Middle Low German (middelnedertysk) if true */
         $Olanggv = false;	/* Language in output is Manx (mansk) if true */
         $Olanghr = false;	/* Language in output is Croatian (kroatisk) if true */
         $Olanghu = false;	/* Language in output is Hungarian (ungarsk) if true */
@@ -1140,6 +1157,7 @@ try {
             $Ilangga = existsArgumentWithValue("Ilang", "ga");
             $Ilanggd = existsArgumentWithValue("Ilang", "gd");
             $Ilanggl = existsArgumentWithValue("Ilang", "gl");
+            $Ilanggml = existsArgumentWithValue("Ilang", "gml");
             $Ilanggv = existsArgumentWithValue("Ilang", "gv");
             $Ilanghr = existsArgumentWithValue("Ilang", "hr");
             $Ilanghu = existsArgumentWithValue("Ilang", "hu");
@@ -1160,8 +1178,8 @@ try {
             $Ilangsr = existsArgumentWithValue("Ilang", "sr");
             $Ilangsv = existsArgumentWithValue("Ilang", "sv");
             $Ilanguk = existsArgumentWithValue("Ilang", "uk");
-            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangast=$Ilangast " . "Ilangbe=$Ilangbe " . "Ilangbg=$Ilangbg " . "Ilangca=$Ilangca " . "Ilangcs=$Ilangcs " . "Ilangcy=$Ilangcy " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilangga=$Ilangga " . "Ilanggd=$Ilanggd " . "Ilanggl=$Ilanggl " . "Ilanggv=$Ilanggv " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangka=$Ilangka " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
-            $input = $input . ($Ilangaf ? " \$Ilangaf" : "")  . ($Ilangast ? " \$Ilangast" : "")  . ($Ilangbe ? " \$Ilangbe" : "")  . ($Ilangbg ? " \$Ilangbg" : "")  . ($Ilangca ? " \$Ilangca" : "")  . ($Ilangcs ? " \$Ilangcs" : "")  . ($Ilangcy ? " \$Ilangcy" : "")  . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangde ? " \$Ilangde" : "")  . ($Ilangel ? " \$Ilangel" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilanges ? " \$Ilanges" : "")  . ($Ilanget ? " \$Ilanget" : "")  . ($Ilangfa ? " \$Ilangfa" : "")  . ($Ilangfo ? " \$Ilangfo" : "")  . ($Ilangfr ? " \$Ilangfr" : "")  . ($Ilangga ? " \$Ilangga" : "")  . ($Ilanggd ? " \$Ilanggd" : "")  . ($Ilanggl ? " \$Ilanggl" : "")  . ($Ilanggv ? " \$Ilanggv" : "")  . ($Ilanghr ? " \$Ilanghr" : "")  . ($Ilanghu ? " \$Ilanghu" : "")  . ($Ilangis ? " \$Ilangis" : "")  . ($Ilangit ? " \$Ilangit" : "")  . ($Ilangka ? " \$Ilangka" : "")  . ($Ilangla ? " \$Ilangla" : "")  . ($Ilangmk ? " \$Ilangmk" : "")  . ($Ilangnl ? " \$Ilangnl" : "")  . ($Ilangno ? " \$Ilangno" : "")  . ($Ilangpl ? " \$Ilangpl" : "")  . ($Ilangpt ? " \$Ilangpt" : "")  . ($Ilangro ? " \$Ilangro" : "")  . ($Ilangru ? " \$Ilangru" : "")  . ($Ilangsk ? " \$Ilangsk" : "")  . ($Ilangsl ? " \$Ilangsl" : "")  . ($Ilangsq ? " \$Ilangsq" : "")  . ($Ilangsr ? " \$Ilangsr" : "")  . ($Ilangsv ? " \$Ilangsv" : "")  . ($Ilanguk ? " \$Ilanguk" : "") ;
+            $echos = $echos . "Ilangaf=$Ilangaf " . "Ilangast=$Ilangast " . "Ilangbe=$Ilangbe " . "Ilangbg=$Ilangbg " . "Ilangca=$Ilangca " . "Ilangcs=$Ilangcs " . "Ilangcy=$Ilangcy " . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangel=$Ilangel " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilanget=$Ilanget " . "Ilangfa=$Ilangfa " . "Ilangfo=$Ilangfo " . "Ilangfr=$Ilangfr " . "Ilangga=$Ilangga " . "Ilanggd=$Ilanggd " . "Ilanggl=$Ilanggl " . "Ilanggml=$Ilanggml " . "Ilanggv=$Ilanggv " . "Ilanghr=$Ilanghr " . "Ilanghu=$Ilanghu " . "Ilangis=$Ilangis " . "Ilangit=$Ilangit " . "Ilangka=$Ilangka " . "Ilangla=$Ilangla " . "Ilangmk=$Ilangmk " . "Ilangnl=$Ilangnl " . "Ilangno=$Ilangno " . "Ilangpl=$Ilangpl " . "Ilangpt=$Ilangpt " . "Ilangro=$Ilangro " . "Ilangru=$Ilangru " . "Ilangsk=$Ilangsk " . "Ilangsl=$Ilangsl " . "Ilangsq=$Ilangsq " . "Ilangsr=$Ilangsr " . "Ilangsv=$Ilangsv " . "Ilanguk=$Ilanguk ";
+            $input = $input . ($Ilangaf ? " \$Ilangaf" : "")  . ($Ilangast ? " \$Ilangast" : "")  . ($Ilangbe ? " \$Ilangbe" : "")  . ($Ilangbg ? " \$Ilangbg" : "")  . ($Ilangca ? " \$Ilangca" : "")  . ($Ilangcs ? " \$Ilangcs" : "")  . ($Ilangcy ? " \$Ilangcy" : "")  . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangde ? " \$Ilangde" : "")  . ($Ilangel ? " \$Ilangel" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilanges ? " \$Ilanges" : "")  . ($Ilanget ? " \$Ilanget" : "")  . ($Ilangfa ? " \$Ilangfa" : "")  . ($Ilangfo ? " \$Ilangfo" : "")  . ($Ilangfr ? " \$Ilangfr" : "")  . ($Ilangga ? " \$Ilangga" : "")  . ($Ilanggd ? " \$Ilanggd" : "")  . ($Ilanggl ? " \$Ilanggl" : "")  . ($Ilanggml ? " \$Ilanggml" : "")  . ($Ilanggv ? " \$Ilanggv" : "")  . ($Ilanghr ? " \$Ilanghr" : "")  . ($Ilanghu ? " \$Ilanghu" : "")  . ($Ilangis ? " \$Ilangis" : "")  . ($Ilangit ? " \$Ilangit" : "")  . ($Ilangka ? " \$Ilangka" : "")  . ($Ilangla ? " \$Ilangla" : "")  . ($Ilangmk ? " \$Ilangmk" : "")  . ($Ilangnl ? " \$Ilangnl" : "")  . ($Ilangno ? " \$Ilangno" : "")  . ($Ilangpl ? " \$Ilangpl" : "")  . ($Ilangpt ? " \$Ilangpt" : "")  . ($Ilangro ? " \$Ilangro" : "")  . ($Ilangru ? " \$Ilangru" : "")  . ($Ilangsk ? " \$Ilangsk" : "")  . ($Ilangsl ? " \$Ilangsl" : "")  . ($Ilangsq ? " \$Ilangsq" : "")  . ($Ilangsr ? " \$Ilangsr" : "")  . ($Ilangsv ? " \$Ilangsv" : "")  . ($Ilanguk ? " \$Ilanguk" : "") ;
             }
         if( hasArgument("Iperiod") )
             {
@@ -1230,6 +1248,7 @@ try {
             $Olangga = existsArgumentWithValue("Olang", "ga");
             $Olanggd = existsArgumentWithValue("Olang", "gd");
             $Olanggl = existsArgumentWithValue("Olang", "gl");
+            $Olanggml = existsArgumentWithValue("Olang", "gml");
             $Olanggv = existsArgumentWithValue("Olang", "gv");
             $Olanghr = existsArgumentWithValue("Olang", "hr");
             $Olanghu = existsArgumentWithValue("Olang", "hu");
@@ -1250,8 +1269,8 @@ try {
             $Olangsr = existsArgumentWithValue("Olang", "sr");
             $Olangsv = existsArgumentWithValue("Olang", "sv");
             $Olanguk = existsArgumentWithValue("Olang", "uk");
-            $echos = $echos . "Olangaf=$Olangaf " . "Olangast=$Olangast " . "Olangbe=$Olangbe " . "Olangbg=$Olangbg " . "Olangca=$Olangca " . "Olangcs=$Olangcs " . "Olangcy=$Olangcy " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olangga=$Olangga " . "Olanggd=$Olanggd " . "Olanggl=$Olanggl " . "Olanggv=$Olanggv " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangka=$Olangka " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
-            $output = $output . ($Olangaf ? " \$Olangaf" : "")  . ($Olangast ? " \$Olangast" : "")  . ($Olangbe ? " \$Olangbe" : "")  . ($Olangbg ? " \$Olangbg" : "")  . ($Olangca ? " \$Olangca" : "")  . ($Olangcs ? " \$Olangcs" : "")  . ($Olangcy ? " \$Olangcy" : "")  . ($Olangda ? " \$Olangda" : "")  . ($Olangde ? " \$Olangde" : "")  . ($Olangel ? " \$Olangel" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olanges ? " \$Olanges" : "")  . ($Olanget ? " \$Olanget" : "")  . ($Olangfa ? " \$Olangfa" : "")  . ($Olangfo ? " \$Olangfo" : "")  . ($Olangfr ? " \$Olangfr" : "")  . ($Olangga ? " \$Olangga" : "")  . ($Olanggd ? " \$Olanggd" : "")  . ($Olanggl ? " \$Olanggl" : "")  . ($Olanggv ? " \$Olanggv" : "")  . ($Olanghr ? " \$Olanghr" : "")  . ($Olanghu ? " \$Olanghu" : "")  . ($Olangis ? " \$Olangis" : "")  . ($Olangit ? " \$Olangit" : "")  . ($Olangka ? " \$Olangka" : "")  . ($Olangla ? " \$Olangla" : "")  . ($Olangmk ? " \$Olangmk" : "")  . ($Olangnl ? " \$Olangnl" : "")  . ($Olangno ? " \$Olangno" : "")  . ($Olangpl ? " \$Olangpl" : "")  . ($Olangpt ? " \$Olangpt" : "")  . ($Olangro ? " \$Olangro" : "")  . ($Olangru ? " \$Olangru" : "")  . ($Olangsk ? " \$Olangsk" : "")  . ($Olangsl ? " \$Olangsl" : "")  . ($Olangsq ? " \$Olangsq" : "")  . ($Olangsr ? " \$Olangsr" : "")  . ($Olangsv ? " \$Olangsv" : "")  . ($Olanguk ? " \$Olanguk" : "") ;
+            $echos = $echos . "Olangaf=$Olangaf " . "Olangast=$Olangast " . "Olangbe=$Olangbe " . "Olangbg=$Olangbg " . "Olangca=$Olangca " . "Olangcs=$Olangcs " . "Olangcy=$Olangcy " . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangel=$Olangel " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olanget=$Olanget " . "Olangfa=$Olangfa " . "Olangfo=$Olangfo " . "Olangfr=$Olangfr " . "Olangga=$Olangga " . "Olanggd=$Olanggd " . "Olanggl=$Olanggl " . "Olanggml=$Olanggml " . "Olanggv=$Olanggv " . "Olanghr=$Olanghr " . "Olanghu=$Olanghu " . "Olangis=$Olangis " . "Olangit=$Olangit " . "Olangka=$Olangka " . "Olangla=$Olangla " . "Olangmk=$Olangmk " . "Olangnl=$Olangnl " . "Olangno=$Olangno " . "Olangpl=$Olangpl " . "Olangpt=$Olangpt " . "Olangro=$Olangro " . "Olangru=$Olangru " . "Olangsk=$Olangsk " . "Olangsl=$Olangsl " . "Olangsq=$Olangsq " . "Olangsr=$Olangsr " . "Olangsv=$Olangsv " . "Olanguk=$Olanguk ";
+            $output = $output . ($Olangaf ? " \$Olangaf" : "")  . ($Olangast ? " \$Olangast" : "")  . ($Olangbe ? " \$Olangbe" : "")  . ($Olangbg ? " \$Olangbg" : "")  . ($Olangca ? " \$Olangca" : "")  . ($Olangcs ? " \$Olangcs" : "")  . ($Olangcy ? " \$Olangcy" : "")  . ($Olangda ? " \$Olangda" : "")  . ($Olangde ? " \$Olangde" : "")  . ($Olangel ? " \$Olangel" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olanges ? " \$Olanges" : "")  . ($Olanget ? " \$Olanget" : "")  . ($Olangfa ? " \$Olangfa" : "")  . ($Olangfo ? " \$Olangfo" : "")  . ($Olangfr ? " \$Olangfr" : "")  . ($Olangga ? " \$Olangga" : "")  . ($Olanggd ? " \$Olanggd" : "")  . ($Olanggl ? " \$Olanggl" : "")  . ($Olanggml ? " \$Olanggml" : "")  . ($Olanggv ? " \$Olanggv" : "")  . ($Olanghr ? " \$Olanghr" : "")  . ($Olanghu ? " \$Olanghu" : "")  . ($Olangis ? " \$Olangis" : "")  . ($Olangit ? " \$Olangit" : "")  . ($Olangka ? " \$Olangka" : "")  . ($Olangla ? " \$Olangla" : "")  . ($Olangmk ? " \$Olangmk" : "")  . ($Olangnl ? " \$Olangnl" : "")  . ($Olangno ? " \$Olangno" : "")  . ($Olangpl ? " \$Olangpl" : "")  . ($Olangpt ? " \$Olangpt" : "")  . ($Olangro ? " \$Olangro" : "")  . ($Olangru ? " \$Olangru" : "")  . ($Olangsk ? " \$Olangsk" : "")  . ($Olangsl ? " \$Olangsl" : "")  . ($Olangsq ? " \$Olangsq" : "")  . ($Olangsr ? " \$Olangsr" : "")  . ($Olangsv ? " \$Olangsv" : "")  . ($Olanguk ? " \$Olanguk" : "") ;
             }
         if( hasArgument("Operiod") )
             {
@@ -1317,7 +1336,7 @@ try {
         $command = "echo $echos >> $CSTLemfile";
         logit($command);
 
-        if(($cmd = popen($command, "r")) === NULL)
+        if(($cmd = popen($command, "r")) == NULL)
             {
             throw new SystemExit(); // instead of exit()
             }
@@ -1392,6 +1411,7 @@ try {
              && $language !== "ga"
              && $language !== "gd"
              && $language !== "gl"
+             && $language !== "gml"
              && $language !== "gv"
              && $language !== "hu"
              && $language !== "is"
