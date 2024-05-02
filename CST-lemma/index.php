@@ -1030,18 +1030,22 @@ try {
         $Opresuaf = false;	/* Assemblage in output is alphabetic list, OOV only (alfabetisk liste, kun ukendte ord) if true */
         $Opresufq = false;	/* Assemblage in output is frequency list, OOV only (frekvensliste, kun ukendte ord) if true */
         $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_par_pos_seg_tok__pos_HiNTS = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is HiNTS (Historisches-Niederdeutsch-Tagset) for the PoS-tags (PoS-tags) component if true */
         $Ifacet_par_pos_seg_tok__pos_PT = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
         $Ifacet_par_pos_seg_tok__pos_Par = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
         $Ifacet_par_pos_seg_tok__pos_Uni = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_DSL = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
+        $Ifacet_pos_seg_tok__pos_HiNTS = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is HiNTS (Historisches-Niederdeutsch-Tagset) for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_PT = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Penn Treebank for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_Par = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is CST-tagset for the PoS-tags (PoS-tags) component if true */
         $Ifacet_pos_seg_tok__pos_Uni = false;	/* Style of type of content PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is Universal Part-of-Speech Tagset for the PoS-tags (PoS-tags) component if true */
         $IfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in input is DSL-tagset if true */
+        $IfacetposHiNTS = false;	/* Style of type of content PoS-tags (PoS-tags) in input is HiNTS (Historisches-Niederdeutsch-Tagset) if true */
         $IfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Penn Treebank if true */
         $IfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in input is CST-tagset if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
         $OfacetposDSL = false;	/* Style of type of content PoS-tags (PoS-tags) in output is DSL-tagset if true */
+        $OfacetposHiNTS = false;	/* Style of type of content PoS-tags (PoS-tags) in output is HiNTS (Historisches-Niederdeutsch-Tagset) if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
         $OfacetposPar = false;	/* Style of type of content PoS-tags (PoS-tags) in output is CST-tagset if true */
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
@@ -1297,38 +1301,42 @@ try {
         if( hasArgument("Ifacet_par_pos_seg_tok") )
             {
             $Ifacet_par_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_DSL");
+            $Ifacet_par_pos_seg_tok__pos_HiNTS = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_HiNTS");
             $Ifacet_par_pos_seg_tok__pos_PT = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_PT");
             $Ifacet_par_pos_seg_tok__pos_Par = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_Par");
             $Ifacet_par_pos_seg_tok__pos_Uni = existsArgumentWithValue("Ifacet_par_pos_seg_tok", "__pos_Uni");
-            $echos = $echos . "Ifacet_par_pos_seg_tok__pos_DSL=$Ifacet_par_pos_seg_tok__pos_DSL " . "Ifacet_par_pos_seg_tok__pos_PT=$Ifacet_par_pos_seg_tok__pos_PT " . "Ifacet_par_pos_seg_tok__pos_Par=$Ifacet_par_pos_seg_tok__pos_Par " . "Ifacet_par_pos_seg_tok__pos_Uni=$Ifacet_par_pos_seg_tok__pos_Uni ";
-            $input = $input . ($Ifacet_par_pos_seg_tok__pos_DSL ? " \$Ifacet_par_pos_seg_tok__pos_DSL" : "")  . ($Ifacet_par_pos_seg_tok__pos_PT ? " \$Ifacet_par_pos_seg_tok__pos_PT" : "")  . ($Ifacet_par_pos_seg_tok__pos_Par ? " \$Ifacet_par_pos_seg_tok__pos_Par" : "")  . ($Ifacet_par_pos_seg_tok__pos_Uni ? " \$Ifacet_par_pos_seg_tok__pos_Uni" : "") ;
+            $echos = $echos . "Ifacet_par_pos_seg_tok__pos_DSL=$Ifacet_par_pos_seg_tok__pos_DSL " . "Ifacet_par_pos_seg_tok__pos_HiNTS=$Ifacet_par_pos_seg_tok__pos_HiNTS " . "Ifacet_par_pos_seg_tok__pos_PT=$Ifacet_par_pos_seg_tok__pos_PT " . "Ifacet_par_pos_seg_tok__pos_Par=$Ifacet_par_pos_seg_tok__pos_Par " . "Ifacet_par_pos_seg_tok__pos_Uni=$Ifacet_par_pos_seg_tok__pos_Uni ";
+            $input = $input . ($Ifacet_par_pos_seg_tok__pos_DSL ? " \$Ifacet_par_pos_seg_tok__pos_DSL" : "")  . ($Ifacet_par_pos_seg_tok__pos_HiNTS ? " \$Ifacet_par_pos_seg_tok__pos_HiNTS" : "")  . ($Ifacet_par_pos_seg_tok__pos_PT ? " \$Ifacet_par_pos_seg_tok__pos_PT" : "")  . ($Ifacet_par_pos_seg_tok__pos_Par ? " \$Ifacet_par_pos_seg_tok__pos_Par" : "")  . ($Ifacet_par_pos_seg_tok__pos_Uni ? " \$Ifacet_par_pos_seg_tok__pos_Uni" : "") ;
             }
         if( hasArgument("Ifacet_pos_seg_tok") )
             {
             $Ifacet_pos_seg_tok__pos_DSL = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_DSL");
+            $Ifacet_pos_seg_tok__pos_HiNTS = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_HiNTS");
             $Ifacet_pos_seg_tok__pos_PT = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_PT");
             $Ifacet_pos_seg_tok__pos_Par = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_Par");
             $Ifacet_pos_seg_tok__pos_Uni = existsArgumentWithValue("Ifacet_pos_seg_tok", "__pos_Uni");
-            $echos = $echos . "Ifacet_pos_seg_tok__pos_DSL=$Ifacet_pos_seg_tok__pos_DSL " . "Ifacet_pos_seg_tok__pos_PT=$Ifacet_pos_seg_tok__pos_PT " . "Ifacet_pos_seg_tok__pos_Par=$Ifacet_pos_seg_tok__pos_Par " . "Ifacet_pos_seg_tok__pos_Uni=$Ifacet_pos_seg_tok__pos_Uni ";
-            $input = $input . ($Ifacet_pos_seg_tok__pos_DSL ? " \$Ifacet_pos_seg_tok__pos_DSL" : "")  . ($Ifacet_pos_seg_tok__pos_PT ? " \$Ifacet_pos_seg_tok__pos_PT" : "")  . ($Ifacet_pos_seg_tok__pos_Par ? " \$Ifacet_pos_seg_tok__pos_Par" : "")  . ($Ifacet_pos_seg_tok__pos_Uni ? " \$Ifacet_pos_seg_tok__pos_Uni" : "") ;
+            $echos = $echos . "Ifacet_pos_seg_tok__pos_DSL=$Ifacet_pos_seg_tok__pos_DSL " . "Ifacet_pos_seg_tok__pos_HiNTS=$Ifacet_pos_seg_tok__pos_HiNTS " . "Ifacet_pos_seg_tok__pos_PT=$Ifacet_pos_seg_tok__pos_PT " . "Ifacet_pos_seg_tok__pos_Par=$Ifacet_pos_seg_tok__pos_Par " . "Ifacet_pos_seg_tok__pos_Uni=$Ifacet_pos_seg_tok__pos_Uni ";
+            $input = $input . ($Ifacet_pos_seg_tok__pos_DSL ? " \$Ifacet_pos_seg_tok__pos_DSL" : "")  . ($Ifacet_pos_seg_tok__pos_HiNTS ? " \$Ifacet_pos_seg_tok__pos_HiNTS" : "")  . ($Ifacet_pos_seg_tok__pos_PT ? " \$Ifacet_pos_seg_tok__pos_PT" : "")  . ($Ifacet_pos_seg_tok__pos_Par ? " \$Ifacet_pos_seg_tok__pos_Par" : "")  . ($Ifacet_pos_seg_tok__pos_Uni ? " \$Ifacet_pos_seg_tok__pos_Uni" : "") ;
             }
         if( hasArgument("Ifacetpos") )
             {
             $IfacetposDSL = existsArgumentWithValue("Ifacetpos", "DSL");
+            $IfacetposHiNTS = existsArgumentWithValue("Ifacetpos", "HiNTS");
             $IfacetposPT = existsArgumentWithValue("Ifacetpos", "PT");
             $IfacetposPar = existsArgumentWithValue("Ifacetpos", "Par");
             $IfacetposUni = existsArgumentWithValue("Ifacetpos", "Uni");
-            $echos = $echos . "IfacetposDSL=$IfacetposDSL " . "IfacetposPT=$IfacetposPT " . "IfacetposPar=$IfacetposPar " . "IfacetposUni=$IfacetposUni ";
-            $input = $input . ($IfacetposDSL ? " \$IfacetposDSL" : "")  . ($IfacetposPT ? " \$IfacetposPT" : "")  . ($IfacetposPar ? " \$IfacetposPar" : "")  . ($IfacetposUni ? " \$IfacetposUni" : "") ;
+            $echos = $echos . "IfacetposDSL=$IfacetposDSL " . "IfacetposHiNTS=$IfacetposHiNTS " . "IfacetposPT=$IfacetposPT " . "IfacetposPar=$IfacetposPar " . "IfacetposUni=$IfacetposUni ";
+            $input = $input . ($IfacetposDSL ? " \$IfacetposDSL" : "")  . ($IfacetposHiNTS ? " \$IfacetposHiNTS" : "")  . ($IfacetposPT ? " \$IfacetposPT" : "")  . ($IfacetposPar ? " \$IfacetposPar" : "")  . ($IfacetposUni ? " \$IfacetposUni" : "") ;
             }
         if( hasArgument("Ofacetpos") )
             {
             $OfacetposDSL = existsArgumentWithValue("Ofacetpos", "DSL");
+            $OfacetposHiNTS = existsArgumentWithValue("Ofacetpos", "HiNTS");
             $OfacetposPT = existsArgumentWithValue("Ofacetpos", "PT");
             $OfacetposPar = existsArgumentWithValue("Ofacetpos", "Par");
             $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
-            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposPT=$OfacetposPT " . "OfacetposPar=$OfacetposPar " . "OfacetposUni=$OfacetposUni ";
-            $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposPT ? " \$OfacetposPT" : "")  . ($OfacetposPar ? " \$OfacetposPar" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
+            $echos = $echos . "OfacetposDSL=$OfacetposDSL " . "OfacetposHiNTS=$OfacetposHiNTS " . "OfacetposPT=$OfacetposPT " . "OfacetposPar=$OfacetposPar " . "OfacetposUni=$OfacetposUni ";
+            $output = $output . ($OfacetposDSL ? " \$OfacetposDSL" : "")  . ($OfacetposHiNTS ? " \$OfacetposHiNTS" : "")  . ($OfacetposPT ? " \$OfacetposPT" : "")  . ($OfacetposPar ? " \$OfacetposPar" : "")  . ($OfacetposUni ? " \$OfacetposUni" : "") ;
             }
 
         /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
