@@ -471,7 +471,11 @@ try {
                 {
                 $periodsubdir = "/c13";
                 if($pos === 'n')
-                    $flexrulessubdir = "/1";
+                    {
+                //  $flexrulessubdir = "/1";
+                    $flexrulessubdir = "/0";
+                    $flexrules = "flexrules.toklem.tab.uniq2.sort.ph_L8_XD";
+                    }
                 else
                     {
                     $flexrulessubdir = "/links";
