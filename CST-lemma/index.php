@@ -761,6 +761,7 @@ try {
 
         $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- $trigrams -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
         
+	//copy($filename,"filename");
         logit("commandB:" . $command);
 
         if($XMLinput === 'j')
@@ -1479,18 +1480,19 @@ try {
             }
         else
             {
+		    //logit("upload $F");
             $uploadfile = $F;
-	    copy($F,"sprakde.txt");
             if($uploadfile === "")
                 $uploadfile = $IfacettokF;
-            }
+	}
+	//logit("UploadB $uploadfile");
         if($uploadfile === '')
-            {
+	{
+		//logit("Input?");
             header("HTTP/1.0 404 Input tokens not found (F or IfacettokF parameter). ");
             return;
             }
-        //copy($uploadfile,"uploadfile");
-        logit("uploadfile = $uploadfile");
+        //logit("uploadfile = $uploadfile");
 
         if($Ifacetpos || $Ifacet_pos_seg_tok)
             { // lemmatise with pos input
