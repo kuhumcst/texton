@@ -301,7 +301,7 @@ try {
         $z = "";
 
         $flexrules = "flexrules";
-
+        $trigrams = "";
 
         if($language === 'af')
             {
@@ -467,14 +467,15 @@ try {
             {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules";
+            $trigrams = "-T '$toolres/$language/lemmatiser/trigramFrequenciesSorted'";
             if($Iperiodc13)
                 {
                 $periodsubdir = "/c13";
                 if($pos === 'n')
                     {
-                  //$flexrulessubdir = "/1";
+                //  $flexrulessubdir = "/1";
                     $flexrulessubdir = "/0";
-                    $flexrules = "flexrules.toklemSort.tab.ph_XC";
+                    $flexrules = "flexrules.toklem.tab.uniq2.sort.ph_L8_XD";
                     }
                 else
                     {
@@ -758,7 +759,7 @@ try {
         if($dict !== "")
             $command = $command . " -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict'";
 
-        $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
+        $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- $trigrams -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
         
         logit("commandB:" . $command);
 
@@ -1467,7 +1468,6 @@ try {
 
         //chdir($toolres);
 
-
         //logit("doit($language,$ancestor,$element,$annotation,$idprefix)");
         $filename = '';
 
@@ -1480,6 +1480,7 @@ try {
         else
             {
             $uploadfile = $F;
+	    copy($F,"sprakde.txt");
             if($uploadfile === "")
                 $uploadfile = $IfacettokF;
             }
