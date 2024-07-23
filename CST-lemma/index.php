@@ -70,7 +70,7 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : CST-Lem\n");
-        fwrite($fscrip," * Version          : 5.06.2014.0809\n");
+        fwrite($fscrip," * Version          : 8.5.1 (2024.07.23)\n");
         fwrite($fscrip," * Title            : CSTlemma\n");
         fwrite($fscrip," * ServiceURL       : http://localhost/CST-lemma/\n");
         fwrite($fscrip," * Publisher        : CST\n");
