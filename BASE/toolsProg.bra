@@ -186,6 +186,17 @@ toolsProg=
               & put$(\n,!logfile,APP)
             )
       )
+      ( theDate
+      =   
+        .   tme$:(?s.?m.?h.?d.?m.?y.?)
+          &   str
+            $ ( !y
+                (!m:<10&0|)
+                !m
+                (!d:<10&0|)
+                !d
+              )
+      )
       ( readTable
       =   folder
         .     !arg:%@
@@ -13776,6 +13787,7 @@ function main2(evt) {
           & (|log$NEW)
           & log$chosenworkflow-SINGLEWORKFLOWLOGJE
           & :?PIPE
+          & (DATE.theDate$) !arg:?arg
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?Tool.?parms.?BodyContainer)
           & (   !Items:
@@ -13833,7 +13845,7 @@ function main2(evt) {
                       )
                   )
             |   readTable$feedback
-              & str$!fb !feedback:?feedback
+              & str$(theDate$\n !fb) !feedback:?feedback
               & saveTable$feedback
               &   str
                 $ ( 200~~~
@@ -14184,7 +14196,8 @@ function main2(evt) {
               : ?XMLID
               : ?ITEMS
               : ?LANGUAGE
-            & !arg:(@(?:? #?JobNr).%@?jobID ?.?SPANGRPfil.?DATE)
+            & !arg:(@(?:? #?JobNr).%@?jobID ?.?SPANGRPfil)
+            & theDate$:?DATE
             & "SPANGRPfil is empty string if job step did not produce TEI output."
             & -1+!runningThreads:?runningThreads
             &   log
@@ -17191,9 +17204,7 @@ function main2(evt) {
                   $ (   !secs
                           str
                         $ ( !wwwServer
-                            ( "/texton/dialog?dialog=poll&job="
-                            | "/texton/mypoll?job="
-                            )
+                            ("/texton/dialog?dialog=poll&job="|"/texton/mypoll?job=")
                             !JobNr
                           )
                     . div
@@ -19552,6 +19563,7 @@ function main2(evt) {
                     )
             )
           & log$showworkflows-WORKFLOWLISTLOGJE
+          & (DATE.theDate$) !arg:?arg
           & !arg:?orgarg
           & setLanguageNotPermanently$!arg
           & setTypefaceNotPermanently$!arg
@@ -21566,6 +21578,7 @@ function main2(evt) {
           & log$NEW
           & log$specifyGoal-CREATELOGJE
           & log$(arg !arg)
+          & (DATE.theDate$) !arg:?arg
           & (     !arg
                 : ~(? (action.?) ?)
                 : ~(? (fintool.?) ?)
@@ -21628,7 +21641,6 @@ function main2(evt) {
  *
  * Input:
  *      item id (like dkclarin:59004/components/component/dkclarin:59003/content)
- *      date
  *      fk (optional)
  *
  * Affected tables:
@@ -21643,10 +21655,10 @@ function main2(evt) {
       =   nr item fname visibility date enam txe ext
         .   1:?nr
           &   !arg
-            : ( ?item
-              .   (?date.?visibility)
-                | ?date&:?visibility
+            : ( (?item.?visibility)
+              | ?item&:?visibility
               )
+          & theDate$:?date
           & str$(removePercentEncodings$!item):?item
           & (   @(rev$!item:?txe "." ?enam)
               & (   @( !txe
