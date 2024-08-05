@@ -446,10 +446,10 @@ try {
         logit( "combine(" . $uploadfileTok . "," . $uploadfileSeg . ")\n");
         $posfile = tempFileName("combine-tokseg-attribute");
         if($mode == 'dry')
-            scrip("../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"\$filename\") (get\$\"tokseg2sent.bra\")'");
+            scrip("../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"\$filename\") (get\$\"../shared_scripts/tokseg2sent.bra\")'");
         else
             {
-            $command = "../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"$posfile\") (get\$\"tokseg2sent.bra\")'";
+            $command = "../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"$posfile\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 exit(1);
