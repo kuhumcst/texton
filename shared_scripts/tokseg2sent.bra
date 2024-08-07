@@ -58,37 +58,60 @@ X=
   new
 =   
   .   ~
-    |   (|put$("tokseg2sent.log
-","tokseg2sent.log",NEW))
+    |   ( 
+        | put$("tokseg2sent.log
+","tokseg2sent.log",NEW,BIN)
+        )
       & !inputTok
       & !inputSeg
       & !output
       & !lowercase
+      & (!offsets|)
       & ( get$(!inputTok,X,ML,TRM):?XMLtok
         | 
-        | put$(cannotopen !inputTok \n,"tokseg2sent.log",APP)
+        |   put
+          $ ( cannotopen !inputTok \n
+            , "tokseg2sent.log"
+            , APP
+            , BIN
+            )
         )
       & ( get$(!inputSeg,X,ML,TRM):?XMLseg
         | 
-        | put$(cannotopen !inputSeg \n,"tokseg2sent.log",APP)
+        |   put
+          $ ( cannotopen !inputSeg \n
+            , "tokseg2sent.log"
+            , APP
+            , BIN
+            )
         )
       & ( invert
         =   g L
           .   :?L
-            & whl'(!arg:%?g ?arg&!g !L:?L)
+            &   whl
+              ' ( !arg:%?g ?arg
+                & !g !L:?L
+                )
             & !L
         )
       & :?tos
       &   whl
         ' (   !XMLseg
             :   ?
-                (?.? (from.?) ?:? (to.?to) ?,)
+                ( ?
+                .     ? (from.?) ?
+                    : ? (to.?to) ?
+                  , 
+                )
                 ?XMLseg
           & (@(!to:"#" ?to)|)
           & !to !tos:?tos
           )
       & :?ntos
-      & whl'(!tos:%?to ?tos&!to !ntos:?ntos)
+      &   whl
+        ' ( !tos:%?to ?tos
+          & !to !ntos:?ntos
+          )
       & :?ntok
       &   whl
         ' ( !ntos:%?to ?ntos
@@ -111,18 +134,78 @@ X=
       & ( trim
         =   
           .     @( rev$!arg
-                 : ? ((%@:~(" "|\n)) ?:?arg)
+                 :   ?
+                     ((%@:~(" "|\n)) ?:?arg)
                  )
               & @( rev$!arg
-                 : ? ((%@:~(" "|\n)) ?:?arg)
+                 :   ?
+                     ((%@:~(" "|\n)) ?:?arg)
                  )
             | !arg
         )
-      & (   !lowercase:yes
+      & lst$(XML,"XML.xml",NEW,BIN)
+      & (   !offsets
+          & :?xmu
+          & 0:?off
+          & (   !lowercase:yes
+              &   whl
+                ' ( !XML
+                  : (   (br.?) ?XML
+                      &   put
+                        $ (str$(!sent \n),!output,APP,BIN)
+                      & 1+!off:?off
+                      & :?sent
+                    |     (?e.?a)
+                          @?A
+                          (.!e.)
+                          ?XML
+                      & low$(trim$!A):?A
+                      &     ( !off
+                            .   !off+den$(sim$(!A.))
+                              : ?off
+                            . !a
+                            . !A
+                            )
+                            !xmu
+                        : ?xmu
+                      & 1+!off:?off
+                      & !sent !A " ":?sent
+                    | % ?XML
+                    )
+                  )
+            |   whl
+              ' ( !XML
+                : (   (br.?) ?XML
+                    &   put
+                      $ (str$(!sent \n),!output,APP,BIN)
+                    & 1+!off:?off
+                    & :?sent
+                  |   (?e.?a) @?A (.!e.) ?XML
+                    & trim$!A:?A
+                    &     ( !off
+                          . !off+den$(sim$(!A.)):?off
+                          . !a
+                          . !A
+                          )
+                          !xmu
+                      : ?xmu
+                    & 1+!off:?off
+                    & !sent !A " ":?sent
+                  | % ?XML
+                  )
+                )
+            )
+          & lst$(xmu,!offsets,NEW,BIN,RAW)
+        |   !lowercase:yes
           &   whl
             ' ( !XML
               : (   (br.?) ?XML
-                  & put$(low$(str$(!sent \n)),!output,APP)
+                  &   put
+                    $ ( low$(str$(!sent \n))
+                      , !output
+                      , APP
+                      , BIN
+                      )
                   & :?sent
                 |   (?e.?) @?A (.!e.) ?XML
                   & !sent trim$!A " ":?sent
@@ -132,7 +215,7 @@ X=
         |   whl
           ' ( !XML
             : (   (br.?) ?XML
-                & put$(str$(!sent \n),!output,APP)
+                & put$(str$(!sent \n),!output,APP,BIN)
                 & :?sent
               |   (?e.?) @?A (.!e.) ?XML
                 & !sent trim$!A " ":?sent
@@ -140,7 +223,7 @@ X=
               )
             )
         )
-      & put$(str$(!sent \n),!output,APP);
+      & put$(str$(!sent \n),!output,APP,BIN);
 
 r=
   get'"tokseg2sent.bra"
@@ -206,10 +289,11 @@ Segments:
 "
     , "tokseg2sent.bra"
     , NEW
+    , BIN
     )
-& lst'(X,"tokseg2sent.bra",APP)
-& put'(\n,"tokseg2sent.bra",APP)
-& lst'(r,"tokseg2sent.bra",APP)
-& put$(str$("\nnew'" X ";\n"),"tokseg2sent.bra",APP);
+& lst'(X,"tokseg2sent.bra",APP,BIN)
+& put'(\n,"tokseg2sent.bra",APP,BIN)
+& lst'(r,"tokseg2sent.bra",APP,BIN)
+& put$(str$("\nnew'" X ";\n"),"tokseg2sent.bra",APP,BIN);
 
 new'X;
