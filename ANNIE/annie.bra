@@ -1,0 +1,225 @@
+{annie.bra
+Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
+
+X=
+  new
+=   
+  .   ~
+    |   (   !offsetsfile
+          & !plaintoksegfile
+          & !inputNER
+          & !output
+          & get$!offsetsfile:?offsets
+          & get$(!plaintoksegfile,X,ML,TRM):?tokens
+          & get$(!plaintoksegfile,STR):?tokens
+          & nestML$(get$(!inputNER,X ML)):?ner
+        |   get$offsetsfile:?offsets
+          & get$(plaintoksegfile,STR):?tokens
+          & nestML$(get$(inputNER,X,ML)):?ner
+          & lst$(tokens,bratokens,NEW,BIN)
+          & lst$(ner,braner,NEW,BIN)
+          & out$OK
+          & "nerout.xml":?output
+        )
+      & ( sort
+        =   f L e S
+          .   !arg:?L
+            &   whl
+              ' ( :?S
+                &   whl
+                  ' ( !L:%?e %?f ?L
+                    & !f+!e !S:?S
+                    )
+                & !L !S:?S:% %:?L
+                )
+            & !S
+        )
+      &     ( 
+            =   L a
+              .   :?L
+                &   whl
+                  ' ( !arg:%?a ?arg
+                    & !a !L:?L
+                    )
+                & !L
+            )
+          $ !offsets
+        : ?offsets
+      & lst$(offsets,braoffsets,NEW,BIN)
+      &   !ner
+        :   ?
+            ( GateDocument&out$GateDocument
+            .   (version.3)
+              ,   ?
+                  ( TextWithNodes&out$TextWithNodes
+                  .   
+                    ,   ?
+                        @( ?
+                         :   ?
+                             "Content-Type: text/plain"
+                             \r\n
+                             \r\n
+                             [?HEADLENGTH
+                             ?
+                         )
+                        ?
+                  )
+                  ?
+                  (AnnotationSet.,?Annotations)
+                  ?
+            )
+            ?
+      & -1*!HEADLENGTH:?eraf
+      &     mop
+          $ ( ( 
+              =   
+                .     !arg:(?s.?e.?t)
+                    &   !offsets
+                      : ? (~<!s:?S.?R) ?offsets
+                    &   (!S.!R) !offsets
+                      : ?A (?B.(~<!e.?):?C) ?offsets
+                    & ( !t
+                      .   map
+                        $ ( ( 
+                            =   
+                              .   !arg:(?.?.?arg)
+                                & !arg
+                            )
+                          . !A (!B.!C)
+                          )
+                      )
+                  | 
+              )
+            .   sort
+              $ ( map
+                $ ( ( 
+                    =   
+                      .       !arg
+                            : ( Annotation
+                              .       (Id.?id)
+                                      (Type.?Type)
+                                      (StartNode.?start)
+                                      (EndNode.?end)
+                                  & !start+!eraf:?start
+                                  & !end+!eraf:?end
+                                , ?
+                              )
+                          & (!start.!end.!Type)
+                        | 
+                    )
+                  . !Annotations
+                  )
+                )
+            . (=+)
+            )
+        : ?ZZ
+      & lst$ZZ
+      & " Required format:
+<spanGrp ana='ner'>
+<span xml:id='ne1' from='#t12'>person</span>
+<span xml:id='ne2' from='#t16'>person</span>
+<span xml:id='ne3' from='#t28'>person</span>
+<span xml:id='ne4' from='#t49'>city</span>
+<span xml:id='ne5' from='#t52'>person</span>
+</spanGrp>"
+      & "Avaialble format:"
+      &   ( Person
+          .   (("xml:id".t12) (from."#i2.6").Igor)
+              ( ("xml:id".t13) (from."#i2.8")
+              . Mozeti─ì
+              )
+          )
+          ( Person
+          .   (("xml:id".t16) (from."#i2.13").Nada)
+              ( ("xml:id".t17) (from."#i2.15")
+              . Lavra─ì
+              )
+          )
+          ( Date
+          . ("xml:id".t19) (from."#i3.1")
+          . 2007
+          )
+          ( Organization
+          .   (("xml:id".t34) (from."#i4.27").Data)
+              (("xml:id".t35) (from."#i4.29").Mining)
+          )
+          ( Organization
+          . ("xml:id".t37) (from."#i4.33")
+          . Data
+          )
+          ( Date
+          . ("xml:id".t41) (from."#i4.40")
+          . 2007
+          )
+          ( Date
+          .   (("xml:id".t44) (from."#i4.44").October)
+              (("xml:id".t45) (from."#i4.46").12)
+              (("xml:id".t46) (from."#i4.47").",")
+              (("xml:id".t47) (from."#i4.49").2007)
+          )
+          ( Location
+          . ("xml:id".t49) (from."#i4.52")
+          . Ljubljana
+          )
+          ( Location
+          . ("xml:id".t51) (from."#i4.55")
+          . Slovenia
+          )
+          ( Date
+          . ("xml:id".t56) (from."#i5.9")
+          . 20220808
+          )
+      & 0:?id
+      &   ( spanGrp
+          .   (ana.ner)
+            ,   map
+              $ ( ( 
+                  =   
+                    .     !arg
+                        : ( ?Type
+                          .   (   ?
+                                  ("xml:id".?from:?to)
+                                  ?
+                              . ?
+                              )
+                              ( 
+                              | (? ("xml:id".?to) ?.?)
+                              )
+                          )
+                      & ( span
+                        .     ( "xml:id"
+                              . str$(ne (1+!id:?id))
+                              )
+                              (from.str$("#" !from))
+                              ( !from:!to&
+                              | (to.str$("#" !to))
+                              )
+                          , low$!Type
+                        )
+                  )
+                . !ZZ
+                )
+          )
+        : ?nXML
+      & lst$nXML
+      & put$(toML$!nXML,!output,NEW);
+
+r=
+  get'"annie.bra"
+& rmv$"annie.bak"
+& ren$("annie.bra"."annie.bak")
+&   put
+  $ ( "{annie.bra
+Create TEIP5-DKCLARINANNOTATION XML from token positions (XML) tokens (flat) and NER (flat).}
+
+"
+    , "annie.bra"
+    , NEW
+    , BIN
+    )
+& lst'(X,"annie.bra",APP,BIN)
+& put'(\n,"annie.bra",APP,BIN)
+& lst'(r,"annie.bra",APP,BIN)
+& put$(str$("\nnew'" X ";\n"),"annie.bra",APP,BIN);
+
+new'X;
