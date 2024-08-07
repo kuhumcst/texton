@@ -10,17 +10,15 @@ X=
           & !inputNER
           & !output
           & get$!offsetsfile:?offsets
-          & get$(!plaintoksegfile,X,ML,TRM):?tokens
           & get$(!plaintoksegfile,STR):?tokens
           & nestML$(get$(!inputNER,X ML)):?ner
         |   get$offsetsfile:?offsets
           & get$(plaintoksegfile,STR):?tokens
           & nestML$(get$(inputNER,X,ML)):?ner
-          & lst$(tokens,bratokens,NEW,BIN)
-          & lst$(ner,braner,NEW,BIN)
-          & out$OK
           & "nerout.xml":?output
         )
+      & "ANNIE does not accept large files."
+      & ~(!ner:(message.?,?msg))
       & ( sort
         =   f L e S
           .   !arg:?L
@@ -45,13 +43,12 @@ X=
             )
           $ !offsets
         : ?offsets
-      & lst$(offsets,braoffsets,NEW,BIN)
       &   !ner
         :   ?
-            ( GateDocument&out$GateDocument
+            ( GateDocument
             .   (version.3)
               ,   ?
-                  ( TextWithNodes&out$TextWithNodes
+                  ( TextWithNodes
                   .   
                     ,   ?
                         @( ?
@@ -113,7 +110,6 @@ X=
             . (=+)
             )
         : ?ZZ
-      & lst$ZZ
       & " Required format:
 <spanGrp ana='ner'>
 <span xml:id='ne1' from='#t12'>person</span>
@@ -183,7 +179,8 @@ X=
                               . ?
                               )
                               ( 
-                              | (? ("xml:id".?to) ?.?)
+                              |   ?
+                                  (? ("xml:id".?to) ?.?)
                               )
                           )
                       & ( span
@@ -201,8 +198,9 @@ X=
                 )
           )
         : ?nXML
-      & lst$nXML
-      & put$(toML$!nXML,!output,NEW);
+      & lst$(nXML,nXML,NEW,BIN)
+      & put$(toML$!nXML,!output,NEW,BIN)
+    | put$(toML$!ner,!output,NEW,BIN);
 
 r=
   get'"annie.bra"
