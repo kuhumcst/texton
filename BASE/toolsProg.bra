@@ -3895,6 +3895,12 @@ catch (SystemExit $e)
                 "ExternalURI    : "
                 getBoilerPlate$(!toolid.ExternalURI)
                 \n
+                "RestAPIkey         : "
+                (getBoilerPlate$(!toolid.RestAPIkey):|"*****")
+                \n
+                "RestAPIpassword    : "
+                (getBoilerPlate$(!toolid.RestAPIpassword):|"*****")
+                \n
                 "MultiInp       : "
                 getBoilerPlate$(!toolid.MultiInp)
                 \n
@@ -14858,28 +14864,25 @@ function main2(evt) {
                         & 0:?jobNr
                         & readTable$toolprop
                         & readTable$tooladm
-                        &     ( 
-                              =     anotooladm A Z a z
-                                  , ContactEmail ServiceURL
-                                .   0:?anotooladm
-                                  &   whl
-                                    ' (   !arg
-                                        :   (?A (ContactEmail.?ContactEmail) ?Z)
-                                          + ?arg
-                                      &   !A (ContactEmail."x@x.xxx") !Z
-                                        : ?A (ServiceURL.?ServiceURL) ?Z
-                                      & (   @(!ServiceURL:? "://" ? "/" ?z)
-                                          &   str$("http://localhost/" !z)
-                                            : ?ServiceURL
-                                        | 
+                        &     map
+                            $ ( ( 
+                                =   z ServiceURL
+                                  .     !arg:(ContactEmail.?)
+                                      & (ContactEmail."x@x.xxx")
+                                    |   !arg:(ServiceURL.?ServiceURL)
+                                      & ( ServiceURL
+                                        .     @(!ServiceURL:? "://" ? "/" ?z)
+                                            & str$("http://localhost/" !z)
+                                          | !ServiceURL
                                         )
-                                      &     !anotooladm
-                                          + (!A (ServiceURL.!ServiceURL) !Z)
-                                        : ?anotooladm
-                                      )
-                                  & !anotooladm
+                                    |   !arg:(RestAPIkey.?)
+                                      & (RestAPIkey."*****")
+                                    |   !arg:(RestAPIpassword.?)
+                                      & (RestAPIpassword."*****")
+                                    | !arg
+                                )
+                              . !tooladm
                               )
-                            $ !tooladm
                           : ?tooladm
                         &     ( baseUrlTools
                               . "http://localhost:8080"
@@ -15085,8 +15088,30 @@ function main2(evt) {
  * Called from workflow.java
  */"
       ( getJobArg
-      =   JobNr jobID jobby res A B makeList req servurl loggy
-        .     !arg:(@(?:? #?JobNr).?jobID.?arg)
+      =   JobNr jobID jobby res A B makeList req servurl loggy APIstuff
+        .     ( APIstuff
+              =   ExternalURI RestAPIkey RestAPIpassword
+                .       !arg
+                      : ( ?arg
+                        . !( 
+                           ' ( ?
+                             + ( ? (ServiceURL.$arg) ?
+                               : ? (ExternalURI.?ExternalURI) ?
+                               : ? (RestAPIkey.?RestAPIkey) ?
+                               : ? (RestAPIpassword.?RestAPIpassword) ?
+                               )
+                             + ?
+                             )
+                           )
+                        )
+                    & ( !ExternalURI:
+                      | !RestAPIkey:
+                      | !RestAPIpassword:
+                      | "&" "xuri=" !ExternalURI "&apiky=" !RestAPIkey "&apswd=" !RestAPIpassword
+                      )
+                  | 
+              )
+            & !arg:(@(?:? #?JobNr).?jobID.?arg)
             & "\na:" !JobNr "/" !jobID "/" !arg:?loggy
             & ( !jobs
               | \n "b:readTable$jobs" !loggy:?loggy&readTable$jobs
@@ -15158,11 +15183,13 @@ function main2(evt) {
                             )
                     )
                   & \n "j:makeList$" !req !loggy:?loggy
-                  & makeList$(.!req):("&" ?arg|?arg)
+                  &   APIstuff$(!servurl.!tooladm) makeList$(.!req)
+                    : ("&" ?arg|?arg)
                 |   filename
                   & \n "g:filename" !loggy:?loggy
                   & !jobby:(?.?.?.?arg)
                 )
+            & log$(argout !arg)
             & str$!arg
           |   lst$(jobs,path$jobsError,NEW,WYD,RAW)
             & str$("SOMETHINGWRONG:[[" \n !loggy \n]])
@@ -15256,9 +15283,7 @@ function main2(evt) {
  * Called from compute.java, upload.java, workflow.java
  */"
       ( goodRunningThreads
-      =   
-        .   (|log$(goodRunningThreads !runningThreads))
-          & (!runningThreads:<8&y|n)
+      = .!runningThreads:<8&y|n
       )
       ( feedbackform
       =   
@@ -17322,10 +17347,9 @@ function main2(evt) {
           , nth AA ZZ feats windfw ContactEmail contactEmail
           , featjursPreexisting featjursURL aboutFeature error Submit
           , createBoilerPlate force askFieldSet validationComments
-          , storeToolButton replaceToolButton
+          , storeToolButton replaceToolButton RestAPIkey RestAPIpassword
           , deleteToolButton UpdateButton PHPbutton
-        .   clean$
-          & ( checkParmsSimple
+        .   ( checkParmsSimple
             =   parms parm aBbr tmp
               .   !arg:(?parms.?parm)
                 & !parms:? (!parm.%?aBbr) ?
@@ -17339,6 +17363,7 @@ function main2(evt) {
           & ( createBoilerPlate
             =     ToolName ToolVersion FullToolName
                 , URL Publisher ContentProvider
+                , RestAPIkey RestAPIpassword
                 , Creator InfoAbout Description
                 , ExternalURI MultiInp url-password
                 , PostData Inactive pval toggles
@@ -17387,6 +17412,12 @@ function main2(evt) {
                             : ? (InfoAbout.?InfoAbout) ?
                             : ? (Description.?Description) ?
                             : ? (ExternalURI.?ExternalURI) ?
+                            : ( ? (RestAPIkey.?RestAPIkey) ?
+                              | ?&:?RestAPIkey
+                              )
+                            : ( ? (RestAPIpassword.?RestAPIpassword) ?
+                              | ?&:?RestAPIpassword
+                              )
                             : ? (MultiInp.?MultiInp) ?
                             : ? (PostData.?PostData) ?
                             : ? (Inactive.?Inactive) ?
@@ -17413,6 +17444,8 @@ function main2(evt) {
                         : ?InfoAbout
                         : ?Description
                         : ?ExternalURI
+                        : ?RestAPIkey
+                        : ?RestAPIpassword
                         : ?MultiInp
                         : ?PostData
                       & on:?Inactive
@@ -17440,6 +17473,8 @@ function main2(evt) {
                         (url.!URL)
                         (dscrptn.!Description)
                         (xuri.!ExternalURI)
+                        (apiky.!RestAPIkey)
+                        (apswd.!RestAPIpassword)
                     : ?liste
                   &     (multiinp.!MultiInp)
                         (pstdt.!PostData)
@@ -17621,6 +17656,26 @@ function main2(evt) {
                                           "udfyld hvis værktøjet (også) fungerer som webservice"
                                         )
                                     )
+                                    (size.40)
+                                )
+                            )
+                            paragraph
+                          $ (   staticField
+                              $ ( !arg
+                                . "External Service API key:"
+                                . apiky
+                                . RestAPIkey
+                                . makeTextFormField
+                                .   (desc.localized$"user for HTTP Basic Authentication")
+                                    (size.40)
+                                )
+                                staticField
+                              $ ( !arg
+                                . "External Service API password:"
+                                . apswd
+                                . RestAPIpassword
+                                . makeTextFormField
+                                .   (desc.localized$"password for HTTP Basic Authentication")
                                     (size.40)
                                 )
                             )
@@ -18248,6 +18303,7 @@ function main2(evt) {
                 , ToolURL ToolPublisher ContentProvider
                 , ToolCreator InfoAbout ToolDescription
                 , ToolExternalURI ToolMultiInp mayNotBeEmpty
+                , RestAPIkey RestAPIpassword
                 , ToolPostData ToolInactive Nazn dNazn
               .     !arg
                   : ( ?ToolName
@@ -18261,9 +18317,13 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
+                    . ?RestAPIkey
+                    . ?RestAPIpassword
                     . ?ToolMultiInp
                     . ?ToolPostData
                     . ?ToolInactive
+                    . ?RestAPIkey
+                    . ?RestAPIpassword
                     . ?Submit
                     )
                 & ( mayNotBeEmpty
@@ -18380,6 +18440,7 @@ function main2(evt) {
             =     A M Z Metadata admdata
                 , ToolName ToolVersion FullToolName PassWord
                 , ToolURL ToolPublisher ContentProvider
+                , RestAPIkey RestAPIpassword
                 , ToolCreator InfoAbout ToolDescription
                 , ToolExternalURI ToolMultiInp removeEmptyValues
                 , ToolPostData ToolInactive sortFacets
@@ -18400,6 +18461,8 @@ function main2(evt) {
                     . ?InfoAbout
                     . ?ToolDescription
                     . ?ToolExternalURI
+                    . ?RestAPIkey
+                    . ?RestAPIpassword
                     . ?ToolMultiInp
                     . ?ToolPostData
                     . ?ToolInactive
@@ -18600,6 +18663,8 @@ function main2(evt) {
                               (InfoAbout.!InfoAbout)
                               (Description.!ToolDescription)
                               (ExternalURI.!ToolExternalURI)
+                              (RestAPIkey.!RestAPIkey)
+                              (RestAPIpassword.!RestAPIpassword)
                               (MultiInp.!ToolMultiInp)
                               (PostData.!ToolPostData)
                               (Inactive.!ToolInactive)
@@ -18614,8 +18679,8 @@ function main2(evt) {
             )
           & "Body of Register starts here"
           & log$NEW
-          & log$REGISTER
-          & log$
+          & log$REGiSTER
+          & clean$
           & lst$(arg,path$"log.txt",RAW APP WYD)
           &   
             : ?servicedSources
@@ -18854,6 +18919,8 @@ function main2(evt) {
                                   . !InfoAbout
                                   . !ToolDescription
                                   . !ToolExternalURI
+                                  . !RestAPIkey
+                                  . !RestAPIpassword
                                   . !ToolMultiInp
                                   . !ToolPostData
                                   . !ToolInactive
@@ -18874,6 +18941,8 @@ function main2(evt) {
                                     . !InfoAbout
                                     . !ToolDescription
                                     . !ToolExternalURI
+                                    . !RestAPIkey
+                                    . !RestAPIpassword
                                     . !ToolMultiInp
                                     . !ToolPostData
                                     . !ToolInactive
@@ -18942,7 +19011,7 @@ function main2(evt) {
                                         submit$!UpdateButton
                                         submit$!PHPbutton
                                         helplink$(usedonly.n)
-                                    . POST
+                                    . GET
                                     )
                                 )
                                 (p.,!error (br.,))
@@ -21903,7 +21972,7 @@ function main2(evt) {
                               )
                               (!handle:|(handle.!handle))
                             )
-                      . POST
+                      . GET
                       )
                   )
                 )
