@@ -14,7 +14,7 @@ X=
           & nestML$(get$(!inputNER,X ML)):?ner
         |   get$offsetsfile:?offsets
           & get$(plaintoksegfile,STR):?tokens
-          & nestML$(get$(inputNER,X,ML)):?ner
+          & nestML$(get$(ANNIEfileRaw,X,ML)):?ner
           & "nerout.xml":?output
         )
       & "ANNIE does not accept large files."
@@ -72,7 +72,12 @@ X=
               =   
                 .     !arg:(?s.?e.?t)
                     &   !offsets
-                      : ? (~<!s:?S.?R) ?offsets
+                      : ?A (~<!s:?S.?R) ?offsets
+                    & (   !S:>!s
+                        & (!S.!R) !offsets:?offset
+                        & !A:? (?S.?R)
+                      | 
+                      )
                     &   (!S.!R) !offsets
                       : ?A (?B.(~<!e.?):?C) ?offsets
                     & ( !t
@@ -118,7 +123,7 @@ X=
 <span xml:id='ne4' from='#t49'>city</span>
 <span xml:id='ne5' from='#t52'>person</span>
 </spanGrp>"
-      & "Avaialble format:"
+      & "Available format:"
       &   ( Person
           .   (("xml:id".t12) (from."#i2.6").Igor)
               ( ("xml:id".t13) (from."#i2.8")
@@ -198,7 +203,6 @@ X=
                 )
           )
         : ?nXML
-      & lst$(nXML,nXML,NEW,BIN)
       & put$(toML$!nXML,!output,NEW,BIN)
     | put$(toML$!ner,!output,NEW,BIN);
 
