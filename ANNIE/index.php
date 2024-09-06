@@ -421,8 +421,8 @@ try {
             }
         else
             {
-                copy($IfacetsegF,"IfacetsegF");
-                copy($IfacettokF,"IfacettokF");
+                //copy($IfacetsegF,"IfacetsegF");
+                //copy($IfacettokF,"IfacettokF");
             $ANNIEfile = ANNIE($IfacetsegF,$IfacettokF,$lang,$URL,$apiky,$apswd);
             }
 
@@ -473,9 +473,9 @@ try {
             logit("ANNIE($uploadfileSeg,$uploadfileTok,$lang)");
             list($plaintoksegfile,$offsetsfile) = combine($uploadfileTok,$uploadfileSeg);
             $ANNIEfileRaw = tempFileName("ANNIE-raw");
-            copy($plaintoksegfile,"plaintoksegfile");
+            //copy($plaintoksegfile,"plaintoksegfile");
             http($plaintoksegfile,$ANNIEfileRaw,$lang,$URL,$apiky,$apswd);
-            copy($ANNIEfileRaw,"ANNIEfileRaw");
+            //copy($ANNIEfileRaw,"ANNIEfileRaw");
             $nerfile = NERannotation($offsetsfile,$plaintoksegfile,$ANNIEfileRaw);
             logit('filename:'.$nerfile);
             }
@@ -503,7 +503,7 @@ try {
             while($read = fgets($cmd))
                 {
                 }
-            copy($plaintoksegfile,"nerfile");
+            //copy($plaintoksegfile,"nerfile");
             return array($plaintoksegfile,$offsetsfile);
             }
         }
@@ -519,8 +519,8 @@ try {
             }
         else
             {
-            copy($offsetsfile,"offsetsfile");
-            copy($plaintoksegfile,"plaintoksegfile");
+            //copy($offsetsfile,"offsetsfile");
+            //copy($plaintoksegfile,"plaintoksegfile");
             $command = "../bin/bracmat '(offsetsfile=\"$offsetsfile\") (plaintoksegfile=\"$plaintoksegfile\") (inputNER=\"$ANNIEfileRaw\") (output=\"$nerfile\") (get\$\"annie.bra\")'";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
@@ -545,7 +545,7 @@ try {
             }
         else
             {
-            copy($input,"input");
+            //copy($input,"input");
             $CF = curl_file_create($input, 'text/plain', basename($input));
             $CF->setPostFilename("ANNIEInput");
             $postfields = array(
