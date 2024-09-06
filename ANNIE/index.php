@@ -460,10 +460,13 @@ try {
 
         if($mode == 'dry')
             {
-            combine($uploadfileTok,$uploadfileSeg);
-
-            http("\$filename","\$ANNIEfileRaw",$lang);
-            $filename = NERannotation($uploadfileTok,"\$filename","\$ANNIEfileRaw");
+            list($plaintoksegfile,$offsetfile) = combine("\$uploadfileTok","\$uploadfileSeg");
+            logit("combine done:lst($plaintoksegfile,$offsetfile)");
+            logit("Calling http($plaintoksegfile,\$ANNIEfileRaw,$lang,$URL,$apiky,$apswd)");
+            http("\$plaintoksegfile","\$ANNIEfileRaw",$lang,$URL,$apiky,$apswd);
+            logit("http done");
+            $filename = NERannotation("\$offsetfile","\$plaintoksegfile","\$ANNIEfileRaw");
+            logit("NERannotation done:$nerfile");
             }
         else
             {
@@ -473,23 +476,26 @@ try {
             copy($plaintoksegfile,"plaintoksegfile");
             http($plaintoksegfile,$ANNIEfileRaw,$lang,$URL,$apiky,$apswd);
             copy($ANNIEfileRaw,"ANNIEfileRaw");
-            $filename = NERannotation($offsetsfile,$plaintoksegfile,$ANNIEfileRaw);
-            logit('filename:'.$filename);
+            $nerfile = NERannotation($offsetsfile,$plaintoksegfile,$ANNIEfileRaw);
+            logit('filename:'.$nerfile);
             }
-        return $filename;
+        return $nerfile;
         }
 
     function combine($uploadfileTok,$uploadfileSeg)
         {
         global $mode;
         logit( "combine(" . $uploadfileTok . "," . $uploadfileSeg . ")\n");
-        $nerfile = tempFileName("combine-tokseg-attribute");
-        $offsetsfile = tempFileName("ANNIEoffsets");
         if($mode == 'dry')
-            scrip("../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"\$filename\") (lowercase=no) (offsets=\"offsetsfile\") (get\$\"../shared_scripts/tokseg2sent.bra\")'");
+            {
+            scrip("../bin/bracmat '(inputTok=\"\$uploadfileTok\") (inputSeg=\"\$uploadfileSeg\") (output=\"\$plaintoksegfile\") (lowercase=no) (offsets=\"\$offsetsfile\") (get\$\"../shared_scripts/tokseg2sent.bra\")'");
+            return array("\$plaintoksegfile","\$offsetsfile");
+            }
         else
             {
-            $command = "../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"$nerfile\") (lowercase=no) (offsets=\"$offsetsfile\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
+            $plaintoksegfile = tempFileName("combine-tokseg-attribute");
+            $offsetsfile = tempFileName("ANNIEoffsets");
+            $command = "../bin/bracmat '(inputTok=\"$uploadfileTok\") (inputSeg=\"$uploadfileSeg\") (output=\"$plaintoksegfile\") (lowercase=no) (offsets=\"$offsetsfile\") (get\$\"../shared_scripts/tokseg2sent.bra\")'";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 exit(1);
@@ -497,26 +503,25 @@ try {
             while($read = fgets($cmd))
                 {
                 }
+            copy($plaintoksegfile,"nerfile");
+            return array($plaintoksegfile,$offsetsfile);
             }
-        copy($nerfile,"nerfile");
-        return array($nerfile,$offsetsfile);
         }
 
-    function NERannotation($offsetsfile,$plaintoksegfile,$ANNIEfile)
+    function NERannotation($offsetsfile,$plaintoksegfile,$ANNIEfileRaw)
         {
         global $mode;
-        logit( "NERannotation(" . $offsetsfile . "," . $plaintoksegfile . "," . $ANNIEfile . ")\n");
+        logit( "NERannotation(" . $offsetsfile . "," . $plaintoksegfile . "," . $ANNIEfileRaw . ")\n");
         $nerfile = tempFileName("NERannotation-posf-attribute");
         if($mode == 'dry')
             {
-            scrip("../bin/bracmat '(offsetsfile=\"$offsetsfile\") (plaintoksegfile=\"$plaintoksegfile\") (inputNER=\"\$ANNIEfile\") (output=\"\ANNIEfileRaw\") (get\$\"annie.bra\")'");
+            scrip("../bin/bracmat '(offsetsfile=\"$offsetsfile\") (plaintoksegfile=\"$plaintoksegfile\") (inputNER=\"\$ANNIEfileRaw\") (output=\"\$nerfile\") (get\$\"annie.bra\")'");
             }
         else
             {
             copy($offsetsfile,"offsetsfile");
             copy($plaintoksegfile,"plaintoksegfile");
-            copy($ANNIEfile,"inputNER");
-            $command = "../bin/bracmat '(offsetsfile=\"$offsetsfile\") (plaintoksegfile=\"$plaintoksegfile\") (inputNER=\"$ANNIEfile\") (output=\"$nerfile\") (get\$\"annie.bra\")'";
+            $command = "../bin/bracmat '(offsetsfile=\"$offsetsfile\") (plaintoksegfile=\"$plaintoksegfile\") (inputNER=\"$ANNIEfileRaw\") (output=\"$nerfile\") (get\$\"annie.bra\")'";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 exit(1);
@@ -534,6 +539,8 @@ try {
         // see https://www.whatsmyip.org/lib/php-curl-option-guide/
         if($mode == 'dry')
             {
+                logit("http");
+            logit("http($input,$output,$lang,$URL,$apiky,$apswd)");
             scrip("curl -k -X POST -L -F \"lang=$lang\" -F \"inputFile=@$input\" $URL > $output");
             }
         else
