@@ -104,6 +104,8 @@ is the location of this file, toolsprog.bra.
 }
 
 toolsProg=
+      (MetaDataType=TEImetadata)
+      (MetaDataType=ParlaMintMetadata)
       (indent=0)
       (logno=0)
       (tabind=0)
@@ -242,10 +244,11 @@ toolsProg=
       )
       ( localized
       =   
-        .   ( !lANgs:% !LaNg&!arg:% %?arg
-            | !arg:%?arg ?
-            )
-          & !arg
+        .     ( !lANgs:% !LaNg&!arg:% %?arg
+              | !arg:%?arg ?
+              )
+            & !arg
+          | 
       )
       ( prodtables
       =   CTBs
@@ -430,10 +433,10 @@ toolsProg=
       ( makeStaticTextFormField
       =   text val
         .   !arg:(?text.?val)
-          & (label.,!text) \r\n !val \r\n
+          & (div.,(label.,!text)) \r\n (div.,!val) \r\n
       )
       ( makeTextFormField
-      =   text parm val desc readonly size required
+      =   text parm val desc readonly size required note
         .     !arg
             : ( ?text
               . ?parm
@@ -450,31 +453,92 @@ toolsProg=
                 : ( ? (required.?required) ?
                   | ?&:?required
                   )
+                : ( ? (note.?note) ?
+                  | ?&:?note
+                  )
               )
-          &   ( label
+          &   ( div
               .   
-                ,   !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
+                , ( label
+                  .   
+                    ,   !text
+                        ( !required:
+                        | " " (span.(class.requiblue),!required)
+                        )
+                  )
               )
               \r\n
-              ( input
-              .     (tabindex.1+!tabind:?tabind&0)
-                    (type.text)
-                    (name.!parm)
-                    (!val:|(value.trim$!val))
-                    (!desc:|(title.!desc))
-                    ( !readonly:(|no)
-                    | (disabled.disabled)
+              ( div
+              .   
+                ,   ( input
+                    .     (tabindex.1+!tabind:?tabind&0)
+                          (type.text)
+                          (name.!parm)
+                          (!val:|(value.trim$!val))
+                          (!desc:|(title.!desc))
+                          ( !readonly:(|no)
+                          | (disabled.disabled)
+                          )
+                          (!size:|(size.!size))
+                      , 
                     )
-                    (!size:|(size.!size))
-                , 
+                    !note
+              )
+              \r\n
+      )
+      ( makeDateFormField
+      =   text parm val desc readonly size required note
+        .     !arg
+            : ( ?text
+              . ?parm
+              .   ? (val.?val) ?
+                : ( ? (desc.?desc) ?
+                  | ?&:?desc
+                  )
+                : ( ? (readonly.?readonly) ?
+                  | ?&:?readonly
+                  )
+                : ( ? (size.?size) ?
+                  | ?&:?size
+                  )
+                : ( ? (required.?required) ?
+                  | ?&:?required
+                  )
+                : ( ? (note.?note) ?&log$(DATe !note)
+                  | ?&:?note
+                  )
+              )
+          &   ( div
+              .   
+                , ( label
+                  .   
+                    ,   !text
+                        ( !required:
+                        | " " (span.(class.requiblue),!required)
+                        )
+                  )
+              )
+              \r\n
+              ( div
+              .   
+                ,   ( input
+                    .     (tabindex.1+!tabind:?tabind&0)
+                          (type.date)
+                          (name.!parm)
+                          (!val:|(value.trim$!val))
+                          (!desc:|(title.!desc))
+                          ( !readonly:(|no)
+                          | (disabled.disabled)
+                          )
+                          (!size:|(size.!size))
+                      , 
+                    )
+                    !note
               )
               \r\n
       )
       ( makeTextAreaFormField
-      =   text parm val required desc
+      =   text parm val required desc note
         .     !arg
             : ( ?text
               . ?parm
@@ -485,22 +549,32 @@ toolsProg=
                 : ( ? (required.?required) ?
                   | ?&:?required
                   )
+                : ( ? (note.?note) ?
+                  | ?&:?note
+                  )
               )
-          &   ( label
+          &   ( div
               .   
-                ,   !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
+                , ( label
+                  .   
+                    ,   !text
+                        ( !required:
+                        | " " (span.(class.requiblue),!required)
+                        )
+                  )
               )
               \r\n
-              ( textarea
-              .     (tabindex.1+!tabind:?tabind&0)
-                    (name.!parm)
-                    (rows.2)
-                    (cols.60)
-                    (!desc:|(title.!desc))
-                , trim$!val
+              ( div
+              .   
+                ,   ( textarea
+                    .     (tabindex.1+!tabind:?tabind&0)
+                          (name.!parm)
+                          (rows.2)
+                          (cols.60)
+                          (!desc:|(title.!desc))
+                      , trim$!val
+                    )
+                    !note
               )
               \r\n
       )
@@ -2614,20 +2688,30 @@ toolsProg=
                 : ( ? (required.?required) ?
                   | ?&:?required
                   )
+                : ( ? (note.?note) ?&log$(DATe !note)
+                  | ?&:?note
+                  )
               )
-          &   ( label
+          &   ( div
               .   
-                ,   !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
+                , ( label
+                  .   
+                    ,   !text
+                        ( !required:
+                        | " " (span.(class.requiblue),!required)
+                        )
+                  )
               )
               \r\n
-              ( select
-              .     (tabindex.1+!tabind:?tabind&0)
-                    (name.!parm)
-                    (!desc:|(title.!desc))
-                , \r\n !options
+              ( div
+              .   
+                ,   ( select
+                    .     (tabindex.1+!tabind:?tabind&0)
+                          (name.!parm)
+                          (!desc:|(title.!desc))
+                      , \r\n !options
+                    )
+                    !note
               )
               \r\n
       )
@@ -2773,7 +2857,7 @@ toolsProg=
                 \r\n
                 ".tooltip:hover .tooltiptext,.tooltip:hover .tooltiptextL, .tooltip:focus .tooltiptext,.tooltip:focus .tooltiptextL  { visibility: visible; opacity: 1; }"
                 \r\n
-                "div.row{display:table-row;} .row * {vertical-align: middle;} .row label{display: table-cell; text-align: right; padding: 5px;} span.autogen{font-style:italic; width:auto; display: table-cell; text-align: left; padding: 5px;} .row input{display: table-cell;} .row textarea{display: table-cell;} span.required{width: 20px;}"
+                "div.row{display:table-row;} .row * {vertical-align: middle;} .row label{display: table-cell; text-align: right; padding: 5px;} span.autogen{font-style:italic; width:auto; display: table-cell; text-align: left; padding: 5px;} .row input{display: table-cell;} .row textarea{display: table-cell;} span.required{float: left; padding-left:10px; width: 20px;}"
                 \r\n
                 ".italics {font-style:italic; width:auto;}"
                 \r\n
@@ -2793,6 +2877,11 @@ toolsProg=
                 \r\n
                 "#content {margin-left: 620px;}"
                 \r\n
+                ".grid-container {display: grid;grid-template-columns: auto auto;gap: 10px;padding: 10px;}"
+                \r\n
+                ".grid-container > div {font-size: 12pt;text-align: right;}"
+                \r\n
+                ".grid-container input, .grid-container textarea, .grid-container .autogen, .grid-container select  {float: inline-start;}"
                 "}"
           )
           \r\n
@@ -2894,7 +2983,7 @@ toolsProg=
                 \r\n
                 ".tooltip:hover .tooltiptext,.tooltip:hover .tooltiptextL { visibility: visible; opacity: 1; }"
                 \r\n
-                "div.row{display:table-row;} .row * {vertical-align: middle;} .row label{display: table-cell; text-align: right; padding: 5px;} span.autogen{font-style:italic; width:auto; display: table-cell; text-align: left; padding: 5px;} .row input{display: table-cell;} .row textarea{display: table-cell;} span.required{width: 20px;}"
+                "div.row{display:table-row;} .row * {vertical-align: middle;} .row label{display: table-cell; text-align: right; padding: 5px;} span.autogen{font-style:italic; width:auto; display: table-cell; text-align: left; padding: 5px;} .row input{display: table-cell;} .row textarea{display: table-cell;} span.required{float: left; padding-left:10px; width: 20px;}"
                 \r\n
                 ".italics {font-style:italic; width:auto;}"
                 \r\n
@@ -2923,18 +3012,22 @@ toolsProg=
       =   
         .   "iso-8859-1 and not utf-8, because of problematic handling of UTF-8 by JNI
              (Or rather Java, which uses UTF-16 and converts surrogate pairs to 6 bytes of UTF-8 !)"
-          &   ("?"."xml version='1.0' encoding='iso-8859-1'")
-              \r\n
-              ( "!DOCTYPE"
-              . " html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'"
-              )
+          &   ("!DOCTYPE"." html")
               \r\n
               ( html
               .     (xmlns."http://www.w3.org/1999/xhtml")
                     ("xml:lang".!LaNg)
                     (lang.!LaNg)
                 ,   \r\n
-                    (head.,\r\n (title.,!headerTitle) \r\n !Style)
+                    ( head
+                    .   
+                      ,   \r\n
+                          (meta.(charset.ISO-8859-1),)
+                          \r\n
+                          (title.,!headerTitle)
+                          \r\n
+                          !Style
+                    )
                     \r\n
                     (body.(class.bodycanvas),!arg)
               )
@@ -2944,9 +3037,7 @@ toolsProg=
       =   
         .   "iso-8859-1 and not utf-8, because of problematic handling of UTF-8 by JNI
              (Or rather Java, which uses UTF-16 and converts surrogate pairs to 6 bytes of UTF-8 !)"
-          &   ("?"."xml version='1.0' encoding='iso-8859-1'")
-              \r\n
-              ( "!DOCTYPE"
+          &   ( "!DOCTYPE"
               . " html PUBLIC '-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN' 'http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd'"
               )
               \r\n
@@ -3002,9 +3093,7 @@ toolsProg=
       ( refreshingXHTMLbodyContainer
       =   seconds body URL
         .   !arg:(%?seconds ?URL.?body)
-          &   ("?"."xml version='1.0' encoding='iso-8859-1'")
-              \r\n
-              ( "!DOCTYPE"
+          &   ( "!DOCTYPE"
               . " html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'"
               )
               \r\n
@@ -3247,22 +3336,28 @@ toolsProg=
           & localized$!arg
       )
       ( makeHiddenFields
-      =   par val
-        .   map
-          $ ( ( 
-              =   
-                .     !arg:(?par.?val)
-                    & ( input
-                      .     (type.hidden)
-                            (name.!par)
-                            (value.str$!val)
-                        , 
-                      )
-                  |   str
-                    $ ("Error encountered in makeHiddenFields. arg=" lst$(arg,MEM RAW LIN))
+      =   par val seen
+        .   :?seen
+          &   map
+            $ ( ( 
+                =   
+                  .     !arg:(?par.?val)
+                      & (   ( !par:~dialog
+                            | !par:~!seen:?seen
+                            )
+                          & ( input
+                            .     (type.hidden)
+                                  (name.!par)
+                                  (value.str$!val)
+                              , 
+                            )
+                        | 
+                        )
+                    |   str
+                      $ ("Error encountered in makeHiddenFields. arg=" lst$(arg,MEM RAW LIN))
+                )
+              . !arg
               )
-            . !arg
-            )
       )
       ( percentEncode
       =   c
@@ -4596,7 +4691,6 @@ try {
           | !arg:(0|1)&
           | !arg
       )
-      (XMLdeclaration=("?"."xml version='1.0' encoding='UTF-8'") \r\n)
       ( shared
       =   gspc isp ispc ispcs
         .   !arg:(?gspc.?ispcs)
@@ -9111,11 +9205,11 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 \n
                 ( TEI
                 .     (xmlns."http://www.tei-c.org/ns/1.0")
-                      ( "xmlns:schemaLocation"
-                      .   "https://www.clarin.dk/schemas/tei/TEIDKCLARIN_ANNO/xml.xsd"
-                        |   !type:text
-                          & "http://www.clarin.eu/cmd http:/infra.clarin.dk/cmd/dkclarin-text-md-schema.xsd"
-                        | "http://www.clarin.eu/cmd http://infra.clarin.dk/cmd/dkclarin-textann-md-schema.xsd"
+                      (   !MetaDataType:TEImetadata
+                        & ( "xmlns:schemaLocation"
+                          . "https://www.clarin.dk/schemas/tei/TEIDKCLARIN_ANNO/xml.xsd"
+                          )
+                      | 
                       )
                   ,   \n
                       ( teiHeader
@@ -9267,8 +9361,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( inject
       =     userProvidedMetadata autogenerated final recurse
-          , Required/optional/automatic val Line tree
-          , PlaceInHeader id addOrInsert remove Metadata
+          , Required/optional/automatic val Line Line2 tree
+          , PlaceInHeader id remove Metadata
           , replaceOrInsert addOrInsertOneOrMoreNames metadataType
         .   ( remove
             =   PlaceInHeader tree subtree,place A Z a attval
@@ -9301,109 +9395,294 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   | !tree
                   )
             )
-          & ( replaceOrInsert
-            =     PlaceInHeader val tree subtree
-                , place plac at A E Z a z attval
-              .   !arg:(?PlaceInHeader.?val.?tree)
-                & (   !PlaceInHeader:%?place ?PlaceInHeader
-                    & (   !place:(?place.?at)
-                        & (     !tree
-                              :   ?A
-                                  (!place.?a (!at.?) ?z,?E)
-                                  ?Z
-                            &   !A
-                                (!place.!a (!at.!val) !z,!E)
-                                !Z
-                          | !tree (!place.(!at.!val),)
+          & ( ExtractAttributesFromContent
+            =   templateAtts atts val
+              .   !arg:(?templateAtts.?atts,?val)
+                &   (   map
+                      $ ( ( 
+                          =   A Z a ref z n status ver current
+                            .   ( !atts:?A (!arg.?current) ?Z
+                                |   !atts:?A
+                                  & :?Z:?current
+                                )
+                              &     !A
+                                    (   !arg:(ref|target)
+                                      & (   @( !val
+                                             :   ?a
+                                                 "@"
+                                                 ?ref
+                                                 ( (" " ?|)
+                                                 : ?z
+                                                 )
+                                             )
+                                          & str$(!a !z):?val
+                                          & (!arg.!ref)
+                                        | 
+                                        )
+                                    |   !arg:n
+                                      & (   @( !val
+                                             :   ?a
+                                                 "#"
+                                                 ~/#?n
+                                                 ( (~#%@ ?|)
+                                                 : ?z
+                                                 )
+                                             )
+                                          & str$(!a !z):?val
+                                          & (!arg.!n)
+                                        | 
+                                        )
+                                    |   !arg:when
+                                      & (!arg.!val)
+                                    |   !arg:status
+                                      & (   @( !val
+                                             :   ?
+                                                 "creativecommons.org"
+                                                 ?
+                                                 by
+                                                 ?status
+                                                 "/"
+                                                 ?ver
+                                                 "/"
+                                                 ?
+                                             )
+                                          & (!arg.str$(BY upp$!status "-" !ver))
+                                        | !current:
+                                        | (!arg.!current)
+                                        )
+                                    | 
+                                    )
+                                    !Z
+                                : ?atts
                           )
-                      |   !place:(?plac,?attval)
-                        &   !tree
-                          : ?A (!plac.? !attval ?:?a,?subtree) ?Z
-                        &   !A
-                            (!plac.!a,replaceOrInsert$(!PlaceInHeader.!val.!subtree))
-                            !Z
-                      |   !tree:?A (!place.?a,?subtree) ?Z
-                        &   !A
-                            (!place.!a,replaceOrInsert$(!PlaceInHeader.!val.!subtree))
-                            !Z
-                      |   !tree
-                          (   !place:(?plac,?attval)
-                            & (!plac.!attval,replaceOrInsert$(!PlaceInHeader.!val.))
-                          | (!place.,replaceOrInsert$(!PlaceInHeader.!val.))
+                        . !templateAtts
+                        )
+                    & !atts
+                    )
+                  : ?EXTRACT
+                & !EXTRACT
+            )
+          & ( handleTemplateAttributes
+            =     PlaceInHeader val tree subtree l1 l2 ll addOrReplace
+                , place plac at templateAtts A E Z a z attval content show
+              .   ( show
+                  =   
+                    .     ( !addOrReplace:add
+                          | !PlaceInHeader:
                           )
-                      )
-                  | !val
+                        & !arg
+                      | 
+                  )
+                & !arg:(?addOrReplace.?PlaceInHeader.?val.?tree)
+                & !PlaceInHeader:(?place.?templateAtts) ?PlaceInHeader
+                & "Attributes needed here.
+                   Special cases:
+                   xml:lang Every odd line in text area is first language in UIlanguage variable, every even line is the second language.
+                   ref      Look for @<reference> in value (!val)
+                   n        Look for # followed by integer number
+                   date     Input of type date
+                   ISO639   Language picker
+                   "
+                & ( !place !PlaceInHeader
+                  .     !templateAtts:?a ("xml:lang":?at) ?z
+                      & !a !z:?templateAtts
+                      & (   !val:@(?:?l1 \n ?l2)
+                          & trim$!l1:?l1
+                          & trim$!l2:?l2
+                        | !val:?l1&:?l2
+                        )
+                      & !l1 !l2:?ll
+                      & "Remove all nodes with not matching xml:lang"
+                      &   whl
+                        ' (   !tree
+                            :   ?A
+                                ( !place
+                                .     ?
+                                      ( !at
+                                      .   ?attval
+                                        & ~(!UIlanguage:? !attval ?)
+                                      )
+                                      ?
+                                  , ?
+                                )
+                                ?Z
+                          & !A !Z:?tree
+                          )
+                      & (     !tree
+                            :   ?A
+                                (!place.?a (!at.!arg) ?z,?)
+                                ?Z
+                          & (   !addOrReplace:add
+                              & !tree:?A !Z
+                              & :?a:?z
+                            | 
+                            )
+                        |   !tree:?A
+                          & :?Z
+                          & :?a:?z
+                        )
+                      & :?elms
+                      &   !A
+                            map
+                          $ ( ( 
+                              =   A Z l atts
+                                .   ( !ll:%?l ?ll
+                                    | :?l
+                                    )
+                                  & (   "Matching xml:lang. Fill in content, or remove if there is no content."
+                                      & ( !l:
+                                        | ( !place
+                                          .     ExtractAttributesFromContent
+                                              $ ( !templateAtts
+                                                .   !a (!at.!arg) !z
+                                                  , !l
+                                                )
+                                            , show$!l
+                                          )
+                                        )
+                                    |   "Node found, but w/o matching xml:lang attribute. Create it."
+                                      & ( !l:
+                                        | ( !place
+                                          .     ExtractAttributesFromContent
+                                              $ (!templateAtts.(!at.!arg),!l)
+                                            , show$!l
+                                          )
+                                        )
+                                    |   "Node not found. Create it."
+                                      & ( !l:
+                                        | (!place.(!at.!arg),!l)
+                                        )
+                                    )
+                              )
+                            . !UIlanguage
+                            )
+                          !Z
+                    |   !addOrReplace:replace
+                      & !tree:?A (!place.?atts,?content) ?Z
+                      & "Node found, but w/o xml:lang attribute. Create it."
+                      &   !A
+                          ( !place
+                          .   ExtractAttributesFromContent$(!templateAtts.!atts,!content !val)
+                            , !content show$!val
+                          )
+                          !Z
+                    |   !tree
+                        (!place.ExtractAttributesFromContent$(!templateAtts.,!val),show$!val)
                   )
             )
+          & ( replaceOrInsert
+            =     PlaceInHeader val tree subtree done
+                , place plac at templateAtts A E Z a z attval
+              .     handleTemplateAttributes$(replace.!arg):(?PlaceInHeader.?tree)
+                  & (     !arg
+                        : ((?place.?at) %?PlaceInHeader.?val.?)
+                      &   map
+                        $ ( ( 
+                            =   
+                              .     !arg:(!place.?a,?subtree)
+                                  & !a:? (!at.?) ?
+                                  & (!place.!a,replaceOrInsert$(!PlaceInHeader.!val.!subtree))
+                                | !arg
+                            )
+                          . !tree
+                          )
+                    | !tree
+                    )
+                |   !arg:(?PlaceInHeader.?val.?tree)
+                  & (   !PlaceInHeader:%?place ?PlaceInHeader
+                      & (   !place:(?plac,?attval)
+                          &   !tree
+                            : ?A (!plac.? !attval ?:?a,?subtree) ?Z
+                          &   !A
+                              (!plac.!a,replaceOrInsert$(!PlaceInHeader.!val.!subtree))
+                              !Z
+                        |   !tree:?A (!place.?a,?subtree) ?Z
+                          &   !A
+                              (!place.!a,replaceOrInsert$(!PlaceInHeader.!val.!subtree))
+                              !Z
+                        |   !tree
+                            (   !place:(?plac,?attval)
+                              & (!plac.!attval,replaceOrInsert$(!PlaceInHeader.!val.))
+                            | (!place.,replaceOrInsert$(!PlaceInHeader.!val.))
+                            )
+                        )
+                    | !val
+                    )
+            )
           & ( recurse
-            =   A Z a attval place subtree
-              .   !PlaceInHeader:%?place ?PlaceInHeader
+            =   A Z a attval place subtree fnc PlaceInHeader val tree
+              .   !arg:(?fnc.?PlaceInHeader.?val.?tree)
+                & !PlaceInHeader:%?place ?PlaceInHeader
                 & (   !place:(?place,?attval)
                     & (     !tree
                           : ?A (!place.? !attval ?:?a,?subtree) ?Z
-                        & !A (!place.!a,!arg$(!PlaceInHeader.!val.!subtree)) !Z
-                      | !tree (!place.!attval,!arg$(!PlaceInHeader.!val.))
+                        & !A (!place.!a,!fnc$(!PlaceInHeader.!val.!subtree)) !Z
+                      | !tree (!place.!attval,!fnc$(!PlaceInHeader.!val.))
                       )
                   |   !tree:?A (!place.?a,?subtree) ?Z
-                    & !A (!place.!a,!arg$(!PlaceInHeader.!val.!subtree)) !Z
-                  | !tree (!place.,!arg$(!PlaceInHeader.!val.))
+                    & !A (!place.!a,!fnc$(!PlaceInHeader.!val.!subtree)) !Z
+                  |   !tree (!place.,!fnc$(!PlaceInHeader.!val.)):?ReSu
+                    & !ReSu
                   )
             )
           & ( final
-            =   A Z a attval b
-              .     !PlaceInHeader:@
-                  & (     !tree
-                        :   ?A
-                            (!PlaceInHeader.?a,?b)
-                            (~((!PlaceInHeader.?) ?):?Z)
-                      &   !A
-                          (!PlaceInHeader.!a,!b)
-                          (!PlaceInHeader.!a,!val)
-                          !Z
-                    | !tree (!PlaceInHeader.,!val)
-                    )
-                |   !PlaceInHeader:(?PlaceInHeader,?attval)
-                  & (     !tree
-                        :   ?A
-                            (!PlaceInHeader.? !attval ?:?a,?b)
-                            ( ~((!PlaceInHeader.? !attval ?,?) ?)
-                            : ?Z
-                            )
-                      &   !A
-                          (!PlaceInHeader.!a,!b)
-                          (!PlaceInHeader.!a,!val)
-                          !Z
-                    | !tree (!PlaceInHeader.!attval,!val)
-                    )
-            )
-          & ( addOrInsert
-            =   PlaceInHeader val tree
+            =   A Z a attval b tree PlaceInHeader val
               .   !arg:(?PlaceInHeader.?val.?tree)
-                & (final$|recurse$addOrInsert|!val)
-            )
-          & ( addOrInsertOneOrMoreNames
-            =   PlaceInHeader val tree parnt,A Z a b c d e
-              .   !arg:(?PlaceInHeader.?val.?tree)
-                & (   !PlaceInHeader:@?parnt name
+                & ( !PlaceInHeader:&!tree !val
+                  |   !PlaceInHeader:@
                     & (     !tree
                           :   ?A
-                              (!parnt.?a,?b (name.?c,?d) ?e)
-                              (~((!parnt.?) ?):?Z)
+                              (!PlaceInHeader.?a,?b)
+                              (~((!PlaceInHeader.?) ?):?Z)
                         &   !A
-                            (!parnt.!a,!b (name.!c,!d) !e)
-                            (!parnt.!a,!b (name.!c,!val) !e)
+                            (!PlaceInHeader.!a,!b)
+                            (!PlaceInHeader.!a,!val)
                             !Z
-                      |   !tree:?A (!parnt.?a,?b) ?Z
-                        & !A (!parnt.!a,(name.,!val) !b) !Z
-                      | !tree (!parnt.,(name.,!val))
+                      | !tree (!PlaceInHeader.,!val)
                       )
-                  | final$
-                  | recurse$addOrInsertOneOrMoreNames
-                  | !val
+                  |   !PlaceInHeader:(?PlaceInHeader,?attval)
+                    & (     !tree
+                          :   ?A
+                              (!PlaceInHeader.? !attval ?:?a,?b)
+                              ( ~((!PlaceInHeader.? !attval ?,?) ?)
+                              : ?Z
+                              )
+                        &   !A
+                            (!PlaceInHeader.!a,!b)
+                            (!PlaceInHeader.!a,!val)
+                            !Z
+                      | !tree (!PlaceInHeader.!attval,!val)
+                      )
                   )
+            )
+          & ( addOrInsertOneOrMoreNames
+            =   PlaceInHeader val tree parnt A Z a b c d e
+              .     handleTemplateAttributes$(add.!arg):(?PlaceInHeader.?tree)
+                  & !arg:(?PlaceInHeader.?val.?)
+                  & (!PlaceInHeader.!val.!tree)
+                  & !tree
+                |   !arg:(?PlaceInHeader.?val.?tree)
+                  & (   !PlaceInHeader:@?parnt name
+                      & (     !tree
+                            :   ?A
+                                (!parnt.?a,?b (name.?c,?d) ?e)
+                                (~((!parnt.?) ?):?Z)
+                          &   !A
+                              (!parnt.!a,!b (name.!c,!d) !e)
+                              (!parnt.!a,!b (name.!c,!val) !e)
+                              !Z
+                        |   !tree:?A (!parnt.?a,?b) ?Z
+                          & !A (!parnt.!a,(name.,!val) !b) !Z
+                        | !tree (!parnt.,(name.,!val))
+                        )
+                    | final$!arg:?FiNAL&!FiNAL
+                    | recurse$(addOrInsertOneOrMoreNames.!arg)
+                    | !val
+                    )
             )
           & !arg:(?userProvidedMetadata.?autogenerated.?metadataType)
           & readTable$!metadataType:?Metadata
+          & readTable$UIlanguage
           &   whl
             ' ( !userProvidedMetadata:(?id.?val) ?userProvidedMetadata
               & trim$!val:?val
@@ -9432,19 +9711,26 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             )
                         & remove$(!PlaceInHeader.!autogenerated):?autogenerated
                         &   whl
-                          ' ( @( !val
-                               : ( ?Line \n ?val
-                                 | ?Line&:?val
-                                 )
-                               )
-                            & trim$!Line:?Line
+                          ' ( (     !PlaceInHeader
+                                  : ? (?.? "xml:lang" ?) ?
+                                & @( !val
+                                   : (   ?Line \n ?Line2 \n ?val
+                                       &   str$(trim$!Line \n trim$!Line2)
+                                         : ?Line
+                                     |   ?Line
+                                       & :?val
+                                       & trim$!Line:?Line
+                                     )
+                                   )
+                              |   @( !val
+                                   : ( ?Line \n ?val
+                                     | ?Line&:?val
+                                     )
+                                   )
+                                & trim$!Line:?Line
+                              )
                             & ( !Line:
-                              |     (     !Required/optional/automatic
-                                        : ? oneOrMore ?
-                                      & addOrInsertOneOrMoreNames
-                                    | addOrInsert
-                                    )
-                                  $ (!PlaceInHeader.!Line.!autogenerated)
+                              |   addOrInsertOneOrMoreNames$(!PlaceInHeader.!Line.!autogenerated)
                                 : ?autogenerated
                               )
                             & !val:~
@@ -9505,13 +9791,13 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( addurl
       =   URL
-        .     !arg:(?arg.?URL)
-            & !URL:
-            & !arg
-          |   ( @(!URL:http ?)
-              | str$("http://" !URL):?URL
-              )
-            & (a.(href.!URL),!arg)
+        .   !arg:(?arg.?URL)
+          & ( !URL:&!arg
+            |   ( @(!URL:http ?)
+                | str$("https://" !URL):?URL
+                )
+              & (a.(href.!URL),!arg)
+            )
       )
       ( letterData
       =     Steps menneskesprog workflow JobNr I O
@@ -9720,7 +10006,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                   )
             )
           & retrieveFeatures$(!Items.!errors):(?presels.?errors)
-          & log$(retrieveFeatures-presels !presels)
           & (!Items.!presels.!errors)
       )
       ( initialiseSpecifyGoalShowWorkflowsChosenWorkflow
@@ -13097,19 +13382,20 @@ function main2(evt) {
           & ( AddMetadata
             =   formFields nth val,parms ERR metadataType hiddenData
               .   !arg:(?metadataType.?nth.?parms.?ERR.?hiddenData)
-                &     !Style
-                        map
-                      $ ( ( 
-                          =     tekst inputs
-                              , "Tekst i grænsefladen"
-                              , "Required / optional  / automatic"
-                              , "Placering i header" Noter Hjælpetekst id
-                              , "line / lines / box / empty" URL
-                              , table typeOfError
-                            .     !arg:(?tekst,?inputs)
-                                &   fieldset
-                                  $ ( localized$!tekst
-                                    .   map
+                &     map
+                    $ ( ( 
+                        =     tekst inputs
+                            , "Tekst i grænsefladen"
+                            , "Required / optional  / automatic"
+                            , "Placering i header" Noter Hjælpetekst id
+                            , "line / lines / box / empty" URL
+                            , table typeOfError
+                          .     !arg:(?tekst,?inputs)
+                              &   fieldset
+                                $ ( localized$!tekst
+                                  . div
+                                  .   (class.grid-container)
+                                    ,   map
                                       $ ( ( 
                                           =   
                                             .     !arg
@@ -13131,82 +13417,28 @@ function main2(evt) {
                                                         | zeroOrMore
                                                         )
                                                         ?
-                                                  & ( div
-                                                    .   (class.row)
-                                                      ,   (     !"line / lines / box / empty"
-                                                              : select ?table
-                                                            & readTable$!table
-                                                            &   makeSelectFormField
-                                                              $ (   addurl
-                                                                  $ (   localized
-                                                                      $ !"Tekst i grænsefladen"
-                                                                    . !URL
-                                                                    )
-                                                                . !id
-                                                                .   ( options
-                                                                    .   makeOptionList
-                                                                      $ ( !!table
-                                                                        .       !parms
-                                                                              :   ?
-                                                                                  ( !id
-                                                                                  . ?val
-                                                                                  )
-                                                                                  ?
-                                                                            & !val
-                                                                          | 
-                                                                        )
-                                                                    )
-                                                                    ( desc
-                                                                    .   localized
-                                                                      $ !Hjælpetekst
-                                                                    )
-                                                                    ( required
-                                                                    .       !"Required / optional  / automatic"
-                                                                          :   ?
-                                                                              ( r
-                                                                              | oneOrMore
-                                                                              )
-                                                                              ?
-                                                                        & ( span
-                                                                          .   ( class
-                                                                              . requiblue
-                                                                              )
-                                                                            , "*"
-                                                                          )
-                                                                      | 
-                                                                    )
-                                                                )
-                                                          |   (     !"line / lines / box / empty"
-                                                                  : ( box
-                                                                    | lines
-                                                                    )
-                                                                & makeTextAreaFormField
-                                                              | makeTextFormField
+                                                  &   (     !ERR
+                                                          : (!id.?typeOfError.?)
+                                                        & ( span
+                                                          .   (class.required)
+                                                            , !typeOfError
+                                                          )
+                                                      | 
+                                                      )
+                                                    : ?note
+                                                  & (     !"line / lines / box / empty"
+                                                        : select ?table
+                                                      & readTable$!table
+                                                      &   makeSelectFormField
+                                                        $ (   addurl
+                                                            $ (   localized
+                                                                $ !"Tekst i grænsefladen"
+                                                              . localized$!URL
                                                               )
-                                                            $ (     addurl
-                                                                  $ (   localized
-                                                                      $ !"Tekst i grænsefladen"
-                                                                    . !URL
-                                                                    )
-                                                                  (     !"Required / optional  / automatic"
-                                                                      : ? a ?
-                                                                    & ( span
-                                                                      .   ( class
-                                                                          . italics
-                                                                          )
-                                                                        ,   str
-                                                                          $ ( " ("
-                                                                                localized
-                                                                              $ ( "autogenerated if left blank"
-                                                                                  "automatisk genereret hvis ikke udfyldt"
-                                                                                )
-                                                                              ") "
-                                                                            )
-                                                                      )
-                                                                  | 
-                                                                  )
-                                                              . !id
-                                                              .   ( val
+                                                          . !id
+                                                          .   ( options
+                                                              .   makeOptionList
+                                                                $ ( !!table
                                                                   .       !parms
                                                                         :   ?
                                                                             ( !id
@@ -13216,66 +13448,172 @@ function main2(evt) {
                                                                       & !val
                                                                     | 
                                                                   )
-                                                                  ( desc
-                                                                  .   localized
-                                                                    $ !Hjælpetekst
-                                                                  )
-                                                                  ( required
-                                                                  .       !"Required / optional  / automatic"
-                                                                        :   ?
-                                                                            ( r
-                                                                            | oneOrMore
-                                                                            )
-                                                                            ?
-                                                                      & ( span
-                                                                        .   ( class
-                                                                            . requiblue
-                                                                            )
-                                                                          , "*"
+                                                              )
+                                                              ( desc
+                                                              .   localized
+                                                                $ !Hjælpetekst
+                                                              )
+                                                              ( required
+                                                              .       !"Required / optional  / automatic"
+                                                                    :   ?
+                                                                        ( r
+                                                                        | oneOrMore
                                                                         )
-                                                                    | 
+                                                                        ?
+                                                                  & ( span
+                                                                    .   ( class
+                                                                        . requiblue
+                                                                        )
+                                                                      , "*"
+                                                                    )
+                                                                | 
+                                                              )
+                                                              ( !note:
+                                                              | (note.!note)
+                                                              )
+                                                          )
+                                                    |     !"line / lines / box / empty"
+                                                        : date
+                                                      &   makeDateFormField
+                                                        $ (     addurl
+                                                              $ (   localized
+                                                                  $ !"Tekst i grænsefladen"
+                                                                . localized$!URL
+                                                                )
+                                                              (     !"Required / optional  / automatic"
+                                                                  : ? a ?
+                                                                & ( span
+                                                                  .   ( class
+                                                                      . italics
+                                                                      )
+                                                                    ,   str
+                                                                      $ ( " ("
+                                                                            localized
+                                                                          $ ( "autogenerated if left blank"
+                                                                              "automatisk genereret hvis ikke udfyldt"
+                                                                            )
+                                                                          ") "
+                                                                        )
                                                                   )
+                                                              | 
+                                                              )
+                                                          . !id
+                                                          .   ( val
+                                                              .       !parms
+                                                                    :   ?
+                                                                        (!id.?val)
+                                                                        ?
+                                                                  & !val
+                                                                | 
+                                                              )
+                                                              ( desc
+                                                              .   localized
+                                                                $ !Hjælpetekst
+                                                              )
+                                                              ( required
+                                                              .       !"Required / optional  / automatic"
+                                                                    :   ?
+                                                                        ( r
+                                                                        | oneOrMore
+                                                                        )
+                                                                        ?
+                                                                  & ( span
+                                                                    .   ( class
+                                                                        . requiblue
+                                                                        )
+                                                                      , "*"
+                                                                    )
+                                                                | 
+                                                              )
+                                                              ( !note:
+                                                              | (note.!note)
                                                               )
                                                           )
-                                                          (     !ERR
-                                                              : (!id.?typeOfError.?)
-                                                            & ( span
-                                                              .   (class.required)
-                                                                , !typeOfError
+                                                    |   (     !"line / lines / box / empty"
+                                                            : ( box
+                                                              | lines
                                                               )
-                                                          | 
-                                                          )
+                                                          & makeTextAreaFormField
+                                                        | makeTextFormField
+                                                        )
+                                                      $ (     addurl
+                                                            $ (   localized
+                                                                $ !"Tekst i grænsefladen"
+                                                              . localized$!URL
+                                                              )
+                                                            (     !"Required / optional  / automatic"
+                                                                : ? a ?
+                                                              & ( span
+                                                                .   (class.italics)
+                                                                  ,   str
+                                                                    $ ( " ("
+                                                                          localized
+                                                                        $ ( "autogenerated if left blank"
+                                                                            "automatisk genereret hvis ikke udfyldt"
+                                                                          )
+                                                                        ") "
+                                                                      )
+                                                                )
+                                                            | 
+                                                            )
+                                                        . !id
+                                                        .   ( val
+                                                            .       !parms
+                                                                  :   ?
+                                                                      (!id.?val)
+                                                                      ?
+                                                                & !val
+                                                              | 
+                                                            )
+                                                            ( desc
+                                                            . localized$!Hjælpetekst
+                                                            )
+                                                            ( required
+                                                            .       !"Required / optional  / automatic"
+                                                                  :   ?
+                                                                      ( r
+                                                                      | oneOrMore
+                                                                      )
+                                                                      ?
+                                                                & ( span
+                                                                  .   ( class
+                                                                      . requiblue
+                                                                      )
+                                                                    , "*"
+                                                                  )
+                                                              | 
+                                                            )
+                                                            ( !note:
+                                                            | (note.!note)
+                                                            )
+                                                        )
                                                     )
                                                 |     !"Required / optional  / automatic"
                                                     : ? a ?
                                                   & !"Tekst i grænsefladen":~
-                                                  & ( div
-                                                    .   (class.row)
-                                                      ,   makeStaticTextFormField
-                                                        $ (   localized
-                                                            $ !"Tekst i grænsefladen"
-                                                          . span
-                                                          .   (class.autogen)
-                                                            ,   str
-                                                              $ ( " ("
-                                                                    localized
-                                                                  $ ( autogenerated
-                                                                      "automatisk genereret"
-                                                                    )
-                                                                  ") "
+                                                  &   makeStaticTextFormField
+                                                    $ ( localized$!"Tekst i grænsefladen"
+                                                      . span
+                                                      .   (class.autogen)
+                                                        ,   str
+                                                          $ ( " ("
+                                                                localized
+                                                              $ ( autogenerated
+                                                                  "automatisk genereret"
                                                                 )
-                                                          )
-                                                    )
+                                                              ") "
+                                                            )
+                                                      )
                                                 | 
                                                 )
                                           )
                                         . !inputs
                                         )
-                                    )
-                              | 
-                          )
-                        . readTable$!metadataType
+                                  )
+                            | 
                         )
+                      . readTable$!metadataType
+                      )
                   : ?formFields
                 &   str
                   $ ( 200~~~
@@ -13290,6 +13628,7 @@ function main2(evt) {
                                     ( !nth:<1&
                                     |     makeHiddenFields
                                         $ ( (dialog.chosenworkflow)
+                                            (metadataformat.!metadataType)
                                             (nth.!nth)
                                             !hiddenData
                                           )
@@ -13390,26 +13729,30 @@ function main2(evt) {
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
                     .   !arg:(?metadataType.?parms)
-                      &   map
-                        $ ( ( 
-                            =   inputs
-                              .     !arg:(?,?inputs)
-                                  &   map
-                                    $ ( ( 
-                                        =   id V
-                                          .   !arg:(?id.?)
-                                            & (     !parms
-                                                  : ? (!id.?V) ?
-                                                & (!id.!V)
-                                              | 
-                                              )
+                      & log$(metadataformat metadataType !metadataType parms !parms)
+                      & (   !metadataType:(|none)
+                          & 
+                        |   map
+                          $ ( ( 
+                              =   inputs
+                                .     !arg:(?,?inputs)
+                                    &   map
+                                      $ ( ( 
+                                          =   id V
+                                            .   !arg:(?id.?)
+                                              & (     !parms
+                                                    : ? (!id.?V) ?
+                                                  & (!id.!V)
+                                                | 
+                                                )
+                                          )
+                                        . !inputs
                                         )
-                                      . !inputs
-                                      )
-                                | 
+                                  | 
+                              )
+                            . readTable$!metadataType
                             )
-                          . readTable$!metadataType
-                          )
+                        )
                   )
                 & "
                 /*
@@ -13458,10 +13801,13 @@ function main2(evt) {
                 &     ( !JobNr
                       .   (mail2.!mail2)
                           (human.!tXt)
-                          (userProvidedMetadata.retrieveMetadataFromParms$(!metadataType.!parms))
+                          ( userProvidedMetadata
+                          . retrieveMetadataFromParms$(!metadataType.!parms):?user
+                          )
                       )
                       !jobAbout
                   : ?jobAbout
+                & log$(!jobNr userProvidedMetadata !user)
                 & saveTable$jobAbout
                 & getNextJobID$(!JobNr.justtesting):?JobId
                 &   str
@@ -13585,6 +13931,7 @@ function main2(evt) {
                           . ?
                           . ?
                           .     %?pattern ?
+                              & log$(PATTERN !pattern id !id arg !arg)
                               & !arg:? (!id.~:?val) ?
                               & ~(@(!val:!!pattern)&)
                               &   ( !id
@@ -13601,21 +13948,20 @@ function main2(evt) {
                 & !ERR
             )
           & ( MetadataInParms
-            =   id Metadata metadataType
-              .   !arg:(?metadataType.?arg)
-                & readTable$!metadataType:?Metadata
+            =   id Metadata metaDataType parms
+              .   !arg:(?metaDataType.?parms)
+                & readTable$!metaDataType:?Metadata
                 &   !Metadata
                   :   ?
                       ( ?
                       ,   ?
                           (   ?id
-                            & !arg:? (!id.?) ?
+                            & !parms:? (!id.?) ?
                           . ?
                           )
                           ?
                       )
                       ?
-                & !arg
             )
           & ( rememberMetadata
             =   mail2 userProvidedMetadata metadataType
@@ -13678,9 +14024,14 @@ function main2(evt) {
                             $ ( !struct
                               . !nth
                               .     !parms:? (bm.?bm) ?
-                                  & (   !wrkflws:? (!bm.?) ?
+                                  & (     !wrkflws
+                                        :   ?
+                                            ((!bm,?)|@!bm ?.?)
+                                            ?
                                       & inuse:?err
-                                    |   (!bm.!wf) !wrkflws:?wrkflws
+                                    |       (!bm,!MetaDataType.!wf)
+                                            !wrkflws
+                                        : ?wrkflws
                                       & :?err
                                       & saveTable$wrkflws
                                     )
@@ -13701,28 +14052,56 @@ function main2(evt) {
                                      ?
                                    )
                               & canConsumeMetadata$!struct
-                              & (   MetadataInParms$(TEImetadata.!parms)
-                                  & errorInMetadata$(TEImetadata.!parms):?ERR
-                                |   ~(MetadataInParms$(TEImetadata.!parms))
-                                  &   !parms
+                              & (   !parms
+                                  : ? (metadataformat.?MetaDataType) ?
+                                |   !parms:? (nth.?full) ?
+                                  &   !wrkflws
                                     :   ?
-                                        ( Oformat
-                                        .   ( txtbasis
-                                            | txtann
-                                            | teip5
-                                            )
-                                          ^ ?
+                                        (   (!full,?MetaDataType)
+                                          | !full ?MetaDataType
+                                        . ?
                                         )
                                         ?
-                                  & rememberMetadata$(TEImetadata.!parms):?parms
+                                  & !MetaDataType:~:~none
                                 )
-                              & AddMetadata$(TEImetadata.!nth.!parms.!ERR.!hiddenData)
+                              & (   MetadataInParms$(!MetaDataType.!parms)
+                                  & errorInMetadata$(!MetaDataType.!parms):?ERR
+                                |   ~(MetadataInParms$(!MetaDataType.!parms))
+                                  & ( 
+                                    |   !parms
+                                      :   ?
+                                          ( Oformat
+                                          .   ( txtbasis
+                                              | txtann
+                                              | teip5
+                                              )
+                                            ^ ?
+                                          )
+                                          ?
+                                    |   !struct
+                                      :   ?
+                                          ( ?
+                                          . ?
+                                          . ?
+                                          .   ?
+                                              ( format
+                                              ,   txtbasis
+                                                | txtann
+                                                | teip5
+                                              )
+                                              ?
+                                          )
+                                    )
+                                  & rememberMetadata$(!MetaDataType.!parms):?parms
+                                )
+                              & !MetaDataType:~:~none
+                              & AddMetadata$(!MetaDataType.!nth.!parms.!ERR.!hiddenData)
                             |   ApplyThePipelineToTheInput
-                              $ (TEImetadata.!struct.!batch.!Items.!mail2.!parms.run)
+                              $ (!MetaDataType.!struct.!batch.!Items.!mail2.!parms.run)
                             )
                         |   localized$!Dryrun:!Submit
                           &   ApplyThePipelineToTheInput
-                            $ (TEImetadata.!struct.!batch.!Items.!mail2.!parms.dry)
+                            $ (!MetaDataType.!struct.!batch.!Items.!mail2.!parms.dry)
                         )
                   )
                 & !arg:(?parms.?Submit.?hiddenData.?batch.?Items.?mail2)
@@ -13750,12 +14129,16 @@ function main2(evt) {
                                    |onlyWithoutRestriction
                                    |notFulfillable
                                    )"
-                    & (   !returnCode:allRight
-                        & log$whichButton
-                        & whichButton$
+                    & ( !returnCode:allRight&whichButton$
                       | UnexpectedReturnCode$!returnCode
                       )
-                  |   !wrkflws:? (!nth.?.?struct) ?
+                  |     !wrkflws
+                      :   ?
+                          ( (!nth,?MetaDataType)|!nth ?MetaDataType
+                          . ?
+                          . ?struct
+                          )
+                          ?
                     & whichButton$!nth
                   |   NotFulfillable
                     $ ( !msg:~|NoPipelinesFound
@@ -14355,7 +14738,7 @@ function main2(evt) {
                                     )
                                     !userProvidedMetadata
                                 . !autogenerated
-                                . TEImetadata
+                                . !MetaDataType
                                 )
                           | !autogenerated
                           )
@@ -16248,7 +16631,9 @@ function main2(evt) {
                             , anotool ToolID prodtool mergedtooladm
                           .   !arg:(?name.?productioncontent)
                             & (   !name:tooladm
-                                & "Use the imported non-production tooladm, but inject ContactEmail ServiceURL from current production tooladm"
+                                & "Use the imported non-production tooladm, but inject 
+                                   ContactEmail ServiceURL RestAPIkey RestAPIpassword
+                                   from current production tooladm"
                                 & 0:?mergedtooladm
                                 &   whl
                                   ' (   !tooladm
@@ -16276,7 +16661,10 @@ function main2(evt) {
                                                       : ?anotool
                                                     )
                                               )
-                                            . ContactEmail ServiceURL
+                                            .   ContactEmail
+                                                ServiceURL
+                                                RestAPIkey
+                                                RestAPIpassword
                                             )
                                       | 
                                       )
@@ -16707,7 +17095,11 @@ function main2(evt) {
                               : ? (userProvidedMetadata.?userProvidedMetadata) ?
                             )
                             ?
-                      & readTable$TEImetadata:?Metadata
+                      &   (   !MetaDataType:(|none)
+                            & 
+                          | readTable$!MetaDataType
+                          )
+                        : ?Metadata
                       &   ( !userProvidedMetadata:&TEI
                           | UserProvided
                           )
@@ -16739,7 +17131,11 @@ function main2(evt) {
                                         )
                                     & (     !userProvidedMetadata
                                           : ? (!ID.?Val) ?
-                                        &   (dt.,addurl$(localized$!TextInUI.!URL))
+                                        &   ( dt
+                                            .   
+                                              ,   addurl
+                                                $ (localized$!TextInUI.localized$!URL)
+                                            )
                                             (dd.,"XPath: " XPath$!Place)
                                             ( dd
                                             .   
@@ -20516,19 +20912,27 @@ function main2(evt) {
                             ,   makeSelectFormField
                               $ ( 
                                 . reqtool
-                                . options
-                                .   makeOptionList
-                                  $ (   mop
-                                      $ ( ( 
-                                          =   
-                                            .     !arg:(?.?Title.?ToolID)
-                                                & (!Title.!ToolID)
-                                              | 
-                                          )
-                                        . !S
-                                        . (=+)
+                                .   ( desc
+                                    .   localized
+                                      $ ( "This can shorten the list of workflow candidates, but does not speed up the computation of that list."
+                                          "Dette kan forkorte listen arbejdsgangkandidater, men gør ikke beregningen af listen hurtigere."
                                         )
-                                    . 
+                                    )
+                                    ( options
+                                    .   makeOptionList
+                                      $ (   mop
+                                          $ ( ( 
+                                              =   
+                                                .       !arg
+                                                      : (?.?Title.?ToolID)
+                                                    & (!Title.!ToolID)
+                                                  | 
+                                              )
+                                            . !S
+                                            . (=+)
+                                            )
+                                        . 
+                                        )
                                     )
                                 )
                           )
@@ -20543,19 +20947,58 @@ function main2(evt) {
                             ,   makeSelectFormField
                               $ ( 
                                 . fintool
-                                . options
-                                .   makeOptionList
-                                  $ (   mop
-                                      $ ( ( 
-                                          =   
-                                            .     !arg:(?.?Title.?ToolID)
-                                                & (!Title.!ToolID)
-                                              | 
-                                          )
-                                        . !S
-                                        . (=+)
+                                .   ( desc
+                                    .   localized
+                                      $ ( "This can speed up the computation of the list of workflow candidates."
+                                          "Dette kan gøre beregningen af listen af arbejdsgangkandidater hurtigere."
                                         )
-                                    . 
+                                    )
+                                    ( options
+                                    .   makeOptionList
+                                      $ (   mop
+                                          $ ( ( 
+                                              =   
+                                                .       !arg
+                                                      : (?.?Title.?ToolID)
+                                                    & (!Title.!ToolID)
+                                                  | 
+                                              )
+                                            . !S
+                                            . (=+)
+                                            )
+                                        . 
+                                        )
+                                    )
+                                )
+                          )
+                    )
+                    ( tr
+                    .   
+                      ,   ( td
+                          .   
+                            ,   localized
+                              $ ( "Form for entering TEI metadata:"
+                                  "Formular til udfyldelse af TEI-metadata:"
+                                )
+                          )
+                          ( td
+                          .   
+                            ,   makeSelectFormField
+                              $ ( 
+                                . metadataformat
+                                .   ( desc
+                                    .   localized
+                                      $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
+                                          "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
+                                        )
+                                    )
+                                    ( options
+                                    .   makeOptionList
+                                      $ (   (localized$("No thanks" "Nej tak").none)
+                                            (ParlaMint.ParlaMintMetadata)
+                                            (DK-CLARIN.TEImetadata)
+                                        . 
+                                        )
                                     )
                                 )
                           )
@@ -20576,15 +21019,6 @@ function main2(evt) {
               .   ( cmptblWrkflws
                   =   itemGroups presels Ofields
                     .   !arg:(?itemGroups.?presels.?Ofields)
-                      &   log
-                        $ ( cmptblWrkflws
-                            itemGroups
-                            !itemGroups
-                            presels
-                            !presels
-                            Ofields
-                            !Ofields
-                          )
                       & (!wrkflws|readTable$wrkflws)
                       &   map
                         $ ( ( 
@@ -20604,9 +21038,13 @@ function main2(evt) {
                                       : ?knownInputFeatures
                                     &   map
                                       $ ( ( 
-                                          =   name i o wf
+                                          =   name i o wf MetaDataType
                                             .     !arg
-                                                : (?name.(?i.?o).?wf)
+                                                : (   (?name,?MetaDataType)
+                                                    | %@?name ?MetaDataType
+                                                  . (?i.?o)
+                                                  . ?wf
+                                                  )
                                               & (       map
                                                       $ ( ( 
                                                           =   a b
@@ -20614,7 +21052,7 @@ function main2(evt) {
                                                                   : (?a.?b)
                                                                 &   !i
                                                                   : (   ?
-                                                                        (!a,!b)
+                                                                        (!a,!b^?)
                                                                         ?
                                                                     | ~( ?
                                                                          (!a,?)
@@ -20718,7 +21156,7 @@ function main2(evt) {
                                 )
                                   map
                                 $ ( ( 
-                                    =   low full idval o
+                                    =   low full idval o MetaDataType
                                       .   !arg:(?low.?full.?idval)
                                         &   \r\n
                                             ( input
@@ -20742,11 +21180,21 @@ function main2(evt) {
                                                   ( title
                                                   .     !wrkflws
                                                       :   ?
-                                                          (!full.(?.?o).?)
+                                                          (   (!full,?MetaDataType)
+                                                            | !full ?MetaDataType
+                                                          . (?.?o)
+                                                          . ?
+                                                          )
                                                           ?
                                                     & str$(inoutdesc$(!o.", "))
                                                   )
                                               , ∴
+                                            )
+                                            (     !MetaDataType
+                                                : ~
+                                                : ~none
+                                              & str$(" (" !MetaDataType ")")
+                                            | 
                                             )
                                             (br.,)
                                             (br.,)
@@ -21283,6 +21731,7 @@ function main2(evt) {
                               : ~(   reqtool
                                    | fintool
                                    | SuperSet-facet
+                                   | metadataformat
                                  . ?
                                  )
                             | 
@@ -21552,6 +22001,7 @@ function main2(evt) {
                                   )
                               )
                             )
+                          \n
                         )
                   )
             )
@@ -21639,13 +22089,29 @@ function main2(evt) {
                     . !arg
                     )
             )
+          & ( AdjustSwitchboardInput
+            =   
+              .   (     !arg
+                      :   ?
+                          (Ilang.cu|gml|la)
+                          ?
+                          (Olang.cu|gml|la)
+                          ?
+                    & !arg:?A (Operiod.c21) ?Z
+                    & !A (Operiod.c13) !Z:?arg
+                  | 
+                  )
+                & !arg
+            )
           & log$NEW
           & log$specifyGoal-CREATELOGJE
+          & AdjustSwitchboardInput$!arg:?arg
           & log$(arg !arg)
           & (DATE.theDate$) !arg:?arg
           & (     !arg
                 : ~(? (action.?) ?)
                 : ~(? (fintool.?) ?)
+                : ~(? (metadataformat.?) ?)
                 :   ?
                     (@(?:O ?).?)
                     ?
@@ -21673,7 +22139,6 @@ function main2(evt) {
                 : (?parms.?hiddenData.?batch)
               & updatePreselsWithUserAmendments$(!presels.!arg.!Items):(?presels.?Items)
               & readTable$tooladm
-              & log$(presels !presels hiddenData !hiddenData Items !Items)
               &   "We are at the start. Show an input form."
                 $ (!presels.!hiddenData.!Items.!preSelectedOutputSpec)
             )
