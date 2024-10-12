@@ -104,7 +104,7 @@ is the location of this file, toolsprog.bra.
 }
 
 toolsProg=
-      (MetaDataType=TEImetadata)
+      (MetaDataType=DK-CLARIN-metadata)
       (MetaDataType=ParlaMintMetadata)
       (indent=0)
       (logno=0)
@@ -504,7 +504,7 @@ toolsProg=
                 : ( ? (required.?required) ?
                   | ?&:?required
                   )
-                : ( ? (note.?note) ?&log$(DATe !note)
+                : ( ? (note.?note) ?
                   | ?&:?note
                   )
               )
@@ -538,7 +538,7 @@ toolsProg=
               \r\n
       )
       ( makeTextAreaFormField
-      =   text parm val required desc note
+      =   text parm val required desc note placeholder
         .     !arg
             : ( ?text
               . ?parm
@@ -551,6 +551,9 @@ toolsProg=
                   )
                 : ( ? (note.?note) ?
                   | ?&:?note
+                  )
+                : ( ? (placeholder.?placeholder) ?
+                  | ?&:?placeholder
                   )
               )
           &   ( div
@@ -572,6 +575,9 @@ toolsProg=
                           (rows.2)
                           (cols.60)
                           (!desc:|(title.!desc))
+                          ( !placeholder:
+                          | (placeholder.!placeholder)
+                          )
                       , trim$!val
                     )
                     !note
@@ -2688,7 +2694,7 @@ toolsProg=
                 : ( ? (required.?required) ?
                   | ?&:?required
                   )
-                : ( ? (note.?note) ?&log$(DATe !note)
+                : ( ? (note.?note) ?
                   | ?&:?note
                   )
               )
@@ -8339,13 +8345,10 @@ try {
                     term on that term. So if a sum contains the current term, ignore all terms but the current term.
                 (4) Repeat this for each new workflow.
                 (5) The result is a list of unambiguous workflows in which no task is performed by two different tools."
-                    & log$selectCommonTracks
                     & selectCommonTracks$!incarnationpipes:?As
-                    & log$selectCommonTracksDONE
                     & !As:?+[?NIncarnationPipes
                     & !NIncarnationPipes+!Npipes:?Npipes
                     & !Npipes:~>!MAXPIPES
-                    & log$unfoldTree
                     &     mop
                         $ ( ( 
                             =   
@@ -8387,7 +8390,6 @@ try {
                       | 
                       )
                     & percolateForgottenFeatures$!pipesN !newpipes:?newpipes
-                    & log$percolateForgottenFeaturesDONE
                     )
                 & (   removeNumFactors
                     $ (mop$(.!newpipes.(=a b).(=+)))
@@ -9010,11 +9012,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & readTable$Uploads
           & :?newJobs
           & (readTable$jobs|:?jobs)
-          & ( 
-            |   log$"[["
-              & lst$(JobStack,path$"log.txt",APP RAW)
-              & log$"]]"
-            )
           & "Note: this whl'() loop cannot be rewritten as a map$-ping,
              since the constructed list (newJobs) is consulted."
           &   whl
@@ -9128,724 +9125,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
             : ?jobs
           & saveTable$jobs
           & !maxjobID
-      )
-      ( tekstXML
-      =     DATE EMAIL TBA AVAILABILITY Description
-          , XMLID ITEMS SPANGRP
-          , ret linguae BODYCONTENT niceDate noColon
-          , ToolID Title Version toolURL full
-          , CTBID LANGUAGE type appdesc
-        .     !arg
-            : ( ?DATE
-              . ?EMAIL
-              . ?CTBID
-              . ?TBA
-              . ?AVAILABILITY
-              . ?XMLID
-              . ?ITEMS
-              . ?toolURL,?ToolID
-              . ?SPANGRP
-              . ?LANGUAGE
-              )
-          & ( niceDate
-            =   yyyy mm dd
-              .     @( !arg
-                     :   (% % % %:?yyyy)
-                         (% %:?mm)
-                         (% %:?dd)
-                     )
-                  & str$(!yyyy "-" !mm "-" !dd)
-                | !arg
-            )
-          & ( noColon
-            =   A Z
-              .     whl
-                  ' ( @(!arg:?A "::" ?Z)
-                    & str$(!A "_" !Z):?arg
-                    )
-                &   whl
-                  ' ( @(!arg:?A ":" ?Z)
-                    & str$(!A "_" !Z):?arg
-                    )
-                & !arg
-            )
-          & :?Title:?Version:?Description
-          & (   !SPANGRP
-              : ? ("?".@(?:? xml ? version ?)) ?SPANGRP
-            | 
-            )
-          & (     !SPANGRP
-                :   ?
-                    ( spanGrp
-                    . ? (ana.@(?:"#" ?XMLID)) ?|?
-                    )
-                    ?
-              & :?BODYCONTENT
-              & annotation:?type
-            |   !SPANGRP:?BODYCONTENT
-              & :?SPANGRP
-              & text:?type
-            )
-          &     (   readTable$tooladm
-                  &   !tooladm
-                    :   ?
-                      + ( ? (ToolID.!ToolID) ?
-                        : ? (Title.?Title) ?
-                        : ? (Version.?Version) ?
-                        : ? (Description.?Description) ?
-                        )
-                      + ?
-                  & !Title
-                | !toolURL
-                )
-                ". "
-                !Description
-            : ?appdesc
-          &     ("?"."xml version='1.0' encoding='UTF-8'")
-                \n
-                ( TEI
-                .     (xmlns."http://www.tei-c.org/ns/1.0")
-                      (   !MetaDataType:TEImetadata
-                        & ( "xmlns:schemaLocation"
-                          . "https://www.clarin.dk/schemas/tei/TEIDKCLARIN_ANNO/xml.xsd"
-                          )
-                      | 
-                      )
-                  ,   \n
-                      ( teiHeader
-                      .   (type.!type)
-                        ,   ( fileDesc
-                            .   
-                              ,   ( titleStmt
-                                  .   
-                                    , ( respStmt
-                                      .   
-                                        ,   (resp.,"a_annotation")
-                                            ( name
-                                            .   
-                                              ,   ( note
-                                                  . (type.method),!ToolID
-                                                  )
-                                                  ( date
-                                                  . (when.niceDate$!DATE),
-                                                  )
-                                            )
-                                      )
-                                  )
-                                  ( publicationStmt
-                                  .   
-                                    ,   (idno.(type.ctb),!CTBID)
-                                        ( availability
-                                        .   (status.free)
-                                          , (ab.(type.public),)
-                                        )
-                                  )
-                                  ( sourceDesc
-                                  .   
-                                    , ( biblStruct
-                                      .   
-                                        , ( monogr
-                                          .   
-                                            ,   ( title
-                                                .   ("xml:lang".!LaNg)
-                                                  ,   "(provided by user)"
-                                                    & monogr
-                                                )
-                                                ( imprint
-                                                .   
-                                                  ,   ( publisher
-                                                      .   (n.n/a)
-                                                        , "(provided by user)"
-                                                      )
-                                                      ( date
-                                                      .   (when.niceDate$!DATE)
-                                                        , 
-                                                      )
-                                                )
-                                          )
-                                      )
-                                  )
-                            )
-                            ( profileDesc
-                            .   
-                              ,   ( creation
-                                  .   
-                                    , ( date
-                                      .   (cert.high) (when.niceDate$!DATE)
-                                        , 
-                                      )
-                                  )
-                                  ( !LANGUAGE:
-                                  |   "Three problems with form field for language if it is required:
-                                         1) element content must be full name of language
-                                         2) @ident must be set to ISO code
-                                         3) Can just as well be provided automatically"
-                                    & ( langUsage
-                                      .   
-                                        , ( language
-                                          .   (ident.!LANGUAGE)
-                                            ,     readTable$linguae
-                                                &   !linguae
-                                                  :   ?
-                                                      (?full.!LANGUAGE.?)
-                                                      ?
-                                                & localized$!full
-                                              | 
-                                          )
-                                      )
-                                  )
-                                  ( textDesc
-                                  .   
-                                    ,   (channel.(mode.w),2)
-                                        (constitution.,)
-                                        (derivation.,)
-                                        ( domain
-                                        .   (type.specific)
-                                          , "(provided by user)"&general
-                                        )
-                                        (factuality.,)
-                                        (interaction.,)
-                                        (preparedness.,)
-                                        (purpose.,)
-                                  )
-                                  (particDesc.,(person.,))
-                            )
-                            ( revisionDesc
-                            .   
-                              , ( change
-                                .   (when.niceDate$!DATE) (who.!EMAIL)
-                                  ,   !type:text&!appdesc
-                                    | created
-                                )
-                            )
-                      )
-                      \n
-                      ( text
-                      .   
-                        ,   ( body
-                            .   
-                              ,     !BODYCONTENT:~
-                                  & (   !BODYCONTENT
-                                      : (   ?
-                                            ( text
-                                            . ?,? (body.?,?BODYCONTENT) ?
-                                            )
-                                            ?
-                                        | ? (body.?,?BODYCONTENT) ?
-                                        |   ?
-                                            (body.?)
-                                            ?BODYCONTENT
-                                            (.body.)
-                                            ?
-                                        )
-                                    | 
-                                    )
-                                  & !BODYCONTENT
-                                | ( ab
-                                  .   
-                                    ,     !SPANGRP:
-                                        & "empty body/no text"
-                                      | 
-                                  )
-                            )
-                            \n
-                            !SPANGRP
-                      )
-                )
-            : ?ret
-          & !ret
-      )
-      ( inject
-      =     userProvidedMetadata autogenerated final
-          , Required/optional/automatic val Line Line2 tree
-          , PlaceInHeader id remove Metadata
-          , addOrInsertOneOrMoreNames metadataType
-        .   ( remove
-            =   PlaceInHeader tree subtree,place A Z a attval
-              .   !arg:(?PlaceInHeader.?tree)
-                & (   !PlaceInHeader:%?place ?PlaceInHeader
-                    & (   !PlaceInHeader:
-                        & (   !place:(?place,?attval)
-                            &   whl
-                              ' (   !tree
-                                  : ?A (!place.? !attval ?,?) ?Z
-                                & !A !Z:?tree
-                                )
-                          |   whl
-                            ' ( !tree:?A (!place.?,?) ?Z
-                              & !A !Z:?tree
-                              )
-                          )
-                        & !tree
-                      |   (   !place:(?place,?attval)
-                            &   !tree
-                              :   ?A
-                                  (!place.? !attval ?:?a,?subtree)
-                                  ?Z
-                          | !tree:?A (!place.?a,?subtree) ?Z
-                          )
-                        &   !A
-                            (!place.!a,remove$(!PlaceInHeader.!subtree))
-                            remove$(!place !PlaceInHeader.!Z)
-                      )
-                  | !tree
-                  )
-            )
-          & ( ExtractAttributesFromContent
-            =   templateAtts atts val
-              .   !arg:(?templateAtts.?atts,?val)
-                &   map
-                  $ ( ( 
-                      =   A Z a ref z n status ver current
-                        .   (   !arg:(?.?)
-                              & "Attribute with predefined value."
-                              & ( !atts:?A !arg ?Z
-                                |   !arg:(?a.?)
-                                  & (   !atts:?A (!a.?) ?Z
-                                      & !A !arg !Z
-                                    | !atts !arg
-                                    )
-                                )
-                            |   ( !atts:?A (!arg.?current) ?Z
-                                |   !atts:?A
-                                  & :?Z:?current
-                                )
-                              &   !A
-                                  (   !arg:(ref|target)
-                                    & (   @( !val
-                                           :   ?a
-                                               "@"
-                                               ?ref
-                                               ( (" " ?|)
-                                               : ?z
-                                               )
-                                           )
-                                        & str$(!a !z):?val
-                                        & (!arg.!ref)
-                                      | 
-                                      )
-                                  |   !arg:unit
-                                    & ( !arg
-                                      .     @(!val:? "#" ? " " ?z)
-                                          & trim$!z
-                                        | 
-                                      )
-                                  |   !arg:unit
-                                    & ( !arg
-                                      .     @(!val:? "#" ? " " ?z)
-                                          & trim$!z
-                                        | 
-                                      )
-                                  |   !arg:quantity
-                                    & ( !arg
-                                      .     @( !val
-                                             :   ?a
-                                                 "#"
-                                                 ~/#?n
-                                                 ( (~#%@ ?|)
-                                                 : ?z
-                                                 )
-                                             )
-                                          & str$(!a !z):?val
-                                          & !n
-                                        | 
-                                      )
-                                  |   !arg:n
-                                    & (   @( !val
-                                           :   ?a
-                                               "#"
-                                               ~/#?n
-                                               ( (~#%@ ?|)
-                                               : ?z
-                                               )
-                                           )
-                                        & str$(!a !z):?val
-                                        & (!arg.!n)
-                                      | 
-                                      )
-                                  | !arg:when&(!arg.!val)
-                                  |   !arg:status
-                                    & (   @( !val
-                                           :   ?
-                                               "creativecommons.org"
-                                               ?
-                                               by
-                                               ?status
-                                               "/"
-                                               ?ver
-                                               "/"
-                                               ?
-                                           )
-                                        & (!arg.str$("free:BY" upp$!status "-" !ver))
-                                      | !current:
-                                      | (!arg.!current)
-                                      )
-                                  | 
-                                  )
-                                  !Z
-                            )
-                          : ?atts
-                      )
-                    . !templateAtts
-                    )
-                & !atts
-            )
-          & ( doLanguage
-            =   val l1 l2 ll tree A Z place at attval addOrReplace a z
-              .   !arg:(?addOrReplace.?place.?at.?val.?tree)
-                & (   !val:@(?:?l1 \n ?l2)
-                    & trim$!l1:?l1
-                    & trim$!l2:?l2
-                  | !val:?l1&:?l2
-                  )
-                & !l1 !l2:?ll
-                & "Remove all nodes with not matching xml:lang"
-                &   whl
-                  ' (   !tree
-                      :   ?A
-                          ( !place
-                          .     ?
-                                ( !at
-                                .   ?attval
-                                  & ~(!UIlanguage:? !attval ?)
-                                )
-                                ?
-                            , ?
-                          )
-                          ?Z
-                    & !A !Z:?tree
-                    )
-                & "Decide where to put language nodes."
-                & (     !tree
-                      : ?A (!place.?a (!at.!arg) ?z,?) ?Z
-                    & (   !addOrReplace:add
-                        & "Existing node must not be overwritten. Include it in A."
-                        & !tree:?A !Z
-                        & :?a:?z
-                      | 
-                      )
-                    & "Now we have a place somewhere inside tree to put the new or updated node"
-                  |   !tree:?A
-                    & :?Z
-                    & :?a:?z
-                    & "New node to be added after existing tree."
-                  )
-                & "create the nodes and put them in place in the new tree"
-                &   !A
-                      map
-                    $ ( ( 
-                        =   A Z l atts
-                          .   (!ll:%?l ?ll|:?l)
-                            & (   "Matching xml:lang. Fill in content, or remove if there is no content."
-                                & ( !l:
-                                  | ( !place
-                                    .     ExtractAttributesFromContent
-                                        $ ( !templateAtts
-                                          . !a (!at.!arg) !z,!l
-                                          )
-                                      , show$!l
-                                    )
-                                  )
-                              |   "Node found, but w/o matching xml:lang attribute. Create it."
-                                & ( !l:
-                                  | ( !place
-                                    .     ExtractAttributesFromContent
-                                        $ (!templateAtts.(!at.!arg),!l)
-                                      , show$!l
-                                    )
-                                  )
-                              |   "Node not found. Create it."
-                                & ( !l:
-                                  | (!place.(!at.!arg),!l)
-                                  )
-                              )
-                        )
-                      . !UIlanguage
-                      )
-                    !Z
-            )
-          & ( handleTemplateAttributes
-            =     PlaceInHeader val tree subtree l1 l2 ll addOrReplace
-                , place plac at templateAtts A E Z a z attval content show
-              .   ( show
-                  =   
-                    .     ( !addOrReplace:add
-                          | !PlaceInHeader:
-                          )
-                        & !arg
-                      | 
-                  )
-                & !arg:(?addOrReplace.?PlaceInHeader.?val.?tree)
-                & "Fail if the first element in PlaceInHeader specifies no attribute(s)."
-                & !PlaceInHeader:(?place.?templateAtts) ?PlaceInHeader
-                & "Attributes needed here.
-                   Special cases:
-                   xml:lang Every odd line in text area is first language in UIlanguage variable, every even line is the second language.
-                   ref      Look for @<reference> in value (!val)
-                   n        Look for # followed by integer number
-                   date     Input of type date
-                   ISO639   Language picker
-                   "
-                & (   "The first part is the Place in Header where the first place is ripped of the attribute info."
-                    & !place !PlaceInHeader
-                  .     !templateAtts:?a ("xml:lang":?at) ?z
-                      & !a !z:?templateAtts
-                      & doLanguage$(!addOrReplace.!place.!at.!val.!tree)
-                    |   !addOrReplace:replace
-                      & !tree:?A (!place.?atts,?content) ?Z
-                      & "Node found"
-                      &   !A
-                          ( !place
-                          .   ExtractAttributesFromContent$(!templateAtts.!atts,!content !val)
-                            , !content show$!val
-                          )
-                          !Z
-                    |   "Node NOT found. Or node must be added, not replaced."
-                      &   !tree
-                          ( !place
-                          . ExtractAttributesFromContent$(!templateAtts.,!val),show$!val
-                          )
-                  )
-            )
-          & ( addOrInsertOneOrMoreNames
-            =     PlaceInHeader val tree A Z a z l1 l2 ll at multi
-                , addOrReplace attval place subtree templateAtts
-              .   !arg:(?addOrReplace.?arg:?PlaceInHeader.?val.?tree)
-                & (   !PlaceInHeader:%?place ?subPlaceInHeader
-                    &   (   ( !place:(,?place)
-                            | !subPlaceInHeader:
-                            )
-                          & n
-                        | 1
-                        )
-                      : ?multi
-                    & (   !place:(?place.?templateAtts)
-                        & "Succeed if the first element in PlaceInHeader specifies attribute(s).
-                          Special cases:
-                          xml:lang Every odd line in text area is first language in UIlanguage variable,
-                                   every even line is the second language.
-                          ref      Look for @<reference> in value (!val)
-                          n        Look for # followed by integer number
-                          date     Input of type date
-                          ISO639   Language picker
-                          "
-                        & (   !templateAtts:?a ("xml:lang":?at) ?z
-                            & "We need to create up to two subtrees in the current tree before handling
-                               the other template attributes (if any)."
-                            & !a !z:?templateAtts
-                            & (   !val:@(?:?l1 \n ?l2)
-                                & trim$!l1:?l1
-                                & trim$!l2:?l2
-                              | !val:?l1&:?l2
-                              )
-                            & !l1 !l2:?ll
-                            & "Remove all nodes with not matching xml:lang
-                               (Is that necessary?)"
-                            &   whl
-                              ' (   !tree
-                                  :   ?A
-                                      ( !place
-                                      .     ?
-                                            (!at.[%(!UIlanguage:~(? !sjt ?)))
-                                            ?
-                                        , ?
-                                      )
-                                      ?Z
-                                & !A !Z:?tree
-                                )
-                            & "create the nodes and put them in place in the tree"
-                            &   map
-                              $ ( ( 
-                                  =   A Z l atts
-                                    .     !ll:%?l ?ll
-                                        & "Decide where to put language node."
-                                        & !tree:?A
-                                        &   
-                                          : ?Z
-                                          : ?a
-                                          : ?z
-                                          : ?subtree
-                                        & (     !tree
-                                              : (     ?A
-                                                      ( !place
-                                                      .   ?a (!at.!arg) ?z
-                                                        , ?subtree
-                                                      )
-                                                      ?Z
-                                                  & (   !addOrReplace:add
-                                                      & !multi:n
-                                                      & "Existing node must not be overwritten. Include it in A."
-                                                      & !tree:?A !Z
-                                                      &   
-                                                        : ?a
-                                                        : ?z
-                                                        : ?subtree
-                                                    | 
-                                                    )
-                                                |     (   ?
-                                                          ( !place
-                                                          .     ?
-                                                                (!at.?)
-                                                                ?
-                                                            , ?
-                                                          )
-                                                      : ?A
-                                                      )
-                                                      ?Z
-                                                  &   
-                                                    : ?a
-                                                    : ?z
-                                                    : ?subtree
-                                                )
-                                            & "Now we have a place somewhere inside tree
-                                               to put the new or updated node"
-                                          | "New node to be added after existing tree."
-                                          )
-                                        &     !A
-                                              ( !place
-                                              .     (!at.!arg)
-                                                      ExtractAttributesFromContent
-                                                    $ (!templateAtts.!a !z,!l)
-                                                ,   addOrInsertOneOrMoreNames
-                                                  $ ( !addOrReplace
-                                                    . !subPlaceInHeader
-                                                    . !l
-                                                    . !subtree
-                                                    )
-                                              )
-                                              !Z
-                                          : ?tree
-                                      | "No subtree if no input for second language available"
-                                  )
-                                . !UIlanguage
-                                )
-                            & !tree
-                          |   "There is no xml:lang. What about other elements in templateAtts?"
-                            & (   !addOrReplace:replace
-                                & !tree:?A (!place.?atts,?subtree) ?Z
-                                & "Node found"
-                                &   !A
-                                    ( !place
-                                    .     ExtractAttributesFromContent
-                                        $ (!templateAtts.!atts,!subtree !val)
-                                      ,   addOrInsertOneOrMoreNames
-                                        $ (!addOrReplace.!subPlaceInHeader.!val.!subtree)
-                                    )
-                                    !Z
-                              |   "Node NOT found. Or node must be added, not replaced."
-                                &   !tree
-                                    ( !place
-                                    .   ExtractAttributesFromContent$(!templateAtts.,!val)
-                                      ,   addOrInsertOneOrMoreNames
-                                        $ (!addOrReplace.!subPlaceInHeader.!val.)
-                                    )
-                              )
-                          )
-                      |   "No template attributes here."
-                        & !tree:?A
-                        & :?Z:?a:?subtree
-                        & (   !tree:?A (!place.?a,?subtree) ?Z
-                            & (   !addOrReplace:add
-                                & !multi:n
-                                & "Existing node must not be overwritten. Include it in A."
-                                & !tree:?A !Z
-                                & :?a:?subtree
-                              | 
-                              )
-                            & "Now we have a place somewhere inside tree to put the new or updated node"
-                          | "New node to be added after existing tree."
-                          )
-                        &   !A
-                            ( !place
-                            .   !a
-                              ,   addOrInsertOneOrMoreNames
-                                $ (!addOrReplace.!subPlaceInHeader.!val.!subtree)
-                            )
-                            !Z
-                      )
-                  |   "template has come to end. Add value to any content (tree perhaps) found here"
-                    & !tree !val
-                  )
-            )
-          & !arg:(?userProvidedMetadata.?autogenerated.?metadataType)
-          & readTable$!metadataType:?Metadata
-          & readTable$UIlanguage
-          &   whl
-            ' ( !userProvidedMetadata:(?id.?val) ?userProvidedMetadata
-              & trim$!val:?val
-              & (     !Metadata
-                    :   ?
-                        ( ?
-                        ,   ?
-                            (!id.?.?Required/optional/automatic.?.?PlaceInHeader.?.?.?)
-                            ?
-                        )
-                        ?
-                  &   (     !Required/optional/automatic
-                          : ( ? r ?
-                            | ? o ?&!val:~
-                            )
-                        & addOrInsertOneOrMoreNames$(replace.!PlaceInHeader.!val.!autogenerated)
-                      |   !val:
-                        &   !Required/optional/automatic
-                          : ? (o|zeroOrMore) ?
-                          : ~(? a ?)
-                        & remove$(!PlaceInHeader.!autogenerated):?autogenerated
-                      |     !Required/optional/automatic
-                          : ( ? oneOrMore ?
-                            | ? zeroOrMore ?&!val:~
-                            )
-                        & remove$(!PlaceInHeader.!autogenerated):?autogenerated
-                        &   whl
-                          ' ( (     !PlaceInHeader
-                                  : ? (?.? "xml:lang" ?) ?
-                                & @( !val
-                                   : (   ?Line \n ?Line2 \n ?val
-                                       &   str$(trim$!Line \n trim$!Line2)
-                                         : ?Line
-                                     |   ?Line
-                                       & :?val
-                                       & trim$!Line:?Line
-                                     )
-                                   )
-                              |   @( !val
-                                   : ( ?Line \n ?val
-                                     | ?Line&:?val
-                                     )
-                                   )
-                                & trim$!Line:?Line
-                              )
-                            & ( !Line:
-                              |     addOrInsertOneOrMoreNames
-                                  $ (add.!PlaceInHeader.!Line.!autogenerated)
-                                : ?autogenerated
-                              )
-                            & !val:~
-                            )
-                        & !autogenerated
-                      )
-                    : ?autogenerated
-                | 
-                )
-              )
-          &   map
-            $ ( ( 
-                =   
-                  .   !arg:(?,?arg)
-                    &   map
-                      $ ( ( 
-                          =   PlaceInHeader
-                            .   !arg:(?.?.a.?.?PlaceInHeader.?.?.?)
-                              &     addOrInsertOneOrMoreNames
-                                  $ (replace.!PlaceInHeader..!autogenerated)
-                                : ?autogenerated
-                          )
-                        . !arg
-                        )
-                )
-              . !Metadata
-              )
-          & !autogenerated
       )
       ( Filename
       =   base
@@ -10128,9 +9407,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         & ( !nt:!itms&(!a.!v)
                           | 
                           )
-                      |       (   !arg:(Item.?)
-                                & log$(arg Item !arg)
-                                & !arg
+                      |       ( !arg:(Item.?)
                               | !arg:(itms.?)&(itms.1)
                               |   !arg:(CLOCK.?CLOCK)
                                 &   !ItemGroupsCache
@@ -10264,6 +9541,10 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 )
                 (   !parms:? (fintool.?rstr) ?
                   & (fintool.!rstr)
+                | 
+                )
+                (   !parms:? (metadataformat.?rstr) ?
+                  & (metadataformat.!rstr)
                 | 
                 )
                   map
@@ -13491,7 +12772,7 @@ function main2(evt) {
                             , "Required / optional  / automatic"
                             , "Placering i header" Noter Hjælpetekst id
                             , "line / lines / box / empty" URL
-                            , table typeOfError
+                            , table typeOfError placeholder
                           .     !arg:(?tekst,?inputs)
                               &   fieldset
                                 $ ( localized$!tekst
@@ -13632,11 +12913,17 @@ function main2(evt) {
                                                               )
                                                           )
                                                     |   (     !"line / lines / box / empty"
-                                                            : ( box
-                                                              | lines
-                                                              )
+                                                            :   ( box
+                                                                | lines
+                                                                )
+                                                                ?placeholder
                                                           & makeTextAreaFormField
-                                                        | makeTextFormField
+                                                        |   (   !"line / lines / box / empty"
+                                                              : line ?placeholder
+                                                            |   
+                                                              : ?placeholder
+                                                            )
+                                                          & makeTextFormField
                                                         )
                                                       $ (     addurl
                                                             $ (   localized
@@ -13688,24 +12975,49 @@ function main2(evt) {
                                                             ( !note:
                                                             | (note.!note)
                                                             )
+                                                            (   !placeholder
+                                                              : 
+                                                            |     !placeholder
+                                                                : XML-LANG
+                                                              & ( !UIlanguage
+                                                                |   readTable
+                                                                  $ UIlanguage
+                                                                )
+                                                              & ( placeholder
+                                                                .       map
+                                                                      $ ( ( 
+                                                                          =   
+                                                                            .   \n
+                                                                                !arg
+                                                                          )
+                                                                        . !UIlanguage
+                                                                        )
+                                                                    : \n ?arg
+                                                                  & !arg
+                                                                )
+                                                            | (placeholder.!placeholder)
+                                                            )
                                                         )
                                                     )
                                                 |     !"Required / optional  / automatic"
                                                     : ? a ?
                                                   & !"Tekst i grænsefladen":~
-                                                  &   makeStaticTextFormField
-                                                    $ ( localized$!"Tekst i grænsefladen"
-                                                      . span
-                                                      .   (class.autogen)
-                                                        ,   str
-                                                          $ ( " ("
-                                                                localized
-                                                              $ ( autogenerated
-                                                                  "automatisk genereret"
-                                                                )
-                                                              ") "
-                                                            )
-                                                      )
+                                                  & ( 
+                                                    |   makeStaticTextFormField
+                                                      $ (   localized
+                                                          $ !"Tekst i grænsefladen"
+                                                        . span
+                                                        .   (class.autogen)
+                                                          ,   str
+                                                            $ ( " ("
+                                                                  localized
+                                                                $ ( autogenerated
+                                                                    "automatisk genereret"
+                                                                  )
+                                                                ") "
+                                                              )
+                                                        )
+                                                    )
                                                 | 
                                                 )
                                           )
@@ -13824,14 +13136,21 @@ function main2(evt) {
             )
           & ( ApplyThePipelineToTheInput
             =     struct batch jobIDoffset parms
-                , retrieveMetadataFromParms tXt
+                , retrieveMetadataFromParms tXt myItems
                 , Items item subjobs mail2 JobId metadataType
                 , toolsdataURL toolsUploadURL dryORrun
-              .   !arg:(?metadataType.?struct.?batch.?Items.?mail2.?parms.?dryORrun)
+              .     !arg
+                  : ( ?metadataType
+                    . ?struct
+                    . ?batch
+                    . ?Items:?myItems
+                    . ?mail2
+                    . ?parms
+                    . ?dryORrun
+                    )
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
                     .   !arg:(?metadataType.?parms)
-                      & log$(metadataformat metadataType !metadataType parms !parms)
                       & (   !metadataType:(|none)
                           & 
                         |   map
@@ -13876,8 +13195,10 @@ function main2(evt) {
                   )
                 & !jobNr+1:?jobNr:?JobNr
                 & saveTable$jobNr
+                & log$(ApplyThePipelineToTheInput Items !Items)
                 & (   !batch:on
                     & 0:?jobIDoffset
+                    & !Items
                     &   whl
                       ' ( !Items:%?item ?Items
                         &     convert2URLs
@@ -13900,16 +13221,17 @@ function main2(evt) {
                 & saveTable$jobs
                 & (readTable$jobAbout|:?jobAbout)
                 & makeWorkflowVisualisation$!struct:(?tXt.?SVG)
+                & log$(myItems !myItems)
                 &     ( !JobNr
-                      .   (mail2.!mail2)
+                      .   (mail2.!myItems)
                           (human.!tXt)
                           ( userProvidedMetadata
+                          . !metadataType
                           . retrieveMetadataFromParms$(!metadataType.!parms):?user
                           )
                       )
                       !jobAbout
                   : ?jobAbout
-                & log$(!jobNr userProvidedMetadata !user)
                 & saveTable$jobAbout
                 & getNextJobID$(!JobNr.justtesting):?JobId
                 &   str
@@ -13937,7 +13259,7 @@ function main2(evt) {
           & ( errorInMetadata
             =     pattern metadataType
                 , "Tekst i grænsefladen" id ERR val Metadata ISO639 DATE MEDIATYPE
-              .   "ISO639 is a pattern used in the TEImetadata file"
+              .   "ISO639 is a pattern used in the DK-CLARIN-metadata file"
                 & ( ISO639
                   = [%( readTable$linguae
                       & !( 
@@ -13949,7 +13271,7 @@ function main2(evt) {
                          )
                       )
                   )
-                & "DATE is a pattern used in the TEImetadata file"
+                & "DATE is a pattern used in the DK-CLARIN-metadata file"
                 & ( DATE
                   =   (   #%@?y1 #%@?y2 #%@?y3 #%@?y4 "-" #%@?m1 #%@?m2 "-" #%@?d1 #%@?d2
                         & 10*!m1+!m2:~<1:~>12
@@ -13958,7 +13280,7 @@ function main2(evt) {
                       )
                     & 1000*!y1+100*!y2+10*!y3+!y4:<2100
                   )
-                & "MEDIATYPE could be used as a pattern used in the TEImetadata file"
+                & "MEDIATYPE could be used as a pattern used in the DK-CLARIN-metadata file"
                 & ( MEDIATYPE
                   =   ( application
                       | audio
@@ -14033,7 +13355,6 @@ function main2(evt) {
                           . ?
                           . ?
                           .     %?pattern ?
-                              & log$(PATTERN !pattern id !id arg !arg)
                               & !arg:? (!id.~:?val) ?
                               & ~(@(!val:!!pattern)&)
                               &   ( !id
@@ -14066,18 +13387,28 @@ function main2(evt) {
                       ?
             )
           & ( rememberMetadata
-            =   mail2 userProvidedMetadata metadataType
+            =   mail2 userProvidedMetadata metadataType oldjobnr file real
               .   !arg:(?metadataType.?arg)
+                & (!Uploads|readTable$Uploads)
                 & ( MetadataInParms$(!metadataType.!arg)
                   |   (   !arg:? (mail2.?mail2) ?
+                        & @(!mail2:%?file "-" #%?oldjobnr "-step" ?)
                         & readTable$jobAbout
                         &   !jobAbout
                           :   ?
-                              ( ?
+                              ( !oldjobnr
                               .   ?
-                                  (mail2.!mail2)
+                                  ( mail2
+                                  .   ?
+                                      ( Item
+                                      .   ?real
+                                        &   !Uploads
+                                          : ? (?.!real.!file.?) ?
+                                      )
+                                      ?
+                                  )
                                   ?
-                                  (userProvidedMetadata.?userProvidedMetadata)
+                                  (userProvidedMetadata.?metadataType.?userProvidedMetadata)
                                   ?
                               )
                               ?
@@ -14110,7 +13441,7 @@ function main2(evt) {
                       & !arg
                   )
                 & ( whichButton
-                  =   bm Submit ViewDetails struct
+                  =   bm Submit ViewDetails struct MetaDataType
                     .   !arg:(?bm.?Submit.?ViewDetails.?struct)
                       & (     !Submit
                             : ( !ViewDetails (" - " ?nth|)
@@ -14122,10 +13453,13 @@ function main2(evt) {
                           & getDetailedGoal$!struct:?goals
                           & ((!sources.!goals).!struct):?wf
                           & (!wrkflws|readTable$wrkflws)
+                          & log$(Bookmarjk parms !parms)
                           &   ShowOnlyTheCurrentPipe
                             $ ( !struct
                               . !nth
-                              .     !parms:? (bm.?bm) ?
+                              .       !parms
+                                    : ? (bm.?bm) ?
+                                    : ? (metadataformat.?MetaDataType) ?
                                   & (     !wrkflws
                                         :   ?
                                             ((!bm,?)|@!bm ?.?)
@@ -14142,7 +13476,6 @@ function main2(evt) {
                               . !err
                               )
                         |   !Submit:Submit
-                          & log$STAP1
                           & (     !parms
                                 : ~( ?
                                      ( Iformat
@@ -14154,13 +13487,11 @@ function main2(evt) {
                                      )
                                      ?
                                    )
-                              & log$CANCONSUME?
                               & canConsumeMetadata$!struct
-                              & log$CANCONSUME!
                               & (   !parms
                                   : ? (metadataformat.?MetaDataType) ?
                                 |     !parms
-                                    : ( ? (bm.?full) ?
+                                    : ( ? (bm.~:?full) ?
                                       | ? (nth.?full) ?
                                       )
                                   & (!wrkflws|readTable$wrkflws)
@@ -14233,10 +13564,9 @@ function main2(evt) {
                           . ?struct
                           )
                           ?
-                    & log$(MetaDataType !MetaDataType)
                     & whichButton$(!nth.!Submit.!ViewDetails.!struct)
                   |   NotFulfillable
-                    $ ( !msg:~|NoPipelinesFound
+                    $ ( !msg:~|"No workflows found"
                       . !sources
                       . !goals
                       . 
@@ -14464,7 +13794,6 @@ function main2(evt) {
                                       ( ?
                                       .   ?
                                           ( %@?item
-                                          & log$(Is !item in Uploads)
                                           &   !Uploads
                                             : ~(? (?.!item.?) ?)
                                           & log$"No, it isn't"
@@ -14529,9 +13858,13 @@ function main2(evt) {
                                                                ?
                                                            )
                                                          )
-                                                      &   log$(str$"     Is output ")
-                                                          !OU
-                                                          " from previous step"
+                                                      &   log
+                                                        $ ( str
+                                                          $ ( "     Is output "
+                                                              !OU
+                                                              " from previous step"
+                                                            )
+                                                          )
                                                       & 
                                                     |   log$"     is really input"
                                                       & !arg
@@ -14637,31 +13970,729 @@ function main2(evt) {
  * Called from util.java
  */"
       ( doneJob
-      =     A B Y Z JobNr jobID ZZ jobid2 a z files S
-          , prevTitle toolid
-          , ctb ctbid CTBID filename status
-          , toolURL parms file TITLE SPANGRPS
-          , DATE EMAIL TBA AVAILABILITY
-          , SPANGRP SPANGRPfil SPANGRPfilWithMetadata
-          , XMLID ITEMS ZZ LANGUAGE AUTOGENERATED
-          , userProvidedMetadata autogenerated Extent
-        .     ( TagUsage
-              =   e a c
-                .   map
-                  $ ( ( 
-                      =   
-                        .     !arg:(?e.?a,?c)
-                            & !e+!occurs:?occurs
-                            & (     !a
-                                  : ? ("xml:id"|id.?) ?
-                                & !e+!withId:?withId
-                              | 
-                              )
-                            & TagUsage$!c
-                          | 
+      =     A B C D E F Y Z JobNr jobID ZZ jobid2 a z files S
+          , prevTitle toolid TEIwrapData inject ExtractAttributesFromContent
+          , ctb ctbid CTBID filename status addOrInsertOneOrMoreElements
+          , toolURL parms file TITLE SPANGRPS compatibleAttributes
+          , DATE EMAIL TBA AVAILABILITY updateHead Metadata teiHeaderatt
+          , SPANGRP SPANGRPfil SPANGRPfilWithMetadata metadataType
+          , XMLID ITEMS ZZ LANGUAGE TEIat myjobs textat
+          , userProvidedMetadata autogenerated body bodyat head
+          , automaticFields computeTagUsage replList
+        .     ( TEIwrapData
+              =     DATE EMAIL TBA AVAILABILITY Description
+                  , XMLID ITEMS SPANGRP
+                  , ret linguae BODYCONTENT niceDate noColon
+                  , ToolID Title Version toolURL full
+                  , CTBID LANGUAGE type appdesc
+                .     !arg
+                    : ( ?DATE
+                      . ?EMAIL
+                      . ?CTBID
+                      . ?TBA
+                      . ?AVAILABILITY
+                      . ?XMLID
+                      . ?ITEMS
+                      . ?toolURL,?ToolID
+                      . ?SPANGRP
+                      . ?LANGUAGE
                       )
-                    . !arg
+                  & ( niceDate
+                    =   yyyy mm dd
+                      .     @( !arg
+                             :   (% % % %:?yyyy)
+                                 (% %:?mm)
+                                 (% %:?dd)
+                             )
+                          & str$(!yyyy "-" !mm "-" !dd)
+                        | !arg
                     )
+                  & ( noColon
+                    =   A Z
+                      .     whl
+                          ' ( @(!arg:?A "::" ?Z)
+                            & str$(!A "_" !Z):?arg
+                            )
+                        &   whl
+                          ' ( @(!arg:?A ":" ?Z)
+                            & str$(!A "_" !Z):?arg
+                            )
+                        & !arg
+                    )
+                  & :?Title:?Version:?Description
+                  & (   !SPANGRP
+                      : ? ("?".@(?:? xml ? version ?)) ?SPANGRP
+                    | 
+                    )
+                  & (     !SPANGRP
+                        :   ?
+                            ( spanGrp
+                            .   ? (ana.@(?:"#" ?XMLID)) ?
+                              | ?
+                            )
+                            ?
+                      & :?BODYCONTENT
+                      & annotation:?type
+                    |   !SPANGRP:?BODYCONTENT
+                      & :?SPANGRP
+                      & text:?type
+                    )
+                  &     (   readTable$tooladm
+                          &   !tooladm
+                            :   ?
+                              + ( ? (ToolID.!ToolID) ?
+                                : ? (Title.?Title) ?
+                                : ? (Version.?Version) ?
+                                : ? (Description.?Description) ?
+                                )
+                              + ?
+                          & !Title
+                        | !toolURL
+                        )
+                        ". "
+                        !Description
+                    : ?appdesc
+                  &     ("?"."xml version='1.0' encoding='UTF-8'")
+                        \n
+                        ( TEI
+                        .   (xmlns."http://www.tei-c.org/ns/1.0")
+                          ,   \n
+                              ( teiHeader
+                              .   (type.!type)
+                                ,   ( fileDesc
+                                    .   
+                                      ,   ( titleStmt
+                                          .   
+                                            , ( respStmt
+                                              .   
+                                                ,   (resp.,"a_annotation")
+                                                    ( name
+                                                    .   
+                                                      ,   ( note
+                                                          .   (type.method)
+                                                            , !ToolID
+                                                          )
+                                                          ( date
+                                                          .   (when.niceDate$!DATE)
+                                                            , 
+                                                          )
+                                                    )
+                                              )
+                                          )
+                                          ( publicationStmt
+                                          . ,(idno.(type.ctb),!CTBID)
+                                          )
+                                          ( sourceDesc
+                                          .   
+                                            , ( biblStruct
+                                              .   
+                                                , ( monogr
+                                                  .   
+                                                    , ( imprint
+                                                      .   
+                                                        , ( date
+                                                          .   (when.niceDate$!DATE)
+                                                            , 
+                                                          )
+                                                      )
+                                                  )
+                                              )
+                                          )
+                                    )
+                                    ( profileDesc
+                                    .   
+                                      ,   ( creation
+                                          .   
+                                            , ( date
+                                              .     (cert.high)
+                                                    (when.niceDate$!DATE)
+                                                , 
+                                              )
+                                          )
+                                          ( !LANGUAGE:
+                                          | ( langUsage
+                                            .   
+                                              , ( language
+                                                .   (ident.!LANGUAGE)
+                                                  ,     readTable$linguae
+                                                      &   !linguae
+                                                        :   ?
+                                                            (?full.!LANGUAGE.?)
+                                                            ?
+                                                      & localized$!full
+                                                    | 
+                                                )
+                                            )
+                                          )
+                                          ( textDesc
+                                          .   
+                                            ,   (channel.(mode.w),2)
+                                                (constitution.,)
+                                                (derivation.,)
+                                                (factuality.,)
+                                                (interaction.,)
+                                                (preparedness.,)
+                                                (purpose.,)
+                                          )
+                                          (particDesc.,(person.,))
+                                    )
+                                    ( revisionDesc
+                                    .   
+                                      , ( change
+                                        .     (when.niceDate$!DATE)
+                                              (who.!EMAIL)
+                                          ,     !type:text
+                                              & !appdesc
+                                            | created
+                                        )
+                                    )
+                              )
+                              \n
+                              ( text
+                              .   
+                                ,   ( body
+                                    .   
+                                      ,     !BODYCONTENT:~
+                                          & (   !BODYCONTENT
+                                              : (   ?
+                                                    ( text
+                                                    .   ?
+                                                      ,   ?
+                                                          (body.?,?BODYCONTENT)
+                                                          ?
+                                                    )
+                                                    ?
+                                                |   ?
+                                                    (body.?,?BODYCONTENT)
+                                                    ?
+                                                |   ?
+                                                    (body.?)
+                                                    ?BODYCONTENT
+                                                    (.body.)
+                                                    ?
+                                                )
+                                            | 
+                                            )
+                                          & !BODYCONTENT
+                                        | ( ab
+                                          .   
+                                            ,     !SPANGRP:
+                                                & "empty body/no text"
+                                              | 
+                                          )
+                                    )
+                                    \n
+                                    !SPANGRP
+                              )
+                        )
+                    : ?ret
+                  & !ret
+              )
+            & ( compatibleAttributes
+              =   a b c
+                .   !arg:(?a.?b)
+                  & "a: template attributes, with or without values. b: attributes in tree element.
+                           If a template attribute occurs in the element, attribute values must agree."
+                  &     map
+                      $ ( ( 
+                          =   
+                            .     ( !arg:@
+                                  | !b:? !arg ?
+                                  |   !arg:(?c.?)
+                                    & !b:~(? (!c.?) ?)
+                                  )
+                                & 
+                              | !arg
+                          )
+                        . !a
+                        )
+                    : 
+                  &     map
+                      $ ( ( 
+                          =   
+                            .     !arg:(?c.?)
+                                & !b:~(? (!c.?) ?)
+                                & !arg
+                              | 
+                          )
+                        . !a
+                        )
+                      !b
+              )
+            & ( ExtractAttributesFromContent
+              =   templateAtts atts val
+                .   !arg:(?templateAtts.?atts,?val)
+                  &   log
+                    $ ( ExtractAttributesFromContent
+                        templateAtts
+                        !templateAtts
+                        atts
+                        !atts
+                        val
+                        !val
+                      )
+                  &   map
+                    $ ( ( 
+                        =   A Z a ref z n status ver current
+                          .   (   !arg:(?.?)
+                                & "Attribute with predefined value."
+                                & ( !atts:?A !arg ?Z
+                                  |   !arg:(?a.?)
+                                    & (   !atts:?A (!a.?) ?Z
+                                        & !A !arg !Z
+                                      | !atts !arg
+                                      )
+                                  )
+                              |   ( !atts:?A (!arg.?current) ?Z
+                                  |   !atts:?A
+                                    & :?Z:?current
+                                  )
+                                &   !A
+                                    (   !arg:(ref|target)
+                                      & (   @( !val
+                                             :   ?a
+                                                 "@"
+                                                 ?ref
+                                                 ( (" " ?|)
+                                                 : ?z
+                                                 )
+                                             )
+                                          & str$(!a !z):?val
+                                          & (!arg.!ref)
+                                        | 
+                                        )
+                                    |   !arg:unit
+                                      & ( !arg
+                                        .     @(!val:? "#" ? " " ?z)
+                                            & trim$!z
+                                          | !current
+                                        )
+                                    |   !arg:quantity
+                                      & ( !arg
+                                        .     @( !val
+                                               :   ?a
+                                                   "#"
+                                                   ~/#?n
+                                                   ( (~#%@ ?|)
+                                                   : ?z
+                                                   )
+                                               )
+                                            & str$(!a !z):?val
+                                            & !n
+                                          | !current
+                                        )
+                                    |   !arg:n
+                                      & (   @( !val
+                                             :   ?a
+                                                 "#"
+                                                 ~/#?n
+                                                 ( (~#%@ ?|)
+                                                 : ?z
+                                                 )
+                                             )
+                                          & str$(!a !z):?val
+                                          & (!arg.!n)
+                                        | 
+                                        )
+                                    |   !arg:when
+                                      & (!arg.!val)
+                                    |   !arg:status
+                                      & (   @( !val
+                                             :   ?
+                                                 "creativecommons.org"
+                                                 ?
+                                                 by
+                                                 ?status
+                                                 "/"
+                                                 ?ver
+                                                 "/"
+                                                 ?
+                                             )
+                                          & (!arg.str$("free:BY" upp$!status "-" !ver))
+                                        | !current:
+                                        | (!arg.!current)
+                                        )
+                                    | 
+                                    )
+                                    !Z
+                              )
+                            : ?atts
+                        )
+                      . !templateAtts
+                      )
+                  & !atts
+              )
+            & ( addOrInsertOneOrMoreElements
+              =     PlaceInHeader val tree A Z a z l1 l2 ll at multi atts
+                  , subPlaceInHeader addOrReplace place subtree templateAtts
+                .   !arg:(?addOrReplace.?arg:?PlaceInHeader.?val.?tree)
+                  & (   !PlaceInHeader:%?place ?subPlaceInHeader
+                      &   (   ( !place:(,?place)
+                              | !subPlaceInHeader:
+                              )
+                            & n
+                          | 1
+                          )
+                        : ?multi
+                      & (   !place:(?place.?templateAtts)
+                          & "Succeed if the first element in PlaceInHeader specifies attribute(s).
+                                  Special cases:
+                                  xml:lang Every odd line in text area is first language in UIlanguage variable,
+                                           every even line is the second language.
+                                  ref      Look for @<reference> in value (!val)
+                                  n        Look for # followed by integer number
+                                  date     Input of type date
+                                  ISO639   Language picker
+                                  "
+                          & (   !templateAtts:?a ("xml:lang":?at) ?z
+                              & "We need to create up to two subtrees in the current tree before handling
+                                       the other template attributes (if any)."
+                              & !a !z:?templateAtts
+                              & (   !val:@(?:?l1 \n ?l2)
+                                  & trim$!l1:?l1
+                                  & trim$!l2:?l2
+                                | !val:?l1&:?l2
+                                )
+                              & !l1 !l2:?ll
+                              & "Remove all nodes with not matching xml:lang
+                                 (Is that necessary?)"
+                              &   whl
+                                ' (   !tree
+                                    :   ?A
+                                        ( !place
+                                        .     ?
+                                              (!at.[%(!UIlanguage:~(? !sjt ?)))
+                                              ?
+                                          , ?
+                                        )
+                                        ?Z
+                                  & !A !Z:?tree
+                                  )
+                              & "create the nodes and put them in place in the tree"
+                              &   map
+                                $ ( ( 
+                                    =   A Z l q
+                                      .     !ll:%?l ?ll
+                                          & "Decide where to put language node."
+                                          & !tree:?A
+                                          &   
+                                            : ?Z
+                                            : ?a
+                                            : ?z
+                                            : ?subtree
+                                          & (     !tree
+                                                : (   ?A
+                                                      ( !place
+                                                      .   ?a (!at.!arg) ?z
+                                                        , ?subtree
+                                                      )
+                                                      ( ?Z
+                                                      & (     !addOrReplace
+                                                            : add
+                                                          & !multi:n
+                                                          & "Existing node must not be overwritten. Include it in A."
+                                                          & !tree:?A !Z
+                                                          &   
+                                                            : ?a
+                                                            : ?z
+                                                            : ?subtree
+                                                        |       compatibleAttributes
+                                                              $ (!templateAtts.!a !z)
+                                                            : ?z
+                                                          & :?a
+                                                        )
+                                                      )
+                                                  |     (   ?
+                                                            ( !place
+                                                            .       ?a
+                                                                    (!at.?)
+                                                                    ?z
+                                                                &     compatibleAttributes
+                                                                    $ ( !templateAtts
+                                                                      . !a !z
+                                                                      )
+                                                                  : ?z
+                                                                & :?a
+                                                              , ?
+                                                            )
+                                                        : ?A
+                                                        )
+                                                        ?Z
+                                                    & :?subtree
+                                                  |     (   ?
+                                                            ( !place
+                                                            .     ?
+                                                                  (!at.?)
+                                                                  ?
+                                                              , ?
+                                                            )
+                                                        : ?A
+                                                        )
+                                                        ?Z
+                                                    &   
+                                                      : ?a
+                                                      : ?z
+                                                      : ?subtree
+                                                  )
+                                              & "Now we have a place somewhere inside tree
+                                                       to put the new or updated node"
+                                            | "New node to be added after existing tree."
+                                            )
+                                          &     !A
+                                                (   !subtree:@
+                                                  & (     !a !z
+                                                        :   ?
+                                                            (quantity.?q)
+                                                            ?
+                                                      & (   !q:#
+                                                          & ( !place
+                                                            .     (!at.!arg)
+                                                                    ExtractAttributesFromContent
+                                                                  $ ( !templateAtts
+                                                                    .   !a !z
+                                                                      , !l
+                                                                    )
+                                                              , str$(!q " " !l)
+                                                            )
+                                                        | 
+                                                        )
+                                                    | ( !place
+                                                      .     (!at.!arg)
+                                                              ExtractAttributesFromContent
+                                                            $ ( !templateAtts
+                                                              . !a !z,!l
+                                                              )
+                                                        , !l
+                                                      )
+                                                    )
+                                                | ( !place
+                                                  .     (!at.!arg)
+                                                          ExtractAttributesFromContent
+                                                        $ ( !templateAtts
+                                                          . !a !z,!l
+                                                          )
+                                                    ,   addOrInsertOneOrMoreElements
+                                                      $ ( !addOrReplace
+                                                        . !subPlaceInHeader
+                                                        . !l
+                                                        . !subtree
+                                                        )
+                                                  )
+                                                )
+                                                !Z
+                                            : ?tree
+                                        | "No subtree if no input for second language available"
+                                    )
+                                  . !UIlanguage
+                                  )
+                              & !tree
+                            |   "There is no xml:lang. What about other elements in templateAtts?"
+                              & (   !addOrReplace:replace
+                                  & !tree:?A (!place.?atts,?subtree) ?Z
+                                  & "Node found"
+                                  &   !A
+                                      ( !place
+                                      .     ExtractAttributesFromContent
+                                          $ (!templateAtts.!atts,!subtree !val)
+                                        ,   addOrInsertOneOrMoreElements
+                                          $ (!addOrReplace.!subPlaceInHeader.!val.!subtree)
+                                      )
+                                      !Z
+                                |   "Node NOT found. Or node must be added, not replaced."
+                                  &   !tree
+                                      ( !place
+                                      .     ExtractAttributesFromContent
+                                          $ (!templateAtts.,!val)
+                                        ,   addOrInsertOneOrMoreElements
+                                          $ (!addOrReplace.!subPlaceInHeader.!val.)
+                                      )
+                                )
+                            )
+                        |   "No template attributes here."
+                          & !tree:?A
+                          & :?Z:?a:?subtree
+                          & (   !tree:?A (!place.?a,?subtree) ?Z
+                              & (   !addOrReplace:add
+                                  & !multi:n
+                                  & "Existing node must not be overwritten. Include it in A."
+                                  & !tree:?A !Z
+                                  & :?a:?subtree
+                                | 
+                                )
+                              & "Now we have a place somewhere inside tree to put the new or updated node"
+                            | "New node to be added after existing tree."
+                            )
+                          &   !A
+                              ( !place
+                              .   !a
+                                ,   addOrInsertOneOrMoreElements
+                                  $ (!addOrReplace.!subPlaceInHeader.!val.!subtree)
+                              )
+                              !Z
+                        )
+                    |   "template has come to end. Add value to any content (tree perhaps) found here"
+                      & !tree !val
+                    )
+              )
+            & ( automaticFields
+              =   autogenerated PlaceInHeader Metadata
+                .   !arg:(?autogenerated.?Metadata)
+                  &   map
+                    $ ( ( 
+                        =   
+                          .   !arg:(?,?arg)
+                            &   map
+                              $ ( ( 
+                                  =   PlaceInHeader
+                                    .     !arg
+                                        : ( ?
+                                          . ?
+                                          . ? a ?
+                                          . ?
+                                          . ?PlaceInHeader
+                                          . ?
+                                          . ?
+                                          . ?
+                                          )
+                                      &     addOrInsertOneOrMoreElements
+                                          $ (replace.!PlaceInHeader."-".!autogenerated)
+                                        : ?autogenerated
+                                  )
+                                . !arg
+                                )
+                        )
+                      . !Metadata
+                      )
+                  & !autogenerated
+              )
+            & ( inject
+              =     userProvidedMetadata autogenerated
+                  , Required/optional/automatic val Line Line2 tree
+                  , PlaceInHeader id remove Metadata
+                .   ( comp
+                    =   
+                      .     map
+                          $ ( ( 
+                              =   
+                                .       !sjt
+                                      : ( ? (!arg.?) ?
+                                        | ? !arg ?
+                                        )
+                                    & 
+                                  | !arg
+                              )
+                            . !arg
+                            )
+                        : 
+                    )
+                  & ( remove
+                    =   PlaceInHeader tree subtree,place A Z a tattval
+                      .   !arg:(?PlaceInHeader.?tree)
+                        & (   !PlaceInHeader:%?place ?PlaceInHeader
+                            & (   !PlaceInHeader:
+                                & (   !place:(?place.?tattval)
+                                    &   whl
+                                      ' (   !tree
+                                          : ?A (!place.comp$!tattval,?) ?Z
+                                        & !A !Z:?tree
+                                        )
+                                  |   whl
+                                    ' ( !tree:?A (!place.?,?) ?Z
+                                      & !A !Z:?tree
+                                      )
+                                  )
+                                & !tree
+                              |   (   !place:(?place.?tattval)
+                                    &   !tree
+                                      :   ?A
+                                          (!place.comp$!tattval:?a,?subtree)
+                                          ?Z
+                                  | !tree:?A (!place.?a,?subtree) ?Z
+                                  )
+                                &   !A
+                                    (!place.!a,remove$(!PlaceInHeader.!subtree))
+                                    remove$(!place !PlaceInHeader.!Z)
+                              )
+                          | !tree
+                          )
+                    )
+                  & "inject body starts here"
+                  & !arg:(?userProvidedMetadata.?autogenerated.?Metadata)
+                  & readTable$UIlanguage
+                  &   whl
+                    ' ( !userProvidedMetadata:(?id.?val) ?userProvidedMetadata
+                      & trim$!val:?val
+                      & (     !Metadata
+                            :   ?
+                                ( ?
+                                ,   ?
+                                    ( !id
+                                    . ?
+                                    . ?Required/optional/automatic
+                                    . ?
+                                    . ?PlaceInHeader
+                                    . ?
+                                    . ?
+                                    . ?
+                                    )
+                                    ?
+                                )
+                                ?
+                          &   (     !Required/optional/automatic
+                                  : ( ? r ?
+                                    | ? o ?&!val:~
+                                    )
+                                &   addOrInsertOneOrMoreElements
+                                  $ (replace.!PlaceInHeader.!val.!autogenerated)
+                              |   !val:
+                                &   !Required/optional/automatic
+                                  : ? (o|zeroOrMore) ?
+                                  : ~(? a ?)
+                                &   remove$(!PlaceInHeader.!autogenerated)
+                                  : ?autogenerated
+                              |     !Required/optional/automatic
+                                  : ( ? oneOrMore ?
+                                    |   ? zeroOrMore ?
+                                      & !val:~
+                                    )
+                                & ( 
+                                  |   remove$(!PlaceInHeader.!autogenerated)
+                                    : ?autogenerated
+                                  )
+                                &   whl
+                                  ' ( (     !PlaceInHeader
+                                          : ? (?.? "xml:lang" ?) ?
+                                        & @( !val
+                                           : (   ?Line \n ?Line2 \n ?val
+                                               &   str$(trim$!Line \n trim$!Line2)
+                                                 : ?Line
+                                             |   ?Line
+                                               & :?val
+                                               & trim$!Line:?Line
+                                             )
+                                           )
+                                      |   @( !val
+                                           : ( ?Line \n ?val
+                                             |   ?Line
+                                               & :?val
+                                             )
+                                           )
+                                        & trim$!Line:?Line
+                                      )
+                                    & ( !Line:
+                                      |     addOrInsertOneOrMoreElements
+                                          $ (add.!PlaceInHeader.!Line.!autogenerated)
+                                        : ?autogenerated
+                                      )
+                                    & !val:~
+                                    )
+                                & !autogenerated
+                              )
+                            : ?autogenerated
+                        | 
+                        )
+                      )
+                  & !autogenerated
               )
             & ( replList
               =   headstuff el nw
@@ -14680,8 +14711,28 @@ function main2(evt) {
                       )
               )
             & ( computeTagUsage
-              =   occurs withId tagUsage n name m atts
+              =   occurs withId tagUsage n name m atts TagUsage
                 .   text:?occurs
+                  & ( TagUsage
+                    =   e a c
+                      .   map
+                        $ ( ( 
+                            =   
+                              .     !arg:(?e.?a,?c)
+                                  & !e+!occurs:?occurs
+                                  & (     !a
+                                        :   ?
+                                            ("xml:id"|id.?)
+                                            ?
+                                      & !e+!withId:?withId
+                                    | 
+                                    )
+                                  & TagUsage$!c
+                                | 
+                            )
+                          . !arg
+                          )
+                    )
                   & :?withId
                   & TagUsage$!arg
                   & :?tagUsage
@@ -14698,12 +14749,32 @@ function main2(evt) {
                   & !tagUsage
               )
             & ( updateHead
-              =   head tei htap us ws ss
-                .   !arg:(?htap.?head.?tei)
+              =   head body htap us ws ss Extent
+                .   ( Extent
+                    =   n recur what
+                      .   0:?n
+                        & !arg:(?what.?arg)
+                        &     
+                            ' ( S
+                              .     !arg:? ($what.?) ?
+                                  &   whl
+                                    ' ( !arg:? ($what.?) ?arg
+                                      & 1+!n:?n
+                                      )
+                                |   whl
+                                  ' ( !arg:? (?.?,?S) ?arg
+                                    & recur$!S
+                                    )
+                              )
+                          : (=?recur)
+                        & recur$!arg
+                        & !n
+                    )
+                  & !arg:(?htap.?head.?body)
                   & -1:?us:?ws:?ss
                   &   map
                     $ ( ( 
-                        =   e a c A Z la n unit
+                        =   e a c A Z la n unit M
                           .     !arg:(?e.?a,?c)
                               & (   !e:measure
                                   & !htap:extent fileDesc
@@ -14713,22 +14784,31 @@ function main2(evt) {
                                     : ? (unit.?unit) ?
                                   & (     (   !unit:words
                                             & ( !ws:~<0
-                                              | Extent$(w.!tei):?ws
+                                              | Extent$(w.!body):?ws
                                               )
                                           |   !unit:segments
                                             & ( !ss:~<0
-                                              | Extent$(s.!tei):?ss
+                                              | Extent$(s.!body):?ss
                                               )
                                           |   !unit:speeches
                                             & ( !us:~<0
-                                              | Extent$(u.!tei):?us
+                                              | Extent$(u.!body):?us
                                               )
                                           )
                                         : ?n
                                       & !a:?A (quantity.?) ?Z
                                       & !A (quantity.!n) !Z:?a
                                       & (   !n:>0
-                                          & (!e.!a,str$(!n " " !c))
+                                          & ( !e
+                                            .   !a
+                                              ,   str
+                                                $ ( !n
+                                                    " "
+                                                    ( !c:~"-"
+                                                    | !unit
+                                                    )
+                                                  )
+                                            )
                                         | 
                                         )
                                     | !arg
@@ -14736,7 +14816,7 @@ function main2(evt) {
                                 | ( !e
                                   .   !a
                                     ,     !e:tagsDecl
-                                        & replList$(!c.tagUsage.computeTagUsage$!tei)
+                                        & replList$(!c.tagUsage.computeTagUsage$!body)
                                       |   !e:resp
                                         & "Data retrieval, linguistic annotation, and conversion to TEI"
                                       |   !e:title
@@ -14745,7 +14825,7 @@ function main2(evt) {
                                             & str$(!A "[" !M ".ana]" !Z)
                                           | !c
                                           )
-                                      | updateHead$(!e !htap.!c.!tei)
+                                      | updateHead$(!e !htap.!c.!body)
                                   )
                                 )
                             | !arg
@@ -14753,6 +14833,8 @@ function main2(evt) {
                       . !head
                       )
               )
+            & log$"readTable$UIlanguage"
+            & readTable$UIlanguage
             & readTable$jobs
             &   
               : ?TITLE
@@ -14771,26 +14853,6 @@ function main2(evt) {
               $ (str$("doneJob:runningThreads:" !runningThreads " maxRunningThreads:" !maxRunningThreads))
             & str$(!DATE "-" !JobNr "-" !jobID):?CTBID
             & (readTable$CTBs|:?CTBs)
-            & ( Extent
-              =   n recur what
-                .   0:?n
-                  & !arg:(?what.?arg)
-                  &     
-                      ' ( S
-                        .     !arg:? ($what.?) ?
-                            &   whl
-                              ' ( !arg:? ($what.?) ?arg
-                                & 1+!n:?n
-                                )
-                          |   whl
-                            ' ( !arg:? (?.?,?S) ?arg
-                              & recur$!S
-                              )
-                        )
-                    : (=?recur)
-                  & recur$!arg
-                  & !n
-              )
             & readTable$Uploads
             & readTable$facets
             & :?toolURL
@@ -14894,7 +14956,7 @@ function main2(evt) {
                 & "If a tool produces more than 1 spanGrp, it is obliged to wrap the spanGrps in another element.
                    If the TEI doc has an empty teiHeader, it has the function of a wrapper."
                 & Filename$!SPANGRPfil:?SPANGRPfilWithMetadata
-                &     tekstXML
+                &     TEIwrapData
                     $ ( !DATE|
                       . !EMAIL
                       . !CTBID
@@ -14909,64 +14971,65 @@ function main2(evt) {
                       . !LANGUAGE
                       )
                   : ?autogenerated
-                &   put
-                  $ (   str
-                      $ ( toML
-                        $ (   (   readTable$jobAbout
-                                &   !jobAbout
-                                  :   ?
-                                      ( !JobNr
-                                      .   ?
-                                          (userProvidedMetadata.?userProvidedMetadata)
-                                          ?
-                                      )
-                                      ?
-                                & (     !userProvidedMetadata
-                                      : ?A (fpi.?) ?Z
-                                    & !A !Z:?userProvidedMetadata
-                                  | 
-                                  )
-                                & inject$(!userProvidedMetadata.!autogenerated.!MetaDataType)
-                              | !autogenerated
-                              )
-                            : ?AUTOGENERATED
-                          & (     !AUTOGENERATED
-                                :   ?A
-                                    ( TEI
-                                    .   ?TEIat
-                                      ,   ?B
-                                          (teiHeader.?teiHeaderatt,?head)
-                                          ?C
-                                          ( text
-                                          .   ?textat
-                                            , ?D (body.?bodyat,?tei) ?E
-                                          )
-                                          ?F
-                                    )
-                                    ?Z
-                              & updateHead$(.!head.!tei):?head
-                              &     !A
-                                    ( TEI
-                                    .   !TEIat
-                                      ,   !B
-                                          (teiHeader.!teiHeaderatt,!head)
-                                          !C
-                                          ( text
-                                          .   !textat
-                                            , !D (body.!bodyat,!tei) !E
-                                          )
-                                          !F
-                                    )
-                                    !Z
-                                : ?AUTOGENERATED
-                            | 
-                            )
-                          & !AUTOGENERATED
+                & (   readTable$jobAbout
+                    &   !jobAbout
+                      :   ?
+                          ( !JobNr
+                          .   ?
+                              (userProvidedMetadata.?metadataType.?userProvidedMetadata)
+                              ?
                           )
-                        )
-                    , !SPANGRPfilWithMetadata
-                    , NEW
-                    )
+                          ?
+                    & (   !metadataType:DK-CLARIN-metadata
+                        & !autogenerated:?A (TEI.?B,?C) ?D
+                        &     !A
+                              ( TEI
+                              .     ( "xmlns:schemaLocation"
+                                    . "https://www.clarin.dk/schemas/tei/TEIDKCLARIN_ANNO/xml.xsd"
+                                    )
+                                    !B
+                                , !C
+                              )
+                              !D
+                          : ?autogenerated
+                      | 
+                      )
+                    & (   !userProvidedMetadata:?A (fpi.?) ?Z
+                        & !A !Z:?userProvidedMetadata
+                      | 
+                      )
+                    & readTable$!metadataType:?Metadata
+                    & automaticFields$(!autogenerated.!Metadata):?autogenerated
+                    & (     !autogenerated
+                          :   ?A
+                              ( TEI
+                              .   ?TEIat
+                                ,   ?B
+                                    (teiHeader.?teiHeaderatt,?head)
+                                    ?C
+                                    (text.?textat,?D (body.?bodyat,?body) ?E)
+                                    ?F
+                              )
+                              ?Z
+                        & updateHead$(.!head.!body):?head
+                        &     !A
+                              ( TEI
+                              .   !TEIat
+                                ,   !B
+                                    (teiHeader.!teiHeaderatt,!head)
+                                    !C
+                                    (text.!textat,!D (body.!bodyat,!body) !E)
+                                    !F
+                              )
+                              !Z
+                          : ?autogenerated
+                      | 
+                      )
+                    &   inject$(!userProvidedMetadata.!autogenerated.!Metadata)
+                      : ?autogenerated
+                  | 
+                  )
+                & put$(str$(toML$!autogenerated),!SPANGRPfilWithMetadata,NEW)
                 & !SPANGRPfilWithMetadata
               | 
               )
@@ -17305,7 +17368,7 @@ function main2(evt) {
             )
           & ( jobMetaData
             =     userProvidedMetadata Metadata Heading Fields
-                , listOfFields Val XPath workflow
+                , listOfFields Val XPath workflow metadataType
                 , ID TextInUI Required Control Place
                 , Notes HelpText Pattern URL type
               .     readTable$jobAbout
@@ -17313,7 +17376,9 @@ function main2(evt) {
                         :   ?
                             ( !arg
                             .   ? (human.?workflow) ?
-                              : ? (userProvidedMetadata.?userProvidedMetadata) ?
+                              :   ?
+                                  (userProvidedMetadata.?metadataType.?userProvidedMetadata)
+                                  ?
                             )
                             ?
                       &   (   !MetaDataType:(|none)
@@ -21197,31 +21262,91 @@ function main2(evt) {
                     .   
                       ,   ( td
                           .   
+                            , ( strong
+                              .   
+                                ,     localized
+                                    $ ( "If output is TEI P5 encoded:"
+                                        "Hvis outputtet er i TEI P5 format:"
+                                      )
+                                    ↳
+                              )
+                          )
+                          ( td
+                          .   
+                            ,     localized
+                                $ ( "You can choose to enter metadata that will enter the TEI header of the output."
+                                    "Du kan vælge at udfylde metadata som vil blive del af TEI headeren af outputtet."
+                                  )
+                                (br.,)
+                                  localized
+                                $ ( "Alternatively, the output can inherit metadata from recently created TEI output."
+                                    "Alternativt kan outputtet arve metadata fra fornylig skabt TEI output."
+                                  )
+                          )
+                    )
+                    ( tr
+                    .   
+                      ,   ( td
+                          .   
                             ,   localized
                               $ ( "Form for entering TEI metadata:"
                                   "Formular til udfyldelse af TEI-metadata:"
                                 )
                           )
-                          ( td
+                          ( table
                           .   
-                            ,   makeSelectFormField
-                              $ ( 
-                                . metadataformat
-                                .   ( desc
-                                    .   localized
-                                      $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
-                                          "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
+                            , ( tr
+                              .   
+                                ,   ( td
+                                    .   
+                                      ,   makeSelectFormField
+                                        $ ( 
+                                          . metadataformat
+                                          .   ( desc
+                                              .   localized
+                                                $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
+                                                    "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
+                                                  )
+                                              )
+                                              ( options
+                                              .   makeOptionList
+                                                $ (   ( localized$("No thanks" "Nej tak")
+                                                      . none
+                                                      )
+                                                      (ParlaMint.ParlaMintMetadata)
+                                                      (DK-CLARIN.DK-CLARIN-metadata)
+                                                  . 
+                                                  )
+                                              )
+                                          )
+                                    )
+                                    ( td
+                                    .   
+                                      ,   localized
+                                        $ ( "Name of previous output:"
+                                            "Navnet på en tidligere output:"
+                                          )
+                                    )
+                                    ( td
+                                    .   
+                                      , ( input
+                                        .     ( tabindex
+                                              .   1+!tabind:?tabind
+                                                & 0
+                                              )
+                                              (type.text)
+                                              (name.mail2)
+                                              ( title
+                                              .   localized
+                                                $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
+                                                    "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
+                                                  )
+                                              )
+                                              (size.40)
+                                          , 
                                         )
                                     )
-                                    ( options
-                                    .   makeOptionList
-                                      $ (   (localized$("No thanks" "Nej tak").none)
-                                            (ParlaMint.ParlaMintMetadata)
-                                            (DK-CLARIN.TEImetadata)
-                                        . 
-                                        )
-                                    )
-                                )
+                              )
                           )
                     )
             )
@@ -21322,7 +21447,6 @@ function main2(evt) {
                 & ( linksAndLinked
                   =   stable exr L itmgrp id Ofields
                     .   !arg:(?stable.?exr.?Ofields)
-                      & lst$(stable,path$stable,NEW,BIN,RAW,WYD)
                       & !exr:?itmgrp
                       & (!itmgrp:";" ?itmgrp|)
                       & (   !stable:%? [?L
