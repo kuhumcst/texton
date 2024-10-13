@@ -9704,10 +9704,8 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( BookMark
       =   bm err
         .   !arg:(?bm.?err)
-          &   submit$(localized$!Bookmark)
-              (br.,)
-                makeTextFormField
-              $ ( localized$("Name for this workflow" "Navn for denne arbejdsgang")
+          &     makeTextFormField
+              $ ( localized$("Bookmark name for this workflow:" "Bogmærkenavn for denne arbejdsgang:")
                 . bm
                 .   (val.!bm)
                     ( desc
@@ -9717,12 +9715,35 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                     )
                     (size.40)
-                    (required.span.(class.requiblue),"*")
                 )
               ( !bm:
               | !err:&"(" localized$(saved gemt) ")"
               | localized$("Already in use!" "Allerede brugt!")
               )
+              (br.,)
+              submit$(localized$!Bookmark)
+      )
+      ( MAIL2
+      =   mail2 struct
+        .     !arg:(?mail2.?struct)
+            & canConsumeMetadata$!struct
+            & (!mail2|:?mail2)
+            &   makeTextFormField
+              $ (   localized
+                  $ ( "Reuse TEI metadata from recently created output file:"
+                      "Genbrug TEI metadata fra lidt tidligere skabt outputfil:"
+                    )
+                . mail2
+                .   (val.!mail2)
+                    ( desc
+                    .   localized
+                      $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
+                          "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
+                        )
+                    )
+                    (size.40)
+                )
+          | 
       )
       ( UserMsg
       =   fb err
@@ -12666,11 +12687,11 @@ function main2(evt) {
               ,   ( div
                   .   (style."width: 30%; float: left;")
                     ,   ( div
-                        .   (style."height:20vh;")
+                        .   (style."height:30vh;")
                           ,   !formfields
                               (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
                         )
-                        (div.(style."overflow-y:auto; height:80vh;"),!visfields)
+                        (div.(style."overflow-y:auto; height:70vh;"),!visfields)
                   )
                   ( div
                   .   (style."margin-left: 30%; overflow-y:auto; height:100vh;")
@@ -12714,29 +12735,20 @@ function main2(evt) {
  * Called from chosenworkflow.java
  */"
       ( chosenworkflow
-      =     Tool item parms Items
-          , val mail2 ERR
-          , Submit
-          , JobStack JobNr presels
-          , errors batch
-          , jobIDoffset subjobs
-          , nth BodyContainer PIPE
-          , makejobstack
-          , ApplyThePipelineToTheInput
-          , ShowOnlyTheCurrentPipe AddMetadata
-          , "The user has selected a workflow."
-          , errorInMetadata
-          , MetadataInParms
-          , rememberMetadata SVG
+      =     Tool item parms Items val mail2 ERR Submit JobStack JobNr
+          , presels errors batch jobIDoffset subjobs nth BodyContainer PIPE
+          , makejobstack ApplyThePipelineToTheInput ShowOnlyTheCurrentPipe
+          , AddMetadata "The user has selected a workflow." errorInMetadata
+          , MetadataInParms rememberMetadata SVG
         .   ( ShowOnlyTheCurrentPipe
-            =   formFields struct nth bm visfields
-              .   !arg:(?struct.?nth.?bm.?err)
+            =   formFields struct nth bm visfields mail2
+              .   !arg:(?struct.?nth.?bm.?err.?mail2)
                 & makeWorkflowVisualisation$!struct:(?visfields.?SVG)
                 &   ( !nth:#<1&
-                    |   (br.,)
+                    |   MAIL2$(!mail2.!struct)
+                        BookMark$(!bm.!err)
                         submit$Submit
                         submit$(localized$!Dryrun)
-                        BookMark$(!bm.!err)
                     )
                   : ?formFields
                 & ( !formFields !visfields:
@@ -13441,13 +13453,13 @@ function main2(evt) {
                       & !arg
                   )
                 & ( whichButton
-                  =   bm Submit ViewDetails struct MetaDataType
-                    .   !arg:(?bm.?Submit.?ViewDetails.?struct)
+                  =   bm Submit ViewDetails struct MetaDataType mail2
+                    .   !arg:(?bm.?Submit.?ViewDetails.?struct.?mail2)
                       & (     !Submit
                             : ( !ViewDetails (" - " ?nth|)
                               | @(?:(prev|next) ?)
                               )
-                          & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm.)
+                          & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm..!mail2)
                         |   localized$!Bookmark:!Submit
                           & getDetailedSource$!struct:?sources
                           & getDetailedGoal$!struct:?goals
@@ -13474,6 +13486,7 @@ function main2(evt) {
                                   & !bm
                                 | 
                               . !err
+                              . !mail2
                               )
                         |   !Submit:Submit
                           & (     !parms
@@ -13554,7 +13567,7 @@ function main2(evt) {
                                    |notFulfillable
                                    )"
                     & (   !returnCode:allRight
-                        & whichButton$(.!Submit.!ViewDetails.!struct)
+                        & whichButton$(.!Submit.!ViewDetails.!struct.!mail2)
                       | UnexpectedReturnCode$!returnCode
                       )
                   |     !wrkflws
@@ -13564,7 +13577,7 @@ function main2(evt) {
                           . ?struct
                           )
                           ?
-                    & whichButton$(!nth.!Submit.!ViewDetails.!struct)
+                    & whichButton$(!nth.!Submit.!ViewDetails.!struct.!mail2)
                   |   NotFulfillable
                     $ ( !msg:~|"No workflows found"
                       . !sources
@@ -13577,6 +13590,11 @@ function main2(evt) {
           & log$chosenworkflow-SINGLEWORKFLOWLOGJE
           & :?PIPE
           & (DATE.theDate$) !arg:?arg
+          & log$(chosenworkflow arg !arg)
+          & ( !arg:? (mail2.?mail2) ?
+            | :?mail2
+            )
+          & log$(mail2 !mail2)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?Tool.?parms.?BodyContainer)
           & (   !Items:
@@ -19808,8 +19826,11 @@ function main2(evt) {
           , ZoomInOrShowWorkflows fintool SVG
           , pipes pps rwl superset updatedArg userInput vs
         .   ( ShowAllPipes
-            =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct
+            =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct mail2
               .   !arg:(?hiddenData.?reorderedworkflowlist.?topologicalOrderedTools)
+                & ( !hiddenData:? (mail2.?mail2) ?
+                  | :?mail2
+                  )
                 &   str
                   $ ( 200~~~
                         toML
@@ -19886,9 +19907,10 @@ function main2(evt) {
                                     )
                                       form
                                     $ ( dialog|chosenworkflow
-                                      .   submit$Submit
-                                          submit$(localized$!Dryrun)
+                                      .   MAIL2$(!mail2.!struct)
                                           BookMark$(.)
+                                          submit$Submit
+                                          submit$(localized$!Dryrun)
                                           (|helplink$)
                                             makeHiddenFields
                                           $ ((dialog.chosenworkflow) !hiddenData)
