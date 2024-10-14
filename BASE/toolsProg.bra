@@ -9726,43 +9726,60 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       ( MAIL2
       =   mail2 1st 2nd struct
         .     !arg:(?mail2,?1st,?2nd.?struct)
-            & log$(MAIL2 2nd !2nd)
             & canConsumeMetadata$!struct
             & (!mail2|:?mail2)
-            &     makeSelectFormField
-                $ ( localized$("1st metadata language:" "1. metadatassprog:")
-                  . 1st
-                  . options
-                  .   makeOptionList
-                    $ ( !linguae
-                      .     !linguae:? (?.!1st.?) ?
-                          & !1st
-                        |     (!UIlanguage|readTable$UIlanguage)
-                            : %@?1st ?
-                          & log$(1st !1st)
-                          & !1st
-                        | 
-                      )
-                  )
-                  makeSelectFormField
-                $ ( localized$("2nd metadata language:" "2. metadatassprog:")
-                  . 2nd
-                  . options
-                  .   makeOptionList
-                    $ ( !linguae
-                      .     !linguae:? (?.!2nd.?) ?
-                          & !2nd
-                        |     (!UIlanguage|readTable$UIlanguage)
-                            : %@?2nd ?
-                          & log$(2ndOverruled !2nd)
-                          & !2nd
-                        | 
-                      )
-                  )
+            &   (h3.,localized$("Languages in TEI header" "Sprog i TEI-header"))
+                ( table
+                .   
+                  , ( tr
+                    .   
+                      ,   ( td
+                          .   
+                            ,   makeSelectFormField
+                              $ ( localized$("1st metadata language" "1. metadatassprog")
+                                . 1st
+                                . options
+                                .   makeOptionList
+                                  $ ( !linguae
+                                    .       !linguae
+                                          : ? (?.!1st.?) ?
+                                        & !1st
+                                      |     ( !UIlanguage
+                                            | readTable$UIlanguage
+                                            )
+                                          : %@?1st ?
+                                        & !1st
+                                      | 
+                                    )
+                                )
+                          )
+                          ( td
+                          .   
+                            ,   makeSelectFormField
+                              $ ( localized$("2nd metadata language" "2. metadatassprog")
+                                . 2nd
+                                . options
+                                .   makeOptionList
+                                  $ ( !linguae
+                                    .       !linguae
+                                          : ? (?.!2nd.?) ?
+                                        & !2nd
+                                      |     ( !UIlanguage
+                                            | readTable$UIlanguage
+                                            )
+                                          : %@?2nd ?
+                                        & !2nd
+                                      | 
+                                    )
+                                )
+                          )
+                    )
+                )
+                (h3.,localized$("Reuse TEI header metadata" "Genbrug TEI-header-metadata"))
                   makeTextFormField
                 $ (   localized
-                    $ ( "Reuse TEI metadata from recently created output file:"
-                        "Genbrug TEI metadata fra lidt tidligere skabt outputfil:"
+                    $ ( "Enter the name of a recently created output file:"
+                        "Indsæt navnet på en lidt tidligere skabt outputfil:"
                       )
                   . mail2
                   .   (val.!mail2)
@@ -12711,18 +12728,19 @@ function main2(evt) {
           & !SVG
       )
       ( workflowAsTextAndGraph
-      =   visfields SVG formfields
-        .   !arg:(?formfields.?visfields.?SVG)
+      =   visfields SVG formfields mail2stuff
+        .   !arg:(?formfields.?visfields.?mail2stuff.?SVG)
           & ( div
             .   (style."width: 100%; overflow: hidden;")
               ,   ( div
                   .   (style."width: 30%; float: left;")
-                    ,   ( div
-                        .   (style."height:30vh;")
-                          ,   !formfields
+                    ,   (div.(style."height:15vh;"),!formfields)
+                        ( div
+                        .   (style."overflow-y:auto; height:85vh;")
+                          ,   !mail2stuff
                               (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
+                              !visfields
                         )
-                        (div.(style."overflow-y:auto; height:70vh;"),!visfields)
                   )
                   ( div
                   .   (style."margin-left: 30%; overflow-y:auto; height:100vh;")
@@ -12774,13 +12792,9 @@ function main2(evt) {
         .   ( ShowOnlyTheCurrentPipe
             =   formFields struct nth bm visfields mail2 1st 2nd
               .   !arg:(?struct.?nth.?bm.?err.?mail2,?1st,?2nd)
-                & log$(ShowOnlyTheCurrentPipe 1st !1st 2nd !2nd)
                 & makeWorkflowVisualisation$!struct:(?visfields.?SVG)
                 &   ( !nth:#<1&
-                    |   MAIL2$(!mail2,!1st,!2nd.!struct)
-                        BookMark$(!bm.!err)
-                        submit$Submit
-                        submit$(localized$!Dryrun)
+                    | BookMark$(!bm.!err) submit$Submit submit$(localized$!Dryrun)
                     )
                   : ?formFields
                 & ( !formFields !visfields:
@@ -12797,7 +12811,13 @@ function main2(evt) {
                         )
                     : ?formFields
                   )
-                & workflowAsTextAndGraph$(!formFields.!visfields.!SVG):?formFields
+                &     workflowAsTextAndGraph
+                    $ ( !formFields
+                      . !visfields
+                      . MAIL2$(!mail2,!1st,!2nd.!struct)
+                      . !SVG
+                      )
+                  : ?formFields
                 &   str
                   $ ( 200~~~
                         toML
@@ -13181,7 +13201,6 @@ function main2(evt) {
                     . ?parms
                     . ?dryORrun
                     )
-                & log$(ApplyThePipelineToTheInput 1st !1st 2nd !2nd)
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
                     .   !arg:(?metadataType.?parms)
@@ -13229,7 +13248,6 @@ function main2(evt) {
                   )
                 & !jobNr+1:?jobNr:?JobNr
                 & saveTable$jobNr
-                & log$(ApplyThePipelineToTheInput Items !Items)
                 & (   !batch:on
                     & 0:?jobIDoffset
                     & !Items
@@ -13255,7 +13273,6 @@ function main2(evt) {
                 & saveTable$jobs
                 & (readTable$jobAbout|:?jobAbout)
                 & makeWorkflowVisualisation$!struct:(?tXt.?SVG)
-                & log$(myItems !myItems)
                 &     ( !JobNr
                       .   (mail2.!myItems)
                           (1st.!1st)
@@ -13488,7 +13505,6 @@ function main2(evt) {
                 & ( whichButton
                   =   bm Submit ViewDetails struct MetaDataType mail2 1st 2nd
                     .   !arg:(?bm.?Submit.?ViewDetails.?struct.?mail2,?1st,?2nd)
-                      & log$(whichButton 1st !1st 2nd !2nd)
                       & (     !Submit
                             : ( !ViewDetails (" - " ?nth|)
                               | @(?:(prev|next) ?)
@@ -13499,7 +13515,6 @@ function main2(evt) {
                           & getDetailedGoal$!struct:?goals
                           & ((!sources.!goals).!struct):?wf
                           & (!wrkflws|readTable$wrkflws)
-                          & log$(Bookmarjk parms !parms)
                           &   ShowOnlyTheCurrentPipe
                             $ ( !struct
                               . !nth
@@ -13640,31 +13655,24 @@ function main2(evt) {
           & log$chosenworkflow-SINGLEWORKFLOWLOGJE
           & :?PIPE
           & (DATE.theDate$) !arg:?arg
-          & log$(chosenworkflow arg !arg)
           & ( !arg:? (mail2.?mail2) ?
             | :?mail2
             )
-          & log$(mail2 !mail2)
           & (   !arg
               : ? (1st.?1st) ?
               : ? (2nd.?2nd) ?
             | (!UIlanguage|readTable$!UIlanguage):%@?1st ?2nd
             )
-          & log$(1st !1st 2nd !2nd)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?Tool.?parms.?BodyContainer)
-          & log$initialiseSpecifyGoalShowWorkflowsChosenWorkflowDONE
           & (   !Items:
               & getSingleItemOrNothing$!parms:?Items
             | 
             )
-          & log$analyzeInput
           & analyzeInput$(!Items.!errors):(?Items.?presels.?errors)
-          & log$analyzeInputDONE
           & ( !errors:~
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
                 : (?parms.?Submit.?hiddenData.?batch)
-              & log$supplementParmsAndHiddenData
               &   "The user has selected a workflow."
                 $ (!parms.!Submit.!hiddenData.!batch.!Items.!mail2,!1st,!2nd)
             )
@@ -14301,15 +14309,6 @@ function main2(evt) {
             & ( ExtractAttributesFromContent
               =   templateAtts atts val
                 .   !arg:(?templateAtts.?atts,?val)
-                  &   log
-                    $ ( ExtractAttributesFromContent
-                        templateAtts
-                        !templateAtts
-                        atts
-                        !atts
-                        val
-                        !val
-                      )
                   &   map
                     $ ( ( 
                         =   A Z a ref z n status ver current
@@ -14435,7 +14434,6 @@ function main2(evt) {
                               & !l1 !l2:?ll
                               & "Remove all nodes with not matching xml:lang
                                  (Is that necessary?)"
-                              & log$(IKNOW !1st and !2nd)
                               &   whl
                                 ' (   !tree
                                     :   ?A
@@ -14913,7 +14911,6 @@ function main2(evt) {
                       . !head
                       )
               )
-            & log$"readTable$UIlanguage"
             & readTable$UIlanguage
             & readTable$jobs
             &   
@@ -15062,7 +15059,6 @@ function main2(evt) {
                             : ? (2nd.?2nd) ?
                           )
                           ?
-                    & log$(Found !1st and !2nd in jobAbout)
                     & (   !metadataType:DK-CLARIN-metadata
                         & !autogenerated:?A (TEI.?B,?C) ?D
                         &     !A
@@ -19978,8 +19974,7 @@ function main2(evt) {
                                     )
                                       form
                                     $ ( dialog|chosenworkflow
-                                      .   MAIL2$(!mail2,!1st,!2nd.!struct)
-                                          BookMark$(.)
+                                      .   BookMark$(.)
                                           submit$Submit
                                           submit$(localized$!Dryrun)
                                           (|helplink$)
@@ -19988,6 +19983,7 @@ function main2(evt) {
                                       . 
                                       )
                                 . !"visualizedWorkFlow(s)"
+                                . MAIL2$(!mail2,!1st,!2nd.!struct)
                                 . !SVG
                                 )
                           )
