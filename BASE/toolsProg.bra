@@ -257,7 +257,7 @@ toolsProg=
           jobs
           Uploads
           zippedresults
-          tooladm
+          tooladms
           jobNr
           toolprop
           ItemGroupsCache
@@ -9724,25 +9724,56 @@ the Items list as input. Step descriptions in the JobStack can look like this:
               submit$(localized$!Bookmark)
       )
       ( MAIL2
-      =   mail2 struct
-        .     !arg:(?mail2.?struct)
+      =   mail2 1st 2nd struct
+        .     !arg:(?mail2,?1st,?2nd.?struct)
+            & log$(MAIL2 2nd !2nd)
             & canConsumeMetadata$!struct
             & (!mail2|:?mail2)
-            &   makeTextFormField
-              $ (   localized
-                  $ ( "Reuse TEI metadata from recently created output file:"
-                      "Genbrug TEI metadata fra lidt tidligere skabt outputfil:"
-                    )
-                . mail2
-                .   (val.!mail2)
-                    ( desc
-                    .   localized
-                      $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
-                          "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
-                        )
-                    )
-                    (size.40)
-                )
+            &     makeSelectFormField
+                $ ( localized$("1st metadata language:" "1. metadatassprog:")
+                  . 1st
+                  . options
+                  .   makeOptionList
+                    $ ( !linguae
+                      .     !linguae:? (?.!1st.?) ?
+                          & !1st
+                        |     (!UIlanguage|readTable$UIlanguage)
+                            : %@?1st ?
+                          & log$(1st !1st)
+                          & !1st
+                        | 
+                      )
+                  )
+                  makeSelectFormField
+                $ ( localized$("2nd metadata language:" "2. metadatassprog:")
+                  . 2nd
+                  . options
+                  .   makeOptionList
+                    $ ( !linguae
+                      .     !linguae:? (?.!2nd.?) ?
+                          & !2nd
+                        |     (!UIlanguage|readTable$UIlanguage)
+                            : %@?2nd ?
+                          & log$(2ndOverruled !2nd)
+                          & !2nd
+                        | 
+                      )
+                  )
+                  makeTextFormField
+                $ (   localized
+                    $ ( "Reuse TEI metadata from recently created output file:"
+                        "Genbrug TEI metadata fra lidt tidligere skabt outputfil:"
+                      )
+                  . mail2
+                  .   (val.!mail2)
+                      ( desc
+                      .   localized
+                        $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
+                            "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
+                          )
+                      )
+                      (size.40)
+                  )
           | 
       )
       ( UserMsg
@@ -12739,13 +12770,14 @@ function main2(evt) {
           , presels errors batch jobIDoffset subjobs nth BodyContainer PIPE
           , makejobstack ApplyThePipelineToTheInput ShowOnlyTheCurrentPipe
           , AddMetadata "The user has selected a workflow." errorInMetadata
-          , MetadataInParms rememberMetadata SVG
+          , MetadataInParms rememberMetadata SVG 1st 2nd
         .   ( ShowOnlyTheCurrentPipe
-            =   formFields struct nth bm visfields mail2
-              .   !arg:(?struct.?nth.?bm.?err.?mail2)
+            =   formFields struct nth bm visfields mail2 1st 2nd
+              .   !arg:(?struct.?nth.?bm.?err.?mail2,?1st,?2nd)
+                & log$(ShowOnlyTheCurrentPipe 1st !1st 2nd !2nd)
                 & makeWorkflowVisualisation$!struct:(?visfields.?SVG)
                 &   ( !nth:#<1&
-                    |   MAIL2$(!mail2.!struct)
+                    |   MAIL2$(!mail2,!1st,!2nd.!struct)
                         BookMark$(!bm.!err)
                         submit$Submit
                         submit$(localized$!Dryrun)
@@ -12991,21 +13023,8 @@ function main2(evt) {
                                                               : 
                                                             |     !placeholder
                                                                 : XML-LANG
-                                                              & ( !UIlanguage
-                                                                |   readTable
-                                                                  $ UIlanguage
-                                                                )
                                                               & ( placeholder
-                                                                .       map
-                                                                      $ ( ( 
-                                                                          =   
-                                                                            .   \n
-                                                                                !arg
-                                                                          )
-                                                                        . !UIlanguage
-                                                                        )
-                                                                    : \n ?arg
-                                                                  & !arg
+                                                                . !1st \n !2nd
                                                                 )
                                                             | (placeholder.!placeholder)
                                                             )
@@ -13056,6 +13075,8 @@ function main2(evt) {
                                         $ ( (dialog.chosenworkflow)
                                             (metadataformat.!metadataType)
                                             (nth.!nth)
+                                            (1st.!1st)
+                                            (2nd.!2nd)
                                             !hiddenData
                                           )
                                         (br.,)
@@ -13156,10 +13177,11 @@ function main2(evt) {
                     . ?struct
                     . ?batch
                     . ?Items:?myItems
-                    . ?mail2
+                    . ?mail2,?1st,?2nd
                     . ?parms
                     . ?dryORrun
                     )
+                & log$(ApplyThePipelineToTheInput 1st !1st 2nd !2nd)
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
                     .   !arg:(?metadataType.?parms)
@@ -13236,6 +13258,8 @@ function main2(evt) {
                 & log$(myItems !myItems)
                 &     ( !JobNr
                       .   (mail2.!myItems)
+                          (1st.!1st)
+                          (2nd.!2nd)
                           (human.!tXt)
                           ( userProvidedMetadata
                           . !metadataType
@@ -13399,7 +13423,7 @@ function main2(evt) {
                       ?
             )
           & ( rememberMetadata
-            =   mail2 userProvidedMetadata metadataType oldjobnr file real
+            =   mail2 1st 2nd userProvidedMetadata metadataType oldjobnr file real
               .   !arg:(?metadataType.?arg)
                 & (!Uploads|readTable$Uploads)
                 & ( MetadataInParms$(!metadataType.!arg)
@@ -13419,14 +13443,23 @@ function main2(evt) {
                                       )
                                       ?
                                   )
-                                  ?
+                                  (   ? (1st.?1st) ?
+                                    : ? (2nd.?2nd) ?
+                                  |   ?
+                                    &   ( !UIlanguage
+                                        | readTable$UIlanguage
+                                        )
+                                      : %@?1st ?2nd
+                                  )
                                   (userProvidedMetadata.?metadataType.?userProvidedMetadata)
                                   ?
                               )
                               ?
-                      | :?userProvidedMetadata
+                      |   :?userProvidedMetadata
+                        &   (!UIlanguage|readTable$UIlanguage)
+                          : %@?1st ?2nd
                       )
-                    & !userProvidedMetadata !parms
+                    & (1st.!1st) (2nd.!2nd) !userProvidedMetadata !parms
                   )
             )
           & ( "The user has selected a workflow."
@@ -13434,7 +13467,7 @@ function main2(evt) {
                 , parms nth batch Items mail2 ERR
                 , allpipes ViewDetails fintool
                 , returnCode struct whichButton
-                , reqtool sources bm err msg
+                , reqtool sources bm err msg 1st 2nd
                 , goals topologicalOrderedTools wf
                 , getDetailedSource getDetailedGoal
               .   ( getDetailedSource
@@ -13453,13 +13486,14 @@ function main2(evt) {
                       & !arg
                   )
                 & ( whichButton
-                  =   bm Submit ViewDetails struct MetaDataType mail2
-                    .   !arg:(?bm.?Submit.?ViewDetails.?struct.?mail2)
+                  =   bm Submit ViewDetails struct MetaDataType mail2 1st 2nd
+                    .   !arg:(?bm.?Submit.?ViewDetails.?struct.?mail2,?1st,?2nd)
+                      & log$(whichButton 1st !1st 2nd !2nd)
                       & (     !Submit
                             : ( !ViewDetails (" - " ?nth|)
                               | @(?:(prev|next) ?)
                               )
-                          & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm..!mail2)
+                          & ShowOnlyTheCurrentPipe$(!struct.!nth.!bm..!mail2,!1st,!2nd)
                         |   localized$!Bookmark:!Submit
                           & getDetailedSource$!struct:?sources
                           & getDetailedGoal$!struct:?goals
@@ -13486,7 +13520,7 @@ function main2(evt) {
                                   & !bm
                                 | 
                               . !err
-                              . !mail2
+                              . !mail2,!1st,!2nd
                               )
                         |   !Submit:Submit
                           & (     !parms
@@ -13525,14 +13559,28 @@ function main2(evt) {
                               & !MetaDataType:~:~none
                               & AddMetadata$(!MetaDataType.!nth.!parms.!ERR.!hiddenData)
                             |   ApplyThePipelineToTheInput
-                              $ (!MetaDataType.!struct.!batch.!Items.!mail2.!parms.run)
+                              $ ( !MetaDataType
+                                . !struct
+                                . !batch
+                                . !Items
+                                . !mail2,!1st,!2nd
+                                . !parms
+                                . run
+                                )
                             )
                         |   localized$!Dryrun:!Submit
                           &   ApplyThePipelineToTheInput
-                            $ (!MetaDataType.!struct.!batch.!Items.!mail2.!parms.dry)
+                            $ ( !MetaDataType
+                              . !struct
+                              . !batch
+                              . !Items
+                              . !mail2,!1st,!2nd
+                              . !parms
+                              . dry
+                              )
                         )
                   )
-                & !arg:(?parms.?Submit.?hiddenData.?batch.?Items.?mail2)
+                & !arg:(?parms.?Submit.?hiddenData.?batch.?Items.?mail2,?1st,?2nd)
                 &   log
                   $ ( "The user has selected a workflow."
                       !parms
@@ -13540,6 +13588,8 @@ function main2(evt) {
                       !Submit
                       hiddenData
                       !hiddenData
+                      !1st
+                      !2nd
                     )
                 & 0:?allpipes
                 & :?returnCode:?reqtool:?fintool
@@ -13567,7 +13617,7 @@ function main2(evt) {
                                    |notFulfillable
                                    )"
                     & (   !returnCode:allRight
-                        & whichButton$(.!Submit.!ViewDetails.!struct.!mail2)
+                        & whichButton$(.!Submit.!ViewDetails.!struct.!mail2,!1st,!2nd)
                       | UnexpectedReturnCode$!returnCode
                       )
                   |     !wrkflws
@@ -13577,7 +13627,7 @@ function main2(evt) {
                           . ?struct
                           )
                           ?
-                    & whichButton$(!nth.!Submit.!ViewDetails.!struct.!mail2)
+                    & whichButton$(!nth.!Submit.!ViewDetails.!struct.!mail2,!1st,!2nd)
                   |   NotFulfillable
                     $ ( !msg:~|"No workflows found"
                       . !sources
@@ -13595,17 +13645,28 @@ function main2(evt) {
             | :?mail2
             )
           & log$(mail2 !mail2)
+          & (   !arg
+              : ? (1st.?1st) ?
+              : ? (2nd.?2nd) ?
+            | (!UIlanguage|readTable$!UIlanguage):%@?1st ?2nd
+            )
+          & log$(1st !1st 2nd !2nd)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?Tool.?parms.?BodyContainer)
+          & log$initialiseSpecifyGoalShowWorkflowsChosenWorkflowDONE
           & (   !Items:
               & getSingleItemOrNothing$!parms:?Items
             | 
             )
+          & log$analyzeInput
           & analyzeInput$(!Items.!errors):(?Items.?presels.?errors)
+          & log$analyzeInputDONE
           & ( !errors:~
             |     supplementParmsAndHiddenData$(!parms.!hiddenData)
                 : (?parms.?Submit.?hiddenData.?batch)
-              & "The user has selected a workflow."$(!parms.!Submit.!hiddenData.!batch.!Items.!mail2)
+              & log$supplementParmsAndHiddenData
+              &   "The user has selected a workflow."
+                $ (!parms.!Submit.!hiddenData.!batch.!Items.!mail2,!1st,!2nd)
             )
       )
       "
@@ -13996,7 +14057,7 @@ function main2(evt) {
           , SPANGRP SPANGRPfil SPANGRPfilWithMetadata metadataType
           , XMLID ITEMS ZZ LANGUAGE TEIat myjobs textat
           , userProvidedMetadata autogenerated body bodyat head
-          , automaticFields computeTagUsage replList
+          , automaticFields computeTagUsage replList 1st 2nd
         .     ( TEIwrapData
               =     DATE EMAIL TBA AVAILABILITY Description
                   , XMLID ITEMS SPANGRP
@@ -14355,8 +14416,8 @@ function main2(evt) {
                       & (   !place:(?place.?templateAtts)
                           & "Succeed if the first element in PlaceInHeader specifies attribute(s).
                                   Special cases:
-                                  xml:lang Every odd line in text area is first language in UIlanguage variable,
-                                           every even line is the second language.
+                                  xml:lang Every odd line in text area is first language (!1st),
+                                           every even line is the second language (!2nd).
                                   ref      Look for @<reference> in value (!val)
                                   n        Look for # followed by integer number
                                   date     Input of type date
@@ -14374,12 +14435,13 @@ function main2(evt) {
                               & !l1 !l2:?ll
                               & "Remove all nodes with not matching xml:lang
                                  (Is that necessary?)"
+                              & log$(IKNOW !1st and !2nd)
                               &   whl
                                 ' (   !tree
                                     :   ?A
                                         ( !place
                                         .     ?
-                                              (!at.[%(!UIlanguage:~(? !sjt ?)))
+                                              (!at.[%(!1st !2nd:~(? !sjt ?)))
                                               ?
                                           , ?
                                         )
@@ -14501,7 +14563,7 @@ function main2(evt) {
                                             : ?tree
                                         | "No subtree if no input for second language available"
                                     )
-                                  . !UIlanguage
+                                  . !1st !2nd
                                   )
                               & !tree
                             |   "There is no xml:lang. What about other elements in templateAtts?"
@@ -14993,11 +15055,14 @@ function main2(evt) {
                     &   !jobAbout
                       :   ?
                           ( !JobNr
-                          .   ?
-                              (userProvidedMetadata.?metadataType.?userProvidedMetadata)
-                              ?
+                          .     ?
+                                (userProvidedMetadata.?metadataType.?userProvidedMetadata)
+                                ?
+                            : ? (1st.?1st) ?
+                            : ? (2nd.?2nd) ?
                           )
                           ?
+                    & log$(Found !1st and !2nd in jobAbout)
                     & (   !metadataType:DK-CLARIN-metadata
                         & !autogenerated:?A (TEI.?B,?C) ?D
                         &     !A
@@ -19826,10 +19891,16 @@ function main2(evt) {
           , ZoomInOrShowWorkflows fintool SVG
           , pipes pps rwl superset updatedArg userInput vs
         .   ( ShowAllPipes
-            =   hiddenData reorderedworkflowlist,"visualizedWorkFlow(s)" struct mail2
+            =     hiddenData reorderedworkflowlist
+                , "visualizedWorkFlow(s)" struct mail2 1st 2nd
               .   !arg:(?hiddenData.?reorderedworkflowlist.?topologicalOrderedTools)
                 & ( !hiddenData:? (mail2.?mail2) ?
                   | :?mail2
+                  )
+                & (   !hiddenData
+                    : ? (1st.?1st) ?
+                    : ? (2nd.?2nd) ?
+                  | (!UIlanguage|readTable$!UIlanguage):%@?1st ?2nd
                   )
                 &   str
                   $ ( 200~~~
@@ -19907,7 +19978,7 @@ function main2(evt) {
                                     )
                                       form
                                     $ ( dialog|chosenworkflow
-                                      .   MAIL2$(!mail2.!struct)
+                                      .   MAIL2$(!mail2,!1st,!2nd.!struct)
                                           BookMark$(.)
                                           submit$Submit
                                           submit$(localized$!Dryrun)
@@ -21315,59 +21386,110 @@ function main2(evt) {
                                   "Formular til udfyldelse af TEI-metadata:"
                                 )
                           )
-                          ( table
+                          ( td
                           .   
-                            , ( tr
+                            , ( table
                               .   
-                                ,   ( td
-                                    .   
-                                      ,   makeSelectFormField
-                                        $ ( 
-                                          . metadataformat
-                                          .   ( desc
-                                              .   localized
-                                                $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
-                                                    "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
-                                                  )
-                                              )
-                                              ( options
-                                              .   makeOptionList
-                                                $ (   ( localized$("No thanks" "Nej tak")
-                                                      . none
+                                , ( tr
+                                  .   
+                                    ,   ( td
+                                        .   
+                                          ,   makeSelectFormField
+                                            $ ( 
+                                              . metadataformat
+                                              .   ( desc
+                                                  .   localized
+                                                    $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
+                                                        "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
                                                       )
-                                                      (ParlaMint.ParlaMintMetadata)
-                                                      (DK-CLARIN.DK-CLARIN-metadata)
-                                                  . 
+                                                  )
+                                                  ( options
+                                                  .   makeOptionList
+                                                    $ (   (   localized
+                                                            $ ("No thanks" "Nej tak")
+                                                          . none
+                                                          )
+                                                          (ParlaMint.ParlaMintMetadata)
+                                                          (DK-CLARIN.DK-CLARIN-metadata)
+                                                      . 
+                                                      )
                                                   )
                                               )
-                                          )
-                                    )
-                                    ( td
-                                    .   
-                                      ,   localized
-                                        $ ( "Name of previous output:"
-                                            "Navnet på en tidligere output:"
-                                          )
-                                    )
-                                    ( td
-                                    .   
-                                      , ( input
-                                        .     ( tabindex
-                                              .   1+!tabind:?tabind
-                                                & 0
-                                              )
-                                              (type.text)
-                                              (name.mail2)
-                                              ( title
-                                              .   localized
-                                                $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
-                                                    "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
-                                                  )
-                                              )
-                                              (size.40)
-                                          , 
                                         )
-                                    )
+                                        ( td
+                                        .   
+                                          ,   localized
+                                            $ ( "Name of previous output:"
+                                                "Navnet på en tidligere output:"
+                                              )
+                                        )
+                                        ( td
+                                        .   
+                                          , ( input
+                                            .     ( tabindex
+                                                  .   1+!tabind:?tabind
+                                                    & 0
+                                                  )
+                                                  (type.text)
+                                                  (name.mail2)
+                                                  ( title
+                                                  .   localized
+                                                    $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
+                                                        "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
+                                                      )
+                                                  )
+                                                  (size.40)
+                                              , 
+                                            )
+                                        )
+                                  )
+                              )
+                          )
+                          ( td
+                          .   
+                            , ( table
+                              .   
+                                , ( tr
+                                  .   
+                                    ,   ( td
+                                        .   
+                                          ,   makeSelectFormField
+                                            $ (   localized
+                                                $ ("1st metadata language:" "1. metadatassprog:")
+                                              . 1st
+                                              . options
+                                              .   makeOptionList
+                                                $ ( !linguae
+                                                  .       ( !UIlanguage
+                                                          | readTable$UIlanguage
+                                                          )
+                                                        : %@?nd ?
+                                                      & log$(1st !nd)
+                                                      & !nd
+                                                    | 
+                                                  )
+                                              )
+                                        )
+                                        ( td
+                                        .   
+                                          ,   makeSelectFormField
+                                            $ (   localized
+                                                $ ("2nd metadata language:" "2. metadatassprog:")
+                                              . 2nd
+                                              . options
+                                              .   makeOptionList
+                                                $ ( !linguae
+                                                  .       ( !UIlanguage
+                                                          | readTable$UIlanguage
+                                                          )
+                                                        : ? %@?nd
+                                                      & log$(2nd !nd)
+                                                      & !nd
+                                                    | 
+                                                  )
+                                              )
+                                        )
+                                  )
                               )
                           )
                     )
