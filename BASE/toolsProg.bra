@@ -12734,12 +12734,15 @@ function main2(evt) {
             .   (style."width: 100%; overflow: hidden;")
               ,   ( div
                   .   (style."width: 30%; float: left;")
-                    ,   (div.(style."height:15vh;"),!formfields)
-                        ( div
-                        .   (style."overflow-y:auto; height:85vh;")
-                          ,   !mail2stuff
-                              (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
-                              !visfields
+                    ,   form
+                      $ ( dialog|chosenworkflow
+                        .   (div.(style."height:15vh;"),!formfields)
+                            ( div
+                            .   (style."overflow-y:auto; height:85vh;")
+                              ,   !mail2stuff
+                                  (h3.,localized$("Workflow steps" "Trin i arbejdsgangen"))
+                                  !visfields
+                            )
                         )
                   )
                   ( div
@@ -12798,17 +12801,26 @@ function main2(evt) {
                     )
                   : ?formFields
                 & ( !formFields !visfields:
-                  |     form
-                      $ ( dialog|chosenworkflow
-                        .   !formFields
-                            ( !nth:#<1&
-                            |   makeHiddenFields
-                              $ ( (dialog.chosenworkflow)
-                                  (nth.!nth)
-                                  !hiddenData
-                                )
-                            )
-                        )
+                  |   (   !formFields
+                          ( !nth:#<1&
+                          |   makeHiddenFields
+                            $ ( (dialog.chosenworkflow)
+                                (nth.!nth)
+                                !hiddenData
+                              )
+                          )
+                      |   form
+                        $ ( dialog|chosenworkflow
+                          .   !formFields
+                              ( !nth:#<1&
+                              |   makeHiddenFields
+                                $ ( (dialog.chosenworkflow)
+                                    (nth.!nth)
+                                    !hiddenData
+                                  )
+                              )
+                          )
+                      )
                     : ?formFields
                   )
                 &     workflowAsTextAndGraph
@@ -13200,6 +13212,17 @@ function main2(evt) {
                     . ?mail2,?1st,?2nd
                     . ?parms
                     . ?dryORrun
+                    )
+                &   log
+                  $ ( ApplyThePipelineToTheInput
+                      mail2
+                      !mail2
+                      1st
+                      !1st
+                      2nd
+                      !2nd
+                      myItems
+                      !myItems
                     )
                 & ( retrieveMetadataFromParms
                   =   metadataType parms
@@ -19970,17 +19993,13 @@ function main2(evt) {
                             &   makeWorkflowVisualisation$!struct
                               : (?"visualizedWorkFlow(s)".?SVG)
                             &   workflowAsTextAndGraph
-                              $ (   ( 
-                                    |   (h3.,Workflow)
-                                        ( p
-                                        .   
-                                          ,   localized
-                                            $ ( "This is the workflow that fulfils the goal set by you."
-                                                "Dette er arbejdsgangen som løser din opgave."
-                                              )
-                                        )
-                                    )
-                                      form
+                              $ (     BookMark$(.)
+                                      submit$Submit
+                                      submit$(localized$!Dryrun)
+                                      (|helplink$)
+                                        makeHiddenFields
+                                      $ ((dialog.chosenworkflow) !hiddenData)
+                                  |   form
                                     $ ( dialog|chosenworkflow
                                       .   BookMark$(.)
                                           submit$Submit
@@ -19988,7 +20007,6 @@ function main2(evt) {
                                           (|helplink$)
                                             makeHiddenFields
                                           $ ((dialog.chosenworkflow) !hiddenData)
-                                      . 
                                       )
                                 . !"visualizedWorkFlow(s)"
                                 . MAIL2$(!mail2,!1st,!2nd.!struct)
