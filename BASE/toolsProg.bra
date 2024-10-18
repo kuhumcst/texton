@@ -430,13 +430,21 @@ toolsProg=
               | (span.,!text) \r\n
               )
       )
+      ( surround
+      =   e a b
+        .   !arg:(?e.?a.?b)
+          & (   !e:? (surround.%@?e ?) ?
+              & (!e.,!a) \r\n (!e.,!b) \r\n
+            | !a \r\n !b \r\n
+            )
+      )
       ( makeStaticTextFormField
-      =   text val
-        .   !arg:(?text.?val)
-          & (div.,(label.,!text)) \r\n (div.,!val) \r\n
+      =   text val parms
+        .   !arg:(?text.?val.?parms)
+          & surround$(!parms.(label.,!text).!val)
       )
       ( makeTextFormField
-      =   text parm val desc readonly size required note
+      =   text parm val desc readonly size required note parms
         .     !arg
             : ( ?text
               . ?parm
@@ -456,38 +464,34 @@ toolsProg=
                 : ( ? (note.?note) ?
                   | ?&:?note
                   )
+                : ?parms
               )
-          &   ( div
-              .   
-                , ( label
-                  .   
-                    ,   !text
-                        ( !required:
-                        | " " (span.(class.requiblue),!required)
+          &   surround
+            $ ( !parms
+              . ( label
+                .   
+                  ,   !text
+                      ( !required:
+                      | " " (span.(class.requiblue),!required)
+                      )
+                )
+              .   ( input
+                  .     (tabindex.1+!tabind:?tabind&0)
+                        (type.text)
+                        (name.!parm)
+                        (!val:|(value.trim$!val))
+                        (!desc:|(title.!desc))
+                        ( !readonly:(|no)
+                        | (disabled.disabled)
                         )
+                        (!size:|(size.!size))
+                    , 
                   )
+                  !note
               )
-              \r\n
-              ( div
-              .   
-                ,   ( input
-                    .     (tabindex.1+!tabind:?tabind&0)
-                          (type.text)
-                          (name.!parm)
-                          (!val:|(value.trim$!val))
-                          (!desc:|(title.!desc))
-                          ( !readonly:(|no)
-                          | (disabled.disabled)
-                          )
-                          (!size:|(size.!size))
-                      , 
-                    )
-                    !note
-              )
-              \r\n
       )
       ( makeDateFormField
-      =   text parm val desc readonly size required note
+      =   text parm val desc readonly size required note parms
         .     !arg
             : ( ?text
               . ?parm
@@ -507,38 +511,34 @@ toolsProg=
                 : ( ? (note.?note) ?
                   | ?&:?note
                   )
+                : ?parms
               )
-          &   ( div
-              .   
-                , ( label
-                  .   
-                    ,   !text
-                        ( !required:
-                        | " " (span.(class.requiblue),!required)
+          &   surround
+            $ ( !parms
+              . ( label
+                .   
+                  ,   !text
+                      ( !required:
+                      | " " (span.(class.requiblue),!required)
+                      )
+                )
+              .   ( input
+                  .     (tabindex.1+!tabind:?tabind&0)
+                        (type.date)
+                        (name.!parm)
+                        (!val:|(value.trim$!val))
+                        (!desc:|(title.!desc))
+                        ( !readonly:(|no)
+                        | (disabled.disabled)
                         )
+                        (!size:|(size.!size))
+                    , 
                   )
+                  !note
               )
-              \r\n
-              ( div
-              .   
-                ,   ( input
-                    .     (tabindex.1+!tabind:?tabind&0)
-                          (type.date)
-                          (name.!parm)
-                          (!val:|(value.trim$!val))
-                          (!desc:|(title.!desc))
-                          ( !readonly:(|no)
-                          | (disabled.disabled)
-                          )
-                          (!size:|(size.!size))
-                      , 
-                    )
-                    !note
-              )
-              \r\n
       )
       ( makeTextAreaFormField
-      =   text parm val required desc note placeholder
+      =   text parm val required desc note placeholder parms
         .     !arg
             : ( ?text
               . ?parm
@@ -555,34 +555,28 @@ toolsProg=
                 : ( ? (placeholder.?placeholder) ?
                   | ?&:?placeholder
                   )
+                : ?parms
               )
-          &   ( div
-              .   
-                , ( label
-                  .   
-                    ,   !text
-                        ( !required:
-                        | " " (span.(class.requiblue),!required)
-                        )
+          &   surround
+            $ ( !parms
+              . ( label
+                .   
+                  ,   !text
+                      ( !required:
+                      | " " (span.(class.requiblue),!required)
+                      )
+                )
+              .   ( textarea
+                  .     (tabindex.1+!tabind:?tabind&0)
+                        (name.!parm)
+                        (rows.2)
+                        (cols.60)
+                        (!desc:|(title.!desc))
+                        (!placeholder:|(placeholder.!placeholder))
+                    , trim$!val
                   )
+                  !note
               )
-              \r\n
-              ( div
-              .   
-                ,   ( textarea
-                    .     (tabindex.1+!tabind:?tabind&0)
-                          (name.!parm)
-                          (rows.2)
-                          (cols.60)
-                          (!desc:|(title.!desc))
-                          ( !placeholder:
-                          | (placeholder.!placeholder)
-                          )
-                      , trim$!val
-                    )
-                    !note
-              )
-              \r\n
       )
       ( makeTextAreaFormFieldInv
       =   text parm val required desc
@@ -2531,7 +2525,7 @@ toolsProg=
                           =   no step name
                             .   !arg:(?no.?step.?name)
                               &   ( dt
-                                  .   
+                                  .   (id.str$(step !id))
                                     ,   (strong.(style."font-size: x-large"),!no)
                                         " - "
                                         (   !step:∵
@@ -2683,7 +2677,7 @@ toolsProg=
               \r\n
       )
       ( makeSelectFormField
-      =   text parm options desc required
+      =   text parm options desc required parms
         .     !arg
             : ( ?text
               . ?parm
@@ -2697,29 +2691,25 @@ toolsProg=
                 : ( ? (note.?note) ?
                   | ?&:?note
                   )
+                : ?parms
               )
-          &   ( div
-              .   
-                , ( label
-                  .   
-                    ,   !text
-                        ( !required:
-                        | " " (span.(class.requiblue),!required)
-                        )
+          &   surround
+            $ ( !parms
+              . ( label
+                .   
+                  ,   !text
+                      ( !required:
+                      | " " (span.(class.requiblue),!required)
+                      )
+                )
+              .   ( select
+                  .     (tabindex.1+!tabind:?tabind&0)
+                        (name.!parm)
+                        (!desc:|(title.!desc))
+                    , \r\n !options
                   )
+                  !note
               )
-              \r\n
-              ( div
-              .   
-                ,   ( select
-                    .     (tabindex.1+!tabind:?tabind&0)
-                          (name.!parm)
-                          (!desc:|(title.!desc))
-                      , \r\n !options
-                    )
-                    !note
-              )
-              \r\n
       )
       ( submit
       =   button title
@@ -12930,6 +12920,7 @@ function main2(evt) {
                                                               ( !note:
                                                               | (note.!note)
                                                               )
+                                                              (surround.div)
                                                           )
                                                     |     !"line / lines / box / empty"
                                                         : date
@@ -12987,6 +12978,7 @@ function main2(evt) {
                                                               ( !note:
                                                               | (note.!note)
                                                               )
+                                                              (surround.div)
                                                           )
                                                     |   (     !"line / lines / box / empty"
                                                             :   ( box
@@ -13060,6 +13052,7 @@ function main2(evt) {
                                                                 )
                                                             | (placeholder.!placeholder)
                                                             )
+                                                            (surround.div)
                                                         )
                                                     )
                                                 |     !"Required / optional  / automatic"
@@ -13069,16 +13062,19 @@ function main2(evt) {
                                                     |   makeStaticTextFormField
                                                       $ (   localized
                                                           $ !"Tekst i grænsefladen"
-                                                        . span
-                                                        .   (class.autogen)
-                                                          ,   str
-                                                            $ ( " ("
-                                                                  localized
-                                                                $ ( autogenerated
-                                                                    "automatisk genereret"
-                                                                  )
-                                                                ") "
-                                                              )
+                                                        . ( span
+                                                          .   (class.autogen)
+                                                            ,   str
+                                                              $ ( " ("
+                                                                    localized
+                                                                  $ ( autogenerated
+                                                                      "automatisk genereret"
+                                                                    )
+                                                                  ") "
+                                                                )
+                                                          )
+                                                        . surround
+                                                        . div
                                                         )
                                                     )
                                                 | 
