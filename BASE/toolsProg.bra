@@ -257,7 +257,7 @@ toolsProg=
           jobs
           Uploads
           zippedresults
-          tooladms
+          tooladm
           jobNr
           toolprop
           ItemGroupsCache
@@ -359,7 +359,10 @@ toolsProg=
           &   ( fieldset
               .   (class.noborder)
                 ,   ( !legend:
-                    | (legend.(class.secondpage),!legend)
+                    | (   !legend:(div.?,?)&div
+                        | legend
+                      . (class.secondpage),!legend
+                      )
                     )
                     !content
               )
@@ -438,10 +441,11 @@ toolsProg=
             | !a \r\n !b \r\n
             )
       )
+      (label=.!arg:|(label.,!arg))
       ( makeStaticTextFormField
       =   text val parms
         .   !arg:(?text.?val.?parms)
-          & surround$(!parms.(label.,!text).!val)
+          & surround$(!parms.label$!text.!val)
       )
       ( makeTextFormField
       =   text parm val desc readonly size required note parms
@@ -468,13 +472,12 @@ toolsProg=
               )
           &   surround
             $ ( !parms
-              . ( label
-                .   
-                  ,   !text
-                      ( !required:
-                      | " " (span.(class.requiblue),!required)
-                      )
-                )
+              .   label
+                $ ( !text
+                    ( !required:
+                    | " " (span.(class.requiblue),!required)
+                    )
+                  )
               .   ( input
                   .     (tabindex.1+!tabind:?tabind&0)
                         (type.text)
@@ -515,13 +518,12 @@ toolsProg=
               )
           &   surround
             $ ( !parms
-              . ( label
-                .   
-                  ,   !text
-                      ( !required:
-                      | " " (span.(class.requiblue),!required)
-                      )
-                )
+              .   label
+                $ ( !text
+                    ( !required:
+                    | " " (span.(class.requiblue),!required)
+                    )
+                  )
               .   ( input
                   .     (tabindex.1+!tabind:?tabind&0)
                         (type.date)
@@ -559,13 +561,12 @@ toolsProg=
               )
           &   surround
             $ ( !parms
-              . ( label
-                .   
-                  ,   !text
-                      ( !required:
-                      | " " (span.(class.requiblue),!required)
-                      )
-                )
+              .   label
+                $ ( !text
+                    ( !required:
+                    | " " (span.(class.requiblue),!required)
+                    )
+                  )
               .   ( textarea
                   .     (tabindex.1+!tabind:?tabind&0)
                         (name.!parm)
@@ -602,13 +603,12 @@ toolsProg=
               \r\n
               (br.,)
               \r\n
-              ( label
-              .   
-                ,   !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
-              )
+                label
+              $ ( !text
+                  ( !required:
+                  | " " (span.(class.requiblue),!required)
+                  )
+                )
       )
       ( ToolTitle
       =   
@@ -2303,9 +2303,8 @@ toolsProg=
                                       .   
                                         ,   localized$(tools værktøjer)
                                             🠓
-                                            ( 
-                                            | " ⧹ " localized$hyperlinks 🠒
-                                            )
+                                              map
+                                            $ ((=.th.,).!toolTable)
                                       )
                                   )
                               )
@@ -2318,26 +2317,27 @@ toolsProg=
                             ,   ( !toolUsageList:? [>1&!thead
                                 | 
                                 )
-                                (tbody.,toolRows$(!topologicalOrderedTools.!toolTable))
-                                (   !toolUsageList:? [>1
-                                  & ( thead
-                                    .   
-                                      , ( tr
-                                        .   
-                                          ,   ( th
-                                              .   
-                                                ,   ( 
-                                                    |   localized$(tools værktøjer)
-                                                        🠑
-                                                        " ⧸ "
-                                                    )
-                                                    localized$hyperlinks
-                                                    🠒
-                                              )
-                                              !hyperlinks
-                                        )
-                                    )
-                                | 
+                                ( tbody
+                                .   
+                                  ,   toolRows$(!topologicalOrderedTools.!toolTable)
+                                      (   !toolUsageList:? [>1
+                                        & ( tr
+                                          .   
+                                            ,   ( th
+                                                .   
+                                                  ,   ( 
+                                                      |     localized
+                                                          $ (tools værktøjer)
+                                                          🠑
+                                                          " ⧸ "
+                                                      )
+                                                      localized$hyperlinks
+                                                      🠒
+                                                )
+                                                !hyperlinks
+                                          )
+                                      | 
+                                      )
                                 )
                           )
                           ( p
@@ -2544,44 +2544,32 @@ toolsProg=
                                         ,   !step:∴&
                                           |   (   !step:∵
                                                 & 
-                                              | ( dt
-                                                .   
-                                                  ,     localized
+                                              |   ( dt
+                                                  .   
+                                                    ,   localized
                                                       $ ( "Receiving input from"
                                                           "Modtager input fra"
                                                         )
-                                                      ( dl
-                                                      .   
-                                                        ,   mop
-                                                          $ ( ( 
-                                                              =   from desc
-                                                                .       !arg
-                                                                      : ( ?from
-                                                                        . !no
-                                                                        . ?
-                                                                        )
-                                                                    &   !nodes
-                                                                      :   ?
-                                                                          ( !from
-                                                                          . ?
-                                                                          . ?desc
-                                                                          )
-                                                                          ?
-                                                                    & ( dd
-                                                                      .   
-                                                                        ,   str
-                                                                          $ ( !from
-                                                                              ": "
-                                                                              !desc
-                                                                            )
-                                                                      )
-                                                                  | 
+                                                  )
+                                                    mop
+                                                  $ ( ( 
+                                                      =   from desc
+                                                        .       !arg
+                                                              : (?from.!no.?)
+                                                            &   !nodes
+                                                              :   ?
+                                                                  (!from.?.?desc)
+                                                                  ?
+                                                            & ( dd
+                                                              .   
+                                                                ,   str
+                                                                  $ (!from ": " !desc)
                                                               )
-                                                            . !links
-                                                            . (=+)
-                                                            )
+                                                          | 
                                                       )
-                                                )
+                                                    . !links
+                                                    . (=+)
+                                                    )
                                               )
                                               ( dt
                                               .   
@@ -2599,43 +2587,28 @@ toolsProg=
                                               )
                                               ( dt
                                               .   
-                                                ,   (   !step:∵
-                                                      &   localized
-                                                        $ ("Sent to " "Sendt til ")
-                                                    |   localized
-                                                      $ ( "Output sent to "
-                                                          "Output sendt til "
-                                                        )
-                                                    )
-                                                    ( dl
-                                                    .   
-                                                      ,   mop
-                                                        $ ( ( 
-                                                            =   to desc
-                                                              .       !arg
-                                                                    : (!no.?to.?)
-                                                                  &   !nodes
-                                                                    :   ?
-                                                                        ( !to
-                                                                        . ?
-                                                                        . ?desc
-                                                                        )
-                                                                        ?
-                                                                  & ( dd
-                                                                    .   
-                                                                      ,   str
-                                                                        $ ( !to
-                                                                            ": "
-                                                                            !desc
-                                                                          )
-                                                                    )
-                                                                | 
-                                                            )
-                                                          . !links
-                                                          . (=+)
-                                                          )
-                                                    )
+                                                ,     !step:∵
+                                                    & localized$("Sent to " "Sendt til ")
+                                                  |   localized
+                                                    $ ("Output sent to " "Output sendt til ")
                                               )
+                                                mop
+                                              $ ( ( 
+                                                  =   to desc
+                                                    .       !arg
+                                                          : (!no.?to.?)
+                                                        &   !nodes
+                                                          :   ?
+                                                              (!to.?.?desc)
+                                                              ?
+                                                        & ( dd
+                                                          . ,str$(!to ": " !desc)
+                                                          )
+                                                      | 
+                                                  )
+                                                . !links
+                                                . (=+)
+                                                )
                                       )
                                   )
                           )
@@ -2695,13 +2668,12 @@ toolsProg=
               )
           &   surround
             $ ( !parms
-              . ( label
-                .   
-                  ,   !text
-                      ( !required:
-                      | " " (span.(class.requiblue),!required)
-                      )
-                )
+              .   label
+                $ ( !text
+                    ( !required:
+                    | " " (span.(class.requiblue),!required)
+                    )
+                  )
               .   ( select
                   .     (tabindex.1+!tabind:?tabind&0)
                         (name.!parm)
@@ -2791,7 +2763,7 @@ toolsProg=
                 \r\n
                 "legend.firstpage {font-weight: bold;}"
                 \r\n
-                "legend.secondpage {border:none;color:black;background-color:rgba(154,186,206,0.6);text-align:left;display:block;margin:0;padding:10px;float:left;width:100%;position:relative;font-size:15px;}"
+                ".secondpage {border:none;color:black;background-color:rgba(154,186,206,0.6);text-align:left;display:block;margin:0;padding:10px;float:left;width:100%;position:relative;font-size:15px;}"
                 \r\n
                 ".required {color:red; font-size:90%;width: auto; line-height: normal;}"
                 \r\n
@@ -2878,7 +2850,6 @@ toolsProg=
                 ".grid-container > div {font-size: 12pt;text-align: right;}"
                 \r\n
                 ".grid-container input, .grid-container textarea, .grid-container .autogen, .grid-container select  {float: inline-start;}"
-                "}"
           )
           \r\n
       )
@@ -2886,8 +2857,6 @@ toolsProg=
       =   ( style
           .   
             ,   \r\n
-                (|"html {height: 100%;}")
-                \r\n
                 (   ~
                   & ".bodycanvas {background: linear-gradient(181deg, rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188),rgb(0,91,188), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0), rgba(255,214,0));background-repeat: no-repeat;}"
                 |   ~
@@ -2919,7 +2888,7 @@ toolsProg=
                 \r\n
                 "legend.firstpage {font-weight: bold;}"
                 \r\n
-                "legend.secondpage {border:none;color:black;background-color:rgba(154,186,206,0.6);text-align:left;display:block;margin:0;padding:10px;float:left;width:100%;position:relative;font-size:15px;}"
+                ".secondpage {border:none;color:black;background-color:rgba(154,186,206,0.6);text-align:left;display:block;margin:0;padding:10px;float:left;width:100%;position:relative;font-size:15px;}"
                 \r\n
                 ".required {color:red; font-size:90%;width: auto; line-height: normal;}"
                 \r\n
@@ -2998,8 +2967,6 @@ toolsProg=
                 "#left {width: 500px; float: left;}"
                 \r\n
                 "#content {margin-left: 620px;}"
-                \r\n
-                "}"
           )
           \r\n
       )
@@ -3066,7 +3033,7 @@ toolsProg=
         .     !arg:(?tit.?bod)
             &   ("!DOCTYPE"." html")
                 ( html
-                .   
+                .   (lang.!LaNg)
                   ,   ( head
                       .   
                         ,   (title.,!tit)
@@ -3078,7 +3045,7 @@ toolsProg=
                             \r\n
                             !Style
                             ( style
-                            .   (type.text/css)
+                            .   
                               , ".demo div {float: left; clear: none;} .illustration {border: none;text-align: right;margin-left: 0;margin-right: auto;border-spacing: 0pt;font-size: 80%;font-family: Verdana, sans-serif;} .illustration td {margin-left: 0%;margin-right: 0%;border: 0px;padding: 0em;width: 3em;text-align: center;} caption {font-style: italic;} "
                             )
                       )
@@ -3086,12 +3053,10 @@ toolsProg=
                 )
           | AAP
       )
-      ( refreshingXHTMLbodyContainer
+      ( refreshingHTMLbodyContainer
       =   seconds body URL
         .   !arg:(%?seconds ?URL.?body)
-          &   ( "!DOCTYPE"
-              . " html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'"
-              )
+          &   ("!DOCTYPE"." html")
               \r\n
               ( html
               .     (xmlns."http://www.w3.org/1999/xhtml")
@@ -3219,7 +3184,7 @@ toolsProg=
              )
       )
       ( makeOptgroupList
-      =   featTbl selected prefix stable valueExpandedListPairs hum
+      =   featTbl selected prefix stable valueExpandedListPairs hum subid
         .     !arg
             : ( ?valueExpandedListPairs,?featTbl
               .   (?selected.?prefix)
@@ -3243,6 +3208,7 @@ toolsProg=
           &     (option.(id.str$(b !tabind)) (value.),chu$8239)
                 \r\n
                 (   !valueExpandedListPairs:? (?.? %*% ?) ?
+                  & 0:?subid
                   &   map
                     $ ( ( 
                         =   f F exp
@@ -3254,7 +3220,13 @@ toolsProg=
                                   $ ( ( 
                                       =   
                                         .   ( option
-                                            .     (id.xml-id$!arg)
+                                            .     ( id
+                                                  .   str
+                                                    $ ( xml-id$!arg
+                                                        "_"
+                                                        (1+!subid:?subid)
+                                                      )
+                                                  )
                                                   (value.str$(!prefix !arg))
                                                   (   !selected:!arg
                                                     & (selected.selected)
@@ -5767,7 +5739,7 @@ try {
                                   $ ( makeSelectFormField
                                     $ (.str$(!OP !short).!help (options.!optgroups))
                                     )
-                                  ( !including:
+                                  ( !including:&cell$
                                   |   cell
                                     $ ( makeCheckboxFormField
                                       $ (   R
@@ -5786,13 +5758,14 @@ try {
                                         )
                                       )
                                   )
-                            |   cell
-                              $ ( makeSelectFormField
-                                $ ( 
-                                  . str$(!OP !short)
-                                  . !help (options.makeOptionList$(!servicedGoalsTable.))
+                            |     cell
+                                $ ( makeSelectFormField
+                                  $ ( 
+                                    . str$(!OP !short)
+                                    . !help (options.makeOptionList$(!servicedGoalsTable.))
+                                    )
                                   )
-                                )
+                                cell$
                             )
                           )
                     | 
@@ -12655,7 +12628,8 @@ function main2(evt) {
                                       (stroke.str$("rgb(" !col "," !col "," !col ")"))
                                       (opacity."0.1")
                                       (onClick.str$("location.href='#" step !text "'"))
-                                  ,   ( animate
+                                  ,   (title.,!Title)
+                                      ( animate
                                       .     (attributeName.cx)
                                             (values.!a)
                                             (dur.10s)
@@ -12679,7 +12653,6 @@ function main2(evt) {
                                             (fill.freeze)
                                         , 
                                       )
-                                      (title.,!Title)
                                 )
                         )
                       . !xxyy
@@ -17593,7 +17566,7 @@ function main2(evt) {
           & :?resources:?files
           &     toML
               $ ( html
-                .   
+                .   (lang.!LaNg)
                   ,   ( head
                       .   
                         ,   (meta.charset.UTF-8)
@@ -17662,9 +17635,10 @@ function main2(evt) {
       =   pEU
         .   ( pEU
             =   A h
-              .   @(!arg:?A (%@:>"~":?h) ?arg)
-                & d2x$(asc$!h):?h
-                & !A "%" upp$!h pEU$!arg
+              .     @(!arg:?A (%@:>"~":?h) ?arg)
+                  & d2x$(asc$!h):?h
+                  & !A "%" upp$!h pEU$!arg
+                | !arg
             )
           & str$(pEU$!arg)
       )
@@ -18023,7 +17997,7 @@ function main2(evt) {
                               )
                             feedbackform$
                       )
-                |   refreshingXHTMLbodyContainer
+                |   refreshingHTMLbodyContainer
                   $ (   !secs
                           str
                         $ ( !wwwServer
@@ -20284,7 +20258,7 @@ function main2(evt) {
                                                         )
                                                   | submit$(localized$!"show workflows")
                                               )
-                                              (paragraph.,helplink$)
+                                              paragraph$(helplink$)
                                         )
                                       )
                                     )
@@ -21311,219 +21285,195 @@ function main2(evt) {
                   )
                 &   ( tr
                     .   
-                      ,   ( td
-                          .   
-                            ,   localized
-                              $ ( "Workflow must utilize the tool:"
-                                  "Arbejdsgang skal inkludere værktøjet:"
-                                )
-                          )
-                          ( td
-                          .   
-                            ,   makeSelectFormField
-                              $ ( 
-                                . reqtool
-                                .   ( desc
-                                    .   localized
-                                      $ ( "This can shorten the list of workflow candidates, but does not speed up the computation of that list."
-                                          "Dette kan forkorte listen arbejdsgangkandidater, men gør ikke beregningen af listen hurtigere."
-                                        )
-                                    )
-                                    ( options
-                                    .   makeOptionList
-                                      $ (   mop
-                                          $ ( ( 
-                                              =   
-                                                .       !arg
-                                                      : (?.?Title.?ToolID)
-                                                    & (!Title.!ToolID)
-                                                  | 
-                                              )
-                                            . !S
-                                            . (=+)
-                                            )
-                                        . 
-                                        )
-                                    )
-                                )
-                          )
-                    )
-                    ( tr
-                    .   
-                      ,   ( td
-                          . ,localized$("The last tool must be:" "Arbejdsgangen skal afslutte med:")
-                          )
-                          ( td
-                          .   
-                            ,   makeSelectFormField
-                              $ ( 
-                                . fintool
-                                .   ( desc
-                                    .   localized
-                                      $ ( "This can speed up the computation of the list of workflow candidates."
-                                          "Dette kan gøre beregningen af listen af arbejdsgangkandidater hurtigere."
-                                        )
-                                    )
-                                    ( options
-                                    .   makeOptionList
-                                      $ (   mop
-                                          $ ( ( 
-                                              =   
-                                                .       !arg
-                                                      : (?.?Title.?ToolID)
-                                                    & (!Title.!ToolID)
-                                                  | 
-                                              )
-                                            . !S
-                                            . (=+)
-                                            )
-                                        . 
-                                        )
-                                    )
-                                )
-                          )
-                    )
-                    ( tr
-                    .   
-                      ,   ( td
-                          .   
-                            , ( strong
-                              .   
-                                ,     localized
-                                    $ ( "If output is TEI P5 encoded:"
-                                        "Hvis outputtet er i TEI P5 format:"
+                      ,     cell
+                          $ ( localized
+                            $ ("Workflow must utilize the tool:" "Arbejdsgang skal inkludere værktøjet:")
+                            )
+                            cell
+                          $ ( makeSelectFormField
+                            $ ( 
+                              . reqtool
+                              .   ( desc
+                                  .   localized
+                                    $ ( "This can shorten the list of workflow candidates, but does not speed up the computation of that list."
+                                        "Dette kan forkorte listen arbejdsgangkandidater, men gør ikke beregningen af listen hurtigere."
                                       )
-                                    ↳
+                                  )
+                                  ( options
+                                  .   makeOptionList
+                                    $ (   mop
+                                        $ ( ( 
+                                            =   
+                                              .     !arg:(?.?Title.?ToolID)
+                                                  & (!Title.!ToolID)
+                                                | 
+                                            )
+                                          . !S
+                                          . (=+)
+                                          )
+                                      . 
+                                      )
+                                  )
                               )
-                          )
-                          ( td
-                          .   
-                            ,     localized
-                                $ ( "You can choose to enter metadata that will enter the TEI header of the output."
-                                    "Du kan vælge at udfylde metadata som vil blive del af TEI headeren af outputtet."
-                                  )
-                                (br.,)
-                                  localized
-                                $ ( "Alternatively, the output can inherit metadata from recently created TEI output."
-                                    "Alternativt kan outputtet arve metadata fra fornylig skabt TEI output."
-                                  )
-                          )
+                            )
+                          cell$
                     )
                     ( tr
                     .   
-                      ,   ( td
-                          .   
-                            ,   localized
-                              $ ( "Form for entering TEI metadata:"
-                                  "Formular til udfyldelse af TEI-metadata:"
-                                )
-                          )
-                          ( td
-                          .   
-                            , ( table
-                              .   
-                                , ( tr
-                                  .   
-                                    ,   ( td
-                                        .   
-                                          ,   makeSelectFormField
-                                            $ ( 
-                                              . metadataformat
-                                              .   ( desc
-                                                  .   localized
-                                                    $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
-                                                        "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
-                                                      )
-                                                  )
-                                                  ( options
-                                                  .   makeOptionList
-                                                    $ (   (   localized
-                                                            $ ("No thanks" "Nej tak")
-                                                          . none
-                                                          )
-                                                          (ParlaMint.ParlaMintMetadata)
-                                                          (DK-CLARIN.DK-CLARIN-metadata)
-                                                      . 
-                                                      )
-                                                  )
-                                              )
-                                        )
-                                        ( td
-                                        .   
-                                          ,   localized
-                                            $ ( "Name of previous output:"
-                                                "Navnet på en tidligere output:"
-                                              )
-                                        )
-                                        ( td
-                                        .   
-                                          , ( input
-                                            .     ( tabindex
-                                                  .   1+!tabind:?tabind
-                                                    & 0
-                                                  )
-                                                  (type.text)
-                                                  (name.mail2)
-                                                  ( title
-                                                  .   localized
-                                                    $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
-                                                        "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
-                                                      )
-                                                  )
-                                                  (size.40)
-                                              , 
+                      ,     cell
+                          $ (localized$("The last tool must be:" "Arbejdsgangen skal afslutte med:"))
+                            cell
+                          $ ( makeSelectFormField
+                            $ ( 
+                              . fintool
+                              .   ( desc
+                                  .   localized
+                                    $ ( "This can speed up the computation of the list of workflow candidates."
+                                        "Dette kan gøre beregningen af listen af arbejdsgangkandidater hurtigere."
+                                      )
+                                  )
+                                  ( options
+                                  .   makeOptionList
+                                    $ (   mop
+                                        $ ( ( 
+                                            =   
+                                              .     !arg:(?.?Title.?ToolID)
+                                                  & (!Title.!ToolID)
+                                                | 
                                             )
-                                        )
+                                          . !S
+                                          . (=+)
+                                          )
+                                      . 
+                                      )
                                   )
                               )
-                          )
-                          ( td
-                          .   
-                            , ( table
-                              .   
-                                , ( tr
-                                  .   
-                                    ,   ( td
-                                        .   
-                                          ,   makeSelectFormField
-                                            $ (   localized
-                                                $ ("1st metadata language:" "1. metadatassprog:")
-                                              . 1st
-                                              . options
-                                              .   makeOptionList
-                                                $ ( !linguae
-                                                  .       ( !UIlanguage
-                                                          | readTable$UIlanguage
-                                                          )
-                                                        : %@?nd ?
-                                                      & log$(1st !nd)
-                                                      & !nd
-                                                    | 
+                            )
+                          cell$
+                    )
+                    ( tr
+                    .   
+                      ,     cell
+                          $ ( strong
+                            .   
+                              ,     localized
+                                  $ ("If output is TEI P5 encoded:" "Hvis outputtet er i TEI P5 format:")
+                                  ↳
+                            )
+                            cell
+                          $ (   localized
+                              $ ( "You can choose to enter metadata that will enter the TEI header of the output."
+                                  "Du kan vælge at udfylde metadata som vil blive del af TEI headeren af outputtet."
+                                )
+                              (br.,)
+                                localized
+                              $ ( "Alternatively, the output can inherit metadata from recently created TEI output."
+                                  "Alternativt kan outputtet arve metadata fra fornylig skabt TEI output."
+                                )
+                            )
+                          cell$
+                    )
+                    ( tr
+                    .   
+                      ,     cell
+                          $ ( localized
+                            $ ("Form for entering TEI metadata:" "Formular til udfyldelse af TEI-metadata:")
+                            )
+                            cell
+                          $ ( table
+                            .   
+                              , ( tr
+                                .   
+                                  ,     cell
+                                      $ ( makeSelectFormField
+                                        $ ( 
+                                          . metadataformat
+                                          .   ( desc
+                                              .   localized
+                                                $ ( "Metadata to appear in TEI output. Not applicable if input is TEI or output is not TEI."
+                                                    "Metadata som skal optræde i TEI-output. Ikke relevant hvis input er Tei eller output ikke er TEI."
                                                   )
                                               )
-                                        )
-                                        ( td
-                                        .   
-                                          ,   makeSelectFormField
-                                            $ (   localized
-                                                $ ("2nd metadata language:" "2. metadatassprog:")
-                                              . 2nd
-                                              . options
+                                              ( options
                                               .   makeOptionList
-                                                $ ( !linguae
-                                                  .       ( !UIlanguage
-                                                          | readTable$UIlanguage
-                                                          )
-                                                        : ? %@?nd
-                                                      & log$(2nd !nd)
-                                                      & !nd
-                                                    | 
+                                                $ (   ( localized$("No thanks" "Nej tak")
+                                                      . none
+                                                      )
+                                                      (ParlaMint.ParlaMintMetadata)
+                                                      (DK-CLARIN.DK-CLARIN-metadata)
+                                                  . 
                                                   )
                                               )
+                                          )
                                         )
-                                  )
-                              )
-                          )
+                                        cell
+                                      $ ( localized
+                                        $ ( "Name of previous output:"
+                                            "Navnet på en tidligere output:"
+                                          )
+                                        )
+                                        cell
+                                      $ ( input
+                                        .     ( tabindex
+                                              .   1+!tabind:?tabind
+                                                & 0
+                                              )
+                                              (type.text)
+                                              (name.mail2)
+                                              ( title
+                                              .   localized
+                                                $ ( "The name of a recently created TEI output file that has metadata much like the metadata that you want to give the current output."
+                                                    "Navnet på en fornylig skabt TEI outputfil som har metadata meget lig den metadata du vil give den aktuelle output."
+                                                  )
+                                              )
+                                              (size.40)
+                                          , 
+                                        )
+                                )
+                            )
+                            cell
+                          $ ( table
+                            .   
+                              , ( tr
+                                .   
+                                  ,     cell
+                                      $ ( makeSelectFormField
+                                        $ (   localized
+                                            $ ("1st metadata language:" "1. metadatassprog:")
+                                          . 1st
+                                          . options
+                                          .   makeOptionList
+                                            $ ( !linguae
+                                              .       ( !UIlanguage
+                                                      | readTable$UIlanguage
+                                                      )
+                                                    : %@?nd ?
+                                                  & log$(1st !nd)
+                                                  & !nd
+                                                | 
+                                              )
+                                          )
+                                        )
+                                        cell
+                                      $ ( makeSelectFormField
+                                        $ (   localized
+                                            $ ("2nd metadata language:" "2. metadatassprog:")
+                                          . 2nd
+                                          . options
+                                          .   makeOptionList
+                                            $ ( !linguae
+                                              .       ( !UIlanguage
+                                                      | readTable$UIlanguage
+                                                      )
+                                                    : ? %@?nd
+                                                  & log$(2nd !nd)
+                                                  & !nd
+                                                | 
+                                              )
+                                          )
+                                        )
+                                )
+                            )
                     )
             )
           & ( sourcesAndGoals
@@ -22368,24 +22318,20 @@ function main2(evt) {
                             .   addOutputWishesFrom3rdParty$(!Ofields.!goalPicklists)
                                 ( tr
                                 .   
-                                  ,   ( td
-                                      .   
-                                        , ( strong
-                                          .   
-                                            ,     localized
-                                                $ ( "For experienced users "
-                                                    "For erfarne brugere "
-                                                  )
-                                                ↳
+                                  ,     cell
+                                      $ ( strong
+                                        .   
+                                          ,     localized
+                                              $ ("For experienced users " "For erfarne brugere ")
+                                              ↳
+                                        )
+                                        cell
+                                      $ ( localized
+                                        $ ( "The two fields below are optional! Use them if you have a preference for one or two specific tools."
+                                            "De to rubrikker hernede er optionelle! Brug dem kun hvis du har en preference for en eller to bestemte værktøjer."
                                           )
-                                      )
-                                      ( td
-                                      .   
-                                        ,   localized
-                                          $ ( "The two fields below are optional! Use them if you have a preference for one or two specific tools."
-                                              "De to rubrikker hernede er optionelle! Brug dem kun hvis du har en preference for en eller to bestemte værktøjer."
-                                            )
-                                      )
+                                        )
+                                      cell$
                                 )
                                 desiredTools$
                             )
