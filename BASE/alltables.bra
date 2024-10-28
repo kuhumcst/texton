@@ -1,5 +1,5 @@
 AAA=
-"alltables2.bra";
+"alltables.bra";
 CC=
   ( Attribution Kreditering
   . "https://creativecommons.org/licenses/by/4.0/"
@@ -2599,6 +2599,8 @@ It is the prototypical information extraction pipeline distributed with the GATE
     . "Part-of-speech tagger: Marks each word in a text with information about word class and morphological features."
     )
     (ExternalURI.)
+    (RestAPIkey."*****")
+    (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
     (Inactive.)
@@ -2635,6 +2637,8 @@ It is the prototypical information extraction pipeline distributed with the GATE
     . "Produces the dictionary look-up form (or lemma) for each word, inflected or not, in the input."
     )
     (ExternalURI."https://nlpweb01.nors.ku.dk/tools/")
+    (RestAPIkey."*****")
+    (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
     (Inactive.)
@@ -2948,6 +2952,8 @@ The Apache PDFBox™ library is an open source Java tool for working with PDF do
     . "Extracts segments from RTF-file or from plain text. Optionally tokenises. Keeps \\f"
     )
     (ExternalURI.)
+    (RestAPIkey."*****")
+    (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
     (Inactive.)
@@ -3359,6 +3365,8 @@ Uses Stanford CoreNLP NER and the model from DKIE to tag incoming Danish plain t
     (InfoAbout."http://code.google.com/p/mate-tools/")
     (Description."Dependency parser, part of mate-tools.")
     (ExternalURI."http://barbar.cs.lth.se:8081/")
+    (RestAPIkey."*****")
+    (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
     (Inactive.)
@@ -3379,6 +3387,8 @@ Uses Stanford CoreNLP NER and the model from DKIE to tag incoming Danish plain t
     . "Part of Speech Tagger that marks tokens with their corresponding word type based on the token itself and the context of the token. Uses a probability model to predict the correct pos tag."
     )
     (ExternalURI.)
+    (RestAPIkey."*****")
+    (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
     (Inactive.)
@@ -3632,6 +3642,8 @@ Renders PDF files in HTML, utilizing modern Web technologies. It aims to provide
     . "Tokenizer, POS Tagger, Lemmatizer and Parser models for 94 treebanks of 61 languages of Universal Depenencies 2.5 Treebanks."
     )
     (ExternalURI.)
+    (RestAPIkey."*****")
+    (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
     (Inactive.)
@@ -3718,19 +3730,11 @@ toolprop=
 + ( Brill-tagger
   .   (ambig,(una.una))
       (app,(nrm.nrm)+(unn.unn))
-      (facet,(seg*tok ner.pos^DSL))
-      (format,(txtann.txtann))
-      (lang,(da.da))
-      (period,(c13.c13)+(c20.c20))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
-      (app,(nrm.nrm)+(unn.unn))
       ( facet
-      , ( (par*seg*tok.OnE)
-        . par*pos^DSL*seg*tok
-        )
+      ,   ( (par*seg*tok.OnE)
+          . par*pos^DSL*seg*tok
+          )
+        + ((seg*tok.OnE).pos^DSL*seg*tok)
       )
       (format,(flat.flat))
       (lang,(da.da))
@@ -3740,10 +3744,24 @@ toolprop=
 + ( Brill-tagger
   .   (ambig,(una.una))
       (app,(nrm.nrm)+(unn.unn))
-      (facet,((seg*tok.OnE).pos^DSL*seg*tok))
-      (format,(flat.flat))
+      (facet,(seg*tok ner.pos^DSL))
+      (format,(txtann.txtann))
       (lang,(da.da))
       (period,(c13.c13)+(c20.c20))
+      (pres,(nml.nml))
+  )
++ ( Brill-tagger
+  .   (ambig,(una.una))
+      (app,(nrm.nrm))
+      ( facet
+      ,   ( (par*seg*tok.OnE)
+          . par*pos^Uni*seg*tok
+          )
+        + ((seg*tok.OnE).pos^Uni*seg*tok)
+      )
+      (format,(flat.flat))
+      (lang,(la.la))
+      (period,(c13.c13))
       (pres,(nml.nml))
   )
 + ( Brill-tagger
@@ -3757,35 +3775,15 @@ toolprop=
   )
 + ( Brill-tagger
   .   (ambig,(una.una))
-      (app,(nrm.nrm))
-      ( facet
-      , ( (par*seg*tok.OnE)
-        . par*pos^Uni*seg*tok
-        )
-      )
-      (format,(flat.flat))
-      (lang,(la.la))
-      (period,(c13.c13))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
-      (app,(nrm.nrm))
-      (facet,((seg*tok.OnE).pos^Uni*seg*tok))
-      (format,(flat.flat))
-      (lang,(la.la))
-      (period,(c13.c13))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
       ( facet
       ,   ( (ner*par*seg*tok.OnE)
           . cls*par*pos^Par*seg
           )
+        + ((ner*seg*tok.OnE).cls*pos^Par*seg)
         + ( (par*seg*tok.OnE)
           . par*pos^Par*seg*tok
           )
+        + ((seg*tok.OnE).pos^Par*seg*tok)
       )
       (format,(flat.flat))
       (lang,(da.da))
@@ -3795,11 +3793,26 @@ toolprop=
 + ( Brill-tagger
   .   (ambig,(una.una))
       ( facet
-      ,   ((ner*seg*tok.OnE).cls*pos^Par*seg)
-        + ((seg*tok.OnE).pos^Par*seg*tok)
+      ,   ( (par*seg*tok.OnE)
+          . par*pos^HiNTS*seg*tok
+          )
+        + ((seg*tok.OnE).pos^HiNTS*seg*tok)
       )
       (format,(flat.flat))
-      (lang,(da.da))
+      (lang,(gml.gml))
+      (period,(c13.c13))
+      (pres,(nml.nml))
+  )
++ ( Brill-tagger
+  .   (ambig,(una.una))
+      ( facet
+      ,   ( (par*seg*tok.OnE)
+          . par*pos^PT*seg*tok
+          )
+        + ((seg*tok.OnE).pos^PT*seg*tok)
+      )
+      (format,(flat.flat))
+      (lang,(en.en))
       (period,(c21.c21))
       (pres,(nml.nml))
   )
@@ -3813,10 +3826,10 @@ toolprop=
   )
 + ( Brill-tagger
   .   (ambig,(una.una))
-      (facet,(seg*tok^PT.pos^PT))
+      (facet,(seg*tok.pos^PT))
       (format,(txtann.txtann))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( Brill-tagger
@@ -3825,50 +3838,6 @@ toolprop=
       (format,(txtann.txtann))
       (lang,(da.da))
       (period,(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
-      ( facet
-      , ( (par*seg*tok.OnE)
-        . par*pos^HiNTS*seg*tok
-        )
-      )
-      (format,(flat.flat))
-      (lang,(gml.gml))
-      (period,(c13.c13))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
-      ( facet
-      , ( (par*seg*tok^PT.OnE)
-        . par*pos^PT*seg*tok
-        )
-      )
-      (format,(flat.flat))
-      (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
-      ( facet
-      , ((seg*tok.OnE).pos^HiNTS*seg*tok)
-      )
-      (format,(flat.flat))
-      (lang,(gml.gml))
-      (period,(c13.c13))
-      (pres,(nml.nml))
-  )
-+ ( Brill-tagger
-  .   (ambig,(una.una))
-      ( facet
-      , ((seg*tok^PT.OnE).pos^PT*seg*tok)
-      )
-      (format,(flat.flat))
-      (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
       (pres,(nml.nml))
   )
 + ( CQP
@@ -3991,7 +3960,7 @@ toolprop=
       )
       (format,(flat.cols+flat))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( CST-Lem
@@ -4017,7 +3986,7 @@ toolprop=
       )
       (format,(flat.flat))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.alf+frq+uaf+ufq))
   )
 + ( CST-Lem
@@ -4132,21 +4101,6 @@ toolprop=
       (app,(nrm.nrm))
       (facet,(tok.lem))
       (format,(txtann.txtann))
-      ( lang
-      ,   (cs.cs)
-        + (de.de)
-        + (el.el)
-        + (es.es)
-        + (fr.fr)
-      )
-      (period,(c20.c20))
-      (pres,(nml.nml))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.una))
-      (app,(nrm.nrm))
-      (facet,(tok.lem))
-      (format,(txtann.txtann))
       (lang,(gml.gml)+(la.la))
       (pres,(nml.nml))
   )
@@ -4156,7 +4110,7 @@ toolprop=
       (facet,(tok pos^PT.lem))
       (format,(txtann.txtann))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( CST-Lem
@@ -4236,6 +4190,20 @@ toolprop=
   .   (ambig,(una.amb+una))
       (app,(nrm.nrm))
       ( facet
+      ,   (tok.lem+lem*tok)
+        + ( pos^PT*tok
+          . lem+lem*tok+lem*pos^PT*tok
+          )
+      )
+      (format,(txtann.flat))
+      (lang,(en.en))
+      (period,(c21.c21))
+      (pres,(nml.alf+frq+uaf+ufq))
+  )
++ ( CST-Lem
+  .   (ambig,(una.amb+una))
+      (app,(nrm.nrm))
+      ( facet
       ,   ( pos^Par*tok
           . lem+lem*tok+lem*pos^Par*tok
           )
@@ -4307,26 +4275,6 @@ toolprop=
         + ((seg*tok.OnE).lem*seg)
       )
       (format,(flat.cols+flat))
-      ( lang
-      ,   (cs.cs)
-        + (da.da)
-        + (de.de)
-        + (el.el)
-        + (en.en)
-        + (es.es)
-        + (fr.fr)
-      )
-      (period,(c20.c20))
-      (pres,(nml.nml))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      ( facet
-      ,   ((par*seg*tok.OnE).lem*par*seg)
-        + ((seg*tok.OnE).lem*seg)
-      )
-      (format,(flat.cols+flat))
       (lang,(gml.gml)+(la.la))
       (pres,(nml.nml))
   )
@@ -4360,7 +4308,7 @@ toolprop=
       )
       (format,(flat.cols+flat))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( CST-Lem
@@ -4368,7 +4316,7 @@ toolprop=
       (app,(nrm.nrm))
       (facet,(tok.lem+lem*tok))
       (format,(txtann.flat))
-      (lang,(da.da)+(en.en))
+      (lang,(da.da))
       (period,(c20.c20)+(c21.c21))
       (pres,(nml.alf+frq+uaf+ufq))
   )
@@ -4396,19 +4344,6 @@ toolprop=
       (format,(txtann.flat))
       (lang,(gml.gml))
       (period,(c13.c13))
-      (pres,(nml.alf+frq+uaf+ufq))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      ( facet
-      , ( pos^PT*tok
-        . lem+lem*tok+lem*pos^PT*tok
-        )
-      )
-      (format,(txtann.flat))
-      (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
       (pres,(nml.alf+frq+uaf+ufq))
   )
 + ( CST-Lem
@@ -4473,23 +4408,6 @@ toolprop=
       (app,(nrm.nrm))
       (facet,((seg*tok.OnE).lem+lem*tok))
       (format,(flat.flat))
-      ( lang
-      ,   (cs.cs)
-        + (da.da)
-        + (de.de)
-        + (el.el)
-        + (en.en)
-        + (es.es)
-        + (fr.fr)
-      )
-      (period,(c20.c20))
-      (pres,(nml.alf+frq+uaf+ufq))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      (facet,((seg*tok.OnE).lem+lem*tok))
-      (format,(flat.flat))
       (lang,(gml.gml)+(la.la))
       (pres,(nml.alf+frq+uaf+ufq))
   )
@@ -4516,7 +4434,7 @@ toolprop=
       )
       (format,(flat.flat))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.alf+frq+uaf+ufq))
   )
 + ( CST-Lem
@@ -4640,10 +4558,8 @@ toolprop=
   .   (ambig,(una.una))
       (app,(nrm.nrm))
       ( facet
-      ,   ( (par*seg*tok^simple.OnE)
-          . ner*par*seg*tok
-          )
-        + ((seg*tok^simple.OnE).ner*seg*tok)
+      ,   ((par*seg*tok.OnE).ner*par*seg*tok)
+        + ((seg*tok.OnE).ner*seg*tok)
       )
       (format,(flat^utf8.flat^utf8))
       (lang,(da.da))
@@ -4716,7 +4632,7 @@ toolprop=
       (pres,(nml.frq))
   )
 + ( CST-anon
-  .   (facet,(tok^simple.tok^anon))
+  .   (facet,(tok.tok^anon))
       (format,(flat^utf8.flat^utf8))
       (lang,(da.da))
   )
@@ -4734,12 +4650,10 @@ toolprop=
   )
 + ( CoreNLP
   .   (ambig,(una.una))
-      ( facet
-      , (seg*tok^PT.lem*mrf*ner*pos^PT*snt)
-      )
+      (facet,(seg*tok.lem*mrf*ner*pos^PT*snt))
       (format,(txtann.json))
       (lang,(en.en))
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( CuneiForm
@@ -4868,8 +4782,8 @@ toolprop=
 + ( RTFread
   .   (app,(nrm.nrm)+(ocr.nrm+unn)+(unn.unn))
       ( facet
-      ,   (exc.seg*tok^PT)
-        + (txt.par*seg*tok^PT+seg*tok^PT)
+      ,   (exc.seg*tok)
+        + (tok+txt.par*seg*tok+seg*tok)
       )
       (format,(flat+rtf.flat+plainD))
       (lang,(en.en))
@@ -4878,48 +4792,23 @@ toolprop=
 + ( RTFread
   .   (app,(nrm.nrm)+(ocr.nrm+unn)+(unn.unn))
       ( facet
-      ,   (exc.seg*tok^simple)
-        + (txt.par*seg*tok^simple+seg*tok^simple)
+      ,   (exc.seg*tok)
+        + (tok+txt.par*seg*tok+seg*tok)
       )
       (format,(flat+rtf.flat+plainD))
       (pres,(nml.nml))
   )
 + ( RTFread
   .   (app,(nrm.nrm)+(ocr.nrm+unn)+(unn.unn))
-      ( facet
-      ,   (tok.par*seg*tok^PT+seg*tok^PT)
-        + (txt.seg+par*seg)
-      )
+      (facet,(txt.seg+par*seg))
       (format,(flat+rtf.flat))
       (lang,(en.en))
       (pres,(nml.nml))
   )
 + ( RTFread
   .   (app,(nrm.nrm)+(ocr.nrm+unn)+(unn.unn))
-      ( facet
-      ,   (tok.par*seg*tok^simple+seg*tok^simple)
-        + (txt.seg+par*seg)
-      )
+      (facet,(txt.seg+par*seg))
       (format,(flat+rtf.flat))
-      (pres,(nml.nml))
-  )
-+ ( RTFread
-  .   (app,(nrm.nrm)+(ocr.nrm+unn)+(unn.unn))
-      ( facet
-      , (tok^PT.par*seg*tok^PT+seg*tok^PT)
-      )
-      (format,(flat+rtf.plainD))
-      (lang,(en.en))
-      (pres,(nml.nml))
-  )
-+ ( RTFread
-  .   (app,(nrm.nrm)+(ocr.nrm+unn)+(unn.unn))
-      ( facet
-      , ( tok^simple
-        . par*seg*tok^simple+seg*tok^simple
-        )
-      )
-      (format,(flat+rtf.plainD))
       (pres,(nml.nml))
   )
 + ( TEIanno
@@ -5197,7 +5086,7 @@ toolprop=
         + (vi.vi)
         + (zh.zh)
       )
-      (period,(c20.c20)+(c21.c21))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( espeak
@@ -5266,15 +5155,6 @@ toolprop=
 + ( lempos
   .   (ambig,(una.amb))
       (app,(nrm.drty))
-      (facet,(seg*tok.lem*pos*seg*tok))
-      (format,(txtann.json^xid))
-      (lang,(cs.cs)+(de.de)+(es.es))
-      (period,(c20.c20))
-      (pres,(nml.nml))
-  )
-+ ( lempos
-  .   (ambig,(una.amb))
-      (app,(nrm.drty))
       (facet,((seg*tok.OnE).lem*pos*seg*tok))
       (format,(flat.json^nid))
       ( lang
@@ -5304,15 +5184,6 @@ toolprop=
         + (uk.uk)
       )
       (period,(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( lempos
-  .   (ambig,(una.amb))
-      (app,(nrm.drty))
-      (facet,((seg*tok.OnE).lem*pos*seg*tok))
-      (format,(flat.json^nid))
-      (lang,(cs.cs)+(de.de)+(es.es))
-      (period,(c20.c20))
       (pres,(nml.nml))
   )
 + ( lempos
@@ -5398,15 +5269,6 @@ toolprop=
 + ( lemposA
   .   (ambig,(una.amb))
       (app,(nrm.drty))
-      (facet,(seg*tok.lem*pos*seg*tok))
-      (format,(txtann.json^xid))
-      (lang,(cs.cs)+(de.de)+(en.en)+(es.es))
-      (period,(c20.c20))
-      (pres,(nml.nml))
-  )
-+ ( lemposA
-  .   (ambig,(una.amb))
-      (app,(nrm.drty))
       (facet,((seg*tok.OnE).lem))
       (format,(flat.json^nid))
       (lang,(da.da))
@@ -5446,15 +5308,6 @@ toolprop=
         + (uk.uk)
       )
       (period,(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( lemposA
-  .   (ambig,(una.amb))
-      (app,(nrm.drty))
-      (facet,((seg*tok.OnE).lem*pos*seg*tok))
-      (format,(flat.json^nid))
-      (lang,(cs.cs)+(de.de)+(en.en)+(es.es))
-      (period,(c20.c20))
       (pres,(nml.nml))
   )
 + ( lemposA
@@ -5517,55 +5370,27 @@ toolprop=
   .   (facet,(seg*tok.pos^Uni))
       (format,(txtann.txtann))
       (lang,(de.de)+(en.en)+(es.es)+(fr.fr))
-      (pres,(nml.nml))
-  )
-+ ( mate-parser
-  .   (ambig,(una.una))
-      ( facet
-      ,   ( lem*pos^Uni*seg*tok^simple
-          . lem*pos^Uni*seg*stx*tok^simple
-          )
-        + ( pos^Uni*seg*tok^simple
-          . pos^Uni*seg*stx*tok^simple
-          )
-      )
-      (format,(txtann.conll^cnl2009))
-      ( lang
-      ,   (da.da)
-        + (de.de)
-        + (en.en)
-        + (es.es)
-        + (fr.fr)
-      )
       (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( mate-parser
   .   (ambig,(una.una))
       ( facet
-      ,   ( lem*pos^Uni*seg*tok^simple
-          . lem*pos^Uni*seg*stx*tok^simple
+      ,   ( lem*pos^Uni*seg*tok
+          . lem*pos^Uni*seg*stx*tok
           )
-        + ( pos^Uni*seg*tok^simple
-          . pos^Uni*seg*stx*tok^simple
-          )
+        + (pos^Uni*seg*tok.pos^Uni*seg*stx*tok)
       )
       (format,(txtann.conll^cnl2009))
-      (lang,(de.de)+(en.en)+(es.es)+(fr.fr))
-      (period,(c20.c20))
+      (lang,(da.da)+(de.de)+(es.es)+(fr.fr))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( opennlpPOStagger
   .   (facet,(seg*tok.pos^Uni))
       (format,(txtann.txtann))
-      (lang,(da.da))
+      (lang,(da.da)+(en.en))
       (period,(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( opennlpPOStagger
-  .   (facet,(seg*tok^PT.pos^Uni))
-      (format,(txtann.txtann))
-      (lang,(en.en))
       (pres,(nml.nml))
   )
 + ( orgconv
@@ -5687,14 +5512,15 @@ toolprop=
   )
 + ( teitok
   .   (app,(nrm.nrm)+(unn.unn))
-      (facet,(txt.seg*tok^PT))
+      (facet,(txt.seg*tok))
       (format,(teip5.txtann))
       (lang,(en.en))
+      (period,(c21.c21))
       (pres,(nml.nml))
   )
 + ( teitok
   .   (app,(nrm.nrm)+(unn.unn))
-      (facet,(txt.seg*tok^simple))
+      (facet,(txt.seg*tok))
       (format,(teip5.txtann))
       (pres,(nml.nml))
   )
@@ -5788,13 +5614,13 @@ toolprop=
       (pres,(nml.nml))
   )
 + ( toksent
-  .   (facet,(txt.sent+tok^simple))
-      (format,(txtbasis.txtann^one))
-  )
-+ ( toksent
-  .   (facet,(txt.sent+tok^PT+tok^simple))
+  .   (facet,(txt.sent+tok))
       (format,(txtbasis.txtann^one))
       (lang,(en.en))
+  )
++ ( toksent
+  .   (facet,(txt.sent+tok))
+      (format,(txtbasis.txtann^one))
   )
 + ( udpipe
   .   (ambig,(una.una))
@@ -5860,22 +5686,6 @@ toolprop=
         + (zh.zh)
       )
       (period,(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( udpipe
-  .   (ambig,(una.una))
-      (app,(nrm.nrm))
-      (facet,(seg*tok.lem*mrf^Uni*pos^Uni*stx))
-      (format,(txtann.txtann))
-      ( lang
-      ,   (cs.cs)
-        + (de.de)
-        + (el.el)
-        + (en.en)
-        + (es.es)
-        + (fr.fr)
-      )
-      (period,(c20.c20))
       (pres,(nml.nml))
   )
 + ( udpipe
@@ -5972,22 +5782,6 @@ toolprop=
         + (zh.zh)
       )
       (period,(c21.c21))
-      (pres,(nml.nml))
-  )
-+ ( udpipe2
-  .   (ambig,(una.una))
-      (app,(nrm.nrm))
-      (facet,(seg*tok.lem*mrf^Uni*pos^Uni*stx))
-      (format,(txtann.txtann))
-      ( lang
-      ,   (cs.cs)
-        + (de.de)
-        + (el.el)
-        + (en.en)
-        + (es.es)
-        + (fr.fr)
-      )
-      (period,(c20.c20))
       (pres,(nml.nml))
   )
 + ( udpipe2
