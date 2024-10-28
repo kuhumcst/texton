@@ -442,12 +442,7 @@ try {
                     }
                 else if($Olanggml)
                     {
-                    /*if($Operiodc13)*/
-                        scrip("../bin/lapos -m $toolres/gml/lapos/c13 < \$F > \$Laposfile");
-                    /*else if($Operiodc20)
-                        scrip("../bin/lapos -m $toolres/gml/lapos/c20 < \$F > \$Laposfile");
-                    else if($Operiodc21)
-                        scrip("../bin/lapos -m $toolres/gml/lapos/c21 < \$F > \$Laposfile");*/
+                    scrip("../bin/lapos -m $toolres/gml/lapos/c13 < \$F > \$Laposfile");
                     }
                 }
             else
@@ -466,12 +461,7 @@ try {
                     }
                 else if($Olanggml)
                     {
-/*                    if($Operiodc13)*/
-                        $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $F";
-                    /*else if($Operiodc20)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c20 < $F";
-                    else if($Operiodc21)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c21 < $F";*/
+                    $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $F";
                     }
                 logit($command);
 
@@ -510,12 +500,7 @@ try {
                     }
                 else if($Olanggml)
                     {
-//                    if($Operiodc13)
-                        scrip("../bin/lapos -m $toolres/gml/lapos/c13 < \$plainfile > \$LaposfileRaw");
-  /*                  else if($Operiodc20)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c20 < \$plainfile > \$LaposfileRaw");
-                    else if($Operiodc21)
-                        scrip("../bin/lapos -m $toolres/da/lapos/c21 < \$plainfile > \$LaposfileRaw");*/
+                    scrip("../bin/lapos -m $toolres/gml/lapos/c13 < \$plainfile > \$LaposfileRaw");
                     }
 
                 postagannotation("\$IfacettokF","\$LaposfileRaw","\$plainfile");
@@ -542,12 +527,7 @@ try {
                     }
                 else if($Olanggml)
                     {
-//                    if($Operiodc13)
-                        $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $plainfile";
-  /*                  else if($Operiodc20)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c20 < $plainfile";
-                    else if($Operiodc21)
-                        $command = "../bin/lapos -m $toolres/da/lapos/c21 < $plainfile";*/
+                    $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $plainfile";
                     }
 
 		copy($plainfile,"plainfile");
