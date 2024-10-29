@@ -246,6 +246,12 @@ If the registered tools are configured to be on the same localhost as the Text T
 
 The dot following the property value of each of the entries in the 'properties' file is important. Between this dot and the closing parenthesis you can write a comment, e.g., "This is the password used on my development machine.".
 
+## Using the admin page
+
+The tools made available via Text Tonsorium are registered in the files texton/BASE/meta/tooladm and texton/BASE/meta/toolprop. The tooladm file contains boilerplate information, such as the name of each tool, its description, its URL and the email address of the owner of the tool. In the public version this email address is x@x.xxx. The toolprop file, on the other hand, describes the input and output feautures of each tool. These features are used by Text Tonsorium to compute viable workflows to satify the user's text annotation and/or transformation needs.
+
+If Text Tonsorium is installed locally, open http://localhost/texton/admin.html in your browser. Under 'Tool Administration' you see two rows. The upper row is for registration of new tools and the lower row for amending the metadata of an already registered tool. Assuming you have not changed the password in the properties file (see above), leave the 'Password' field empty and type x@x.xxx in the 'Your email address' field. Then press the 'register new tool' or 'update tool' button.
+
 ## Wrapped NLP tools
 
 Many of the tools require binary executable (i.e. compiled and linked) files.
