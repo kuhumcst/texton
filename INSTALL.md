@@ -96,11 +96,11 @@ $> sudo service apache2 reload
 
 ```bash
 $> sudo apt-get install php libapache2-mod-php
-$> sudo a2enmod php7.4
+$> sudo a2enmod php8.3
 $> sudo service apache2 restart
 ```
 
-Note "php7.4" is an example. Use the php version that you saw being installed in the previous step. 
+Note "php8.3" is an example. Use the php version that you saw being installed in the previous step. 
 Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
 
 Some php scripts use the CURLFile class. To make that work
@@ -130,7 +130,6 @@ $> sudo vi /etc/apache2/mods-available/proxy.conf
 
 Add:
 
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
         ProxyPass /texton/ http://127.0.0.1:8080/texton/
         ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
         ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
