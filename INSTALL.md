@@ -96,11 +96,11 @@ $> sudo service apache2 reload
 
 ```bash
 $> sudo apt-get install php libapache2-mod-php
-$> sudo a2enmod php7.4
+$> sudo a2enmod php8.3
 $> sudo service apache2 restart
 ```
 
-Note "php7.4" is an example. Use the php version that you saw being installed in the previous step. 
+Note "php8.3" is an example. Use the php version that you saw being installed in the previous step. 
 Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
 
 Some php scripts use the CURLFile class. To make that work
@@ -130,7 +130,6 @@ $> sudo vi /etc/apache2/mods-available/proxy.conf
 
 Add:
 
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
         ProxyPass /texton/ http://127.0.0.1:8080/texton/
         ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
         ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
@@ -247,10 +246,21 @@ If the registered tools are configured to be on the same localhost as the Text T
 
 The dot following the property value of each of the entries in the 'properties' file is important. Between this dot and the closing parenthesis you can write a comment, e.g., "This is the password used on my development machine.".
 
+## Using the admin page
+
+The tools made available via Text Tonsorium are registered in the files texton/BASE/meta/tooladm and texton/BASE/meta/toolprop. The tooladm file contains boilerplate information, such as the name of each tool, its description, its URL and the email address of the owner of the tool. In the public version this email address is x@x.xxx. The toolprop file, on the other hand, describes the input and output feautures of each tool. These features are used by Text Tonsorium to compute viable workflows to satify the user's text annotation and/or transformation needs.
+
+If Text Tonsorium is installed locally, open http://localhost/texton/admin.html in your browser. Under 'Tool Administration' you see two rows. The upper row is for registration of new tools and the lower row for amending the metadata of an already registered tool. Assuming you have not changed the password in the properties file (see above), leave the 'Password' field empty and type x@x.xxx in the 'Your email address' field. Then press the 'register new tool' or 'update tool' button.
+
 ## Wrapped NLP tools
 
 Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
+
+### ANNIE
+
+The Gate webservices for Named Entity Recognition ANNIE (Nearly-New Information Extraction System) require API keys and passwords. These can be otained from https://cloud.gate.ac.uk/shopfront/displayItem/annie-named-entity-recognizer and should be inserted in the ANNIE tools using the admin page. The ANNIE tools are ANNIE-DE, ANNIE-EN, ANNIE-FR, ANNIE-RO, and ANNIE-RU.
+Alternatively, one can insert the needed values directly in the texton/BASE/meta/tooladm file.
 
 ### CST-lemma
 
