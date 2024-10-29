@@ -251,6 +251,11 @@ The dot following the property value of each of the entries in the 'properties' 
 Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
 
+### ANNIE
+
+The Gate webservices for Named Entity Recognition ANNIE (Nearly-New Information Extraction System) require API keys and passwords. These can be otained from https://cloud.gate.ac.uk/shopfront/displayItem/annie-named-entity-recognizer and should be inserted in the ANNIE tools using the admin page. The ANNIE tools are ANNIE-DE, ANNIE-EN, ANNIE-FR, ANNIE-RO, and ANNIE-RU.
+Alternatively, one can insert the needed values directly in the texton/BASE/meta/tooladm file.
+
 ### CST-lemma
 
 Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin.
