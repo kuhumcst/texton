@@ -94,8 +94,8 @@ Add following line to /etc/httpd/conf.d/proxy_ajp.conf:
     ProxyPass /toolsdata !
 (Restart Apache sudo /etc/init.d/httpd restart)
 
-Make sure bracmat is in Tomcat PATH:
-    /usr/lib/libbracmat.so -> /usr/lib/libbracmat.so.1
+Make sure bracmat is in JBoss's or Tomcat PATH:
+    /usr/lib/libbracmat.so -> /usr/lib/libbracmat.so.1.0
     /usr/lib/libbracmat.so.1 -> /usr/lib/libbracmat.so.1.0
     /usr/lib/libbracmat.so.1.0
 
@@ -4674,8 +4674,9 @@ try {
             | 1
             )
       )
+      "Check whether the output of a tool (source) can be matched with the input requirements of another tool (goal)."
       ( unify
-      =   source goal gfield ss R tail U,A Z other gvalues svalues gs
+      =   source goal gfield ss R tail U A Z other gvalues svalues gs
         .   ( U
             =   ss g go gp gs a z sp so tail ngs
               .   !arg:(?ss.?gs)
@@ -5065,55 +5066,58 @@ try {
                 & !PathPart
             )
           & ( updateInput
-            =     Nw Inp inp nip in pu osp NW val In Ins
+            =     Nw Inp inp nip in pu osp NW val In Ins spc
                 , sip NIN
               .   !arg:(?Inp.?val)
-                & 0:?Nw
-                &   whl
-                  ' ( !Inp:%?inp+?Inp
-                    & :?sip
-                    &   whl
-                      ' ( !inp:%?Ins ?inp
-                        & 1:?NW
-                        &   whl
-                          ' ( !Ins:%?In*?Ins
-                            & (   !In:(?In.OnE)
-                                & 1:?NIN
-                                &   whl
-                                  ' ( !In:%@?in^?pu*?nip
-                                    &     !NIN
-                                        *   !in
-                                          ^ (   !pu:1
-                                              & (   !val:?*!in^?osp*?
-                                                  & !osp
-                                                | 1
-                                                )
-                                            | !pu
-                                            )
-                                      : ?NIN
-                                    & !nip:?In
-                                    )
-                                & !NW*(!NIN.OnE):?NW
-                              |   !In:%@?in^?pu
-                                &     !NW
-                                    *   !in
-                                      ^ (   !pu:1
-                                          & (   !val:?*!in^?osp*?
-                                              & !osp
-                                            | 1
-                                            )
-                                        | !pu
-                                        )
-                                  : ?NW
+                & ( spc
+                  =   in pu
+                    .     !arg:%@?in^?pu
+                        &   !in
+                          ^ ( (   !pu:1
+                                & !val:?*!in^?pu*?
+                              | 
                               )
+                            & !pu
                             )
-                        & ( !Ins:1&!sip !NW:?sip
-                          | 
-                          )
+                      | log$(spcALARM Inp !Inp val !val)&0
+                  )
+                &     mop
+                    $ ( ( 
+                        =   
+                          .       map
+                                $ ( ( 
+                                    =   
+                                      .       mop
+                                            $ ( ( 
+                                                =   
+                                                  .     !arg:(?arg.OnE)
+                                                      & (   mop
+                                                          $ ( spc
+                                                            . !arg
+                                                            . (=*)
+                                                            . (=*)
+                                                            )
+                                                        . OnE
+                                                        )
+                                                    | spc$!arg
+                                                )
+                                              . !arg
+                                              . (=*)
+                                              . (=*)
+                                              )
+                                          : ~0
+                                        | 
+                                    )
+                                  . !arg
+                                  )
+                              : ~
+                            | 0
                         )
-                    & (!sip:|!Nw+!sip:?Nw)
-                    )
-                & !Nw:~0
+                      . !Inp
+                      . (=+)
+                      . (=+)
+                      )
+                  : ~0
             )
           & ( matchAlternative
             =     toolfeat gvaluesAlt toolAlt input gfield
@@ -5209,9 +5213,8 @@ try {
                       )
                   & "If this test fails, none of the goaly feature values is
                      satisfied by the current tool.
-                       Consequence: whl loop is exited and 'goaly' does not get
-                                    nil, causing matchGoalWithFeatures to fail.
-                    "
+                       Consequence: whl loop is exited and 'goaly' does not become
+                       empty, causing matchGoalWithFeatures to fail."
                   & !done:1
                 )
               & !ngoal:?goaly
@@ -7241,8 +7244,7 @@ try {
                    If src has a feature that tgt hasn't, then it is added to tgt.
                    If src has a feature element with the same unsubspecified value as a feature element of tgt,
                    then the tgt feature element inherits the subspecifications of the src feature.
-                   A feature (F,a*b*c) has elements a, b and c.
-                  "
+                   A feature (F,a*b*c) has elements a, b and c."
                 & ( supplement
                   =   f v tgt src A Z updateWithSubSpec
                     .   ( updateWithSubSpec
@@ -7254,7 +7256,7 @@ try {
                               )
                             & 1:?nv
                             &   whl
-                              ' ( !vn:?w0*(?ws.One)*?vn
+                              ' ( !vn:?w0*(?ws.OnE)*?vn
                                 &     !nv
                                     * !w0
                                     * (     !ws:?a*!v*?ws
@@ -7328,57 +7330,81 @@ try {
                               "
                             & ( containedBy
                               =     short long fea val e E
-                                  , rem Val P nval nVal
-                                  , saves savel v
-                                .     !arg
-                                    : (?short:?saves.?long:?savel)
-                                  & ( !short:
-                                    |   !short:(?fea,@?val^?e) ?short
-                                      & !long:? (!fea,!val^?E) ?
-                                      & (   !e:(1|!E)
-                                          & containedBy$(!short.!long):?rem
-                                          & (!fea,!val^!E) !rem
-                                        |   !E:1
-                                          & containedBy$(!short.!long):?rem
-                                          & (!fea,!val^!e) !rem
-                                        )
-                                    |     !short
-                                        : (?fea,(?val.OnE)) ?short
-                                      & !long:? (!fea,?Val) ?
-                                      & ( !Val:(?Val.OnE)
-                                        | 
-                                        )
-                                      & 1:?P
-                                      &   whl
-                                        ' ( !val:%@?v^?e*?nval
-                                          & !Val:!v^?E*?nVal
-                                          & (   !e:(1|!E)
-                                              & !P*!v^!E:?P
-                                            |   !E:1
-                                              & !P*!v^!e:?P
+                                  , rem Val P nval nVal v
+                                .   !arg:(?short.?long)
+                                  & (     !short
+                                        :   ?
+                                            (   ?fea
+                                              &   !long
+                                                : ~(? (!fea,?) ?)
+                                            , ?
                                             )
-                                          & (!nval.!nVal):(?val.?Val)
+                                            ?
+                                      & `~
+                                    |   map
+                                      $ ( ( 
+                                          =   
+                                            .   !arg:(?fea,?arg)
+                                              &   !long
+                                                : ? (!fea,?Val) ?
+                                              & ( !fea
+                                                ,     !arg:@?val^?e
+                                                    & !Val:!val^?E
+                                                    & (     !e
+                                                          : (1|!E)
+                                                        & !val^!E
+                                                      |   !E:1
+                                                        & !val^!e
+                                                      )
+                                                  |   !arg:(?val.OnE)
+                                                    & ( !Val:(?Val.OnE)
+                                                      | 
+                                                      )
+                                                    & 1:?P
+                                                    &   whl
+                                                      ' ( !val:%@?v^?e*?nval
+                                                        & !Val:!v^?E*?nVal
+                                                        & (     !e
+                                                              : ( 1
+                                                                | !E
+                                                                )
+                                                            & !P*!v^!E:?P
+                                                          |   !E:1
+                                                            & !P*!v^!e:?P
+                                                          )
+                                                        &   (!nval.!nVal)
+                                                          : (?val.?Val)
+                                                        )
+                                                    &   1
+                                                      : !val
+                                                      : !Val
+                                                    & (!P.OnE)
+                                                  |     !arg
+                                                      : %*%
+                                                      : ?val
+                                                    & 1:?P
+                                                    &   whl
+                                                      ' ( !val:%@?v^?e*?nval
+                                                        & !Val:!v^?E*?nVal
+                                                        & (     !e
+                                                              : ( 1
+                                                                | !E
+                                                                )
+                                                            & !P*!v^!E:?P
+                                                          |   !E:1
+                                                            & !P*!v^!e:?P
+                                                          )
+                                                        &   (!nval.!nVal)
+                                                          : (?val.?Val)
+                                                        )
+                                                    &   1
+                                                      : !val
+                                                      : !Val
+                                                    & !P
+                                                )
                                           )
-                                      & 1:!val:!Val
-                                      & containedBy$(!short.!long):?rem
-                                      & (!fea,(!P.OnE)) !rem
-                                    |     !short
-                                        : (?fea,%*%:?val) ?short
-                                      & !long:? (!fea,?Val) ?
-                                      & 1:?P
-                                      &   whl
-                                        ' ( !val:%@?v^?e*?nval
-                                          & !Val:!v^?E*?nVal
-                                          & (   !e:(1|!E)
-                                              & !P*!v^!E:?P
-                                            |   !E:1
-                                              & !P*!v^!e:?P
-                                            )
-                                          & (!nval.!nVal):(?val.?Val)
-                                          )
-                                      & 1:!val:!Val
-                                      & containedBy$(!short.!long):?rem
-                                      & (!fea,!P) !rem
+                                        . !short
+                                        )
                                     )
                               )
                             & ( rpl
