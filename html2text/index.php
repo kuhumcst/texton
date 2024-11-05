@@ -316,10 +316,24 @@ try {
             {
             $command = "../bin/bracmat 'get\$\"cp2utf8.bra\"' \$F \$utf8file";
             scrip($command . "\n");
+            $command = "../bin/bracmat 'get\$\"delicky.bra\"' \$utf8file \$utf8file";
+            scrip($command . "\n");
             }
         else 
             {
             $command = "../bin/bracmat 'get\$\"cp2utf8.bra\"' $F $utf8file";
+            logit($command);
+            if(($cmd = popen($command, "r")) == NULL)
+                {
+                throw new SystemExit(); // instead of exit()
+                }
+
+            while($read = fgets($cmd))
+                {
+                }
+
+            pclose($cmd);
+            $command = "../bin/bracmat 'get\$\"delicky.bra\"' $utf8file $utf8file";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 {
@@ -337,8 +351,8 @@ try {
             {
             scrip("\$HtMl = file_get_contents(\$utf8file);" . "\n");
             scrip("\$TeXt = convert_html_to_text(\$HtMl);" . "\n");
-            scrip("\$textWithLinks = tempFileName(\"txt\");" . "\n");
-            scrip("file_put_contents(\$textWithLinks, \$TeXt);" . "\n");
+            scrip("\$html2textfile = tempFileName(\"txt\");" . "\n");
+            scrip("file_put_contents(\$html2textfile, \$TeXt);" . "\n");
             }
         else
             {
@@ -347,16 +361,16 @@ try {
             $TeXt = convert_html_to_text($HtMl);
 	    logit("Now convert_html_to_textDONE");
         
-            $textWithLinks = tempFileName("txt");
-            file_put_contents($textWithLinks, $TeXt);
+            $html2textfile = tempFileName("txt");
+            file_put_contents($html2textfile, $TeXt);
             }
 
 
 
         
-        logit('textWithLinks='.$textWithLinks);
+        logit('html2textfile='.$html2textfile);
 
-
+/*
         if($mode == 'dry')
             {
             $command = "../bin/bracmat 'get\$\"removeLinks.bra\"' '\$textWithLinks' '\$html2textfile'";
@@ -378,7 +392,7 @@ try {
 
             pclose($cmd);
             }
-        
+*/        
 /*
 //      $command = "html2text -width 1000 -style pretty -utf8 -nobs $utf8file | recode HTML > $html2textfile ";
 //      $command = "html2text -width 1000 -style compact -utf8 -nobs $utf8file | sed 's/\_/\ /g' | ascii2uni -a Q -q > $html2textfile ";
