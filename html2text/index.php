@@ -310,18 +310,19 @@ try {
         $dump = ob_get_clean();
         logit($dump);
 
+        $utf8file1 = tempFileName("utf8fil1");
         $utf8file = tempFileName("utf8file");
         //$command = "makeUTF8 $F $utf8file";
         if($mode == 'dry')
             {
-            $command = "../bin/bracmat 'get\$\"cp2utf8.bra\"' \$F \$utf8file";
+            $command = "../bin/bracmat 'get\$\"cp2utf8.bra\"' \$F \$utf8file1";
             scrip($command . "\n");
-            $command = "../bin/bracmat 'get\$\"delicky.bra\"' \$utf8file \$utf8file";
+            $command = "../bin/bracmat 'get\$\"delicky.bra\"' \$utf8file1 \$utf8file";
             scrip($command . "\n");
             }
         else 
             {
-            $command = "../bin/bracmat 'get\$\"cp2utf8.bra\"' $F $utf8file";
+            $command = "../bin/bracmat 'get\$\"cp2utf8.bra\"' $F $utf8file1";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 {
@@ -333,7 +334,7 @@ try {
                 }
 
             pclose($cmd);
-            $command = "../bin/bracmat 'get\$\"delicky.bra\"' $utf8file $utf8file";
+            $command = "../bin/bracmat 'get\$\"delicky.bra\"' $utf8file1 $utf8file";
             logit($command);
             if(($cmd = popen($command, "r")) == NULL)
                 {
