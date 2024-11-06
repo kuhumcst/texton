@@ -339,11 +339,11 @@ It is difficult to get soffice to do what we want from PHP. What works on one ma
 
 ### mate-parser
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the .war file to the tomcat webapps folder.
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the BohnetsParser.war file to the tomcat webapps folder.
 
 ### mate-POStagger
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the .war file to the tomcat webapps folder.
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the BohnetsTagger.war file to the tomcat webapps folder.
 
 ### np-genkender
 
