@@ -199,22 +199,6 @@ See INSTALL.md in the texton-Java repo.
 
 ### running Text Tonsorium the first time
 
-Create file /opt/texton/BASE/meta/properties containing
-
-    ( baseUrlTools
-    . "http://localhost:8080"
-    . "Protocol and domain of infrastructure as made known to integrated tools"
-    )
-    ( wwwServer
-    . "http://localhost"
-    . "Protocol and domain of infrastructure as made known to users' browsers"
-    )
-    ( password
-    . "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
-    . "Empty string as password."
-    )
-    (salt."CvPAQd7naaqtVD1xJD37eg==".)
-
 Open a browser and navigate to http://localhost:8080/texton/
 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
