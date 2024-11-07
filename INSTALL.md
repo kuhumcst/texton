@@ -360,14 +360,6 @@ This tool can be downloaded in binary format, but we have not tried that. For bu
 
 ### PDFminer
 
-Install prerequisite:
-
-```bash
-$> sudo apt install poppler-utils
-```
-
-This installs /usr/bin/pdffonts.
-
 Visit https://github.com/euske/pdfminer and follow the installation instructions.
 
 ```bash
