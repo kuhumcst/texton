@@ -427,9 +427,10 @@ The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cu
 Unzip this resource:
 
 ```bash
-$> cd <texton folder>/udpipe
-$> cp ~/udpipe-ud-2.5-191206.zip .
+$> cd ~
+$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip?sequence=1&isAllowed=y
 $> unzip udpipe-ud-2.5-191206.zip
+$> sudo mv cd udpipe-ud-2.5-191206 <texton folder>/udpipe
 ```
 
 ## Tools that can or must be compiled from source
