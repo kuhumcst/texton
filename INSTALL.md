@@ -391,6 +391,7 @@ See the readme file in the CoreNLP folder for install instructions. (The instruc
 
 ```bash
 $> sudo apt install tesseract-ocr
+$> sudo apt install imagemagick
 ```
 
 In addition
@@ -398,6 +399,7 @@ In addition
 ```bash
 $> cd /opt/texton/tesseract
 $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
+$> sudo git clone https://github.com/paalberti/tesseract-dan-fraktur
 ```
 
 For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
