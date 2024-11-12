@@ -1,20 +1,22 @@
 How to install CoreNLP
 
-Fetch CoreNLP.
+Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case `https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip`.
 
-    wget https://nlp.stanford.edu/software/stanford-corenlp-latest.zip
+    cd ~
+    wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
 
 Unzip and move to destination folder
 
-    unzip stanford-corenlp-latest.zip
-    sudo mv stanford-corenlp-4.3.2 /opt/
-    
+    unzip stanford-corenlp-4.5.7.zip
+    sudo mv stanford-corenlp-4.5.7 /opt/
+
 Make link to latest version
 
-    sudo ln -s /opt/stanford-corenlp-4.3.2 /opt/corenlp
+    sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
 
 Copy CoreNLP.sh to its destination folder
 
+    cd /opt/texton/CoreNLP/
     sudo cp CoreNLP.sh /usr/local/bin/
 
 Make executable
@@ -41,6 +43,6 @@ Start/Stop service
 
     sudo systemctl start CoreNLP.service
     sudo systemctl stop CoreNLP.service
-    
+
 Acknowledgement:
 Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)

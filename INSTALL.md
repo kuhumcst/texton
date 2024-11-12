@@ -199,22 +199,6 @@ See INSTALL.md in the texton-Java repo.
 
 ### running Text Tonsorium the first time
 
-Create file /opt/texton/BASE/meta/properties containing
-
-    ( baseUrlTools
-    . "http://localhost:8080"
-    . "Protocol and domain of infrastructure as made known to integrated tools"
-    )
-    ( wwwServer
-    . "http://localhost"
-    . "Protocol and domain of infrastructure as made known to users' browsers"
-    )
-    ( password
-    . "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
-    . "Empty string as password."
-    )
-    (salt."CvPAQd7naaqtVD1xJD37eg==".)
-
 Open a browser and navigate to http://localhost:8080/texton/
 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
@@ -272,6 +256,11 @@ A somewhat old OCR program. In most cases not as good as Tesseract, but sometime
 
 ```bash
 $> sudo apt install cuneiform
+```
+Also needed is ImageMagick
+
+```bash
+$>sudo apt install imagemagick
 ```
 
 ### daner
@@ -355,11 +344,11 @@ It is difficult to get soffice to do what we want from PHP. What works on one ma
 
 ### mate-parser
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the .war file to the tomcat webapps folder.
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the BohnetsParser.war file to the tomcat webapps folder.
 
 ### mate-POStagger
 
-This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the .war file to the tomcat webapps folder.
+This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the BohnetsTagger.war file to the tomcat webapps folder.
 
 ### np-genkender
 
@@ -375,14 +364,6 @@ This webservice calls another webservice. The .war file for that webservice is i
 This tool can be downloaded in binary format, but we have not tried that. For building, see further down.
 
 ### PDFminer
-
-Install prerequisite:
-
-```bash
-$> sudo apt install poppler-utils
-```
-
-This installs /usr/bin/pdffonts.
 
 Visit https://github.com/euske/pdfminer and follow the installation instructions.
 
@@ -409,12 +390,68 @@ Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton
 
 ### Stanford CoreNLP
 
-See the readme file in the CoreNLP folder for install instructions. (The instructions assume installation in a system with systemd.)
+The following instructions assume installation in a system with systemd.
+
+Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip.
+
+```bash
+cd ~
+wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
+```
+Unzip and move to destination folder
+
+```bash
+unzip stanford-corenlp-4.5.7.zip
+sudo mv stanford-corenlp-4.5.7 /opt/
+```
+Make link to latest version
+
+```bash
+sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
+```
+Copy CoreNLP.sh to its destination folder
+
+```bash
+cd /opt/texton/CoreNLP/
+sudo cp CoreNLP.sh /usr/local/bin/
+```
+Make executable
+
+```bash
+sudo chmod +x /usr/local/bin/CoreNLP.sh
+```
+Check
+
+```bash
+/usr/local/bin/./CoreNLP.sh start
+sudo ps -ef | grep NLP
+/usr/local/bin/./CoreNLP.sh stop
+sudo ps -ef | grep NLP
+```
+Copy CoreNLP.service to its destination folder
+
+```bash
+sudo cp CoreNLP.service /etc/systemd/system/
+```
+Enable the service
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable CoreNLP.service
+```
+Start/Stop service
+
+```bash
+sudo systemctl start CoreNLP.service
+sudo systemctl stop CoreNLP.service
+```
+Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
 
 ### Tesseract OCR
 
 ```bash
 $> sudo apt install tesseract-ocr
+$> sudo apt install imagemagick
 ```
 
 In addition
@@ -422,6 +459,7 @@ In addition
 ```bash
 $> cd /opt/texton/tesseract
 $> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
+$> sudo git clone https://github.com/paalberti/tesseract-dan-fraktur
 ```
 
 For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
@@ -449,9 +487,10 @@ The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cu
 Unzip this resource:
 
 ```bash
-$> cd <texton folder>/udpipe
-$> cp ~/udpipe-ud-2.5-191206.zip .
+$> cd ~
+$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip?sequence=1&isAllowed=y
 $> unzip udpipe-ud-2.5-191206.zip
+$> sudo mv cd udpipe-ud-2.5-191206 <texton folder>/udpipe
 ```
 
 ## Tools that can or must be compiled from source
