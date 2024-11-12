@@ -257,6 +257,11 @@ A somewhat old OCR program. In most cases not as good as Tesseract, but sometime
 ```bash
 $> sudo apt install cuneiform
 ```
+Also needed is ImageMagick
+
+```bash
+$>sudo apt install imagemagick
+```
 
 ### daner
 
@@ -385,7 +390,62 @@ Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton
 
 ### Stanford CoreNLP
 
-See the readme file in the CoreNLP folder for install instructions. (The instructions assume installation in a system with systemd.)
+The following instructions assume installation in a system with systemd.
+
+Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip.
+
+```bash
+cd ~
+wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
+```
+Unzip and move to destination folder
+
+```bash
+unzip stanford-corenlp-4.5.7.zip
+sudo mv stanford-corenlp-4.5.7 /opt/
+```
+Make link to latest version
+
+```bash
+sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
+```
+Copy CoreNLP.sh to its destination folder
+
+```bash
+cd /opt/texton/CoreNLP/
+sudo cp CoreNLP.sh /usr/local/bin/
+```
+Make executable
+
+```bash
+sudo chmod +x /usr/local/bin/CoreNLP.sh
+```
+Check
+
+```bash
+/usr/local/bin/./CoreNLP.sh start
+sudo ps -ef | grep NLP
+/usr/local/bin/./CoreNLP.sh stop
+sudo ps -ef | grep NLP
+```
+Copy CoreNLP.service to its destination folder
+
+```bash
+sudo cp CoreNLP.service /etc/systemd/system/
+```
+Enable the service
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable CoreNLP.service
+```
+Start/Stop service
+
+```bash
+sudo systemctl start CoreNLP.service
+sudo systemctl stop CoreNLP.service
+```
+Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
 
 ### Tesseract OCR
 
