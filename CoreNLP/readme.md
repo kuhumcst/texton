@@ -9,11 +9,11 @@ Unzip and move to destination folder
 
     unzip stanford-corenlp-4.5.7.zip
     sudo mv stanford-corenlp-4.5.7 /opt/
-    
+
 Make link to latest version
 
     sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
-    
+
 Copy CoreNLP.sh to its destination folder
 
     cd /opt/texton/CoreNLP/
@@ -43,6 +43,6 @@ Start/Stop service
 
     sudo systemctl start CoreNLP.service
     sudo systemctl stop CoreNLP.service
-    
+
 Acknowledgement:
 Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
