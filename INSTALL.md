@@ -476,7 +476,9 @@ and comment out the lines telling that rights is "none" for these file types.
 
 ### udpipe
 
-You need to build this program. See below.
+Binary `udpipe` is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
+
+If this executable does not work, you need to build this program. See below.
 
 The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
 Unzip this resource:
@@ -574,7 +576,8 @@ $> sudo cp taggerXML/taggerXML /opt/texton/bin/
 ### udpipe
 
 UDPipe is at https://github.com/ufal/udpipe
-The generated binary needs shared objects. Therefore you need to clone this repo and build udpipe from source.
+The generated binary needs shared objects, which can come in different versions. 
+It may be a good idea to clone the repo and build udpipe from source.
 
 ```bash
 $> cd ~
