@@ -274,18 +274,6 @@ $> sudo git clone https://github.com/ITUnlp/daner.git
 
 Afterwards there will be a subdirectory `daner/daner`.
 
-### dapipe
-
-Dapipe is at https://github.com/ITUnlp/dapipe 
-
-```bash
-$> cd /opt/texton/dapipe
-$> sudo git clone https://github.com/ITUnlp/dapipe.git
-```
-
-Afterwards there will be a subdirectory `dapipe/dapipe`.
-It is probably better to use the newer udpipe software. 
-
 ### dependency2tree
 
 ```bash
@@ -310,6 +298,8 @@ $> sudo apt-get install espeak
 ### html2text
 
 ```bash
+$> sudo apt-get install php-mbstring
+$> sudo apt-get install php-dom
 $> cd /opt/texton/html2text
 $> sudo git clone https://github.com/soundasleep/html2text
 ```
@@ -330,7 +320,7 @@ $> sudo cp bin/jsoncat /opt/texton/bin
 
 ### Lapos
 
-This tool must be built from source. See below.
+An executable `lapos' is in the texton-bin repository. If that executable does not work, try to build it from source. See below.
 
 ### LibreOffice (soffice)
 
@@ -367,6 +357,11 @@ This tool can be downloaded in binary format, but we have not tried that. For bu
 
 Visit https://github.com/euske/pdfminer and follow the installation instructions.
 
+```bash
+$> sudo apt install python3-pdfminer
+```
+
+On older systems try the following, now deprecated, method: 
 ```bash
 $> sudo su
 # cd ~
