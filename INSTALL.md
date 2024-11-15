@@ -410,6 +410,10 @@ Copy CoreNLP.sh to its destination folder
 cd /opt/texton/CoreNLP/
 sudo cp CoreNLP.sh /usr/local/bin/
 ```
+You are advised to increase the `timeout' value from 5000 to e.g. 500000 in the lines
+```bash
+nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
+```
 Make executable
 
 ```bash
