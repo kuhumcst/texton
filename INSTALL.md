@@ -444,6 +444,9 @@ Start/Stop service
 sudo systemctl start CoreNLP.service
 sudo systemctl stop CoreNLP.service
 ```
+
+If CoreNLP is installed locally, you can visit its web interface by visiting http://localhost:9000/
+
 Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
 
 ### Tesseract OCR
