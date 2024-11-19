@@ -74,7 +74,7 @@ $> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} 
 Set group to www-data, recursively
 
 ```bash
-$> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
+$> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
 ```
 
 ## apache
