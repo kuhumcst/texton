@@ -449,6 +449,11 @@ If CoreNLP is installed locally, you can visit its web interface by visiting htt
 
 Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
 
+Logging messages are per default sent to /dev/null. To see logging messages, edit /usr/local/bin/./CoreNLP.sh and change the lines starting with `nohup java':
+
+    nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
+
+
 ### Tesseract OCR
 
 ```bash
