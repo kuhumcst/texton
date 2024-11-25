@@ -223,19 +223,19 @@ try {
         $Iappdrty = false;	/* Udseende in input is optimized for software (bedst for programmer) if true */
         $Ifacetseg = false;	/* Annotationstype in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Annotationstype in input is tokens (tokens) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangen = false;	/* Sprog in input is English (engelsk) if true */
         $Iperiodc21 = false;	/* Historisk periode in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Sammensætning in input is normal if true */
         $Oambiguna = false;	/* Flertydighed in output is unambiguous (utvetydig) if true */
         $Oappdrty = false;	/* Udseende in output is optimized for software (bedst for programmer) if true */
         $Ofacetner = false;	/* Annotationstype in output is name entities (navne) if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangen = false;	/* Sprog in output is English (engelsk) if true */
         $Operiodc21 = false;	/* Historisk periode in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Sammensætning in output is normal if true */
-        $Iformattxtannone = false;	/* Style of format TEIP5DKCLARIN_ANNOTATION in input is id: not disclosed if true */
-        $Oformattxtannone = false;	/* Style of format TEIP5DKCLARIN_ANNOTATION in output is id: not disclosed if true */
+        $Iformatteip5one = false;	/* Style of format TEIP5DKCLARIN_ANNOTATION in input is id: not disclosed if true */
+        $Oformatteip5one = false;	/* Style of format TEIP5DKCLARIN_ANNOTATION in output is id: not disclosed if true */
 
         if( hasArgument("base") )
             {
@@ -305,9 +305,9 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {
@@ -347,9 +347,9 @@ try {
             }
         if( hasArgument("Oformat") )
             {
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {
@@ -373,17 +373,17 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Iformattxtann") )
+        if( hasArgument("Iformatteip5") )
             {
-            $Iformattxtannone = existsArgumentWithValue("Iformattxtann", "one");
-            $echos = $echos . "Iformattxtannone=$Iformattxtannone ";
-            $input = $input . ($Iformattxtannone ? " \$Iformattxtannone" : "") ;
+            $Iformatteip5one = existsArgumentWithValue("Iformatteip5", "one");
+            $echos = $echos . "Iformatteip5one=$Iformatteip5one ";
+            $input = $input . ($Iformatteip5one ? " \$Iformatteip5one" : "") ;
             }
-        if( hasArgument("Oformattxtann") )
+        if( hasArgument("Oformatteip5") )
             {
-            $Oformattxtannone = existsArgumentWithValue("Oformattxtann", "one");
-            $echos = $echos . "Oformattxtannone=$Oformattxtannone ";
-            $output = $output . ($Oformattxtannone ? " \$Oformattxtannone" : "") ;
+            $Oformatteip5one = existsArgumentWithValue("Oformatteip5", "one");
+            $echos = $echos . "Oformatteip5one=$Oformatteip5one ";
+            $output = $output . ($Oformatteip5one ? " \$Oformatteip5one" : "") ;
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)

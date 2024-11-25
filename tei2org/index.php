@@ -219,7 +219,7 @@ try {
         $Ifacetmrf = false;	/* Type of content in input is morphological features (morfologiske træk) if true */
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
         $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
@@ -310,9 +310,9 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ofacet") )
             {

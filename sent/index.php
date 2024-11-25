@@ -216,11 +216,11 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacet_seg_tok = false;	/* Type of content in input is segments (sætningssegmenter) and tokens (tokens) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetsent = false;	/* Type of content in output is sentences (sætninger, før tokenisering) if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
 
         if( hasArgument("base") )
@@ -273,9 +273,9 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ipres") )
             {
@@ -297,9 +297,9 @@ try {
             }
         if( hasArgument("Oformat") )
             {
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Opres") )
             {

@@ -219,11 +219,11 @@ try {
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ofacetsent = false;	/* Type of content in output is sentences (sætninger, før tokenisering) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $OfacettokPT = false;	/* Style of type of content tokens (tokens) in output is Penn Treebank if true */
         $Ofacettoksimple = false;	/* Style of type of content tokens (tokens) in output is Simple if true */
-        $Oformattxtannone = false;	/* Style of format TEIP5DKCLARIN_ANNOTATION in output is id: not disclosed if true */
+        $Oformatteip5ne = false;	/* Style of format TEIP5DKCLARIN_ANNOTATION in output is id: not disclosed if true */
 
         if( hasArgument("base") )
             {
@@ -288,9 +288,9 @@ try {
             }
         if( hasArgument("Oformat") )
             {
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {
@@ -309,11 +309,11 @@ try {
             $echos = $echos . "OfacettokPT=$OfacettokPT " . "Ofacettoksimple=$Ofacettoksimple ";
             $output = $output . ($OfacettokPT ? " \$OfacettokPT" : "")  . ($Ofacettoksimple ? " \$Ofacettoksimple" : "") ;
             }
-        if( hasArgument("Oformattxtann") )
+        if( hasArgument("Oformatteip5") )
             {
-            $Oformattxtannone = existsArgumentWithValue("Oformattxtann", "one");
-            $echos = $echos . "Oformattxtannone=$Oformattxtannone ";
-            $output = $output . ($Oformattxtannone ? " \$Oformattxtannone" : "") ;
+            $Oformatteip5one = existsArgumentWithValue("Oformatteip5", "one");
+            $echos = $echos . "Oformatteip5one=$Oformatteip5ne ";
+            $output = $output . ($Oformatteip5ne ? " \$Oformatteip5ne" : "") ;
             }
 
 /* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)

@@ -216,13 +216,13 @@ try {
         $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
@@ -286,9 +286,9 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {
@@ -317,9 +317,9 @@ try {
             }
         if( hasArgument("Oformat") )
             {
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {

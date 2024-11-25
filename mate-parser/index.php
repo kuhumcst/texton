@@ -223,7 +223,7 @@ try {
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
@@ -339,9 +339,9 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {

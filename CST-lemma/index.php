@@ -930,7 +930,7 @@ try {
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
         $Ilangast = false;	/* Language in input is Asturian (asturisk) if true */
         $Ilangbe = false;	/* Language in input is Belarusian (hviderussisk) if true */
@@ -986,7 +986,7 @@ try {
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatcols = false;	/* Format in output is columns, tab separated fields (kolonner, tab separeret) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangaf = false;	/* Language in output is Afrikaans (afrikaans) if true */
         $Olangast = false;	/* Language in output is Asturian (asturisk) if true */
         $Olangbe = false;	/* Language in output is Belarusian (hviderussisk) if true */
@@ -1142,9 +1142,9 @@ try {
         if( hasArgument("Iformat") )
             {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {
@@ -1233,9 +1233,9 @@ try {
             {
             $Oformatcols = existsArgumentWithValue("Oformat", "cols");
             $Oformatflat = existsArgumentWithValue("Oformat", "flat");
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformatcols=$Oformatcols " . "Oformatflat=$Oformatflat " . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformatcols ? " \$Oformatcols" : "")  . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatcols=$Oformatcols " . "Oformatflat=$Oformatflat " . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatcols ? " \$Oformatcols" : "")  . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {
@@ -1499,7 +1499,7 @@ try {
             logit("Input has tags");
             $ShowTag = $Ofacetpos;
             logit("ShowTag=$ShowTag");
-            if($Iformattxtann)
+            if($Iformatteip5)
                 {
                 if($mode === 'dry')
                     {
@@ -1539,7 +1539,7 @@ try {
             {
             logit("No tags in input");
             $ShowTag = false;
-            if($Iformattxtann)
+            if($Iformatteip5)
                 {
                 logit('add lemma attribute');
                 if($mode === 'dry')
@@ -1576,7 +1576,7 @@ try {
             }
 
         logit("CSTLemfile $CSTLemfile");
-        if($Oformat === "txtann")
+        if($Oformat === "teip5")
             {
             if($mode === 'dry')
                 splits($toolbin,"\$CSTLemfile",'lemma',$annotation,$idprefix,$ancestor,$element);

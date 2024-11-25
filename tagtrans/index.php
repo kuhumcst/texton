@@ -223,7 +223,7 @@ try {
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatjson = false;	/* Format in input is JSON if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangla = false;	/* Language in input is Latin (latin) if true */
         $Iperiodc13 = false;	/* Historical period in input is medieval (middelalderen) if true */
@@ -236,7 +236,7 @@ try {
         $Ofacetseg = false;	/* Type of content in output is segments (sætningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangla = false;	/* Language in output is Latin (latin) if true */
         $Operiodc13 = false;	/* Historical period in output is medieval (middelalderen) if true */
@@ -349,9 +349,9 @@ try {
         if( hasArgument("Iformat") )
             {
             $Iformatjson = existsArgumentWithValue("Iformat", "json");
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformatjson=$Iformatjson " . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformatjson ? " \$Iformatjson" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatjson=$Iformatjson " . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatjson ? " \$Iformatjson" : "")  . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {
@@ -392,9 +392,9 @@ try {
         if( hasArgument("Oformat") )
             {
             $Oformatjson = existsArgumentWithValue("Oformat", "json");
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformatjson=$Oformatjson " . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformatjson ? " \$Oformatjson" : "")  . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatjson=$Oformatjson " . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatjson ? " \$Oformatjson" : "")  . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {

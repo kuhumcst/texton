@@ -293,7 +293,7 @@ try {
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatcols = false;	/* Format in input is columns, tab separated fields (kolonner, tab separeret) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetcls = false;	/* Type of content in output is word class (ordklasse) if true */
@@ -415,9 +415,9 @@ try {
         if( hasArgument("Iformat") )
         {
             $Iformatcols = existsArgumentWithValue("Iformat", "cols");
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformatcols=$Iformatcols " . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformatcols ? " \$Iformatcols" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatcols=$Iformatcols " . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatcols ? " \$Iformatcols" : "")  . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
         }
         if( hasArgument("Ipres") )
         {
@@ -480,14 +480,14 @@ try {
         {
             $CQPfile = tempFileName("CQP-results");
             scripinit($inputF,$input,$output);
-            if($Iformattxtann)
+            if($Iformatteip5)
                 CQP4($IfacettokF,$IfacetsegF,$IfacetposF,$IfacetlemF,$Ifacet_seg_tokF,$today);
             else
                 CQP($F);
         }
         else
         {
-            if($Iformattxtann)
+            if($Iformatteip5)
                 $CQPfile = CQP4($IfacettokF,$IfacetsegF,$IfacetposF,$IfacetlemF,$Ifacet_seg_tokF,$today);
             else
                 $CQPfile = CQP($F);

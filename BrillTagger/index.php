@@ -331,7 +331,7 @@ try {
         return "prop";
         }
 
-    function tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$tmpni,$language,$tempattribute,$period,$tmpno)
+    function tagger($toolbin,$toolres,$ancestor,$element,$Iformatteip5,$tmpni,$language,$tempattribute,$period,$tmpno)
         {
         global $mode;
         logit("Yyy/ period $period");
@@ -426,7 +426,7 @@ try {
         else
             exit(1);
         /* 20180925 added -f to convert first letter in first word to lower case*/
-        if($Iformattxtann)
+        if($Iformatteip5)
             {
             $command = $taggerprog . ' -f -x- -n ' . $n . ' -p ' . $p .' -D ' . $lexicon . ' -i ' . $tmpni. ' -B ' . $bigrams . ' -L ' . $lexrules . ' -C ' . $contextrules . ' -Xp' . $tempattribute . ' -XtNE ';
             if($ancestor != '')
@@ -544,7 +544,7 @@ try {
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ilanggml = false;	/* Language in input is Middle Low German (middelnedertysk) if true */
@@ -562,7 +562,7 @@ try {
         $Ofacetseg = false;	/* Type of content in output is segments (sætningssegmenter) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
-        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Olanggml = false;	/* Language in output is Middle Low German (middelnedertysk) if true */
@@ -677,9 +677,9 @@ try {
         if( hasArgument("Iformat") )
             {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
-            $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {
@@ -730,9 +730,9 @@ try {
         if( hasArgument("Oformat") )
             {
             $Oformatflat = existsArgumentWithValue("Oformat", "flat");
-            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
-            $echos = $echos . "Oformatflat=$Oformatflat " . "Oformattxtann=$Oformattxtann ";
-            $output = $output . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformattxtann ? " \$Oformattxtann" : "") ;
+            $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
+            $echos = $echos . "Oformatflat=$Oformatflat " . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {
@@ -877,7 +877,7 @@ try {
         if($IfacetnerF == "")
             $IfacetnerF = "\"*\"";
 
-        if($Iformattxtann)
+        if($Iformatteip5)
             {
             if($IfacettokF != "" && $IfacetsegF != "")
                 {
@@ -900,13 +900,13 @@ try {
                 
                 if($mode == 'dry')
                     {
-                    tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,"\$POSinputfile",$language,$tempattribute,$period,"\$tempfile");
+                    tagger($toolbin,$toolres,$ancestor,$element,$Iformatteip5,"\$POSinputfile",$language,$tempattribute,$period,"\$tempfile");
                     logit('isolate POS tags in spanGrp');
                     splits($toolbin,"\$tempfile",$tempattribute,$annotation,$idprefix,$ancestor,$element);
                     }
                 else
                     {
-                    $filename = tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$POSinputfile,$language,$tempattribute,$period,"");
+                    $filename = tagger($toolbin,$toolres,$ancestor,$element,$Iformatteip5,$POSinputfile,$language,$tempattribute,$period,"");
                     logit('isolate POS tags in spanGrp');
                     $BrillTaggerfile = splits($toolbin,$filename,$tempattribute,$annotation,$idprefix,$ancestor,$element);
                     }
@@ -959,11 +959,11 @@ try {
                 logit('POStagger');
                 if($mode == 'dry')
                     {
-                    tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$input,$language,"",$period,"\$BrillTaggerfile");
+                    tagger($toolbin,$toolres,$ancestor,$element,$Iformatteip5,$input,$language,"",$period,"\$BrillTaggerfile");
                     }
                 else
                     {
-                    $BrillTaggerfile = tagger($toolbin,$toolres,$ancestor,$element,$Iformattxtann,$input,$language,"",$period,"");
+                    $BrillTaggerfile = tagger($toolbin,$toolres,$ancestor,$element,$Iformatteip5,$input,$language,"",$period,"");
                     }
                 logit('write POS tags after tokens, separated by slash.');
                 }
