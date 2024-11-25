@@ -215,7 +215,7 @@ try {
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Ifacettxt = false;	/* Type of content in input is text (ingen annotation) if true */
-        $Iformattxtbasis = false;	/* Format in input is TEIP5DKCLARIN if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ofacetsent = false;	/* Type of content in output is sentences (sætninger, før tokenisering) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
@@ -269,9 +269,9 @@ try {
             }
         if( hasArgument("Iformat") )
             {
-            $Iformattxtbasis = existsArgumentWithValue("Iformat", "txtbasis");
-            $echos = $echos . "Iformattxtbasis=$Iformattxtbasis ";
-            $input = $input . ($Iformattxtbasis ? " \$Iformattxtbasis" : "") ;
+            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
+            $echos = $echos . "Iformatteip5=$Iformatteip5 ";
+            $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
         if( hasArgument("Ilang") )
             {
