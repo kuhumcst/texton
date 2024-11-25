@@ -14,8 +14,8 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : CoreNLP
-PassWord       :
-Version        : 4.3.2
+PassWord       : 
+Version        : 4.5.7
 Title          : Stanford CoreNLP
 Path in URL    : CoreNLP	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : Stanford NLP Group
@@ -24,9 +24,11 @@ Creator        : Stanford NLP Group
 InfoAbout      : https://stanfordnlp.github.io/CoreNLP/
 Description    : CoreNLP is your one stop shop for natural language processing in Java! CoreNLP enables users to derive linguistic annotations for text, including token and sentence boundaries, parts of speech, named entities, numeric and time values, dependency and constituency parses, coreference, sentiment, quote attributions, and relations. CoreNLP currently supports 8 languages: Arabic, Chinese, English, French, German, Hungarian, Italian, and Spanish.
 ExternalURI    : http://nlp.stanford.edu:8080/corenlp/process
-XMLparms       :
-PostData       :
-Inactive       :
+RestAPIkey         : 
+RestAPIpassword    : 
+MultiInp       : 
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -37,7 +39,6 @@ $toollog = '../log/CoreNLP.log'; /* Used by the logit() function. TODO make sure
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -69,7 +70,7 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : CoreNLP\n");
-        fwrite($fscrip," * Version          : 4.3.2\n");
+        fwrite($fscrip," * Version          : 4.5.7\n");
         fwrite($fscrip," * Title            : Stanford CoreNLP\n");
         fwrite($fscrip," * ServiceURL       : http://localhost/CoreNLP\n");
         fwrite($fscrip," * Publisher        : Stanford NLP Group\n");
@@ -121,7 +122,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -190,6 +191,7 @@ try {
         global $CoreNLPfile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -211,28 +213,49 @@ try {
         $input = "";	/* List of all input features. */
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
-        $IfacetsegF = "";	/* Input with type of content segments (sætningssegmenter) */
+        $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
+        $IfacetsegF = "";	/* Input with type of content segments (sÃ¦tningssegmenter) */
         $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
+        $Ifacetseg = false;	/* Type of content in input is segments (sÃ¦tningssegmenter) if true */
+        $Ifacetsent = false;	/* Type of content in input is sentences (sÃ¦tninger, fÃ¸r tokenisering) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
+        $Ifacettxt = false;	/* Type of content in input is text (ingen annotation) if true */
+        $Iformatflat = false;	/* Format in input is plain (flad) if true */
         $Iformattxtann = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Ilangar = false;	/* Language in input is Arabic (arabisk) if true */
+        $Ilangde = false;	/* Language in input is German (tysk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
-        $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
+        $Ilanges = false;	/* Language in input is Spanish (spansk) if true */
+        $Ilangfr = false;	/* Language in input is French (fransk) if true */
+        $Ilanghu = false;	/* Language in input is Hungarian (ungarsk) if true */
+        $Ilangit = false;	/* Language in input is Italian (italiensk) if true */
+        $Ilangzh = false;	/* Language in input is Chinese (kinesisk) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
+        $Ofacetcor = false;	/* Type of content in output is coreference if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
-        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
+        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske trÃ¦k) if true */
         $Ofacetner = false;	/* Type of content in output is name entities (navne) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
+        $Ofacetseg = false;	/* Type of content in output is segments (sÃ¦tningssegmenter) if true */
         $Ofacetsnt = false;	/* Type of content in output is sentiment if true */
+        $Ofacetstc = false;	/* Type of content in output is syntax (constituency relations) (syntaks (frasestruktur)) if true */
+        $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
+        $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
+        $Oformattxtann = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Olangar = false;	/* Language in output is Arabic (arabisk) if true */
+        $Olangde = false;	/* Language in output is German (tysk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
-        $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
+        $Olanges = false;	/* Language in output is Spanish (spansk) if true */
+        $Olangfr = false;	/* Language in output is French (fransk) if true */
+        $Olanghu = false;	/* Language in output is Hungarian (ungarsk) if true */
+        $Olangit = false;	/* Language in output is Italian (italiensk) if true */
+        $Olangzh = false;	/* Language in output is Chinese (kinesisk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $IfacettokPT = false;	/* Style of type of content tokens (tokens) in input is Penn Treebank if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
 
         if( hasArgument("base") )
@@ -256,12 +279,23 @@ try {
 /*********
 * input  *
 *********/
+        if( hasArgument("F") )
+            {
+            $F = requestFile("F");
+            if($F === '')
+                {
+                header("HTTP/1.0 404 Input not found (F parameter). ");
+                return;
+                }
+            $echos = $echos . "F=$F ";
+            $inputF = $inputF . " \$F ";
+            }
         if( hasArgument("IfacetsegF") )
             {
             $IfacetsegF = requestFile("IfacetsegF");
-            if($IfacetsegF == '')
+            if($IfacetsegF === '')
                 {
-                header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
+                header("HTTP/1.0 404 Input with type of content 'segments (sÃ¦tningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
                 }
             $echos = $echos . "IfacetsegF=$IfacetsegF ";
@@ -270,7 +304,7 @@ try {
         if( hasArgument("IfacettokF") )
             {
             $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF == '')
+            if($IfacettokF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
@@ -291,28 +325,37 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
+            $Ifacetsent = existsArgumentWithValue("Ifacet", "sent");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok ";
-            $input = $input . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacettok ? " \$Ifacettok" : "") ;
+            $Ifacettxt = existsArgumentWithValue("Ifacet", "txt");
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacetsent=$Ifacetsent " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
+            $input = $input . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacetsent ? " \$Ifacetsent" : "")  . ($Ifacettok ? " \$Ifacettok" : "")  . ($Ifacettxt ? " \$Ifacettxt" : "") ;
             }
         if( hasArgument("Iformat") )
             {
+            $Iformatflat = existsArgumentWithValue("Iformat", "flat");
             $Iformattxtann = existsArgumentWithValue("Iformat", "txtann");
-            $echos = $echos . "Iformattxtann=$Iformattxtann ";
-            $input = $input . ($Iformattxtann ? " \$Iformattxtann" : "") ;
+            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformattxtann=$Iformattxtann ";
+            $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformattxtann ? " \$Iformattxtann" : "") ;
             }
         if( hasArgument("Ilang") )
             {
+            $Ilangar = existsArgumentWithValue("Ilang", "ar");
+            $Ilangde = existsArgumentWithValue("Ilang", "de");
             $Ilangen = existsArgumentWithValue("Ilang", "en");
-            $echos = $echos . "Ilangen=$Ilangen ";
-            $input = $input . ($Ilangen ? " \$Ilangen" : "") ;
+            $Ilanges = existsArgumentWithValue("Ilang", "es");
+            $Ilangfr = existsArgumentWithValue("Ilang", "fr");
+            $Ilanghu = existsArgumentWithValue("Ilang", "hu");
+            $Ilangit = existsArgumentWithValue("Ilang", "it");
+            $Ilangzh = existsArgumentWithValue("Ilang", "zh");
+            $echos = $echos . "Ilangar=$Ilangar " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilangfr=$Ilangfr " . "Ilanghu=$Ilanghu " . "Ilangit=$Ilangit " . "Ilangzh=$Ilangzh ";
+            $input = $input . ($Ilangar ? " \$Ilangar" : "")  . ($Ilangde ? " \$Ilangde" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilanges ? " \$Ilanges" : "")  . ($Ilangfr ? " \$Ilangfr" : "")  . ($Ilanghu ? " \$Ilanghu" : "")  . ($Ilangit ? " \$Ilangit" : "")  . ($Ilangzh ? " \$Ilangzh" : "") ;
             }
         if( hasArgument("Iperiod") )
             {
-            $Iperiodc20 = existsArgumentWithValue("Iperiod", "c20");
             $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
-            $echos = $echos . "Iperiodc20=$Iperiodc20 " . "Iperiodc21=$Iperiodc21 ";
-            $input = $input . ($Iperiodc20 ? " \$Iperiodc20" : "")  . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
+            $echos = $echos . "Iperiodc21=$Iperiodc21 ";
+            $input = $input . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
             }
         if( hasArgument("Ipres") )
             {
@@ -328,32 +371,44 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetcor = existsArgumentWithValue("Ofacet", "cor");
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
             $Ofacetmrf = existsArgumentWithValue("Ofacet", "mrf");
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
+            $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
             $Ofacetsnt = existsArgumentWithValue("Ofacet", "snt");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetsnt=$Ofacetsnt ";
-            $output = $output . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetmrf ? " \$Ofacetmrf" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "") ;
+            $Ofacetstc = existsArgumentWithValue("Ofacet", "stc");
+            $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
+            $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
+            $echos = $echos . "Ofacetcor=$Ofacetcor " . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
+            $output = $output . ($Ofacetcor ? " \$Ofacetcor" : "")  . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetmrf ? " \$Ofacetmrf" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
             }
         if( hasArgument("Oformat") )
             {
             $Oformatjson = existsArgumentWithValue("Oformat", "json");
-            $echos = $echos . "Oformatjson=$Oformatjson ";
-            $output = $output . ($Oformatjson ? " \$Oformatjson" : "") ;
+            $Oformattxtann = existsArgumentWithValue("Oformat", "txtann");
+            $echos = $echos . "Oformatjson=$Oformatjson " . "Oformattxtann=$Oformattxtann ";
+            $output = $output . ($Oformatjson ? " \$Oformatjson" : "")  . ($Oformattxtann ? " \$Oformattxtann" : "") ;
             }
         if( hasArgument("Olang") )
             {
+            $Olangar = existsArgumentWithValue("Olang", "ar");
+            $Olangde = existsArgumentWithValue("Olang", "de");
             $Olangen = existsArgumentWithValue("Olang", "en");
-            $echos = $echos . "Olangen=$Olangen ";
-            $output = $output . ($Olangen ? " \$Olangen" : "") ;
+            $Olanges = existsArgumentWithValue("Olang", "es");
+            $Olangfr = existsArgumentWithValue("Olang", "fr");
+            $Olanghu = existsArgumentWithValue("Olang", "hu");
+            $Olangit = existsArgumentWithValue("Olang", "it");
+            $Olangzh = existsArgumentWithValue("Olang", "zh");
+            $echos = $echos . "Olangar=$Olangar " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olangfr=$Olangfr " . "Olanghu=$Olanghu " . "Olangit=$Olangit " . "Olangzh=$Olangzh ";
+            $output = $output . ($Olangar ? " \$Olangar" : "")  . ($Olangde ? " \$Olangde" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olanges ? " \$Olanges" : "")  . ($Olangfr ? " \$Olangfr" : "")  . ($Olanghu ? " \$Olanghu" : "")  . ($Olangit ? " \$Olangit" : "")  . ($Olangzh ? " \$Olangzh" : "") ;
             }
         if( hasArgument("Operiod") )
             {
-            $Operiodc20 = existsArgumentWithValue("Operiod", "c20");
             $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
-            $echos = $echos . "Operiodc20=$Operiodc20 " . "Operiodc21=$Operiodc21 ";
-            $output = $output . ($Operiodc20 ? " \$Operiodc20" : "")  . ($Operiodc21 ? " \$Operiodc21" : "") ;
+            $echos = $echos . "Operiodc21=$Operiodc21 ";
+            $output = $output . ($Operiodc21 ? " \$Operiodc21" : "") ;
             }
         if( hasArgument("Opres") )
             {
@@ -365,12 +420,6 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
-        if( hasArgument("Ifacettok") )
-            {
-            $IfacettokPT = existsArgumentWithValue("Ifacettok", "PT");
-            $echos = $echos . "IfacettokPT=$IfacettokPT ";
-            $input = $input . ($IfacettokPT ? " \$IfacettokPT" : "") ;
-            }
         if( hasArgument("Ofacetpos") )
             {
             $OfacetposPT = existsArgumentWithValue("Ofacetpos", "PT");
@@ -406,17 +455,58 @@ try {
         $CoreNLPfile = tempFileName("CoreNLP");
         http($F,$CoreNLPfile,$lang);
 */
+        $formatI = getArgument("Iformat");
+        $formatO = getArgument("Oformat");
         $lang = getArgument("Olang");
+        logit("lang $lang");
+        switch($lang)
+        {
+            case 'ar':
+                $language = 'arabic';
+                break;
+            case 'de':
+                $language = 'german';
+                break;
+            case 'es':
+                $language = 'spanish';
+                break;
+            case 'fr':
+                $language = 'french';
+                break;
+            case 'hu':
+                $language = 'hungarian';
+                break;
+            case 'it':
+                $language = 'italian';
+                break;
+            case 'zh':
+                $language = 'chinese';
+                break;
+            default:
+                $language = 'english';
+                break;
+        }
+        $properties = ensureProperties($lang,$language);
+
+        if(is_null($properties))
+            {
+            header('HTTP/1.0 404 An error occurred: ' . $ERROR);
+            return;
+            }
+
         if( hasArgument("Operiod") )
             $period = getArgument("Operiod");
         else
             $period = "c21";
 
         $CoreNLPfile = tempFileName("CoreNLP-results");
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
             scripinit($inputF,$input,$output);
-            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $lang $period \$IfacettokF \$IfacetsegF \$CoreNLPfile tmp1 tmp2";
+            if($F==='')
+                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $period \$IfacettokF \$IfacetsegF \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
+            else
+                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $period \$F $formatI/ \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
             $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
             $rms1 =  "&& rm tmp1 && rm tmp2 ";
             $rms3 = "&& rm \$CoreNLPfile ";
@@ -451,7 +541,10 @@ try {
             {
             $tmp1 = tempFileName("corenlp-tmp1");
             $tmp2 = tempFileName("corenlp-tmp2");
-            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $lang $period $IfacettokF $IfacetsegF $CoreNLPfile $tmp1 $tmp2";
+            if($F==='')
+                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $period $IfacettokF $IfacetsegF $CoreNLPfile $tmp1 $tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
+            else
+                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $period $F $formatI/ $CoreNLPfile $tmp1 $tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
             $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
             $rms1 =  "&& rm $tmp1 && rm $tmp2 ";
             $rms3 = "&& rm $CoreNLPfile ";
@@ -466,6 +559,47 @@ try {
 // START SPECIFIC CODE
 //    require_once 'RESTclient.php';
 
+    function ensureProperties($lang,$language)
+        {
+        if(!file_exists("../texton-linguistic-resources/$lang"))
+            {
+            logit("mkdir");
+            $ret = mkdir("../texton-linguistic-resources/$lang");
+            logit("mkdir:".$ret);
+            }
+        $res = "../texton-linguistic-resources/$lang/CoreNLP";
+        if($lang === 'en')
+            $prop = 'StanfordCoreNLP.properties';
+        else
+            $prop = "StanfordCoreNLP-$language.properties";
+        logit("res $res prop $prop");
+        $properties = "$res/$prop";
+        if(file_exists($properties))
+        {
+            logit("exists");
+            return $properties;
+        }
+
+        if(!file_exists($res))
+        {
+            logit("mkdir");
+            $ret = mkdir($res);
+            logit("mkdir:".$ret);
+        }
+
+        if(file_exists($res))
+            {
+            logit("$ret exists");
+            if($lang==='en')
+                system("unzip -p /opt/stanford-corenlp-4.5.7/stanford-corenlp-4.5.7-models.jar $prop > $res/$prop");
+            else
+                system("unzip -p /opt/stanford-corenlp-4.5.7/stanford-corenlp-4.5.7-models-$language.jar $prop > $res/$prop");
+            return $properties;
+            }
+        logit("FAIL");
+        return null;
+        }
+    /*
     function http($text,$output,$lang)
         {
         // create a shell command
@@ -488,8 +622,8 @@ try {
         // get object with data
 
         return;
-    }
-
+        }
+    */
 // END SPECIFIC CODE
     loginit();
     do_CoreNLP();

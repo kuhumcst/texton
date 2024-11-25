@@ -6,8 +6,9 @@ Output JSON.
 
 X=
   ( doit
-  =     output tmp1 tmp2 A B C D E F G H
-      , xmlseg xmltok lang period
+  =     output tmp1 tmp2 A B C D E F G H formatO
+      , xmlseg xmltok lang language properties period
+      , cor lem mrf ner pos seg snt stc stx tok
     .   ( turnTEIP5intoPlain
         =   
           .   !arg:(?inputtok.?inputseg)
@@ -35,12 +36,8 @@ X=
                               & \n:?sep
                               &   !inputseg
                                 :   ( span
-                                    .       ?
-                                            (from.@(?:"#" ?fr))
-                                            ?
-                                        :   ?
-                                            (to.@(?:"#" ?to))
-                                            ?
+                                    .     ? (from.@(?:"#" ?fr)) ?
+                                        : ? (to.@(?:"#" ?to)) ?
                                         : ? ("xml:id".?Sid) ?
                                       , 
                                     )
@@ -57,147 +54,8 @@ X=
         )
       & ( turnJSONintoTEIP5
         =   s segid sentnr S L P tfrom tto
-          .   !arg:(?conll.?xmltok.?xmlseg)
-            & TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            & 1:?sentnr
-            & :?s
-            &     vap
-                $ ( ( 
-                    =   prefix sentid
-                      .     !arg:
-                          & :?S
-                          &   whl
-                            ' ( !s:%?L ?s
-                              & !L !S:?S
-                              )
-                          & (.!S)
-                        | @(!arg:"#" ?)&
-                        |     !arg
-                            : @( ?
-                               :   ?from
-                                   \t
-                                   ?word
-                                   \t
-                                   ?lemma
-                                   \t
-                                   ?pos
-                                   \t
-                                   ?
-                                   \t
-                                   ?mrf
-                                   \t
-                                   ?to
-                                   \t
-                                   ?h
-                                   \t
-                                   ?
-                                   \t
-                                   ?
-                               )
-                          &     (!from.!word.!lemma.!pos.!mrf.!to.!h)
-                                !s
-                            : ?s
-                          & 
-                    )
-                  . !conll
-                  . \n
-                  )
-              : ?conllS
-            &     map
-                $ ( ( 
-                    =   prefix sentid con
-                      .   !arg:(.?con)
-                        & :?S:?L:?P
-                        & str$(!segid "." !sentnr):?sentid
-                        & str$(!segid "." !sentid "."):?prefix
-                        &   !xmlseg
-                          :   ( span
-                              .       ?
-                                      (from.@(?:"#" ?tfrom))
-                                      ?
-                                  : ( ? (to.@(?:"#" ?tto)) ?
-                                    | ?&!tfrom:?tto
-                                    )
-                                , 
-                              )
-                              ?xmlseg
-                        &   !xmltok
-                          :   ?
-                              ( span
-                              . ?a ("xml:id".!tfrom) ?b,?c
-                              )
-                              ?xmltok
-                        &     ( span
-                              . !a ("xml:id".!tfrom) !b,!c
-                              )
-                              ( !tto:!tfrom&
-                              |     !xmltok
-                                  :   ?M
-                                      ( span
-                                      .   ?d ("xml:id".!tto) ?e
-                                        , ?f
-                                      )
-                                      ?xmltok
-                                &   !M
-                                    ( span
-                                    . !d ("xml:id".!tto) !e,!f
-                                    )
-                              )
-                          : ?toks
-                        &     map
-                            $ ( ( 
-                                =   
-                                  .     !arg
-                                      : ( ?from
-                                        . ?word
-                                        . ?lemma
-                                        . ?pos
-                                        . ?mrf
-                                        . ?to
-                                        . ?h
-                                        )
-                                    &   !toks
-                                      :   ( span
-                                          .   ? ("xml:id".?tid) ?
-                                            , !word
-                                          )
-                                          ?toks
-                                    & (!tid.!from.!lemma.!pos.!mrf.!to.!h)
-                                )
-                              . !con
-                              )
-                          : ?S
-                        &     map
-                            $ ( ( 
-                                =   
-                                  .     !arg
-                                      : ( ?tid
-                                        . ?from
-                                        . ?lemma
-                                        . ?pos
-                                        . ?mrf
-                                        . ?to
-                                        . ?h
-                                        )
-                                    & ( !tid
-                                      . !lemma
-                                      . !pos
-                                      . !mrf
-                                      .       !S
-                                            : ? (?nto.!to.?) ?
-                                          & !nto
-                                        | !to
-                                      . !h
-                                      )
-                                )
-                              . !S
-                              )
-                          : ?S
-                        & !S
-                    )
-                  . !conllS
-                  )
-              : ?conllT
+          .   !arg:?json
+            & !json:((sentences.,?sentences),)
             & ( TEI
               .   (xmlns."http://www.tei-c.org/ns/1.0")
                 ,   (teiHeader.,)
@@ -208,12 +66,8 @@ X=
                             ,   map
                               $ ( ( 
                                   =   
-                                    .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & ( span
-                                        .   (from.str$("#" !tid))
-                                          , !lemma
-                                        )
+                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
+                                      & (span.(from.str$("#" !tid)),!lemma)
                                   )
                                 . !conllT
                                 )
@@ -223,12 +77,8 @@ X=
                             ,   map
                               $ ( ( 
                                   =   
-                                    .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & ( span
-                                        .   (from.str$("#" !tid))
-                                          , !pos
-                                        )
+                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
+                                      & (span.(from.str$("#" !tid)),!pos)
                                   )
                                 . !conllT
                                 )
@@ -238,12 +88,8 @@ X=
                             ,   map
                               $ ( ( 
                                   =   
-                                    .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & ( span
-                                        .   (from.str$("#" !tid))
-                                          , !mrf
-                                        )
+                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
+                                      & (span.(from.str$("#" !tid)),!mrf)
                                   )
                                 . !conllT
                                 )
@@ -253,16 +99,14 @@ X=
                             ,   map
                               $ ( ( 
                                   =   
-                                    .     !arg
-                                        : (?tid.?lemma.?pos.?mrf.?to.?h)
+                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
                                       & ( span
                                         .   (from.str$("#" !tid))
                                           ,   (     !to
                                                   : (0|)
                                                 & 
                                               | ( link
-                                                .   (target.str$("#" !to))
-                                                  , 
+                                                . (target.str$("#" !to)),
                                                 )
                                               )
                                               (term.,str$("ud-syn:" !h))
@@ -274,49 +118,361 @@ X=
                     )
               )
         )
-      & ( transform
-        =   Tokenized/SegmentedPlainText tmp1 tmp2 lang period
+      & (trim=.str$(vap$(.!arg." ")))
+      & ( getProperties
+        =     file javaProperties extra
+            , cor lem mrf ner pos seg snt stc stx tok
+            , transl lang filter ftr
           .     !arg
-              : (?lang.?period.?Tokenized/SegmentedPlainText.?tmp1.?tmp2)
+              : ( ?file
+                . ?extra
+                . ?cor,?lem,?mrf,?ner,?pos,?seg,?snt,?stc,?stx,?tok
+                . ?lang
+                )
+            &     (tokenize.tok)
+                  ("cdc_tokenize".tok)
+                  (cleanxml.)
+                  (ssplit.seg)
+                  (pos.pos)
+                  (lemma.lem)
+                  (ner.ner)
+                  (parse.stc)
+                  (depparse.stx)
+                  (coref.cor)
+                  (natlog.)
+                  (openie.)
+                  (kbp.)
+                  (entitylink.ner)
+                  (sentiment.snt)
+                  (quote.)
+                  (mwt.tok)
+              : ?transl
+            & get$(!file,STR):?javaProperties
+            & put$(!javaProperties,javaProperties,NEW)
+            &   (     mop
+                    $ ( 
+                      .   vap
+                        $ ( ( 
+                            =   
+                              .   @(!arg:"#" ?)&
+                                |   @( !arg
+                                     : (?prop "=" ?val|?prop ":" ?val)
+                                     )
+                                  & trim$!prop:?prop
+                                  & trim$!val:?val
+                                  & (   !prop:annotators
+                                      &     mop
+                                          $ ( 
+                                            .     vap
+                                                $ ( ( 
+                                                    =   
+                                                      .     (   !transl
+                                                              :   ?
+                                                                  ( !arg
+                                                                  .   ?tt
+                                                                    &   !!tt
+                                                                      : 1
+                                                                  )
+                                                                  ?
+                                                            |   !lang:zh
+                                                              &   !arg
+                                                                : lemma
+                                                              & "lemma is no-op for Chinese but currently needed because coref demands it (bad old requirements system)"
+                                                            )
+                                                          & !arg
+                                                        | 
+                                                    )
+                                                  . !val
+                                                  . ","
+                                                  )
+                                              : ?filter
+                                            . (=a b)
+                                            . (=,)
+                                            )
+                                        : ?val
+                                    |   @(!prop:?ftr "." ?)
+                                      & put$(!ftr \n,filter,APP)
+                                      & put$(!filter \n,filter,APP)
+                                      &     (     !lang
+                                                : (ar|zh)
+                                              & segment
+                                            | 
+                                            )
+                                            !filter
+                                        : ? !ftr ?
+                                    )
+                                  & (!prop..str$!val)
+                                | 
+                            )
+                          . !javaProperties
+                          . \n
+                          )
+                      . (=a b)
+                      . (=+)
+                      )
+                  + !extra
+                , 
+                )
+              : ?jsonProperties
+            & lst$(jsonProperties,jsonProperties0,NEW)
+            & jsn$!jsonProperties:?jsonProperties
+            & put$(!jsonProperties,jsonProperties,NEW)
+            & !jsonProperties
+        )
+      & ( percentencode
+        =   c prc reserved
+          .   ( prc
+              =   
+                .     @(!arg:%@?c ?arg)
+                    &   (   !c:"+"
+                          & "%2B is decoded to a space, presumably because percent decoding is done a second time somewhere. The solution is a hack: Percent encoding the %!"
+                          & "%25"
+                        | "%"
+                        )
+                        d2x$(asc$!c)
+                        prc$!arg
+                  | 
+              )
+            &   str
+              $ ( vap
+                $ ( ( 
+                    =   
+                      .     ( !('("-" "." "_" "~":? ()$arg ?))
+                            |   !arg
+                              : (~<A:~>Z|~<a:~>z)
+                            )
+                          & !arg
+                        | prc$!arg
+                    )
+                  . !arg
+                  )
+                )
+        )
+      & ( transform
+        =     Tokenized/SegmentedPlainText tmp1 tmp2 formatO lang language properties period
+            , cor lem mrf ner pos seg snt stc stx tok
+          .     !arg
+              : ( ?formatO
+                . ?lang
+                . ?language
+                . ?properties
+                . ?period
+                . ?Tokenized/SegmentedPlainText
+                . ?tmp1
+                . ?tmp2
+                . ?cor
+                . ?lem
+                . ?mrf
+                . ?ner
+                . ?pos
+                . ?seg
+                . ?snt
+                . ?stc
+                . ?stx
+                . ?tok
+                )
             & put$(!Tokenized/SegmentedPlainText,!tmp1,NEW)
             & put$(!Tokenized/SegmentedPlainText,tmp1,NEW)
-            &   (   str
-                  $ ( "wget --post-file "
-                      !tmp1
-                      " 'http://localhost:9000/?properties={\"annotators\":\"tokenize,ssplit,pos,lemma,ner,sentiment\",\"outputFormat\":\"json\",\"tokenize.whitespace\":\"true\",\"ssplit.newlineIsSentenceBreak\":\"always\",\"outputFormat\":\"json\",\"timeout\":500000}' -O "
-                      !tmp2
-                      " --"
-                    )
-                )
+            & put$(!properties,properties,NEW)
+            &     getProperties
+                $ ( !properties
+                  . (outputFormat..json)+(timeout..500000)
+                  . !cor,!lem,!mrf,!ner,!pos,!seg,!snt,!stc,!stx,!tok
+                  . !lang
+                  )
+              : ?properties
+            & put$(!properties,properties2,NEW)
+            &     str
+                $ ( "wget --post-file "
+                    !tmp1
+                    " 'http://localhost:9000/?properties="
+                    percentencode$!properties
+                    "' -O "
+                    !tmp2
+                    " --"
+                  )
               : ?command
-& put$(str$!command,command,NEW,BIN)
+            & put$(str$!command,command,NEW,BIN)
             & sys$!command
-            & get$(!tmp2,STR)
+            & ( !formatO:jsn&get$(!tmp2,STR)
+              |   get$(!tmp2,JSN):?json
+                & lst$(json,json,NEW)
+                & turnJSONintoTEIP5$!json
+              )
         )
       &   !arg
-        : (?lang.?period.?inputtok.?inputseg.?output.?tmp1.?tmp2)
+        : ( ?formatO
+          . ?lang
+          . ?language
+          . ?properties
+          . ?period
+          . ?inputtok
+          . ?inputseg
+          . ?output
+          . ?tmp1
+          . ?tmp2
+          . ?cor
+          . ?lem
+          . ?mrf
+          . ?ner
+          . ?pos
+          . ?seg
+          . ?snt
+          . ?stc
+          . ?stx
+          . ?tok
+          )
+      &   put
+        $ (   formatO
+              !formatO
+              lang
+              !lang
+              language
+              !language
+              properties
+              !properties
+              inputtok
+              !inputtok
+              inputseg
+              !inputseg
+              cor
+              !cor
+              lem
+              !lem
+              mrf
+              !mrf
+              ner
+              !ner
+              pos
+              !pos
+              seg
+              !seg
+              snt
+              !snt
+              stc
+              !stc
+              stx
+              !stx
+              tok
+              !tok
+          , Lang
+          , NEW
+          , BIN
+          )
       & (get$"langtable.bra":?langtable|)
-      &   nestML$(get$(!inputtok,X ML TRM))
-        : ? (spanGrp.?,?xmltok) ?
-      &   nestML$(get$(!inputseg,X ML TRM))
-        : ? (spanGrp.?,?xmlseg) ?
-      &   str$(turnTEIP5intoPlain$(!xmltok.!xmlseg))
+      &   (   @(!inputseg:?format "/")
+            & ( !format:flat&get$(!inputtok,STR)
+              |     nestML$(get$(!inputtok,X ML TRM))
+                  : ? (spanGrp.?,?xmlsent) ?
+                &   str
+                  $ ( map
+                    $ ( ( 
+                        =   
+                          .   !arg:(?.?,?arg)&!arg \n
+                            | 
+                        )
+                      . !xmlsent
+                      )
+                    )
+              )
+          |     nestML$(get$(!inputtok,X ML TRM))
+              : ? (spanGrp.?,?xmltok) ?
+            &   nestML$(get$(!inputseg,X ML TRM))
+              : ? (spanGrp.?,?xmlseg) ?
+            & str$(turnTEIP5intoPlain$(!xmltok.!xmlseg))
+          )
         : ?Tokenized/SegmentedPlainText
+      & lst$(Tokenized/SegmentedPlainText,TokenizedSegmentedPlainText,NEW)
       &     transform
-          $ (!lang.!period.!Tokenized/SegmentedPlainText.!tmp1.!tmp2)
+          $ ( !formatO
+            . !lang
+            . !language
+            . !properties
+            . !period
+            . !Tokenized/SegmentedPlainText
+            . !tmp1
+            . !tmp2
+            . !cor
+            . !lem
+            . !mrf
+            . !ner
+            . !pos
+            . !seg
+            . !snt
+            . !stc
+            . !stx
+            . !tok
+            )
         : ?jsonable
-      & put$(jsn$!jsonable,!output,NEW)
+      & put$(!jsonable,!output,NEW)
   )
   ( new
   =   
     .   ~
-      |     (   ~
-              & (da.c21.IfacettokF.IfacetsegF."testout.xml".tmp1.tmp2)
-            | (arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+      |     ( arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
             )
-          : (?lang.?period.?inputtok.?inputseg.?output.?tmp1.?tmp2)
+          : ( ?formatO
+            . ?lang
+            . ?language
+            . ?properties
+            . ?period
+            . ?inputtok
+            . ?inputseg
+            . ?output
+            . ?tmp1
+            . ?tmp2
+            . ?cor
+            . ?lem
+            . ?mrf
+            . ?ner
+            . ?pos
+            . ?seg
+            . ?snt
+            . ?stc
+            . ?stx
+            . ?tok
+            )
         &   (its.doit)
-          $ (!lang.!period.!inputtok.!inputseg.!output.!tmp1.!tmp2)
+          $ ( !formatO
+            . !lang
+            . !language
+            . !properties
+            . !period
+            . !inputtok
+            . !inputseg
+            . !output
+            . !tmp1
+            . !tmp2
+            . !cor
+            . !lem
+            . !mrf
+            . !ner
+            . !pos
+            . !seg
+            . !snt
+            . !stc
+            . !stx
+            . !tok
+            )
   );
 
 r=
@@ -335,9 +491,9 @@ Output JSON.
     , NEW
     , BIN
     )
-& lst'(X,"corenlpx.bra",APP)
+& lst'(X,"corenlpx.bra",APP,BIN,WYD)
 & put'(\n,"corenlpx.bra",APP,BIN)
-& lst'(r,"corenlpx.bra",APP)
+& lst'(r,"corenlpx.bra",APP,BIN,WYD)
 & put$(str$("\nnew'" X ";\n"),"corenlpx.bra",APP,BIN)
 & ;
 
