@@ -24,8 +24,8 @@ Creator        : Stanford NLP Group
 InfoAbout      : https://stanfordnlp.github.io/CoreNLP/
 Description    : CoreNLP is your one stop shop for natural language processing in Java! CoreNLP enables users to derive linguistic annotations for text, including token and sentence boundaries, parts of speech, named entities, numeric and time values, dependency and constituency parses, coreference, sentiment, quote attributions, and relations. CoreNLP currently supports 8 languages: Arabic, Chinese, English, French, German, Hungarian, Italian, and Spanish.
 ExternalURI    : http://nlp.stanford.edu:8080/corenlp/process
-RestAPIkey         : 
-RestAPIpassword    : 
+RestAPIkey         : *****
+RestAPIpassword    : *****
 MultiInp       : 
 PostData       : 
 Inactive       : 
@@ -222,7 +222,7 @@ try {
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Ifacettxt = false;	/* Type of content in input is text (ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Ilangar = false;	/* Language in input is Arabic (arabisk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
@@ -245,7 +245,7 @@ try {
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatjson = false;	/* Format in output is JSON if true */
-        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Olangar = false;	/* Language in output is Arabic (arabisk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
         $Olangen = false;	/* Language in output is English (engelsk) if true */
