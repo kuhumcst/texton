@@ -46,3 +46,23 @@ Start/Stop service
 
 Acknowledgement:
 Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
+
+Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.7/.
+
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-arabic.jar
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-chinese.jar
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-french.jar
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-german.jar
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-hungarian.jar
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-italian.jar
+    https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-spanish.jar
+
+Text Tonsorium needs the `properties` files stored in each of these .jar files. They are in the path
+
+    edu/stanford/nlp/pipeline/StanfordCoreNLP-<language>.properties
+
+where <language> is `arabic', `chinese', `french', `german', `hungarian', `italian`, `spanish' . The .properties files are obtained as follows:
+
+    unzip -p stanford-corenlp-4.5.7-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
+
+

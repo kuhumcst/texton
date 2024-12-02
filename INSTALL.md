@@ -74,7 +74,7 @@ $> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} 
 Set group to www-data, recursively
 
 ```bash
-$> sudo chown -R <user>:www-data /opt/texton/texton-linguistic-resources
+$> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
 ```
 
 ## apache
@@ -410,6 +410,10 @@ Copy CoreNLP.sh to its destination folder
 cd /opt/texton/CoreNLP/
 sudo cp CoreNLP.sh /usr/local/bin/
 ```
+You are advised to increase the `timeout' value from 5000 to e.g. 500000 in the lines
+```bash
+nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
+```
 Make executable
 
 ```bash
@@ -440,7 +444,15 @@ Start/Stop service
 sudo systemctl start CoreNLP.service
 sudo systemctl stop CoreNLP.service
 ```
+
+If CoreNLP is installed locally, you can visit its web interface by visiting http://localhost:9000/
+
 Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
+
+Logging messages are per default sent to /dev/null. To see logging messages, edit /usr/local/bin/./CoreNLP.sh and change the lines starting with `nohup java':
+
+    nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
+
 
 ### Tesseract OCR
 
