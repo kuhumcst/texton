@@ -1,10 +1,439 @@
 {corenlpx.bra
 
 Transform Clarin token/segment annotation to plain text, one sentence per line. Run CoreNLP.
-Output JSON.
+Output JSON or TEI-P5.
 }
 
 X=
+  ( turnJSONintoTEIP5
+  =   
+    .   !arg:?json
+      & !json:((sentences.,?sentences),)
+      & characterOffsetBegin characterOffsetEnd index lemma ner originalText pos word
+      & 0:?s
+      & :?idfix
+      & 0:?anoid
+      & (ano=."xml:id".str$(a (!anoid+1:?anoid)))
+      & ( inv
+        =   j K
+          .   :?K
+            & whl'(!arg:%?j ?arg&!j !K:?K)
+            & !K
+        )
+      & ( idfy
+        =   
+          .   map
+            $ ( ( 
+                =   e a c
+                  .     !arg:(?e.?a,?c)
+                      & ( !e
+                        .     (   !a:? ("xml:id".?) ?
+                                & 
+                              | ano$
+                              )
+                              !a
+                          , idfy$!c
+                        )
+                    | !arg
+                )
+              . !arg
+              )
+        )
+      & ( standoff
+        =   what xml naps ana parent
+          .   !arg:(?what,?ana,?parent.?xml)
+            & :?naps
+            &     map
+                $ ( ( 
+                    =   a c A W Z e from to id
+                      .     !arg:((w|c):?e.?a,?c)
+                          & !a:?A (!what.?W) ?Z
+                          & !A !Z:?a:? ("xml:id".?id) ?
+                          &     ( span
+                                .     ("xml:id".str$(!ana !id))
+                                      (   !c:% %
+                                        &   !c
+                                          :   ( ?
+                                              .   ? ("xml:id".?from) ?
+                                                , ?
+                                              )
+                                              ?
+                                              ( ?
+                                              .   ? ("xml:id".?to) ?
+                                                , ?
+                                              )
+                                        &   (from.str$("#" !parent !from))
+                                            (to.str$("#" !parent !to))
+                                      | (from.str$("#" !parent !id))
+                                      )
+                                  , !W
+                                )
+                                !naps
+                            : ?naps
+                          & (!e.!a,!c)
+                        | !arg
+                    )
+                  . !xml
+                  )
+              : ?xml
+            & ((spangrp.(ana.!ana),inv$!naps).!xml)
+        )
+      & ( collectSyn
+        =   
+          .       map
+                $ ( ( 
+                    =   
+                      .   !arg:(spanGrp.?A,?B)&!B
+                        | 
+                    )
+                  . !arg
+                  )
+              : ?spanGrp
+            &     map
+                $ ( ( 
+                    =   
+                      .   !arg:(spanGrp.?,?)&
+                        | !arg
+                    )
+                  . !arg
+                  )
+              : ?arg
+            & ((spanGrp.!A,!spanGrp).!arg)
+        )
+      & ( sent
+        =   
+          .   ( text
+              =   
+                .   str
+                  $ ( map
+                    $ ( ( 
+                        =   
+                          .       !arg
+                                : (c.? (type.s) ?,?)
+                              & " "
+                            | !arg:(?.?,?arg)&text$!arg
+                            | !arg
+                        )
+                      . !arg
+                      )
+                    )
+              )
+            & ( spanGrp
+              .   (ana.sent)
+                ,   map
+                  $ ( ( 
+                      =   
+                        .     !arg:(p.?,?s)
+                            &   map
+                              $ ( ( 
+                                  =   
+                                    .   !arg:(s.?,?arg)
+                                      &   !arg
+                                        : ((?.?af,?cf):?first) ?
+                                        : ? ((?.?al,?cl):?last)
+                                      & (   !cf
+                                          :   ( ?
+                                              .   ? ("xml:id".?idf) ?
+                                                , ?
+                                              )
+                                              ?
+                                        | !af:? ("xml:id".?idf) ?
+                                        )
+                                      & (   !cl
+                                          :   ?
+                                              ( ?
+                                              .   ? ("xml:id".?idl) ?
+                                                , ?
+                                              )
+                                        | !al:? ("xml:id".?idl) ?
+                                        )
+                                      & ( span
+                                        .     (from.str$("#" !idf))
+                                              (   !idf:!idl
+                                                & 
+                                              | (to.str$("#" !idl))
+                                              )
+                                          , text$!arg
+                                        )
+                                  )
+                                . !s
+                                )
+                          | 
+                      )
+                    . !arg
+                    )
+              )
+        )
+      & ( seg
+        =   spanSent spanTok from a z
+          .   !arg:((?.?,?spanSent).?.?,?spanTok)
+            & ( spanGrp
+              .   (ana.seg)
+                ,   map
+                  $ ( ( 
+                      =   from to a aa z id idto
+                        .     !arg
+                            : (span.?a (from.?from) ?z,?)
+                          & (   !a !z:?aa (to.?to) ?z
+                              & !aa:?a
+                              &   !spanTok
+                                :   ?
+                                    ( ?
+                                    .       ?
+                                            (from|to.!to)
+                                            ?
+                                        : ? ("xml:id".?idto) ?
+                                      , ?
+                                    )
+                                    ?
+                            | :?to
+                            )
+                          &   !spanTok
+                            :   ?
+                                ( ?
+                                .     ? (from.!from) ?
+                                    : ? ("xml:id".?id) ?
+                                  , ?
+                                )
+                                ?
+                          & ( span
+                            .     !a
+                                  (from.str$("#" !id))
+                                  ( !to:
+                                  | (to.str$("#" !idto))
+                                  )
+                                  !z
+                              , 
+                            )
+                      )
+                    . !spanSent
+                    )
+              )
+        )
+      & ( divvy
+        =   P sind index lemma ner originalText,pos word atts e a c
+          .   !arg:(?sind.?index.?lemma.?ner.?originalText.?pos.?word)
+            &     ("xml:id".str$(i !sind "." !index))
+                  (!lemma:|(lemma.!lemma))
+                  ( !ner:(|O)&
+                  | (ner.!ner)
+                  )
+                  (!pos:|(pos.!pos))
+                  (!word:|(token.!word))
+              : ?atts
+            & :?P
+            &     vap
+                $ ( ( 
+                    =   
+                      .   (   @(ugc$!arg:(P|S) ?)
+                            & !P !arg:?P
+                          | 
+                          )
+                        & !arg
+                    )
+                  . !originalText
+                  )
+              : ?originalText
+            & :?ww
+            &   whl
+              ' ( !P:%?p ?P
+                & !originalText:?a !p ?originalText
+                &     !ww
+                      (!a:|(w.,str$!a))
+                      (c.(type.p),!p)
+                  : ?ww
+                )
+            &   ( !ww:&str$!originalText
+                | !originalText:&!ww
+                | !ww (w.,str$!originalText)
+                )
+              : ?arg
+            & ( !arg:(?e.?a,?c)&(!e.!a !atts,!c)
+              | (w.!atts,!arg)
+              )
+        )
+      & ( trim
+        =   
+          .   vap$(.!arg):?arg
+            &   whl
+              ' ( !arg
+                :   ( " "
+                    | \n
+                    | \r
+                    | \t
+                    | \v
+                    )
+                    ?arg
+                )
+            &   whl
+              ' ( !arg
+                :   ?arg
+                    ( " "
+                    | \n
+                    | \r
+                    | \t
+                    | \v
+                    )
+                )
+            & str$!arg
+        )
+      &   ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
+          ( TEI
+          .   (xmlns."http://www.tei-c.org/ns/1.0")
+            ,   (teiHeader.,)
+                ( text
+                .   
+                  ,       (p.)
+                            mop
+                          $ ( ( 
+                              =   sind
+                                .   1+!s:?s
+                                  &   !arg
+                                    : (?+(index.?sind)+?+(tokens.,?tokens)+?,)
+                                  &   !arg
+                                    : (   ?+(enhancedPlusPlusDependencies.,?deps)+?
+                                        | ?+(enhancedDependencies.,?deps)+?
+                                        | ?+(basicDependencies.,?deps)+?
+                                        | ?&:?deps
+                                      , 
+                                      )
+                                  &   (     !tokens
+                                          :   (?+(before..?before)+?,)
+                                              ?
+                                        & @( !before
+                                           : (? \n ?|? \r ?)
+                                           )
+                                        & (.p.) (p.)
+                                      | 
+                                      )
+                                      (s.)
+                                      (     map
+                                          $ ( ( 
+                                              =   
+                                                .     !arg
+                                                    : (   ?
+                                                        + (before..?before)
+                                                        + ?
+                                                        + (index.?index)
+                                                        + (lemma..?lemma)
+                                                        + (ner..?ner)
+                                                        + ( originalText
+                                                          . 
+                                                          . ?originalText
+                                                          )
+                                                        + (pos..?pos)
+                                                        + (word..?word)
+                                                        + ?
+                                                      , 
+                                                      )
+                                                  &   ( !before:
+                                                      | ( c
+                                                        .       trim$!before
+                                                              : 
+                                                            & ((type.s),)
+                                                          | ( (type.p)
+                                                            , !before
+                                                            )
+                                                        )
+                                                      )
+                                                        divvy
+                                                      $ ( !sind
+                                                        . !index
+                                                        . !lemma
+                                                        . !ner
+                                                        . !originalText
+                                                        . !pos
+                                                        . !word
+                                                        )
+                                              )
+                                            . !tokens
+                                            )
+                                        : ?segtok
+                                      & (   !segtok
+                                          :   ( c
+                                              . ? (type.s) ?,
+                                              )
+                                              ?segtok
+                                        | 
+                                        )
+                                      & idfy$!segtok
+                                      )
+                                      ( !deps:
+                                      | ( spanGrp
+                                        .   (ana.syntax)
+                                          ,   map
+                                            $ ( ( 
+                                                =   
+                                                  .     !arg
+                                                      : (   (dep..?dep)
+                                                          + (dependent.?dependent)
+                                                          + ( dependentGloss
+                                                            . 
+                                                            . ?dependentGloss
+                                                            )
+                                                          + (governor.?governor)
+                                                          + ( governorGloss
+                                                            . 
+                                                            . ?governorGloss
+                                                            )
+                                                        , 
+                                                        )
+                                                    & ( span
+                                                      .   ( from
+                                                          .   str
+                                                            $ ( "#tokeni"
+                                                                !sind
+                                                                "."
+                                                                !governor
+                                                              )
+                                                          )
+                                                        ,   ( link
+                                                            .   ( target
+                                                                .   str
+                                                                  $ ( "#tokeni"
+                                                                      !sind
+                                                                      "."
+                                                                      !dependent
+                                                                    )
+                                                                )
+                                                              , 
+                                                            )
+                                                            (term.,!dep)
+                                                      )
+                                                )
+                                              . !deps
+                                              )
+                                        )
+                                      )
+                                      (.s.)
+                              )
+                            . !sentences
+                            . (=a b)
+                            )
+                          (.p.)
+                      : ?XML
+                    & collectSyn$!XML:(?spanGrpSyn.?XML)
+                    & standoff$(token,token,.!XML):(?spanGrpTok.?XML)
+                    &   standoff$(lemma,lemma,token.!XML)
+                      : (?spanGrpLemma.?XML)
+                    &   standoff$(pos,pos,token.!XML)
+                      : (?spanGrpPos.?XML)
+                    &   standoff$(ner,ner,token.!XML)
+                      : (?spanGrpNer.?XML)
+                    & nestML$!XML:?XML
+                    & sent$!XML:?spanGrpSent
+                    & seg$(!spanGrpSent.!spanGrpTok):?spanGrpSeg
+                    &   !XML
+                        !spanGrpTok
+                        !spanGrpSent
+                        !spanGrpSeg
+                        !spanGrpNer
+                        !spanGrpLemma
+                        !spanGrpPos
+                        !spanGrpSyn
+                )
+          )
+  )
   ( doit
   =     output tmp1 tmp2 A B C D E F G H formatO
       , xmlseg xmltok lang language properties period
@@ -52,72 +481,6 @@ X=
                 . !inputtok
                 )
         )
-      & ( turnJSONintoTEIP5
-        =   s segid sentnr S L P tfrom tto
-          .   !arg:?json
-            & !json:((sentences.,?sentences),)
-            & ( TEI
-              .   (xmlns."http://www.tei-c.org/ns/1.0")
-                ,   (teiHeader.,)
-                    ( text
-                    .   
-                      ,   ( spanGrp
-                          .   (ana.lemma)
-                            ,   map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & (span.(from.str$("#" !tid)),!lemma)
-                                  )
-                                . !conllT
-                                )
-                          )
-                          ( spanGrp
-                          .   (ana.pos)
-                            ,   map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & (span.(from.str$("#" !tid)),!pos)
-                                  )
-                                . !conllT
-                                )
-                          )
-                          ( spanGrp
-                          .   (ana.morphology)
-                            ,   map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & (span.(from.str$("#" !tid)),!mrf)
-                                  )
-                                . !conllT
-                                )
-                          )
-                          ( spanGrp
-                          .   (ana.syntax)
-                            ,   map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(?tid.?lemma.?pos.?mrf.?to.?h)
-                                      & ( span
-                                        .   (from.str$("#" !tid))
-                                          ,   (     !to
-                                                  : (0|)
-                                                & 
-                                              | ( link
-                                                . (target.str$("#" !to)),
-                                                )
-                                              )
-                                              (term.,str$("ud-syn:" !h))
-                                        )
-                                  )
-                                . !conllT
-                                )
-                          )
-                    )
-              )
-        )
       & (trim=.str$(vap$(.!arg." ")))
       & ( getProperties
         =     file javaProperties extra
@@ -161,19 +524,23 @@ X=
                                   & trim$!prop:?prop
                                   & trim$!val:?val
                                   & (   !prop:annotators
+                                      & (   !lang:en
+                                          & ( @(!val:? ",parse" ?)
+                                            | str$(!val ",parse"):?val
+                                            )
+                                        | 
+                                        )
+                                      & put$(str$(!val \n),val,NEW)
                                       &     mop
                                           $ ( 
                                             .     vap
                                                 $ ( ( 
                                                     =   
-                                                      .     (   !transl
-                                                              :   ?
-                                                                  ( !arg
-                                                                  .   ?tt
-                                                                    &   !!tt
-                                                                      : 1
-                                                                  )
-                                                                  ?
+                                                      .     (     !transl
+                                                                :   ?
+                                                                    (!arg.?tt)
+                                                                    ?
+                                                              & !!tt:1
                                                             |   !lang:zh
                                                               &   !arg
                                                                 : lemma
@@ -190,6 +557,7 @@ X=
                                             . (=,)
                                             )
                                         : ?val
+                                      & put$(str$(!val \n),val,APP)
                                     |   @(!prop:?ftr "." ?)
                                       & put$(!ftr \n,filter,APP)
                                       & put$(!filter \n,filter,APP)
@@ -297,7 +665,7 @@ X=
             & ( !formatO:json&get$(!tmp2,STR)
               |   get$(!tmp2,JSN):?json
                 & lst$(json,json,NEW)
-                & turnJSONintoTEIP5$!json
+                & str$(toML$((its.turnJSONintoTEIP5)$!json))
               )
         )
       &   !arg
@@ -403,8 +771,8 @@ X=
             . !stx
             . !tok
             )
-        : ?jsonable
-      & put$(!jsonable,!output,NEW)
+        : ?OuTput
+      & put$(!OuTput,!output,NEW)
   )
   ( new
   =   
@@ -483,7 +851,7 @@ r=
   $ ( "{corenlpx.bra
 
 Transform Clarin token/segment annotation to plain text, one sentence per line. Run CoreNLP.
-Output JSON.
+Output JSON or TEI-P5.
 }
 
 "
