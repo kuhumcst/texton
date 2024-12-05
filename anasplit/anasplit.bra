@@ -4,17 +4,59 @@ Extract a single annotation group (spanGrp) from a composite TEI annotation file
 
 X=
   ( doit
-  =     output tmp1 tmp2 A B C D E F G H
+  =     output tmp1 tmp2
+      , A B C D E F G H
       , xmlseg xmltok posstyle wat Wat
     .   ( find
-        =   e a c wat
-          .   !arg:(?arg.?wat)
-            & !arg:? (?e.?a,?c) ?arg
-            & (   !e:spanGrp
-                & !a:? (ana.[%(!wat:? !sjt ?)) ?
-                & (!e.!a,!c)
-              | find$(!arg.!wat)
-              | find$(!c.!wat)
+        =   e a c wat rmvSpanGrp findSpanGrp
+          .   ( rmvSpanGrp
+              =   e a c
+                .   map
+                  $ ( ( 
+                      =   
+                        .     !arg:(?e.?a,?c)
+                            & ( !e:spanGrp&
+                              | (!e.!a,rmvSpanGrp$!c)
+                              )
+                          | !arg
+                      )
+                    . !arg
+                    )
+              )
+            & ( findSpanGrp
+              =   e a c
+                .   map
+                  $ ( ( 
+                      =   
+                        .     !arg:(?e.?a,?c)
+                            & (   !e:spanGrp
+                                &   !a
+                                  : ? (ana.[%(!wat:? !sjt ?)) ?
+                                & !arg
+                              | findSpanGrp$!c
+                              )
+                          | 
+                      )
+                    . !arg
+                    )
+              )
+            & !arg:(?arg.?wat)
+            & ( !wat:&rmvSpanGrp$!arg
+              |   findSpanGrp$!arg:?arg
+                & (   !arg:(?.?,?) (spanGrp.?a,?)
+                    & ( spanGrp
+                      .   !a
+                        ,   map
+                          $ ( ( 
+                              =   
+                                .   !arg:(?.?,?arg)&!arg
+                                  | !arg
+                              )
+                            . !arg
+                            )
+                      )
+                  | !arg
+                  )
               )
         )
       & !arg:(?input.?output.?wat.?posstyle)
@@ -22,7 +64,14 @@ X=
       &     (lem.lemma)
             (pos.pos)
             (mrf.msd morphology)
-            (stx.syntax dep dependencies)
+            (ner.ner)
+            (pos.pos)
+            (seg.seg segment)
+            (segtok.)
+            (sent.sent sentence)
+            (stc.syntax parse)
+            (stx.syntax depparse dep dependencies)
+            (tok.token)
         : ? (!wat.?Wat) ?
       & find$(!xml.!Wat):?annot
       & (   !wat:pos
@@ -31,12 +80,7 @@ X=
             : ( ? (spanGrp.?a,?spans) ?
               | ? (text.?,? (spanGrp.?a,?spans) ?) ?
               |   ?
-                  ( TEI
-                  .   ?
-                    ,   ?
-                        (text.?,? (spanGrp.?a,?spans) ?)
-                        ?
-                  )
+                  (TEI.?,? (text.?,? (spanGrp.?a,?spans) ?) ?)
                   ?
               )
           &   ( spanGrp
@@ -47,9 +91,7 @@ X=
                         .     !arg
                             : ( span
                               .   ?a
-                                , @( ?
-                                   : "UPosTag=" ?c ("|" ?|)
-                                   )
+                                , @(?:"UPosTag=" ?c ("|" ?|))
                               )
                           & (span.!a,!c)
                       )
@@ -85,9 +127,9 @@ Extract a single annotation group (spanGrp) from a composite TEI annotation file
     , NEW
     , BIN
     )
-& lst'(X,"anasplit.bra",APP)
+& lst'(X,"anasplit.bra",APP,BIN,WYD)
 & put'(\n,"anasplit.bra",APP,BIN)
-& lst'(r,"anasplit.bra",APP)
+& lst'(r,"anasplit.bra",APP,BIN,WYD)
 & put$(str$("\nnew'" X ";\n"),"anasplit.bra",APP,BIN)
 & ;
 

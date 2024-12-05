@@ -218,7 +218,6 @@ try {
         $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
-        $Ifacetsent = false;	/* Type of content in input is sentences (sætninger, før tokenisering) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Ifacettxt = false;	/* Type of content in input is text (ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
@@ -234,17 +233,15 @@ try {
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
-        $Ofacetcor = false;	/* Type of content in output is coreference if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
-        $Ofacetmrf = false;	/* Type of content in output is morphological features (morfologiske træk) if true */
         $Ofacetner = false;	/* Type of content in output is name entities (navne) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
         $Ofacetseg = false;	/* Type of content in output is segments (sætningssegmenter) if true */
+        $Ofacetsent = false;	/* Type of content in output is sentences (sætninger, før tokenisering) if true */
         $Ofacetsnt = false;	/* Type of content in output is sentiment if true */
         $Ofacetstc = false;	/* Type of content in output is syntax (constituency relations) (syntaks (frasestruktur)) if true */
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
-        $Oformatjson = false;	/* Format in output is JSON if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Olangar = false;	/* Language in output is Arabic (arabisk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
@@ -325,11 +322,10 @@ try {
         if( hasArgument("Ifacet") )
             {
             $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetsent = existsArgumentWithValue("Ifacet", "sent");
             $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
             $Ifacettxt = existsArgumentWithValue("Ifacet", "txt");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacetsent=$Ifacetsent " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
-            $input = $input . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacetsent ? " \$Ifacetsent" : "")  . ($Ifacettok ? " \$Ifacettok" : "")  . ($Ifacettxt ? " \$Ifacettxt" : "") ;
+            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
+            $input = $input . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacettok ? " \$Ifacettok" : "")  . ($Ifacettxt ? " \$Ifacettxt" : "") ;
             }
         if( hasArgument("Iformat") )
             {
@@ -371,25 +367,23 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
-            $Ofacetcor = existsArgumentWithValue("Ofacet", "cor");
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
-            $Ofacetmrf = existsArgumentWithValue("Ofacet", "mrf");
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
             $Ofacetseg = existsArgumentWithValue("Ofacet", "seg");
+            $Ofacetsent = existsArgumentWithValue("Ofacet", "sent");
             $Ofacetsnt = existsArgumentWithValue("Ofacet", "snt");
             $Ofacetstc = existsArgumentWithValue("Ofacet", "stc");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetcor=$Ofacetcor " . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
-            $output = $output . ($Ofacetcor ? " \$Ofacetcor" : "")  . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetmrf ? " \$Ofacetmrf" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
+            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsent=$Ofacetsent " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
+            $output = $output . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsent ? " \$Ofacetsent" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
             }
         if( hasArgument("Oformat") )
             {
-            $Oformatjson = existsArgumentWithValue("Oformat", "json");
             $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
-            $echos = $echos . "Oformatjson=$Oformatjson " . "Oformatteip5=$Oformatteip5 ";
-            $output = $output . ($Oformatjson ? " \$Oformatjson" : "")  . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
+            $echos = $echos . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {

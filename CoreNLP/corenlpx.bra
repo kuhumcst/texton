@@ -6,8 +6,8 @@ Output JSON or TEI-P5.
 
 X=
   ( turnJSONintoTEIP5
-  =   
-    .   !arg:?json
+  =   cor lem mrf ner pos seg snt stc stx tok
+    .   !arg:(?json.?cor,?lem,?mrf,?ner,?pos,?seg,?snt,?stc,?stx,?tok)
       & !json:((sentences.,?sentences),)
       & characterOffsetBegin characterOffsetEnd index lemma ner originalText pos word
       & 0:?s
@@ -79,8 +79,9 @@ X=
             & ((spangrp.(ana.!ana),inv$!naps).!xml)
         )
       & ( collectSyn
-        =   
-          .       map
+        =   ana A B a z
+          .   !arg:(?arg.?ana)
+            &     map
                 $ ( ( 
                     =   
                       .   !arg:(spanGrp.?A,?B)&!B
@@ -89,6 +90,10 @@ X=
                   . !arg
                   )
               : ?spanGrp
+            & (   !A:?a (ana.?) ?z
+                & !a !z:?A
+              | 
+              )
             &     map
                 $ ( ( 
                     =   
@@ -98,7 +103,7 @@ X=
                   . !arg
                   )
               : ?arg
-            & ((spanGrp.!A,!spanGrp).!arg)
+            & ((spanGrp.(ana.!ana) !A,!spanGrp).!arg)
         )
       & ( sent
         =   
@@ -412,7 +417,13 @@ X=
                             )
                           (.p.)
                       : ?XML
-                    & collectSyn$!XML:(?spanGrpSyn.?XML)
+                    & cor lem mrf ner pos seg snt stc stx tok
+                    & (   !stc:1
+                        & collectSyn$(!XML.parse):(?spanGrpSyn.?XML)
+                      |   !stx:1
+                        & collectSyn$(!XML.depparse):(?spanGrpSyn.?XML)
+                      | 
+                      )
                     & standoff$(token,token,.!XML):(?spanGrpTok.?XML)
                     &   standoff$(lemma,lemma,token.!XML)
                       : (?spanGrpLemma.?XML)
@@ -665,7 +676,12 @@ X=
             & ( !formatO:json&get$(!tmp2,STR)
               |   get$(!tmp2,JSN):?json
                 & lst$(json,json,NEW)
-                & str$(toML$((its.turnJSONintoTEIP5)$!json))
+                &   str
+                  $ ( toML
+                    $ ( (its.turnJSONintoTEIP5)
+                      $ (!json.!cor,!lem,!mrf,!ner,!pos,!seg,!snt,!stc,!stx,!tok)
+                      )
+                    )
               )
         )
       &   !arg
