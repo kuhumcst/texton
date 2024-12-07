@@ -208,10 +208,10 @@ WantedBy=multi-user.target
 ```
 Then
 ```bash
-sudo mkdir /var/log/texton
-sudo systemctl daemon-reload
-sudo systemctl enable tomcat-texton.service
-sudo systemctl start tomcat-texton.service
+$> sudo mkdir /var/log/texton
+$> sudo systemctl daemon-reload
+$> sudo systemctl enable tomcat-texton.service
+$> sudo systemctl start tomcat-texton.service
 ```
 
 ## texton - Bracmat part (this repo)
