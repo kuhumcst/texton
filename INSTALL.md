@@ -54,7 +54,7 @@ Checks uploaded files.
 See https://www.clamav.net/. Install: 
 ```bash
 $> sudo apt-get install clamav clamav-daemon -y
-4> sudo dpkg-reconfigure clamav-daemon
+$> sudo dpkg-reconfigure clamav-daemon
 ```
 Choose TCP and port 3310. Leave the rest as-is. 
 Edit /etc/systemd/system/clamav-daemon.socket.d/override.conf 
@@ -83,12 +83,12 @@ u_str ESTAB   0      0                                                          
 tcp   LISTEN  0      4096                                                127.0.0.1:3310             0.0.0.0:*          users:(("clamd",pid=246,fd=4),("systemd",pid=1,fd=58))
 ```
 If the output doesn't mention port 3310, the clamAV daemon can still be working. To test, create an EICAR test file with the following content:
-```bash
+```
 X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
 ```
 (See https://en.wikipedia.org/wiki/EICAR_test_file). Then
 ```bash
-clamdscan --fdpass EICAR
+$> clamdscan --fdpass EICAR
 ```
 The output should tell that there is an error:
 ```
