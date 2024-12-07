@@ -54,7 +54,7 @@ Checks uploaded files.
 See https://www.clamav.net/. Install: 
 ```bash
 $> sudo apt-get install clamav clamav-daemon -y
-4. sudo dpkg-reconfigure clamav-daemon
+4> sudo dpkg-reconfigure clamav-daemon
 ```
 Choose TCP and port 3310. Leave the rest as-is. 
 Edit /etc/systemd/system/clamav-daemon.socket.d/override.conf 
