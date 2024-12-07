@@ -225,16 +225,6 @@ $> sudo chmod -R g+w *
 $> cd BASE
 $> sudo chown -R tomcat: *
 ```
-
-In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
-Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
-
-Make sure tomcat owns texton files.
-```bash
-$> cd /opt/texton/BASE
-$> sudo chown -R tomcat *
-```
-
 ## linguistic resources
 
 ```bash
