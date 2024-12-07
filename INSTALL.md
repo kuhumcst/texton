@@ -63,7 +63,7 @@ $> sudo mkdir /etc/systemd/system/clamav-daemon.socket.d
 $> sudo vi /etc/systemd/system/clamav-daemon.socket.d/override.conf
 ```
 Enter:
-```bash
+```
 [Socket]
 ListenStream=
 ListenStream=/run/clamav/clamd.ctl
@@ -75,12 +75,29 @@ $> sudo systemctl daemon-reload
 $> sudo systemctl reload clamav-daemon.service
 $> sudo ss -anp | grep -E "(Active|State|clam|3310)"
 ```
-```bash
+```
 Netid State   Recv-Q Send-Q                                          Local Address:Port        Peer Address:Port      Process
 
 u_str LISTEN  0      4096                                    /run/clamav/clamd.ctl 18587                  * 0          users:(("clamd",pid=246,fd=3),("systemd",pid=1,fd=56))
 u_str ESTAB   0      0                                                           * 18649                  * 17746      users:(("clamd",pid=246,fd=2),("clamd",pid=246,fd=1))
 tcp   LISTEN  0      4096                                                127.0.0.1:3310             0.0.0.0:*          users:(("clamd",pid=246,fd=4),("systemd",pid=1,fd=58))
+```
+If the output doesn't mention port 3310, the clamAV daemon can still be working. To test, create an EICAR test file with the following content:
+```bash
+X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+```
+(See https://en.wikipedia.org/wiki/EICAR_test_file). Then
+```bash
+clamdscan --fdpass EICAR
+```
+The output should tell that there is an error:
+```
+----------- SCAN SUMMARY -----------
+Infected files: 0
+Total errors: 1
+Time: 0.000 sec (0 m 0 s)
+Start Date: 2024:12:07 16:22:35
+End Date:   2024:12:07 16:22:35
 ```
 
 ## git-lfs
