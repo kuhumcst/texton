@@ -19,13 +19,13 @@ Installation requires
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
   * apache2
-  * texton - Bracmat part (this repo)
-  * linguistic resources
   * PHP
   * Java
-  * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
+  * texton - Bracmat part (this repo)
+  * linguistic resources
+  * ant
   * proxy settings
   * cron jobs
   * python3
@@ -125,6 +125,35 @@ $> sudo apt-get install -y git-lfs
 ```bash
 $> sudo apt install apache2
 ```
+## PHP
+
+```bash
+$> sudo apt-get install php libapache2-mod-php
+$> sudo a2enmod php8.3
+$> sudo service apache2 restart
+```
+
+Note "php8.3" is an example. Use the php version that you saw being installed in the previous step. 
+Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
+
+Some php scripts use the CURLFile class. To make that work
+
+```bash
+$> sudo apt-get install php-curl
+```
+
+The html2text converter (https://github.com/soundasleep/html2text.git) requires two PHP packages
+
+```bash
+$> sudo apt-get install php-mbstring
+$> sudo apt-get install php-dom
+```
+
+Restart apache
+
+```bash
+$> sudo service apache2 restart
+```
 
 ## texton - Bracmat part (this repo)
 
@@ -169,37 +198,6 @@ $> sudo cp texton.conf /etc/apache2/sites-available/
 $> sudo a2ensite texton.conf
 $> sudo service apache2 reload
 ```
-
-## PHP
-
-```bash
-$> sudo apt-get install php libapache2-mod-php
-$> sudo a2enmod php8.3
-$> sudo service apache2 restart
-```
-
-Note "php8.3" is an example. Use the php version that you saw being installed in the previous step. 
-Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
-
-Some php scripts use the CURLFile class. To make that work
-
-```bash
-$> sudo apt-get install php-curl
-```
-
-The html2text converter (https://github.com/soundasleep/html2text.git) requires two PHP packages
-
-```bash
-$> sudo apt-get install php-mbstring
-$> sudo apt-get install php-dom
-```
-
-Restart apache
-
-```bash
-$> sudo service apache2 restart
-```
-
 ## Proxy settings
 
 ```bash
