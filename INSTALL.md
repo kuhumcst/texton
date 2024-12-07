@@ -11,16 +11,20 @@ The instructions are valid under the following assumptions:
    Only programs that are installed using apt-get reside elsewhere.
 
 Installation requires 
+  * update/upgrade
+  * unzip
+  * ClamAV
+   Checks uploaded files
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
-  * texton - Bracmat part (this repo)
-  * linguistic resources
   * apache2
   * PHP
   * Java
   * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
+  * texton - Bracmat part (this repo)
+  * linguistic resources
   * proxy settings
   * cron jobs
   * python3
@@ -35,11 +39,46 @@ Installation requires
   * many tools wrapped in web services in `/opt/texton/`
   * tools that can be compiled from source
 
-## git-lfs
-
+## update/upgrade
 ```bash
 $> sudo apt-get update
 $> sudo apt-get upgrade
+```
+
+## unzip
+```bash
+$> sudo apt install unzip
+```
+## ClamAV
+Checks uploaded files.
+See https://www.clamav.net/. Install: 
+```bash
+$> sudo apt-get install clamav clamav-daemon -y
+4. sudo dpkg-reconfigure clamav-daemon
+```
+Choose TCP and port 3310. Leave the rest as-is. 
+Edit /etc/systemd/system/clamav-daemon.socket.d/override.conf 
+```bash
+$> sudo mkdir /etc/systemd/system/clamav-daemon.socket.d
+$> sudo vi /etc/systemd/system/clamav-daemon.socket.d/override.conf
+```
+Enter:
+```bash
+[Socket]
+ListenStream=
+ListenStream=/run/clamav/clamd.ctl
+ListenStream=127.0.0.1:3310
+```
+Then
+```bash
+$> sudo systemctl daemon-reload
+$> sudo systemctl reload clamav-daemon.service
+$> sudo ss -anp | grep -E "(Active|State|clam|3310)"
+```
+
+## git-lfs
+
+```bash
 $> sudo apt-get install -y git-lfs
 ```
 
