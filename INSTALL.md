@@ -15,16 +15,17 @@ Installation requires
   * unzip
   * ClamAV
    Checks uploaded files
+  * pdffonts
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
+  * texton - Bracmat part (this repo)
+  * linguistic resources
   * apache2
   * PHP
   * Java
   * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
-  * texton - Bracmat part (this repo)
-  * linguistic resources
   * proxy settings
   * cron jobs
   * python3
@@ -107,6 +108,13 @@ and increase StreamMaxLength from the default value 25M:
 ```
 StreamMaxLength 250M
 ```
+## pdffonts
+Install prerequisite:
+```bash
+$> sudo apt install poppler-utils
+```
+This installs /usr/bin/pdffonts.
+
 ## git-lfs
 
 ```bash
