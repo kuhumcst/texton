@@ -18,9 +18,9 @@ Installation requires
   * pdffonts
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
+  * apache2
   * texton - Bracmat part (this repo)
   * linguistic resources
-  * apache2
   * PHP
   * Java
   * ant
@@ -120,6 +120,11 @@ This installs /usr/bin/pdffonts.
 ```bash
 $> sudo apt-get install -y git-lfs
 ```
+## apache
+
+```bash
+$> sudo apt install apache2
+```
 
 ## texton - Bracmat part (this repo)
 
@@ -156,13 +161,6 @@ Set group to www-data, recursively
 ```bash
 $> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
 ```
-
-## apache
-
-```bash
-$> sudo apt install apache2
-```
-
 ### enabling webservices
 
 ```bash
