@@ -132,7 +132,7 @@ $> sudo apt install apache2
 $> cd /opt
 $> sudo git clone https://github.com/kuhumcst/texton.git
 $> cd texton
-$> sudo chgrp -R www-data: *
+$> sudo chgrp -R www-data *
 $> sudo chmod -R g+w * 
 $> cd BASE
 $> sudo chown -R tomcat: *
