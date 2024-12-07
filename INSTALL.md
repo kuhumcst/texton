@@ -25,7 +25,6 @@ Installation requires
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
   * texton - Bracmat part (this repo)
   * linguistic resources
-  * ant
   * proxy settings
   * cron jobs
   * python3
