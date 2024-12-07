@@ -172,11 +172,6 @@ $> sudo ln -s /opt/tomcat11/apache-tomcat-11.0.1 /opt/tomcat-texton
 $> sudo chown -RH tomcat: /opt/tomcat-texton
 $> sudo chmod o+x /opt/tomcat-texton/bin/
 ```
-Make sure tomcat owns texton files.
-```bash
-$> cd /opt/texton/BASE
-$> sudo chown -R tomcat *
-```
 [This step is perhaps not necessary! Edit /opt/tomcat-texton/conf/server.xml
 ```
 <Connector address="127.0.0.1" port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" />
@@ -233,6 +228,12 @@ $> sudo chown -R tomcat: *
 
 In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
 Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
+
+Make sure tomcat owns texton files.
+```bash
+$> cd /opt/texton/BASE
+$> sudo chown -R tomcat *
+```
 
 ## linguistic resources
 
