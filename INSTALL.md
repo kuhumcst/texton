@@ -75,6 +75,13 @@ $> sudo systemctl daemon-reload
 $> sudo systemctl reload clamav-daemon.service
 $> sudo ss -anp | grep -E "(Active|State|clam|3310)"
 ```
+```bash
+Netid State   Recv-Q Send-Q                                          Local Address:Port        Peer Address:Port      Process
+
+u_str LISTEN  0      4096                                    /run/clamav/clamd.ctl 18587                  * 0          users:(("clamd",pid=246,fd=3),("systemd",pid=1,fd=56))
+u_str ESTAB   0      0                                                           * 18649                  * 17746      users:(("clamd",pid=246,fd=2),("clamd",pid=246,fd=1))
+tcp   LISTEN  0      4096                                                127.0.0.1:3310             0.0.0.0:*          users:(("clamd",pid=246,fd=4),("systemd",pid=1,fd=58))
+```
 
 ## git-lfs
 
