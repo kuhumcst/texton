@@ -5,7 +5,7 @@ This document explains how you can install the Text Tonsorium under Linux Ubuntu
 The instructions are valid under the following assumptions:
 
   * The software is installed in the Windows Subsystem for Linux
-  * The OS is Ubuntu 18.04 or higher
+  * The OS is Ubuntu 24.04 LTS or higher
   * The URI to the resulting web application is http://localhost/texton 
   * Most of the Text Tonsorium (software and linguistic resources) is located under `/opt/texton/`.  
    Only programs that are installed using apt-get reside elsewhere.
@@ -38,6 +38,8 @@ Installation requires
 ## git-lfs
 
 ```bash
+$> sudo apt-get update
+$> sudo apt-get upgrade
 $> sudo apt-get install -y git-lfs
 ```
 
