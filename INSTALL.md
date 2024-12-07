@@ -154,6 +154,70 @@ Restart apache
 ```bash
 $> sudo service apache2 restart
 ```
+## Java
+```bash
+$> sudo apt install default-jdk
+```
+## Tomcat
+
+On WSL Ubuntu, Tomcat is downloaded and installed as /opt/tomcat-texton/. This can go as follows:
+
+Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.0/bin/apache-tomcat-11.0.0.tar.gz.
+```bash
+$> sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
+$> cd ~
+$> wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.0/bin/apache-tomcat-11.0.0.tar.gz -P .
+$> sudo tar -xvzf apache-tomcat-11.0.0.tar.gz -C /opt/tomcat11
+$> sudo ln -s /opt/tomcat11/apache-tomcat-11.0.0 /opt/tomcat-texton
+$> sudo chown -RH tomcat: /opt/tomcat-texton
+$> sudo chmod o+x /opt/tomcat-texton/bin/
+```
+Make sure tomcat owns texton files.
+```bash
+$> cd /opt/texton/BASE
+$> sudo chown -R tomcat *
+```
+[This step is perhaps not necessary! Edit /opt/tomcat-texton/conf/server.xml
+```
+<Connector address="127.0.0.1" port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" />
+```
+]
+
+Create /etc/systemd/system/tomcat-texton.service
+```
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+User=tomcat
+Group=tomcat
+UMask=0007
+Environment="JAVA_HOME=/usr/lib/jvm/default-java"
+Environment="CATALINA_PID=/opt/tomcat-texton/temp/tomcat.pid"
+Environment="CATALINA_HOME=/opt/tomcat-texton"
+Environment="CATALINA_BASE=/opt/tomcat-texton"
+Environment='CATALINA_OPTS=-Xms7168M -Xmx16G -server -XX:+UseG1GC'
+Environment='JAVA_OPTS=-Djava.security.egd=file:/dev/./urandom'
+Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
+ExecStart=/opt/tomcat-texton/bin/startup.sh
+ExecStop=/opt/tomcat-texton/bin/shutdown.sh
+SuccessExitStatus=0 143
+Restart=always
+RestartSec=5
+ReadWritePaths=/opt/texton/BASE/ /var/log/texton/
+
+[Install]
+WantedBy=multi-user.target
+```
+Then
+```bash
+sudo mkdir /var/log/texton
+sudo systemctl daemon-reload
+sudo systemctl enable tomcat-texton.service
+sudo systemctl start tomcat-texton.service
+```
 
 ## texton - Bracmat part (this repo)
 
