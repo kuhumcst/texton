@@ -260,15 +260,15 @@ $> sudo vi /etc/apache2/mods-available/proxy.conf
 ```
 
 Add:
-
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
-        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
-        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
-        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
-        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
-        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
-        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
-        
+```
+ProxyPass /texton/ http://127.0.0.1:8080/texton/
+ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
+ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
+ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
+ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
+ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
+ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
+```        
 All of the above can also be expressed as
 
         ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
