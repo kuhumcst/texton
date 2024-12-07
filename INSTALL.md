@@ -99,7 +99,14 @@ Time: 0.000 sec (0 m 0 s)
 Start Date: 2024:12:07 16:22:35
 End Date:   2024:12:07 16:22:35
 ```
-
+To increase the max size of files to scan, edit clamd.conf
+```bash
+sudo vi /etc/clamav/clamd.conf
+```
+and increase StreamMaxLength from the default value 25M:
+```
+StreamMaxLength 250M
+```
 ## git-lfs
 
 ```bash
