@@ -355,7 +355,27 @@ try {
         if($mode == 'dry')
             scripinit($inputF,$input,$output);
         //$basepdfminerfile = basename($pdfminerfile);
-        if(($cmd = popen("python3 /usr/local/bin/pdf2txt.py --version", "r")) == NULL)
+        $pdf2txt_py = "/usr/local/bin/pdf2txt.py";
+        if(file_exists($pdf2txt_py))
+            $pdfminer = "python3 $pdf2txt_py"; 
+            /*
+                $> sudo su
+                # cd ~
+                # umask 022
+                # pip3 install pdfminer
+
+            Installs original pdfminer (EUSKE). This installation method does
+            not work well under Ubuntu 24.04.
+            */
+        else
+            $pdfminer = "pdf2txt";
+            /*               
+                sudo apt install python3-pdfminer
+
+            Installs pdfminer.six
+            */
+
+        if(($cmd = popen("$pdfminer --version", "r")) == NULL)
             {
             throw new SystemExit(); // instead of exit()
             }
@@ -370,16 +390,16 @@ try {
             if($Oformatflat)
                 {
                 if(substr($read,0,strlen($six)) == $six)
-                    scrip("python3 /usr/local/bin/pdf2txt.py \$F -o \$pdfminerfile ## pdfminer.six");
+                    scrip("$pdfminer \$F -o \$pdfminerfile ## pdfminer.six");
                 else
-                    scrip("python3 /usr/local/bin/pdf2txt.py -o \$pdfminerfile \$F ## pdfminer EUSKE (original)");
+                    scrip("$pdfminer -o \$pdfminerfile \$F ## pdfminer EUSKE (original)");
                 }
             else
                 {
                 if(substr($read,0,strlen($six)) == $six)
-                    scrip("python3 /usr/local/bin/pdf2txt.py -t html \$F -o \$pdfminerfile ## pdfminer.six");
+                    scrip("$pdfminer -t html \$F -o \$pdfminerfile ## pdfminer.six");
                 else
-                    scrip("python3 /usr/local/bin/pdf2txt.py -t html -o \$pdfminerfile \$F ## pdfminer EUSKE (original)");
+                    scrip("$pdfminer -t html -o \$pdfminerfile \$F ## pdfminer EUSKE (original)");
                 }
             }
         else
@@ -387,16 +407,16 @@ try {
             if($Oformatflat)
                 {
                 if(substr($read,0,strlen($six)) == $six)
-                    $command = "python3 /usr/local/bin/pdf2txt.py $F -o $pdfminerfile"; // pdfminer.six
+                    $command = "$pdfminer $F -o $pdfminerfile"; // pdfminer.six
                 else
-                    $command = "python3 /usr/local/bin/pdf2txt.py -o $pdfminerfile $F"; // pdfminer EUSKE (original)
+                    $command = "$pdfminer -o $pdfminerfile $F"; // pdfminer EUSKE (original)
                 }
             else
                 {
                 if(substr($read,0,strlen($six)) == $six)
-                    $command = "python3 /usr/local/bin/pdf2txt.py -t html $F -o $pdfminerfile";
+                    $command = "$pdfminer -t html $F -o $pdfminerfile";
                 else
-                    $command = "python3 /usr/local/bin/pdf2txt.py -t html -o $pdfminerfile $F";
+                    $command = "$pdfminer -t html -o $pdfminerfile $F";
                 }
 
             logit($command);
