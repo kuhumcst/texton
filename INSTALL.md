@@ -89,6 +89,7 @@ $> sudo apt install apache2
 $> cd /opt/texton/apache2-sites/
 $> sudo cp texton.conf /etc/apache2/sites-available/
 $> sudo a2ensite texton.conf
+$> sudo a2dissite 000-default.conf
 $> sudo service apache2 reload
 ```
 
@@ -129,15 +130,15 @@ $> sudo vi /etc/apache2/mods-available/proxy.conf
 ```
 
 Add:
-
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
-        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
-        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
-        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
-        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
-        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
-        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
-        
+```
+ProxyPass /texton/ http://127.0.0.1:8080/texton/
+ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
+ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
+ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
+ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
+ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
+ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
+```        
 All of the above can also be expressed as
 
         ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
@@ -151,11 +152,15 @@ $> sudo service apache2 restart
 
 ## cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
-
-    0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
-    0  *  * * * /usr/bin/find /var/log/tomcat9/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
-    0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
-
+```bash
+sudo crontab -e
+```
+Enter
+```
+0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+0  *  * * * /usr/bin/find /var/log/texton/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
+```
 ## Python3
 
 We need pip3
@@ -200,21 +205,21 @@ See INSTALL.md in the texton-Java repo.
 ### running Text Tonsorium the first time
 
 Create file /opt/texton/BASE/meta/properties containing
-
-    ( baseUrlTools
-    . "http://localhost:8080"
-    . "Protocol and domain of infrastructure as made known to integrated tools"
-    )
-    ( wwwServer
-    . "http://localhost"
-    . "Protocol and domain of infrastructure as made known to users' browsers"
-    )
-    ( password
-    . "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
-    . "Empty string as password."
-    )
-    (salt."CvPAQd7naaqtVD1xJD37eg==".)
-
+```
+( baseUrlTools
+. "http://localhost:8080"
+. "Protocol and domain of infrastructure as made known to integrated tools"
+)
+( wwwServer
+. "http://localhost"
+. "Protocol and domain of infrastructure as made known to users' browsers"
+)
+( password
+. "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
+. "Empty string as password."
+)
+(salt."CvPAQd7naaqtVD1xJD37eg==".)
+```
 Open a browser and navigate to http://localhost:8080/texton/
 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
