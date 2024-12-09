@@ -23,20 +23,20 @@ Installation requires
   * Java
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
-  * Bracmat JNI
+  * Bracmat (as JNI - Java Native Interface)
+  * texton - Java part
+   This is the central hub in the Text Tonsorium. It communicates with the user via a
+   browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * texton - Bracmat part (this repo)
   * linguistic resources
   * proxy settings
   * cron jobs
   * python3
   * xmllint
-  * bracmat  
+  * bracmat (as command line tool) 
    Interpreters are installed in two locations:  
    as a JNI (Java Native Interface) inside Tomcat  
    and as a command line tool in `/opt/texton/bin/`
-  * texton - Java part
-   This is the central hub in the Text Tonsorium. It communicates with the user via a
-   browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * many tools wrapped in web services in `/opt/texton/`
   * tools that can be compiled from source
 
@@ -270,6 +270,18 @@ $> wget http://localhost:8080
 ```
 Another index.html should be in the home directory
 
+## texton-Java
+
+The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
+Make sure that the local git repositories texton-Java and Bracmat (see above) share the same parent folder. You can clone whereever you want, e.g. in your home folder.
+It is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
+```bash
+$> git clone https://github.com/kuhumcst/texton-Java.git
+$> cd texton-Java
+$> sudo chmod ugo+x compileTomcat.sh
+$> sudo ./compileTomcat.sh
+$> cd ..
+```
 ## texton - Bracmat part (this repo)
 
 ```bash
@@ -278,9 +290,9 @@ $> sudo git clone https://github.com/kuhumcst/texton.git
 $> cd texton
 $> sudo chgrp -R www-data *
 $> sudo chmod -R g+w * 
-$> cd BASE
-$> sudo chown -R tomcat: *
+$> sudo chown -R tomcat: BASE
 ```
+
 ## linguistic resources
 
 ```bash
@@ -385,10 +397,6 @@ $> make
 $> sudo cp bracmat /opt/texton/bin/
 ```
 
-## texton-Java
-
-See INSTALL.md in the texton-Java repo.
-
 ### running Text Tonsorium the first time
 
 Create file /opt/texton/BASE/meta/properties containing
@@ -474,17 +482,6 @@ Also needed is ImageMagick
 $>sudo apt install imagemagick
 ```
 
-### daner
-
-Daner is at https://github.com/ITUnlp/daner
-
-```bash
-$> cd /opt/texton/daner
-$> sudo git clone https://github.com/ITUnlp/daner.git
-```
-
-Afterwards there will be a subdirectory `daner/daner`.
-
 ### dependency2tree
 
 ```bash
@@ -496,8 +493,6 @@ $> git clone https://github.com/boberle/dependency2tree.git
 $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
 $> sudo apt install graphviz
 ```
-
-
 ### espeak
 
 This is simply installed by the following command:
@@ -601,59 +596,59 @@ The following instructions assume installation in a system with systemd.
 Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip.
 
 ```bash
-cd ~
-wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
+$> cd ~
+$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
 ```
 Unzip and move to destination folder
 
 ```bash
-unzip stanford-corenlp-4.5.7.zip
-sudo mv stanford-corenlp-4.5.7 /opt/
+$> unzip stanford-corenlp-4.5.7.zip
+$> sudo mv stanford-corenlp-4.5.7 /opt/
 ```
 Make link to latest version
 
 ```bash
-sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
+$> sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
 ```
 Copy CoreNLP.sh to its destination folder
 
 ```bash
-cd /opt/texton/CoreNLP/
-sudo cp CoreNLP.sh /usr/local/bin/
+$> cd /opt/texton/CoreNLP/
+$> sudo cp CoreNLP.sh /usr/local/bin/
 ```
 You are advised to increase the `timeout' value from 5000 to e.g. 500000 in the lines
 ```bash
-nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
+$> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
 ```
 Make executable
 
 ```bash
-sudo chmod +x /usr/local/bin/CoreNLP.sh
+$> sudo chmod +x /usr/local/bin/CoreNLP.sh
 ```
 Check
 
 ```bash
-/usr/local/bin/./CoreNLP.sh start
-sudo ps -ef | grep NLP
-/usr/local/bin/./CoreNLP.sh stop
-sudo ps -ef | grep NLP
+$> /usr/local/bin/./CoreNLP.sh start
+$> sudo ps -ef | grep NLP
+$> /usr/local/bin/./CoreNLP.sh stop
+$> sudo ps -ef | grep NLP
 ```
 Copy CoreNLP.service to its destination folder
 
 ```bash
-sudo cp CoreNLP.service /etc/systemd/system/
+$> sudo cp CoreNLP.service /etc/systemd/system/
 ```
 Enable the service
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable CoreNLP.service
+$> sudo systemctl daemon-reload
+$> sudo systemctl enable CoreNLP.service
 ```
 Start/Stop service
 
 ```bash
-sudo systemctl start CoreNLP.service
-sudo systemctl stop CoreNLP.service
+$> sudo systemctl start CoreNLP.service
+$> sudo systemctl stop CoreNLP.service
 ```
 
 If CoreNLP is installed locally, you can visit its web interface by visiting http://localhost:9000/
@@ -708,7 +703,7 @@ Unzip this resource:
 
 ```bash
 $> cd ~
-$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip?sequence=1&isAllowed=y
+$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip
 $> unzip udpipe-ud-2.5-191206.zip
 $> sudo mv cd udpipe-ud-2.5-191206 <texton folder>/udpipe
 ```
