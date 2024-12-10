@@ -5,78 +5,121 @@ This document explains how you can install the Text Tonsorium under Linux Ubuntu
 The instructions are valid under the following assumptions:
 
   * The software is installed in the Windows Subsystem for Linux
-  * The OS is Ubuntu 18.04 or higher
+  * The OS is Ubuntu 24.04 LTS or higher
   * The URI to the resulting web application is http://localhost/texton 
   * Most of the Text Tonsorium (software and linguistic resources) is located under `/opt/texton/`.  
    Only programs that are installed using apt-get reside elsewhere.
 
 Installation requires 
+  * update/upgrade
+  * unzip
+  * ClamAV
+   Checks uploaded files
+  * pdffonts
   * git-lfs  
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
-  * texton - Bracmat part (this repo)
-  * linguistic resources
   * apache2
   * PHP
   * Java
-  * ant
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
+  * Bracmat (as JNI - Java Native Interface)
+  * texton - Java part
+   This is the central hub in the Text Tonsorium. It communicates with the user via a
+   browser and communicates with the tools using HTTP `GET` or `POST` requests.
+  * texton - Bracmat part (this repo)
+  * linguistic resources
   * proxy settings
   * cron jobs
   * python3
   * xmllint
-  * bracmat  
+  * bracmat (as command line tool) 
    Interpreters are installed in two locations:  
    as a JNI (Java Native Interface) inside Tomcat  
    and as a command line tool in `/opt/texton/bin/`
-  * texton - Java part
-   This is the central hub in the Text Tonsorium. It communicates with the user via a
-   browser and communicates with the tools using HTTP `GET` or `POST` requests.
   * many tools wrapped in web services in `/opt/texton/`
   * tools that can be compiled from source
+
+## update/upgrade
+```bash
+$> sudo apt-get update
+$> sudo apt-get upgrade
+```
+
+## unzip
+```bash
+$> sudo apt install unzip
+```
+## ClamAV
+Checks uploaded files.
+See https://www.clamav.net/. Install: 
+```bash
+$> sudo apt-get install clamav clamav-daemon -y
+$> sudo dpkg-reconfigure clamav-daemon
+```
+Choose TCP and port 3310. Leave the rest as-is. 
+Edit /etc/systemd/system/clamav-daemon.socket.d/override.conf 
+```bash
+$> sudo mkdir /etc/systemd/system/clamav-daemon.socket.d
+$> sudo vi /etc/systemd/system/clamav-daemon.socket.d/override.conf
+```
+Enter:
+```
+[Socket]
+ListenStream=
+ListenStream=/run/clamav/clamd.ctl
+ListenStream=127.0.0.1:3310
+```
+Then
+```bash
+$> sudo systemctl daemon-reload
+$> sudo systemctl reload clamav-daemon.service
+$> sudo ss -anp | grep -E "(Active|State|clam|3310)"
+```
+```
+Netid State   Recv-Q Send-Q                                          Local Address:Port        Peer Address:Port      Process
+
+u_str LISTEN  0      4096                                    /run/clamav/clamd.ctl 18587                  * 0          users:(("clamd",pid=246,fd=3),("systemd",pid=1,fd=56))
+u_str ESTAB   0      0                                                           * 18649                  * 17746      users:(("clamd",pid=246,fd=2),("clamd",pid=246,fd=1))
+tcp   LISTEN  0      4096                                                127.0.0.1:3310             0.0.0.0:*          users:(("clamd",pid=246,fd=4),("systemd",pid=1,fd=58))
+```
+If the output doesn't mention port 3310, the clamAV daemon can still be working. To test, create an EICAR test file with the following content:
+```
+X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+```
+(See https://en.wikipedia.org/wiki/EICAR_test_file). Then
+```bash
+$> clamdscan --fdpass EICAR
+```
+The output should tell that there is an error:
+```
+----------- SCAN SUMMARY -----------
+Infected files: 0
+Total errors: 1
+Time: 0.000 sec (0 m 0 s)
+Start Date: 2024:12:07 16:22:35
+End Date:   2024:12:07 16:22:35
+```
+To increase the max size of files to scan, edit clamd.conf
+```bash
+sudo vi /etc/clamav/clamd.conf
+```
+and increase StreamMaxLength from the default value 25M:
+```
+StreamMaxLength 250M
+```
+## pdffonts
+Install prerequisite:
+```bash
+$> sudo apt install poppler-utils
+```
+This installs /usr/bin/pdffonts.
 
 ## git-lfs
 
 ```bash
 $> sudo apt-get install -y git-lfs
 ```
-
-## texton - Bracmat part (this repo)
-
-```bash
-$> cd /opt
-$> sudo git clone https://github.com/kuhumcst/texton.git
-$> cd texton
-$> sudo chgrp -R www-data: *
-$> sudo chmod -R g+w * 
-$> cd BASE
-$> sudo chown -R tomcat: *
-```
-
-In the BASE folder (/opt/texton/BASE), which contains things that Tomcat wants to interact with, owner must be set to "tomcat".
-Notice that the BASE/tmp subfolder, which seems to contain nothing but a readme file, also should be owned by tomcat. It is not good enough to let it be owned by www-data. Failing to do this can result in failed upload of input.    
-
-## linguistic resources
-
-```bash
-$> cd /opt
-$> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
-$> cd texton
-$> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
-```
-
-Make all directories accessible and readable and give owner and group write rights
-
-```bash
-$> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
-```
-
-Set group to www-data, recursively
-
-```bash
-$> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
-```
-
 ## apache
 
 ```bash
@@ -89,6 +132,7 @@ $> sudo apt install apache2
 $> cd /opt/texton/apache2-sites/
 $> sudo cp texton.conf /etc/apache2/sites-available/
 $> sudo a2ensite texton.conf
+$> sudo a2dissite 000-default.conf
 $> sudo service apache2 reload
 ```
 
@@ -121,7 +165,162 @@ Restart apache
 ```bash
 $> sudo service apache2 restart
 ```
+## Java
+```bash
+$> sudo apt install default-jdk
+```
+## Tomcat
 
+On WSL Ubuntu, Tomcat is downloaded and installed as /opt/tomcat-texton/. This can go as follows:
+
+Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.1/bin/apache-tomcat-11.0.1.tar.gz.
+```bash
+$> sudo mkdir /opt/tomcat11
+$> sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
+$> sudo chown tomcat: /opt/tomcat11
+$> cd ~
+$> wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.1/bin/apache-tomcat-11.0.1.tar.gz -P .
+$> sudo tar -xvzf apache-tomcat-11.0.1.tar.gz -C /opt/tomcat11
+$> sudo ln -s /opt/tomcat11/apache-tomcat-11.0.1 /opt/tomcat-texton
+$> sudo chown -RH tomcat: /opt/tomcat-texton
+$> sudo chmod ugo+rx /opt/tomcat11/
+$> sudo chmod o+rx /opt/tomcat-texton/bin/
+$> sudo chmod o+rx /opt/tomcat-texton/logs/
+```
+[This step is perhaps not necessary! Edit /opt/tomcat-texton/conf/server.xml
+```
+<Connector address="127.0.0.1" port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" />
+```
+]
+
+Create /etc/systemd/system/tomcat-texton.service
+```
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+User=tomcat
+Group=tomcat
+UMask=0007
+Environment="JAVA_HOME=/usr/lib/jvm/default-java"
+Environment="CATALINA_PID=/opt/tomcat-texton/temp/tomcat.pid"
+Environment="CATALINA_HOME=/opt/tomcat-texton"
+Environment="CATALINA_BASE=/opt/tomcat-texton"
+Environment='CATALINA_OPTS=-Xms7168M -Xmx7168M -server -XX:+UseG1GC'
+Environment='JAVA_OPTS=-Djava.security.egd=file:/dev/./urandom'
+#Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
+ExecStart=/opt/tomcat-texton/bin/startup.sh
+ExecStop=/opt/tomcat-texton/bin/shutdown.sh
+SuccessExitStatus=0 143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+Notice that the parameter -Xmx could be set to a higher value if the computer has e.g. 32 GB RAM.
+Also notice that the commented line that includes bracmat.jar in the Environment will be activated once bracmat.jar is created and copied to $CATALINA_HOME/lib/. 
+
+Create folder /etc/systemd/system/tomcat-texton.service.d and file /etc/systemd/system/tomcat-texton.service.d/override.conf
+```
+[Service]
+ReadWritePaths=/opt/texton/BASE/ /var/log/texton/
+```
+
+Then
+```bash
+$> sudo mkdir /var/log/texton
+$> sudo chown tomcat: /var/log/texton
+$> sudo systemctl daemon-reload
+$> sudo systemctl enable tomcat-texton.service
+$> sudo systemctl start tomcat-texton.service
+```
+To test that Tomcat is working:
+```bash
+$> cd ~
+$> wget http://localhost:8080
+```
+This should result in a index.html in the home directory.
+
+### Install Bracmat JNI
+
+Create the Tomcat lib bracmat.jar and the shared library libbracmat.so.1.0.
+The script compileAndTestJNI.sh assumes that the folder /opt/tomcat-texton/ exists and that the tomcat binaries are in the bin subfolder. Edit compileAndTestJNI.sh if necessary.
+
+```bash
+$> git clone https://github.com/BartJongejan/Bracmat.git
+$> cd Bracmat/java-JNI
+$> sudo chmod ugo+x compileAndTestJNI.sh
+$> sudo ./compileAndTestJNI.sh
+```
+
+Open /etc/systemd/system/tomcat-texton.service again and remove the hash sign in front of this line:
+```
+Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
+
+```
+Then:
+```bash
+$> sudo systemctl daemon-reload
+$> sudo systemctl restart tomcat-texton.service
+$> cd ~
+$> wget http://localhost:8080
+```
+Another index.html should be in the home directory
+
+## texton-Java
+
+The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
+Make sure that the local git repositories texton-Java and Bracmat (see above) share the same parent folder. You can clone whereever you want, e.g. in your home folder.
+It is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
+```bash
+$> git clone https://github.com/kuhumcst/texton-Java.git
+$> cd texton-Java
+$> sudo chmod ugo+x compileTomcat.sh
+$> sudo ./compileTomcat.sh
+$> cd ..
+```
+## texton - Bracmat part (this repo)
+
+```bash
+$> cd /opt
+$> sudo git clone https://github.com/kuhumcst/texton.git
+$> cd texton
+$> sudo chgrp -R www-data *
+$> sudo chmod -R g+w * 
+$> sudo chown -R tomcat: BASE
+```
+
+## linguistic resources
+
+```bash
+$> cd /opt
+$> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+$> cd texton
+$> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
+```
+
+Make all directories accessible and readable and give owner and group write rights
+
+```bash
+$> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
+```
+
+Set group to www-data, recursively
+
+```bash
+$> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
+```
+### enabling webservices
+
+```bash
+$> cd /opt/texton/apache2-sites/
+$> sudo cp texton.conf /etc/apache2/sites-available/
+$> sudo a2ensite texton.conf
+$> sudo service apache2 reload
+```
 ## Proxy settings
 
 ```bash
@@ -129,18 +328,19 @@ $> sudo vi /etc/apache2/mods-available/proxy.conf
 ```
 
 Add:
-
-        ProxyPass /texton/ http://127.0.0.1:8080/texton/
-        ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
-        ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
-        ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
-        ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
-        ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
-        ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
-        
+```
+ProxyPass /texton/ http://127.0.0.1:8080/texton/
+ProxyPass /texton/mypoll  http://127.0.0.1:8080/texton/mypoll
+ProxyPass /texton/poll  http://127.0.0.1:8080/texton/poll
+ProxyPass /texton/upload  http://127.0.0.1:8080/texton/upload
+ProxyPass /texton/zipresults  http://127.0.0.1:8080/texton/zipresults
+ProxyPass /texton/data  http://127.0.0.1:8080/texton/data
+ProxyPass /tomcat-manager http://127.0.0.1:8080/manager/html
+```        
 All of the above can also be expressed as
-
-        ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
+```
+ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
+```
 
 ```bash
 $> sudo a2enmod proxy
@@ -151,11 +351,15 @@ $> sudo service apache2 restart
 
 ## cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
-
-    0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
-    0  *  * * * /usr/bin/find /var/log/tomcat9/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
-    0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
-
+```bash
+sudo crontab -e
+```
+Enter
+```
+0  *  * * * /usr/bin/find /opt/texton/BASE/data/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+0  *  * * * /usr/bin/find /var/log/texton/ -mtime +2 -exec rm {} \;  > /dev/null 2> /dev/null
+0  *  * * * /usr/bin/curl http://127.0.0.1:8080/texton/cleanup > /dev/null 2> /dev/null
+```
 ## Python3
 
 We need pip3
@@ -193,12 +397,27 @@ $> make
 $> sudo cp bracmat /opt/texton/bin/
 ```
 
-## texton-Java
-
-See INSTALL.md in the texton-Java repo.
-
 ### running Text Tonsorium the first time
 
+Create file /opt/texton/BASE/meta/properties containing
+```
+( baseUrlTools
+. "http://localhost:8080"
+. "Protocol and domain of infrastructure as made known to integrated tools"
+)
+( wwwServer
+. "http://localhost"
+. "Protocol and domain of infrastructure as made known to users' browsers"
+)
+( password
+. "Fq3vdqxIPqrKGMYh0pD+MY64Acgv8zA9Qhye+S7+mVWujVWuEPUZcEvoKGDLs6tsxJyqVnRzOZFkUBwz2QmiWA=="
+. "Empty string as password."
+)
+(salt."CvPAQd7naaqtVD1xJD37eg==".)
+```
+```bash
+$> sudo chown tomcat: /opt/texton/BASE/meta/properties
+```
 Open a browser and navigate to http://localhost:8080/texton/
 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
@@ -262,9 +481,7 @@ Also needed is ImageMagick
 ```bash
 $>sudo apt install imagemagick
 ```
-
 ### daner
-
 Daner is at https://github.com/ITUnlp/daner
 
 ```bash
@@ -273,7 +490,6 @@ $> sudo git clone https://github.com/ITUnlp/daner.git
 ```
 
 Afterwards there will be a subdirectory `daner/daner`.
-
 ### dependency2tree
 
 ```bash
@@ -285,8 +501,6 @@ $> git clone https://github.com/boberle/dependency2tree.git
 $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
 $> sudo apt install graphviz
 ```
-
-
 ### espeak
 
 This is simply installed by the following command:
@@ -390,59 +604,59 @@ The following instructions assume installation in a system with systemd.
 Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip.
 
 ```bash
-cd ~
-wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
+$> cd ~
+$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
 ```
 Unzip and move to destination folder
 
 ```bash
-unzip stanford-corenlp-4.5.7.zip
-sudo mv stanford-corenlp-4.5.7 /opt/
+$> unzip stanford-corenlp-4.5.7.zip
+$> sudo mv stanford-corenlp-4.5.7 /opt/
 ```
 Make link to latest version
 
 ```bash
-sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
+$> sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
 ```
 Copy CoreNLP.sh to its destination folder
 
 ```bash
-cd /opt/texton/CoreNLP/
-sudo cp CoreNLP.sh /usr/local/bin/
+$> cd /opt/texton/CoreNLP/
+$> sudo cp CoreNLP.sh /usr/local/bin/
 ```
 You are advised to increase the `timeout' value from 5000 to e.g. 500000 in the lines
 ```bash
-nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
+$> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
 ```
 Make executable
 
 ```bash
-sudo chmod +x /usr/local/bin/CoreNLP.sh
+$> sudo chmod +x /usr/local/bin/CoreNLP.sh
 ```
 Check
 
 ```bash
-/usr/local/bin/./CoreNLP.sh start
-sudo ps -ef | grep NLP
-/usr/local/bin/./CoreNLP.sh stop
-sudo ps -ef | grep NLP
+$> /usr/local/bin/./CoreNLP.sh start
+$> sudo ps -ef | grep NLP
+$> /usr/local/bin/./CoreNLP.sh stop
+$> sudo ps -ef | grep NLP
 ```
 Copy CoreNLP.service to its destination folder
 
 ```bash
-sudo cp CoreNLP.service /etc/systemd/system/
+$> sudo cp CoreNLP.service /etc/systemd/system/
 ```
 Enable the service
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable CoreNLP.service
+$> sudo systemctl daemon-reload
+$> sudo systemctl enable CoreNLP.service
 ```
 Start/Stop service
 
 ```bash
-sudo systemctl start CoreNLP.service
-sudo systemctl stop CoreNLP.service
+$> sudo systemctl start CoreNLP.service
+$> sudo systemctl stop CoreNLP.service
 ```
 
 If CoreNLP is installed locally, you can visit its web interface by visiting http://localhost:9000/
@@ -497,7 +711,7 @@ Unzip this resource:
 
 ```bash
 $> cd ~
-$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip?sequence=1&isAllowed=y
+$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip
 $> unzip udpipe-ud-2.5-191206.zip
 $> sudo mv cd udpipe-ud-2.5-191206 <texton folder>/udpipe
 ```
