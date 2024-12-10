@@ -481,7 +481,15 @@ Also needed is ImageMagick
 ```bash
 $>sudo apt install imagemagick
 ```
+### daner
+Daner is at https://github.com/ITUnlp/daner
 
+```bash
+$> cd /opt/texton/daner
+$> sudo git clone https://github.com/ITUnlp/daner.git
+```
+
+Afterwards there will be a subdirectory `daner/daner`.
 ### dependency2tree
 
 ```bash
