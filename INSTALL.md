@@ -102,7 +102,7 @@ End Date:   2024:12:07 16:22:35
 ```
 To increase the max size of files to scan, edit clamd.conf
 ```bash
-sudo vi /etc/clamav/clamd.conf
+$> sudo vi /etc/clamav/clamd.conf
 ```
 and increase StreamMaxLength from the default value 25M:
 ```
@@ -352,7 +352,7 @@ $> sudo service apache2 restart
 ## cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
 ```bash
-sudo crontab -e
+$> sudo crontab -e
 ```
 Enter
 ```
@@ -664,8 +664,30 @@ If CoreNLP is installed locally, you can visit its web interface by visiting htt
 Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
 
 Logging messages are per default sent to /dev/null. To see logging messages, edit /usr/local/bin/./CoreNLP.sh and change the lines starting with `nohup java':
+```bash
+$> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
+```
+Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.7/.
+```bash
+$> cd /opt/stanford-corenlp-4.5.7/
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-arabic.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-chinese.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-french.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-german.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-hungarian.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-italian.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-spanish.jar
+```
+Text Tonsorium needs the `properties` files stored in each of these .jar files. They are in the path
+```
+edu/stanford/nlp/pipeline/StanfordCoreNLP-<language>.properties
+```
+where <language> is `arabic', `chinese', `french', `german', `hungarian', `italian`, `spanish' . The .properties files are obtained as follows:
+```bash
+$> unzip -p stanford-corenlp-4.5.7-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
+```
+This command is executed automatically when the properties are needed and not already have been unzipped. 
 
-    nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
 
 
 ### Tesseract OCR
