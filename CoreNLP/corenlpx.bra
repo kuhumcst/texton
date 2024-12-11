@@ -447,7 +447,7 @@ X=
   )
   ( doit
   =     output tmp1 tmp2 A B C D E F G H formatO
-      , xmlseg xmltok lang language properties period
+      , xmlseg xmltok lang language properties
       , cor lem mrf ner pos seg snt stc stx tok
     .   ( turnTEIP5intoPlain
         =   
@@ -521,7 +521,9 @@ X=
                   (quote.)
                   (mwt.tok)
               : ?transl
-            & get$(!file,STR):?javaProperties
+            & ( get$(!file,STR):?javaProperties
+              | put$(str$("cannot read " !file "\n"),"../log/CoreNLP.log",APP,BIN)
+              )
             & put$(!javaProperties,javaProperties,NEW)
             &   (     mop
                     $ ( 
@@ -593,7 +595,6 @@ X=
                 , 
                 )
               : ?jsonProperties
-            & lst$(jsonProperties,jsonProperties0,NEW)
             & jsn$!jsonProperties:?jsonProperties
             & put$(!jsonProperties,jsonProperties,NEW)
             & !jsonProperties
@@ -628,14 +629,13 @@ X=
                 )
         )
       & ( transform
-        =     Tokenized/SegmentedPlainText tmp1 tmp2 formatO lang language properties period
+        =     Tokenized/SegmentedPlainText tmp1 tmp2 formatO lang language properties
             , cor lem mrf ner pos seg snt stc stx tok
           .     !arg
               : ( ?formatO
                 . ?lang
                 . ?language
                 . ?properties
-                . ?period
                 . ?Tokenized/SegmentedPlainText
                 . ?tmp1
                 . ?tmp2
@@ -651,8 +651,6 @@ X=
                 . ?tok
                 )
             & put$(!Tokenized/SegmentedPlainText,!tmp1,NEW)
-            & put$(!Tokenized/SegmentedPlainText,tmp1,NEW)
-            & put$(!properties,properties,NEW)
             &     getProperties
                 $ ( !properties
                   . (outputFormat..json)+(timeout..500000)
@@ -660,22 +658,21 @@ X=
                   . !lang
                   )
               : ?properties
-            & put$(!properties,properties2,NEW)
-            &     str
-                $ ( "wget --post-file "
-                    !tmp1
-                    " 'http://localhost:9000/?properties="
-                    percentencode$!properties
-                    "' -O "
-                    !tmp2
-                    " --"
-                  )
-              : ?command
-            & put$(str$!command,command,NEW,BIN)
-            & sys$!command
+            & (       str
+                    $ ( "wget --post-file "
+                        !tmp1
+                        " 'http://localhost:9000/?properties="
+                        percentencode$!properties
+                        "' -O "
+                        !tmp2
+                        " --"
+                      )
+                  : ?command
+                & sys$!command:0
+              | put$(str$("cannot execute command [" !command "]\n"),"../log/CoreNLP.log",APP,BIN)
+              )
             & ( !formatO:json&get$(!tmp2,STR)
               |   get$(!tmp2,JSN):?json
-                & lst$(json,json,NEW)
                 &   str
                   $ ( toML
                     $ ( (its.turnJSONintoTEIP5)
@@ -689,7 +686,6 @@ X=
           . ?lang
           . ?language
           . ?properties
-          . ?period
           . ?inputtok
           . ?inputseg
           . ?output
@@ -706,44 +702,6 @@ X=
           . ?stx
           . ?tok
           )
-      &   put
-        $ (   formatO
-              !formatO
-              lang
-              !lang
-              language
-              !language
-              properties
-              !properties
-              inputtok
-              !inputtok
-              inputseg
-              !inputseg
-              cor
-              !cor
-              lem
-              !lem
-              mrf
-              !mrf
-              ner
-              !ner
-              pos
-              !pos
-              seg
-              !seg
-              snt
-              !snt
-              stc
-              !stc
-              stx
-              !stx
-              tok
-              !tok
-          , Lang
-          , NEW
-          , BIN
-          )
-      & (get$"langtable.bra":?langtable|)
       &   (   @(!inputseg:?format "/")
             & ( !format:flat&get$(!inputtok,STR)
               |     nestML$(get$(!inputtok,X ML TRM))
@@ -766,13 +724,11 @@ X=
             & str$(turnTEIP5intoPlain$(!xmltok.!xmlseg))
           )
         : ?Tokenized/SegmentedPlainText
-      & lst$(Tokenized/SegmentedPlainText,TokenizedSegmentedPlainText,NEW)
       &     transform
           $ ( !formatO
             . !lang
             . !language
             . !properties
-            . !period
             . !Tokenized/SegmentedPlainText
             . !tmp1
             . !tmp2
@@ -793,6 +749,27 @@ X=
   ( new
   =   
     .   ~
+      |   (its.doit)
+        $ ( teip5
+          . hu
+          . hungarian
+          . "StanfordCoreNLP-hungarian.properties"
+          . F
+          . flat/
+          . CoreNLP-results
+          . corenlp-tmp1
+          . "json.bra"
+          . 0
+          . 0
+          . 0
+          . 1
+          . 1
+          . 1
+          . 0
+          . 1
+          . 0
+          . 1
+          )
       |     ( arg$
             . arg$
             . arg$
@@ -818,7 +795,6 @@ X=
             . ?lang
             . ?language
             . ?properties
-            . ?period
             . ?inputtok
             . ?inputseg
             . ?output
@@ -840,7 +816,6 @@ X=
             . !lang
             . !language
             . !properties
-            . !period
             . !inputtok
             . !inputseg
             . !output
