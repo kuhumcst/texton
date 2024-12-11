@@ -298,6 +298,7 @@ $> sudo chown -R tomcat: BASE
 ```bash
 $> cd /opt
 $> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+$> sudo chmod -R ug+w /opt/texton-linguistic-resources
 $> cd texton
 $> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
 ```
