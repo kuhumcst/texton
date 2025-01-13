@@ -6,20 +6,51 @@ Output JSON or TEI-P5.
 
 X=
   ( turnJSONintoTEIP5
-  =   cor lem mrf ner pos seg snt stc stx tok
-    .   !arg:(?json.?cor,?lem,?mrf,?ner,?pos,?seg,?snt,?stc,?stx,?tok)
+  =     cor lem mrf ner pos seg sent snt stc stx tok
+      ,   spanGrpTok
+          spanGrpSent
+          spanGrpSnt
+          spanGrpSeg
+          spanGrpMrf
+          spanGrpNer
+          spanGrpLemma
+          spanGrpCor
+          spanGrpPos
+          spanGrpStc
+          spanGrpSyn
+    .   !arg:(?json.?cor,?lem,?mrf,?ner,?pos,?seg,?sent,?snt,?stc,?stx,?tok)
+      &   ( cor !cor
+          , lem !lem
+          , mrf !mrf
+          , ner !ner
+          , pos !pos
+          , seg !seg
+          , sent !sent
+          , snt !snt
+          , stc !stc
+          , stx !stx
+          , tok !tok
+          )
+        : ?opts
+      & lst$(opts,opts,APP)
+      &   
+        : ?spanGrpTok
+        : ?spanGrpSent
+        : ?spanGrpSnt
+        : ?spanGrpSeg
+        : ?spanGrpMrf
+        : ?spanGrpNer
+        : ?spanGrpLemma
+        : ?spanGrpCor
+        : ?spanGrpPos
+        : ?spanGrpStc
+        : ?spanGrpSyn
       & !json:((sentences.,?sentences),)
       & characterOffsetBegin characterOffsetEnd index lemma ner originalText pos word
       & 0:?s
       & :?idfix
       & 0:?anoid
       & (ano=."xml:id".str$(a (!anoid+1:?anoid)))
-      & ( inv
-        =   j K
-          .   :?K
-            & whl'(!arg:%?j ?arg&!j !K:?K)
-            & !K
-        )
       & ( idfy
         =   
           .   map
@@ -41,16 +72,20 @@ X=
         )
       & ( standoff
         =   what xml naps ana parent
-          .   !arg:(?what,?ana,?parent.?xml)
+          .   !arg:(?what,?ana,?parent,?this.?xml)
             & :?naps
             &     map
-                $ ( ( 
-                    =   a c A W Z e from to id
+                $ (   
+                    ' ( a c A W Z e from to id d
                       .     !arg:((w|c):?e.?a,?c)
-                          & !a:?A (!what.?W) ?Z
-                          & !A !Z:?a:? ("xml:id".?id) ?
+                          & !a:?A ($what.?W) ?Z
+                          &   !A !Z
+                            : ?a
+                            :   ?
+                                ("xml:id".@(?id:? (#% ?:?d)))
+                                ?
                           &     ( span
-                                .     ("xml:id".str$(!ana !id))
+                                .     ("xml:id".str$($this !d))
                                       (   !c:% %
                                         &   !c
                                           :   ( ?
@@ -62,9 +97,10 @@ X=
                                               .   ? ("xml:id".?to) ?
                                                 , ?
                                               )
-                                        &   (from.str$("#" !parent !from))
-                                            (to.str$("#" !parent !to))
-                                      | (from.str$("#" !parent !id))
+                                        &   (from.str$("#" !from))
+                                            (to.str$("#" !to))
+                                      |   @(!id:? (#% ?:?from))
+                                        & (from.str$("#" ()$parent !from))
                                       )
                                   , !W
                                 )
@@ -72,41 +108,79 @@ X=
                             : ?naps
                           & (!e.!a,!c)
                         | !arg
-                    )
+                      )
                   . !xml
                   )
               : ?xml
-            & ((spangrp.(ana.!ana),inv$!naps).!xml)
+            & ((spanGrp.(ana.!ana),inv$!naps).!xml)
+        )
+      & ( stand2off
+        =   what xml naps ana spans prnt
+          .   !arg:(?what,?ana,?this.?xml.?prnt)
+            & :?naps
+            & !prnt:(spanGrp.?,?spans)
+            &     map
+                $ (   
+                    ' ( a c A W Z e from id
+                      .     !arg:((w|c):?e.?a,?c)
+                          & !a:?A ($what.?W) ?Z
+                          & !A !Z:?a:? ("xml:id".?id) ?
+                          &   !spans
+                            :   ?
+                                ( span
+                                .     ? (from.@(?:"#" !id)) ?
+                                    : ? ("xml:id".?from) ?
+                                  , ?
+                                )
+                                ?spans
+                          & @(!from:? (#% ?:?xmlid))
+                          &     ( span
+                                .     ("xml:id".str$($this !xmlid))
+                                      (from.str$("#" !from))
+                                  , !W
+                                )
+                                !naps
+                            : ?naps
+                          & (!e.!a,!c)
+                        | !arg
+                      )
+                  . !XML
+                  )
+              : ?xml
+            & ((spanGrp.(ana.!ana),inv$!naps).!xml)
         )
       & ( collectSyn
-        =   ana A B a z
-          .   !arg:(?arg.?ana)
+        =   ana B
+          .   !arg:(?arg.?what.?ana)
             &     map
-                $ ( ( 
-                    =   
-                      .   !arg:(spanGrp.?A,?B)&!B
+                $ (   
+                    ' ( 
+                      .       !arg
+                            : (spanGrp.? (ana.$what) ?,?B)
+                          & !B
                         | 
-                    )
+                      )
                   . !arg
                   )
               : ?spanGrp
-            & (   !A:?a (ana.?) ?z
-                & !a !z:?A
-              | 
-              )
             &     map
-                $ ( ( 
-                    =   
-                      .   !arg:(spanGrp.?,?)&
+                $ (   
+                    ' ( 
+                      .       !arg
+                            : (spanGrp.? (ana.$what) ?,?)
+                          & 
                         | !arg
-                    )
+                      )
                   . !arg
                   )
               : ?arg
-            & ((spanGrp.(ana.!ana) !A,!spanGrp).!arg)
+            & (   !spanGrp:
+                | (spanGrp.(ana.!ana),!spanGrp)
+              . !arg
+              )
         )
-      & ( sent
-        =   
+      & ( sentence
+        =   sents
           .   ( text
               =   
                 .   str
@@ -123,55 +197,70 @@ X=
                       )
                     )
               )
-            & ( spanGrp
-              .   (ana.sent)
-                ,   map
-                  $ ( ( 
-                      =   
-                        .     !arg:(p.?,?s)
-                            &   map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(s.?,?arg)
-                                      &   !arg
-                                        : ((?.?af,?cf):?first) ?
-                                        : ? ((?.?al,?cl):?last)
-                                      & (   !cf
-                                          :   ( ?
-                                              .   ? ("xml:id".?idf) ?
-                                                , ?
-                                              )
-                                              ?
-                                        | !af:? ("xml:id".?idf) ?
+            &     map
+                $ ( ( 
+                    =   
+                      .     !arg:(p.?,?s)
+                          &   map
+                            $ ( ( 
+                                =   e
+                                  .   !arg:(s.?,?arg)
+                                    &   !arg
+                                      :   ?
+                                          ( ( ?
+                                            .     ~( ?
+                                                     ("xml:id".@(?:a #))
+                                                     ?
+                                                   )
+                                                : ?af
+                                              , ?cf
+                                            )
+                                          : ?first
+                                          )
+                                          ?
+                                    &   whl
+                                      ' ( !arg:?narg (?e.?al,?cl)
+                                        & !e:spanGrp
+                                        & !narg:?arg
                                         )
-                                      & (   !cl
-                                          :   ?
-                                              ( ?
-                                              .   ? ("xml:id".?idl) ?
-                                                , ?
-                                              )
-                                        | !al:? ("xml:id".?idl) ?
-                                        )
-                                      & ( span
-                                        .     (from.str$("#" !idf))
-                                              (   !idf:!idl
-                                                & 
-                                              | (to.str$("#" !idl))
-                                              )
-                                          , text$!arg
-                                        )
-                                  )
-                                . !s
+                                    & (   !cf
+                                        :   ( ?
+                                            .   ? ("xml:id".?idf) ?
+                                              , ?
+                                            )
+                                            ?
+                                      | !af:? ("xml:id".?idf) ?
+                                      )
+                                    & (   !cl
+                                        :   ?
+                                            ( ?
+                                            .   ? ("xml:id".?idl) ?
+                                              , ?
+                                            )
+                                      | !al:? ("xml:id".?idl) ?
+                                      )
+                                    & ( span
+                                      .     (from.str$("#" !idf))
+                                            (   !idf:!idl
+                                              & 
+                                            | (to.str$("#" !idl))
+                                            )
+                                        , text$!arg
+                                      )
                                 )
-                          | 
-                      )
-                    . !arg
+                              . !s
+                              )
+                        | 
                     )
-              )
+                  . !arg
+                  )
+              : ?sents
+            & (spanGrp.(ana.sent),!sents)
         )
-      & ( seg
-        =   spanSent spanTok from a z
+      & ( segment
+        =   spanSent spanTok from a z ind
           .   !arg:((?.?,?spanSent).?.?,?spanTok)
+            & 0:?ind
             & ( spanGrp
               .   (ana.seg)
                 ,   map
@@ -179,6 +268,11 @@ X=
                       =   from to a aa z id idto
                         .     !arg
                             : (span.?a (from.?from) ?z,?)
+                          & (   !a !z:?aa ("xml:id".?) ?z
+                              & !aa !z:?a
+                              & :?z
+                            | 
+                            )
                           & (   !a !z:?aa (to.?to) ?z
                               & !aa:?a
                               &   !spanTok
@@ -202,7 +296,8 @@ X=
                                 )
                                 ?
                           & ( span
-                            .     !a
+                            .     ("xml:id".str$(seg (1+!ind:?ind)))
+                                  !a
                                   (from.str$("#" !id))
                                   ( !to:
                                   | (to.str$("#" !idto))
@@ -216,15 +311,26 @@ X=
               )
         )
       & ( divvy
-        =   P sind index lemma ner originalText,pos word atts e a c
-          .   !arg:(?sind.?index.?lemma.?ner.?originalText.?pos.?word)
+        =     P sind index lemma ner originalText
+            , pos word atts e a c characterOffsetBegin characterOffsetEnd
+          .     !arg
+              : ( ?sind
+                . ?index
+                . ?lemma
+                . ?ner
+                . ?originalText
+                . ?pos
+                . ?word
+                . ?characterOffsetBegin
+                . ?characterOffsetEnd
+                )
             &     ("xml:id".str$(i !sind "." !index))
                   (!lemma:|(lemma.!lemma))
-                  ( !ner:(|O)&
-                  | (ner.!ner)
-                  )
+                  (!ner:|(ner.!ner))
                   (!pos:|(pos.!pos))
                   (!word:|(token.!word))
+                  (characterOffsetBegin.!characterOffsetBegin)
+                  (characterOffsetEnd.!characterOffsetEnd)
               : ?atts
             & :?P
             &     vap
@@ -282,6 +388,7 @@ X=
                 )
             & str$!arg
         )
+      & 0:?entId:?sentId:?depId:?synId
       &   ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
           ( TEI
           .   (xmlns."http://www.tei-c.org/ns/1.0")
@@ -291,17 +398,52 @@ X=
                   ,       (p.)
                             mop
                           $ ( ( 
-                              =   sind
+                              =   sind lemma ner pos
                                 .   1+!s:?s
                                   &   !arg
-                                    : (?+(index.?sind)+?+(tokens.,?tokens)+?,)
-                                  &   !arg
-                                    : (   ?+(enhancedPlusPlusDependencies.,?deps)+?
-                                        | ?+(enhancedDependencies.,?deps)+?
-                                        | ?+(basicDependencies.,?deps)+?
-                                        | ?&:?deps
+                                    : (   ?+(index.?sind)+?+(tokens.,?tokens)+?
+                                        : ( ?+(entitymentions.,?entitymentions)+?
+                                          |   ?
+                                            & :?entitymentions
+                                          )
+                                        : (   ?
+                                            & !stc:0
+                                            & :?parse
+                                          | ?+(parse..?parse)+?
+                                          | ?&:?parse
+                                          )
+                                        : ( ?+(sentiment..?sentiment)+?
+                                          |   ?
+                                            & :?sentiment
+                                          )
+                                        : (   ?
+                                            + ( sentimentDistribution
+                                              . ,?sentimentDistribution
+                                              )
+                                            + ?
+                                          |   ?
+                                            & :?sentimentDistribution
+                                          )
+                                        : ( ?+(sentimentTree..?sentimentTree)+?
+                                          |   ?
+                                            & :?sentimentTree
+                                          )
+                                        : ( ?+(sentimentValue..?sentimentValue)+?
+                                          |   ?
+                                            & :?sentimentValue
+                                          )
                                       , 
                                       )
+                                  & (   !stx:1
+                                      &   !arg
+                                        : (   ?+(enhancedPlusPlusDependencies.,?deps)+?
+                                            | ?+(enhancedDependencies.,?deps)+?
+                                            | ?+(basicDependencies.,?deps)+?
+                                            | ?&:?deps
+                                          , 
+                                          )
+                                    | :?deps
+                                    )
                                   &   (     !tokens
                                           :   (?+(before..?before)+?,)
                                               ?
@@ -316,19 +458,50 @@ X=
                                           $ ( ( 
                                               =   
                                                 .     !arg
-                                                    : (   ?
-                                                        + (before..?before)
-                                                        + ?
-                                                        + (index.?index)
-                                                        + (lemma..?lemma)
-                                                        + (ner..?ner)
-                                                        + ( originalText
-                                                          . 
-                                                          . ?originalText
+                                                    : (   (   ?
+                                                            + (before..?before)
+                                                            + ?
+                                                          |   ?
+                                                            & :?before
                                                           )
-                                                        + (pos..?pos)
-                                                        + (word..?word)
-                                                        + ?
+                                                        :   ?
+                                                          + ( characterOffsetBegin
+                                                            . ?characterOffsetBegin
+                                                            )
+                                                          + ( characterOffsetEnd
+                                                            . ?characterOffsetEnd
+                                                            )
+                                                          + ?
+                                                        : ( ?+(index.?index)+?
+                                                          |   ?
+                                                            & :?index
+                                                          )
+                                                        : ( ?+(lemma..?lemma)+?
+                                                          |   ?
+                                                            & :?lemma
+                                                          )
+                                                        : ( ?+(ner..?ner)+?
+                                                          |   ?
+                                                            & :?ner
+                                                          )
+                                                        : (   ?
+                                                            + ( originalText
+                                                              . 
+                                                              . ?originalText
+                                                              )
+                                                            + ?
+                                                          |   ?
+                                                            &   
+                                                              : ?originalText
+                                                          )
+                                                        : ( ?+(pos..?pos)+?
+                                                          |   ?
+                                                            & :?pos
+                                                          )
+                                                        : ( ?+(word..?word)+?
+                                                          |   ?
+                                                            & :?word
+                                                          )
                                                       , 
                                                       )
                                                   &   ( !before:
@@ -349,66 +522,259 @@ X=
                                                         . !originalText
                                                         . !pos
                                                         . !word
+                                                        . !characterOffsetBegin
+                                                        . !characterOffsetEnd
                                                         )
                                               )
                                             . !tokens
                                             )
-                                        : ?segtok
-                                      & (   !segtok
-                                          :   ( c
+                                        : (   ( c
                                               . ? (type.s) ?,
                                               )
                                               ?segtok
-                                        | 
-                                        )
-                                      & idfy$!segtok
+                                          | ?segtok
+                                          )
+                                      & idfy$!segtok:?segtok
                                       )
                                       ( !deps:
                                       | ( spanGrp
-                                        .   (ana.syntax)
+                                        .   (ana.depparse)
                                           ,   map
                                             $ ( ( 
                                                 =   
-                                                  .     !arg
-                                                      : (   (dep..?dep)
-                                                          + (dependent.?dependent)
-                                                          + ( dependentGloss
-                                                            . 
-                                                            . ?dependentGloss
-                                                            )
-                                                          + (governor.?governor)
-                                                          + ( governorGloss
-                                                            . 
-                                                            . ?governorGloss
-                                                            )
-                                                        , 
-                                                        )
-                                                    & ( span
-                                                      .   ( from
-                                                          .   str
-                                                            $ ( "#tokeni"
-                                                                !sind
-                                                                "."
-                                                                !governor
+                                                  .       !arg
+                                                        : (   (dep..?dep)
+                                                            + (dependent.?dependent)
+                                                            + ( dependentGloss
+                                                              . 
+                                                              . ?dependentGloss
                                                               )
+                                                            + (governor.?governor)
+                                                            + ( governorGloss
+                                                              . 
+                                                              . ?governorGloss
+                                                              )
+                                                          , 
                                                           )
-                                                        ,   ( link
-                                                            .   ( target
-                                                                .   str
-                                                                  $ ( "#tokeni"
-                                                                      !sind
-                                                                      "."
-                                                                      !dependent
+                                                      & ( span
+                                                        .     ( "xml:id"
+                                                              .   str
+                                                                $ ( dep
+                                                                    ( 1+!depId
+                                                                    : ?depId
                                                                     )
-                                                                )
-                                                              , 
-                                                            )
-                                                            (term.,!dep)
-                                                      )
+                                                                  )
+                                                              )
+                                                              ( from
+                                                              .   str
+                                                                $ ( "#t"
+                                                                    !sind
+                                                                    "."
+                                                                    !dependent
+                                                                  )
+                                                              )
+                                                          ,   (     !governor
+                                                                  : >0
+                                                                & ( link
+                                                                  .   ( target
+                                                                      .   str
+                                                                        $ ( "#t"
+                                                                            !sind
+                                                                            "."
+                                                                            !governor
+                                                                          )
+                                                                      )
+                                                                    , 
+                                                                  )
+                                                              | 
+                                                              )
+                                                              (term.,!dep)
+                                                        )
+                                                    | 
                                                 )
                                               . !deps
                                               )
                                         )
+                                      )
+                                      ( !entitymentions:
+                                      | ( spanGrp
+                                        .   (ana.entitymentions)
+                                          ,   map
+                                            $ ( ( 
+                                                =   
+                                                  .     !arg
+                                                      : (     ( characterOffsetBegin
+                                                              . ?characterOffsetBegin
+                                                              )
+                                                            + ( characterOffsetEnd
+                                                              . ?characterOffsetEnd
+                                                              )
+                                                            + ?
+                                                            + (ner..?ner)
+                                                            + ?
+                                                            + (text..?text)
+                                                            + ?
+                                                          : (   ?
+                                                              + ( normalizedNER
+                                                                . 
+                                                                . ?normalizedNER
+                                                                )
+                                                              + ?
+                                                            |   ?
+                                                              &   
+                                                                : ?normalizedNER
+                                                            )
+                                                        , 
+                                                        )
+                                                    &   !segtok
+                                                      :   ?
+                                                          ( ?
+                                                          .       ?
+                                                                  ( characterOffsetBegin
+                                                                  . !characterOffsetBegin
+                                                                  )
+                                                                  ?
+                                                              :   ?
+                                                                  ( "xml:id"
+                                                                  . @( ?
+                                                                     :   ?
+                                                                         ( #% ?
+                                                                         : ?fromId
+                                                                         )
+                                                                     )
+                                                                  )
+                                                                  ?
+                                                            , ?
+                                                          )
+                                                          ?
+                                                    &   !segtok
+                                                      :   ?
+                                                          ( ?
+                                                          .       ?
+                                                                  ( characterOffsetEnd
+                                                                  . !characterOffsetEnd
+                                                                  )
+                                                                  ?
+                                                              :   ?
+                                                                  ( "xml:id"
+                                                                  . @( ?
+                                                                     :   ?
+                                                                         ( #% ?
+                                                                         : ?toId
+                                                                         )
+                                                                     )
+                                                                  )
+                                                                  ?
+                                                            , ?
+                                                          )
+                                                          ?
+                                                    & ( span
+                                                      .     ( "xml:id"
+                                                            .   str
+                                                              $ ( ent
+                                                                  ( 1+!entId
+                                                                  : ?entId
+                                                                  )
+                                                                )
+                                                            )
+                                                            (from.str$("#t" !fromId))
+                                                            (     !fromId
+                                                                : !toId
+                                                              & 
+                                                            | (to.str$("#t" !toId))
+                                                            )
+                                                            (type.!ner)
+                                                        ,   !normalizedNER:~
+                                                          | !text
+                                                      )
+                                                )
+                                              . !entitymentions
+                                              )
+                                        )
+                                      )
+                                      ( !parse:
+                                      |     !segtok
+                                          :   ( ?
+                                              .     ?
+                                                    ( "xml:id"
+                                                    . @( ?
+                                                       : ? (#% ?:?fromId)
+                                                       )
+                                                    )
+                                                    ?
+                                                , ?
+                                              )
+                                              ?
+                                          :   ?
+                                              ( ?
+                                              .     ?
+                                                    ( "xml:id"
+                                                    . @( ?
+                                                       : ? (#% ?:?toId)
+                                                       )
+                                                    )
+                                                    ?
+                                                , ?
+                                              )
+                                        & ( spanGrp
+                                          .   (ana.parse)
+                                            , ( span
+                                              .     ( "xml:id"
+                                                    .   str
+                                                      $ ( syn
+                                                          (1+!synId:?synId)
+                                                        )
+                                                    )
+                                                    (from.str$("#t" !fromId))
+                                                    ( !toId:!fromId
+                                                    | (to.str$("#t" !toId))
+                                                    )
+                                                , !parse
+                                              )
+                                          )
+                                      )
+                                      ( !sentiment:
+                                      |     !segtok
+                                          :   ( ?
+                                              .     ?
+                                                    ( "xml:id"
+                                                    . @( ?
+                                                       : ? (#% ?:?fromId)
+                                                       )
+                                                    )
+                                                    ?
+                                                , ?
+                                              )
+                                              ?
+                                          :   ?
+                                              ( ?
+                                              .     ?
+                                                    ( "xml:id"
+                                                    . @( ?
+                                                       : ? (#% ?:?toId)
+                                                       )
+                                                    )
+                                                    ?
+                                                , ?
+                                              )
+                                        & ( spanGrp
+                                          .   (ana.sentiment)
+                                            , ( span
+                                              .     ( "xml:id"
+                                                    .   str
+                                                      $ ( sent
+                                                          ( 1+!sentId
+                                                          : ?sentId
+                                                          )
+                                                        )
+                                                    )
+                                                    (from.str$("#t" !fromId))
+                                                    ( !toId:!fromId
+                                                    | (to.str$("#t" !toId))
+                                                    )
+                                                , !sentiment
+                                              )
+                                          )
                                       )
                                       (.s.)
                               )
@@ -417,38 +783,94 @@ X=
                             )
                           (.p.)
                       : ?XML
-                    & cor lem mrf ner pos seg snt stc stx tok
+                    & cor lem mrf ner pos seg sent snt stc stx tok
                     & (   !stc:1
-                        & collectSyn$(!XML.parse):(?spanGrpSyn.?XML)
-                      |   !stx:1
-                        & collectSyn$(!XML.depparse):(?spanGrpSyn.?XML)
+                        & collectSyn$(!XML.parse.parse):(?spanGrpStc.?XML)
                       | 
                       )
-                    & standoff$(token,token,.!XML):(?spanGrpTok.?XML)
-                    &   standoff$(lemma,lemma,token.!XML)
+                    & (   !stx:1
+                        & collectSyn$(!XML.depparse.depparse):(?spanGrpSyn.?XML)
+                      | 
+                      )
+                    & (   !snt:1
+                        & collectSyn$(!XML.sentiment.sentiment):(?spanGrpSnt.?XML)
+                      | 
+                      )
+                    & (   !ner:1
+                        &   collectSyn$(!XML.entitymentions.entitymentions)
+                          : (?spanGrpEntitymentions.?XML)
+                      | 
+                      )
+                    &   standoff$(token,token,i,t.!XML)
+                      : (?spanGrpTok.?XML)
+                    &   stand2off$(lemma,lemma,l.!XML.!spanGrpTok)
                       : (?spanGrpLemma.?XML)
-                    &   standoff$(pos,pos,token.!XML)
+                    &   stand2off$(pos,pos,p.!XML.!spanGrpTok)
                       : (?spanGrpPos.?XML)
-                    &   standoff$(ner,ner,token.!XML)
+                    &   stand2off$(ner,ner,n.!XML.!spanGrpTok)
                       : (?spanGrpNer.?XML)
+                    &     map
+                        $ ( ( 
+                            =   
+                              .       !arg
+                                    : ( ?e
+                                      .     ?a
+                                            (characterOffsetBegin.?)
+                                            (characterOffsetEnd.?)
+                                            ?z
+                                        , ?c
+                                      )
+                                  & (!e.!a !z,!c)
+                                | !arg
+                            )
+                          . !XML
+                          )
+                      : ?XML
                     & nestML$!XML:?XML
-                    & sent$!XML:?spanGrpSent
-                    & seg$(!spanGrpSent.!spanGrpTok):?spanGrpSeg
+                    & sentence$!XML:?spanGrpSent
+                    & segment$(!spanGrpSent.!spanGrpTok):?spanGrpSeg
                     &   !XML
-                        !spanGrpTok
-                        !spanGrpSent
-                        !spanGrpSeg
-                        !spanGrpNer
-                        !spanGrpLemma
-                        !spanGrpPos
-                        !spanGrpSyn
+                        ( !tok:1&!spanGrpTok
+                        | 
+                        )
+                        ( !sent:1&!spanGrpSent
+                        | 
+                        )
+                        ( !seg:1&!spanGrpSeg
+                        | 
+                        )
+                        ( !mrf:1&!spanGrpMrf
+                        | 
+                        )
+                        ( !pos:1&!spanGrpPos
+                        | 
+                        )
+                        (   !ner:1
+                          & !spanGrpNer !spanGrpEntitymentions
+                        | 
+                        )
+                        ( !lem:1&!spanGrpLemma
+                        | 
+                        )
+                        ( !stc:1&!spanGrpStc
+                        | 
+                        )
+                        ( !stx:1&!spanGrpSyn
+                        | 
+                        )
+                        ( !snt:1&!spanGrpSnt
+                        | 
+                        )
+                        ( !cor:1&!spanGrpCor
+                        | 
+                        )
                 )
           )
   )
   ( doit
   =     output tmp1 tmp2 A B C D E F G H formatO
       , xmlseg xmltok lang language properties
-      , cor lem mrf ner pos seg snt stc stx tok
+      , cor lem mrf ner pos seg sent snt stc stx tok
     .   ( turnTEIP5intoPlain
         =   
           .   !arg:(?inputtok.?inputseg)
@@ -493,14 +915,20 @@ X=
                 )
         )
       & (trim=.str$(vap$(.!arg." ")))
+      & ( inv
+        =   j K
+          .   :?K
+            & whl'(!arg:%?j ?arg&!j !K:?K)
+            & !K
+        )
       & ( getProperties
         =     file javaProperties extra
-            , cor lem mrf ner pos seg snt stc stx tok
+            , cor lem mrf ner pos seg sent snt stc stx tok
             , transl lang filter ftr
           .     !arg
               : ( ?file
                 . ?extra
-                . ?cor,?lem,?mrf,?ner,?pos,?seg,?snt,?stc,?stx,?tok
+                . ?cor,?lem,?mrf,?ner,?pos,?seg,?sent,?snt,?stc,?stx,?tok
                 . ?lang
                 )
             &     (tokenize.tok)
@@ -522,14 +950,40 @@ X=
                   (mwt.tok)
               : ?transl
             & ( get$(!file,STR):?javaProperties
-              | put$(str$("cannot read " !file "\n"),"../log/CoreNLP.log",APP,BIN)
+              | put$(str$("cannot read " !file \n),"../log/CoreNLP.log",APP,BIN)
               )
-            & put$(!javaProperties,javaProperties,NEW)
+            &     vap
+                $ ( ( 
+                    =   
+                      .     whl
+                          ' @( !arg
+                             : ?arg (\r|" "|\t)
+                             )
+                        & !arg
+                    )
+                  . !javaProperties
+                  . \n
+                  )
+              : ?lines
+            & :?pasted
+            &   whl
+              ' ( !lines:%?line ?lines
+                & (   (@(!line:? "=")|@(!line:?line "\\"))
+                    & !lines:%?nextline ?lines
+                    &   whl
+                      ' @( !nextline
+                         : ("#"|" "|\t) ?nextline
+                         )
+                    & str$(!line !nextline) !lines:?lines
+                  | !line !pasted:?pasted
+                  )
+                )
+            & inv$!pasted:?javaProperties
             &   (     mop
                     $ ( 
-                      .   vap
+                      .   map
                         $ ( ( 
-                            =   
+                            =   aa zz
                               .   @(!arg:"#" ?)&
                                 |   @( !arg
                                      : (?prop "=" ?val|?prop ":" ?val)
@@ -538,12 +992,33 @@ X=
                                   & trim$!val:?val
                                   & (   !prop:annotators
                                       & (   !lang:en
+                                          & (   !stc:1
+                                              & ( @(!val:? ",parse" ?)
+                                                | str$(!val ",parse"):?val
+                                                )
+                                            |   @(!val:?aa ",parse" ?zz)
+                                              & str$(!aa !zz):?val
+                                            | 
+                                            )
+                                          & ( @(!val:? ",sentiment" ?)
+                                            |   !snt:1
+                                              & str$(!val ",sentiment"):?val
+                                            | 
+                                            )
+                                        |   !lang:fr
                                           & ( @(!val:? ",parse" ?)
-                                            | str$(!val ",parse"):?val
+                                            |   !stc:1
+                                              & str$(!val ",parse"):?val
+                                            | 
+                                            )
+                                        |   !lang:zh
+                                          & ( @(!val:? ",depparse" ?)
+                                            |   !stx:1
+                                              & str$(!val ",depparse"):?val
+                                            | 
                                             )
                                         | 
                                         )
-                                      & put$(str$(!val \n),val,NEW)
                                       &     mop
                                           $ ( 
                                             .     vap
@@ -570,10 +1045,7 @@ X=
                                             . (=,)
                                             )
                                         : ?val
-                                      & put$(str$(!val \n),val,APP)
                                     |   @(!prop:?ftr "." ?)
-                                      & put$(!ftr \n,filter,APP)
-                                      & put$(!filter \n,filter,APP)
                                       &     (     !lang
                                                 : (ar|zh)
                                               & segment
@@ -586,7 +1058,6 @@ X=
                                 | 
                             )
                           . !javaProperties
-                          . \n
                           )
                       . (=a b)
                       . (=+)
@@ -595,9 +1066,7 @@ X=
                 , 
                 )
               : ?jsonProperties
-            & jsn$!jsonProperties:?jsonProperties
-            & put$(!jsonProperties,jsonProperties,NEW)
-            & !jsonProperties
+            & jsn$!jsonProperties
         )
       & ( percentencode
         =   c prc reserved
@@ -630,7 +1099,7 @@ X=
         )
       & ( transform
         =     Tokenized/SegmentedPlainText tmp1 tmp2 formatO lang language properties
-            , cor lem mrf ner pos seg snt stc stx tok
+            , cor lem mrf ner pos seg sent snt stc stx tok
           .     !arg
               : ( ?formatO
                 . ?lang
@@ -645,6 +1114,7 @@ X=
                 . ?ner
                 . ?pos
                 . ?seg
+                . ?sent
                 . ?snt
                 . ?stc
                 . ?stx
@@ -654,7 +1124,7 @@ X=
             &     getProperties
                 $ ( !properties
                   . (outputFormat..json)+(timeout..500000)
-                  . !cor,!lem,!mrf,!ner,!pos,!seg,!snt,!stc,!stx,!tok
+                  . !cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok
                   . !lang
                   )
               : ?properties
@@ -669,14 +1139,17 @@ X=
                       )
                   : ?command
                 & sys$!command:0
-              | put$(str$("cannot execute command [" !command "]\n"),"../log/CoreNLP.log",APP,BIN)
+              |   put
+                $ (str$("cannot execute command [" !command "]\n"),"../log/CoreNLP.log",APP,BIN)
               )
             & ( !formatO:json&get$(!tmp2,STR)
               |   get$(!tmp2,JSN):?json
                 &   str
                   $ ( toML
                     $ ( (its.turnJSONintoTEIP5)
-                      $ (!json.!cor,!lem,!mrf,!ner,!pos,!seg,!snt,!stc,!stx,!tok)
+                      $ ( !json
+                        . !cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok
+                        )
                       )
                     )
               )
@@ -697,6 +1170,7 @@ X=
           . ?ner
           . ?pos
           . ?seg
+          . ?sent
           . ?snt
           . ?stc
           . ?stx
@@ -738,6 +1212,7 @@ X=
             . !ner
             . !pos
             . !seg
+            . !sent
             . !snt
             . !stc
             . !stx
@@ -749,27 +1224,6 @@ X=
   ( new
   =   
     .   ~
-      |   (its.doit)
-        $ ( teip5
-          . hu
-          . hungarian
-          . "StanfordCoreNLP-hungarian.properties"
-          . F
-          . flat/
-          . CoreNLP-results
-          . corenlp-tmp1
-          . "json.bra"
-          . 0
-          . 0
-          . 0
-          . 1
-          . 1
-          . 1
-          . 0
-          . 1
-          . 0
-          . 1
-          )
       |     ( arg$
             . arg$
             . arg$
@@ -806,6 +1260,7 @@ X=
             . ?ner
             . ?pos
             . ?seg
+            . ?sent
             . ?snt
             . ?stc
             . ?stx
@@ -827,6 +1282,7 @@ X=
             . !ner
             . !pos
             . !seg
+            . !sent
             . !snt
             . !stc
             . !stx

@@ -1,4 +1,5 @@
 {TexTon.bra
+𝕌𝕋𝔽-𝟠
 
 
     Copyright 2014, Bart Jongejan
@@ -157,8 +158,9 @@ TexTon=
       (startclock=.-1*clk$:?StartClk)
       ( clock
       =   
-        .   (!StartClk:&startclock$|)
-          & str$("[" jsn$(clk$+!StartClk) "]")
+        .   
+          |   (!StartClk:&startclock$|)
+            & str$("[" jsn$(clk$+!StartClk) "]")
       )
       (path=.str$(!toolshome !arg))
       ( log
@@ -173,10 +175,11 @@ TexTon=
                     & 1+!logno:?logno
                     & !indent:?i
                     &   whl
-                      ' ( !i+-1:>0:?i
+                      ' ( !i+-1:~<0:?i
                         & " " !spc:?spc
                         )
                     & str$("[" !indent "] " !logno !spc)
+                    & str$(!indent !spc)
                     )
                     !arg
                 : ?arg
@@ -1761,6 +1764,7 @@ TexTon=
               & !pipes:%?pipe+?pipes
               & saveio$(!n.enumerateToolsDetail$!pipe) !workflowlist:?workflowlist
               )
+          & log$(n !n)
           & ( !n:<1000000
             | "while enumerateToolsDetail: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
@@ -1768,10 +1772,15 @@ TexTon=
           & :?groupedworkflowlist
           & :?toolPlumbing
           & :?disambiguatedworkflowlist
+          & log$"Create disambiguatedworkflowlist"
           &   whl
             ' ( 1+!n:?n:<1000000
               & !workflowlist:(#?nr.?workflow) ?workflowlist
-              & toolPattern$(simplify$!workflow):(=?toolPlumbing)
+              & log$(nr !nr)
+              & simplify$!workflow:?XXYYZ
+              & log$simplify
+              & toolPattern$!XXYYZ:(=?toolPlumbing)
+              & log$toolPattern
               & (!nr,!workflow):?wfs
               &     map
                   $ ( ( 
@@ -1815,9 +1824,14 @@ TexTon=
                  Whereas 'disam' looks at different uses of the same tool in
                  different workflows, 'sameToolDifferentRoles' looks at
                  different uses of the same tool in the same workflow."
-              &   sameToolDifferentRoles$(disam$(!toolPlumbing.!wfs)) !disambiguatedworkflowlist
+              & log$disam
+              & disam$(!toolPlumbing.!wfs):?XXYYZ
+              & log$disamDONE
+              &   sameToolDifferentRoles$!XXYYZ !disambiguatedworkflowlist
                 : ?disambiguatedworkflowlist
+              & log$sameToolDifferentRolesDONE
               )
+          & log$"Create reordered workflowlist and topological order"
           & ( !n:<1000000
             | "while groupedworkflowlist: MAX NUMBER OF WORKFLOW OPERATIONS REACHED (1000000)"
             )
@@ -5197,7 +5211,9 @@ try {
                     : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
                 |   !gfield:sml
-                  & !gvaluesAlts:nsl
+                  & log$(gfield !gfield gvaluesAlts !gvaluesAlts)
+                  & !gvaluesAlts:(TOK|TXT)
+                  & log$(toolFeatures !toolFeatures)
                   & !toolFeatures:? (sml,(?.?)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
                   & "toolfeat is a sum of alternative (input.output) specs."
@@ -6173,26 +6189,26 @@ try {
             )
           & ( fp
             =     tool source goal reqtool superset makeSmell feat implGoal
-                , fulfil memoizedSteps activeTools Calls smell resembling
+                , fulfil memoizedSteps activeTools Calls resembling
                 , memos duplic impassages notttcnt getSuperGoals fintool
                 , sourcegoalmatch unfulfillable notThisTool fulfilGoal reasons
                 , isfulfilled hasfulfilled fulfilGoalProduct unfoldGoal
-                , getGoals getImpliedGoals inner smellCache viableIncarnations
-              .   0:?smell
-                & :?smellCache
-                & ( makeSmell
+                , getGoals getImpliedGoals inner viableIncarnations
+              .   ( makeSmell
                   =   A Z o tool sml
                     .   !arg:(?tool.?arg)
-                      & (   !arg:?A (sml,(?o.nsl)) ?Z
-                          &   ( !smellCache:? (!tool.?sml) ?
-                              |     (!tool.1+!smell:?smell:?sml)
-                                    !smellCache
-                                : ?smellCache
-                              )
-                              ?
-                          & !A (sml,(!o.str$(S !sml))) !Z
-                        | !arg
-                        )
+                      &   (     !arg
+                              :   ?A
+                                  ( sml
+                                  , (?o.(TOK|TXT):?SML)
+                                  )
+                                  ?Z
+                            & !A (sml,(!o.!SML^!tool)) !Z
+                          | !arg
+                          )
+                        : ?XXXYY
+                      & log$(XXXYY !XXXYY)
+                      & !XXXYY
                   )
                 & ( isfulfilled
                   =   source src goal gl tool pipe pipes
@@ -6301,10 +6317,10 @@ try {
                           )
                   )
                 & ( fulfilGoal
-                  =     tools forkk goaly
+                  =     tools forkk goaly A Z
                       , toolspath pathsonetool tool ltools path1
                       , toolFeatures pathh pathfields newGoal infeat
-                      , memopaths fintool
+                      , memopaths fintool ntoolFeatures
                       , goal source I IO O Os sourcePlus
                     .   "Check whether source and goal already have been connected by tool and stored as a step."
                       & !arg:(?source.?goaly.?tools.?fintool.?forkk)
@@ -6313,7 +6329,9 @@ try {
                                 : ? (?.!source) ?
                               & 1+!impassages:?impassages
                               & 0
-                            |   unify$(!source.fold$!goaly):?sourcePlus
+                            |     unify$(!source.fold$!goaly:?XYX)
+                                : ?sourcePlus
+                              & log$(str$("UNIFY2 " !XYX))
                               & 1+!sourcegoalmatch:?sourcegoalmatch
                               & sort$!sourcePlus
                             |   !tools:?ltools
@@ -6341,19 +6359,28 @@ try {
                                       & whl'(!ltools:(!tool.?)+?ltools)
                                       &   denumerizeSum$(!toolspath+!memopaths)
                                         : ?toolspath
+                                      & log$(str$(!tool " MEMOIZED " !goaly))
                                       & 1+!pathsonetool:?pathsonetool
                                     |   whl
                                       ' (   !ltools
-                                          : ?+(!tool.~:?toolFeatures)+?ltools
+                                          : (!tool.~:?toolFeatures)+?ltools
                                         &   makeSmell$(!tool.!toolFeatures)
-                                          : ?toolFeatures
+                                          : ?ntoolFeatures
                                         & (       matchGoalWithFeatures
-                                                $ (!goaly.!toolFeatures)
+                                                $ (!goaly.!ntoolFeatures)
                                               : (?pathfields.?newGoal)
+                                            & log$(newGoal !newGoal)
+                                            & log$(str$(!tool " " !goaly))
+                                            & log$(ntoolFeatures !ntoolFeatures)
+                                            &   !tools
+                                              : ?A+(!tool.!toolFeatures)+?Z
+                                            & log$AandZ
                                             & (       fulfil
-                                                    $ ( !tools
+                                                    $ ( !A+!Z
                                                       . !source
-                                                      . !newGoal
+                                                      .   (,!newGoal)
+                                                          (,!goaly)
+                                                          !hig
                                                       . !indent+1
                                                       . 
                                                       )
@@ -6373,7 +6400,7 @@ try {
                                                                       supplyMissingFields
                                                                     $ ( !pathfields
                                                                       . !O
-                                                                      . !toolFeatures
+                                                                      . !ntoolFeatures
                                                                       )
                                                                   )
                                                               . resembling$(!I.!O)
@@ -6402,7 +6429,7 @@ try {
                                                                  )
                                                               )
                                                           |     restrictOutputParms
-                                                              $ (!pathh.!toolFeatures)
+                                                              $ (!pathh.!ntoolFeatures)
                                                             : ?pathh
                                                           )
                                                         &   whl
@@ -6450,7 +6477,9 @@ try {
                               & !Calls:>0
                               & "forkk will become zero if no tools can fulfil goaly!"
                               & (   !toolspath:0
-                                  & (unfulfillable..insert)$(str$!goaly.!source)
+                                  & ( !indent:19
+                                    | (unfulfillable..insert)$(str$!goaly.!source)
+                                    )
                                 | 
                                 )
                               & !toolspath
@@ -6542,49 +6571,68 @@ try {
                       & !arg
                   )
                 & ( fulfil
-                  =     tools source goal sourcePlus forkk found
+                  =     tools source goal hig sourcePlus forkk found
                       , goals goalterm nnnpathh indent accPipelines
                       , Pipeline WRONGPIPES OKPIPES fintool
-                    .   !arg:(?tools.?source.?goal.?indent.?fintool)
+                    .     !arg
+                        : ( ?tools
+                          . ?source
+                          . (,?goal) ?hig
+                          . ?indent
+                          . ?fintool
+                          )
+                      & log$(fulfil source !source goal !goal hig !hig)
                       & "Restrict path length to max 20"
                       & !indent:<20
                       & (|1+!Calls:?Calls)
                       & 0:?accPipelines
                       & unfoldGoal$!goal:?goals
                       & 0:?found
-                      &   whl
-                        ' ( !goals:%?goalterm+?goals
-                          & (     (   unify$(!source.fold$!goalterm):?sourcePlus
-                                    & 1+!Calls:?Calls
-                                    & sort$!sourcePlus
-                                  |       fulfilGoalProduct
-                                        $ (!source.!goalterm.!tools.!fintool)
-                                      : ?forkk
-                                    & !Calls:>0
-                                    &   (     !forkk
-                                            : ( 0
-                                              | 1
-                                              | ?+[>2000
-                                              )
-                                          & 0
-                                        |   ~
-                                          &   illegalSolution$(!goalterm.!forkk)
-                                            : (?WRONGPIPES.?OKPIPES)
-                                          & log$(WRONGPIPES !WRONGPIPES OKPIPES !OKPIPES)
-                                          & (!goalterm.!OKPIPES)
-                                        | (!goalterm.!forkk)
-                                        )
-                                      : ~0
-                                      : ?nnnpathh
-                                    & refold$!nnnpathh
-                                  )
-                                : ?Pipeline
+                      & log$(fulfil-goals !goals source !source)
+                      & (   !goals
+                          :   ?
+                            + `%?goalterm
+                            + ( ?
+                              & log$(goalterm !goalterm fiolded fold$!goalterm)
+                              &   unify$(!source.fold$!goalterm:?XYX)
+                                : ?sourcePlus
+                              & log$(str$("UNIFY1 " !XYX))
+                              & 1+!Calls:?Calls
                               & 1+!found:?found
-                              & !Pipeline+!accPipelines:?accPipelines
-                            | 
+                              & sort$!sourcePlus+!accPipelines:?accPipelines
+                              )
+                        |   whl
+                          ' ( !goals:%?goalterm+?goals
+                            & (     !goalterm
+                                  :   ?
+                                    * ( `%
+                                      : [%(!hig:? (,!sjt) ?)
+                                      )
+                                    * ?
+                                & CIRCULAR!
+                              |     fulfilGoalProduct$(!source.!goalterm.!tools.!fintool)
+                                  : ?forkk
+                                & !Calls:>0
+                                & (   !forkk
+                                    : ( 0
+                                      | 1
+                                      | ?+[>2000
+                                      )
+                                  |   ~
+                                    &   illegalSolution$(!goalterm.!forkk)
+                                      : (?WRONGPIPES.?OKPIPES)
+                                    & log$(WRONGPIPES !WRONGPIPES OKPIPES !OKPIPES)
+                                    & (!goalterm.!OKPIPES)
+                                  |   (!goalterm.!forkk):~0:?nnnpathh
+                                    & refold$!nnnpathh:?Pipeline
+                                    & 1+!found:?found
+                                    & !Pipeline+!accPipelines:?accPipelines
+                                  )
+                              | 
+                              )
+                            & !Calls:>0
                             )
-                          & !Calls:>0
-                          )
+                        )
                       & !Calls:>0
                       & ( !accPipelines:~0&!accPipelines
                         | !found:~0&0
@@ -6753,6 +6801,7 @@ try {
                       & denumerizeSum$!goal
                   )
                 & !arg:(?source.?goal.?reqtool,?fintool.?superset)
+                & log$(goalZ !goal)
                 & readTable$toolprop
                 & getActiveTools$:?activeTools
                 & :?reasons
@@ -6906,10 +6955,12 @@ try {
                       | 0:?implGoal&log$!reasons
                       )
                     & !implGoal:?goal
+                    & log$(goalY !goal)
                   | :?fintool
                   )
                 & (   !goal:0
-                    |   ( !reqtool:&0:?reqtool
+                    |   log$(goalA !goal)
+                      & ( !reqtool:&0:?reqtool
                         | 
                         )
                       & ( !superset:
@@ -6919,6 +6970,7 @@ try {
                             )
                           & getSuperGoals$!goal:?goal
                         )
+                      & log$(goalB !goal)
                       & OnEify$!goal:?goal
                       &   0
                         : ?memoizedSteps
@@ -6930,8 +6982,8 @@ try {
                       & new$hash:?unfulfillable
                       & new$hash:?notThisTool
                       & 0:?Calls
-                      & log$("Calling fulfil" !goal fintool !fintool)
-                      & ( fulfil$(!activeTools.!source.!goal.0.!fintool)
+                      & log$("Calling fulfil" goal !goal fintool fintool !fintool)
+                      & ( fulfil$(!activeTools.!source.,!goal.0.!fintool)
                         | !Calls
                         )
                   . !reasons
@@ -7897,7 +7949,9 @@ try {
                                 .   map
                                   $ ( ( 
                                       =   
-                                        .     !arg:(sml,nsl)
+                                        .       !arg
+                                              : (sml,TOK|TXT)
+                                            & log$(Sig !arg)
                                             & 
                                           |   !arg:(?f,?v)
                                             & (!f,sig$!v)
@@ -7930,8 +7984,9 @@ try {
                                                      either be (smell,new smell)
                                                      or occur in the same factor of SM (the signature of one of the methods).
                                            So we must find a method for which we can prove that there are
-                                               no features different from (sml,nsl) in SR
+                                               no features different from (sml,(TOK|TXT)) in SR
                                                that are not represented in the signature of that method SM.
+                                           The Sig function filters the sml feature, so we don't see sml in the following code.
                                            "
                                         &   !methods
                                           :   ?A
@@ -8127,7 +8182,7 @@ try {
                             | (harmonizeSubspecsOnSimilarFeatures$!arg:?L.!L)
                         )
                       & ( fromMethods
-                        =   L R OF LF RF sLF sRF
+                        =   L R OF LF RF sLF sRF Typ
                           .   !arg:(?arg.?OF)
                             & (   !arg:%?L*%?R
                                 & fromMethods$(!R.!OF):(?R.?RF)
@@ -8135,9 +8190,9 @@ try {
                                   |   fromToolOrSource$(!L.!OF):(?L.?LF)
                                     & (   ( !L:0
                                           |     !RF
-                                              : ? (sml,?sRF) ?
+                                              : ? (sml,%?Typ^?sRF) ?
                                             &   !LF
-                                              : ? (sml,?sLF) ?
+                                              : ? (sml,!Typ^?sLF) ?
                                             & ~(!sRF:!sLF)
                                           )
                                         & (0.0)
@@ -8593,6 +8648,7 @@ try {
                   & !msg:
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
+                  & lst$(FP,path$FP,NEW,BIN,WYD)
                   & (   !FP
                       : ((?,?) ?|~(?+(?.?)+?))
                     |   prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
@@ -8611,7 +8667,10 @@ try {
                 )
               & ( !userInput
                 .       !FP
-                      : ((?,?) ?|~(?+(?.?)+?))
+                      : ( ~:(?,?) ?
+                        | ~(?+(?.?)+?)
+                        )
+                    & log$(triviallyFulfilled !FP)
                     & ((!FP.).triviallyFulfilled.)
                   |   !FP:?+[>!MAXPIPES
                     & !FP:?+[?NNNN
@@ -8825,12 +8884,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                           : ?requestString
                         & (   !feat:(format|Format)
                             &   ( !val:flat&txt
-                                |     !val
-                                    : ( xm
-                                      
-                                      
-                                      | teip5
-                                      )
+                                |   !val:(xm|teip5)
                                   & xml
                                 | !val:dipl&org
                                 | !val
@@ -9659,8 +9713,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( canConsumeMetadata
       =   a b
-        .     !arg
-            : (?,teip5^?)
+        .   !arg:(?,teip5^?)
           |   !arg:?a_?b
             & (canConsumeMetadata$!a|canConsumeMetadata$!b)
       )
@@ -13665,17 +13718,7 @@ function main2(evt) {
                               . !oldoutput,!metadataformat,!1st,!2nd
                               )
                         |   !Submit:Submit
-                          & (     !parms
-                                : ~( ?
-                                     ( Iformat
-                                     .   ( 
-                                         
-                                          teip5
-                                         )
-                                       ^ ?
-                                     )
-                                     ?
-                                   )
+                          & (   !parms:~(? (Iformat.teip5^?) ?)
                               & canConsumeMetadata$!struct
                               & (   !parms
                                   : ? (metadataformat.?MetaDataType) ?
@@ -17271,20 +17314,7 @@ function main2(evt) {
                         ( !jobID ?
                         . ?
                         . ?
-                        .   ?
-                          + ( O
-                            .   ?
-                              + ( format
-                                .   ( 
-                                    
-                                    teip5
-                                    )
-                                  : ?format
-                                . ?
-                                )
-                              + ?
-                            )
-                          + ?
+                        . ?+(O.?+(format.teip5:?format.?)+?)+?
                         . ?
                         )
                         ?
@@ -17488,10 +17518,7 @@ function main2(evt) {
                                   )
                                 &   ( !type:TEI&
                                     |   
-                                      &   !format
-                                        : ( 
-                                           teip5
-                                          )
+                                      & !format:teip5
                                       & Filename$!filename
                                     | 
                                     )
@@ -17518,8 +17545,7 @@ function main2(evt) {
                                       ,   (   ( @(!O:? TEI ?)
                                               | !Href2:~
                                               )
-                                            & (     !format
-                                                  : (teip5)
+                                            & (   !format:teip5
                                                 & !type:TEI
                                                 &   !files "file:" !Href2nometa ";"
                                                   : ?files
@@ -17532,11 +17558,7 @@ function main2(evt) {
                                                             "med oprindelig metadata"
                                                           )
                                                     )
-                                              |     !format
-                                                  : ( 
-                                                   
-                                                    teip5
-                                                    )
+                                              |   !format:teip5
                                                 &     !files
                                                       "file:"
                                                       ( !Href2:
@@ -19615,6 +19637,68 @@ function main2(evt) {
                     $ "You need to provide valid password to save or replace an active tool. Otherwise you can only look at the metadata."
                   )
             )
+          & ( Servings
+            =   toolprop ToolName countInputs servings
+              .   "Cut a very large list of feature in/out specs in smaller servings.
+                   In this way we try to keep the number of form fields under an (unknown) threshold.
+                   The number 73 is just that. A smaller number makes smaller servings."
+                & ( countInputs
+                  =   G
+                    .   ( G
+                        =   a b
+                          .   !arg:?a_?b&G$!a+G$!b
+                            | !arg:OnE&0
+                            | 1
+                        )
+                      & G$!arg
+                  )
+                & ( servings
+                  =   prod cnt FT ft len divisor i o
+                    .     !arg:(?cnt.?FT)
+                        & div$(!cnt,73)+1:>1:?divisor
+                        & !FT:?+[?len
+                        & div$(!len+1,!divisor):?len
+                        & 1:?prod
+                        &   whl
+                          ' ( !FT:?ft+[!len+?FT
+                            &   whl
+                              ' ( !ft:%+%
+                                & countInputs$!ft:>73
+                                & !ft:?ft+(?i.?o)
+                                & (!i.!o)+!FT:?FT
+                                )
+                            & !prod*!ft:?prod
+                            )
+                        & (!FT:0|!prod*!FT:?prod)
+                        & !prod
+                      | !FT
+                  )
+                & !arg:(?toolprop.?ToolName)
+                &   mop
+                  $ ( ( 
+                      =   A Z feat FT cnt
+                        .       !arg
+                              : ( !ToolName
+                                .   ?A
+                                    ( ?feat
+                                    ,   %+%:?FT
+                                      & countInputs$!FT:>73:?cnt
+                                    )
+                                    ?Z
+                                )
+                            &   mop
+                              $ ( (=.!ToolName.!A (!feat,!arg) !Z)
+                                . servings$(!cnt.!FT)
+                                . (=*)
+                                . (=+)
+                                )
+                          | !arg
+                      )
+                    . !toolprop
+                    . (=+)
+                    . (=+)
+                    )
+            )
           & "Body of Register starts here"
           & log$NEW
           & log$REGiSTER
@@ -19631,7 +19715,7 @@ function main2(evt) {
           & 0:?tabind
           & :?hiddenData:?formFields:?Metadata
           & readTable$facets
-          & readTable$toolprop
+          & (|readTable$toolprop)
           & readTable$tooladm
           & readTable$features
           & ( !arg:? (handle.?handle) ?
@@ -19644,14 +19728,13 @@ function main2(evt) {
             | :?mail2
             )
           & (   createBoilerPlate$!arg:(?ToolName.?password.?contactEmail.?arg)
-              & staticFields$!arg:?formFields
               &     ( h1
                     .   
                       ,     !ToolName:
                           & localized$("Register a new tool" "Registrer et nyt værktøj")
                         | localized$("Update tool metadata" "Opdater værktøjsoplysninger")
                     )
-                    !formFields
+                    staticFields$!arg
                 : ?formFields
               & "
                 Decide in how far the features as received in the request
@@ -19677,8 +19760,10 @@ function main2(evt) {
                       old version of the incarnation if the user wants to
                       remove or replace it.
                       "
+                    & log$(Nowwindfw !ToolName !nth)
                     &   windfw$(!toolprop.!ToolName.!nth)
                       : (?featjursPreexisting.?ZZ.?nth)
+                    & log$(featjursPreexisting !featjursPreexisting)
                     & featureListing$(unfoldInputAndOutput$!featjursPreexisting)
                   |   !arg:? (nth.?nth) ?
                     & "
@@ -19702,7 +19787,12 @@ function main2(evt) {
                   |   "We are just entering the form for the selected tool.
                        The cardinal number of the incarnation is not known.
                        Navigate to the first incarnation of the tool.
+
+                       First make sure that no incarnations of the tool are too big
+                       for the web server. (Over 2000 form fields seems to be too much!)
                       "
+                    & readTable$toolprop
+                    & Servings$(!toolprop.!ToolName):?toolprop
                     & windfw$(!toolprop.!ToolName.0):(?featjursPreexisting.?ZZ.?nth)
                     & "featjursPreexisting e.g. for a tool with features
                        'facet' and 'lang':
@@ -19827,8 +19917,8 @@ function main2(evt) {
                  checkbox input elements.
 
                  Metadata: space separated list of (!shortfeatname,!inoutpairs)
-                "
-              & "Before editing the tool metadata, the metadata were unfolded.
+                
+                 Before editing the tool metadata, the metadata were unfolded.
                  Now, before storing them, they are refolded to save space and
                  to make computation of workflows a little bit faster. (Is that
                  also true: computations becoming faster?)
@@ -20522,6 +20612,7 @@ function main2(evt) {
                           . (=*)
                           )
                       & (   !nfvs:(1|sml^?)
+                          & log$(nfvs !nfvs)
                           &   NoNeedForMoreZoomingIn
                             $ ( !returnCode
                               . !pipes
@@ -23154,6 +23245,7 @@ r=
 & ren$("TexTon.bra"."TexTon.bak")
 &   put
   $ ( "{TexTon.bra
+𝕌𝕋𝔽-𝟠
 
 
     Copyright 2014, Bart Jongejan

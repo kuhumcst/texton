@@ -214,27 +214,19 @@ try {
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetlemF = "";	/* Input with annotationstype lemmas (lemmaer) */
-        $IfacetnerF = "";	/* Input with annotationstype name entities (navne) */
-        $IfacetposF = "";	/* Input with annotationstype PoS-tags (PoS-tags) */
-        $IfacetsegF = "";	/* Input with annotationstype segments (sætningssegmenter) */
-        $IfacetsentF = "";	/* Input with annotationstype sentences (sætninger, før tokenisering) */
-        $IfacetsntF = "";	/* Input with annotationstype sentiment */
-        $IfacetstcF = "";	/* Input with annotationstype syntax (constituency relations) (syntaks (frasestruktur)) */
-        $IfacetstxF = "";	/* Input with annotationstype syntax (dependency structure) (syntaks (dependensstruktur)) */
-        $IfacettokF = "";	/* Input with annotationstype tokens (tokens) */
+        $Ifacet_etc_lem_ner_pos_seg_sent_snt_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and lemmas (lemmaer) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and sentiment and tokens (tokens) if true */
+        $Ifacet_etc_lem_ner_pos_seg_sent_stc_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and lemmas (lemmaer) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and syntax (constituency relations) (syntaks (frasestruktur)) and tokens (tokens) if true */
+        $Ifacet_etc_lem_ner_pos_seg_sent_stx_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and lemmas (lemmaer) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and syntax (dependency structure) (syntaks (dependensstruktur)) and tokens (tokens) if true */
+        $Ifacet_etc_lem_ner_pos_seg_sent_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and lemmas (lemmaer) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and tokens (tokens) if true */
+        $Ifacet_etc_ner_pos_seg_sent_stc_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and syntax (constituency relations) (syntaks (frasestruktur)) and tokens (tokens) if true */
+        $Ifacet_etc_ner_pos_seg_sent_stx_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and syntax (dependency structure) (syntaks (dependensstruktur)) and tokens (tokens) if true */
+        $Ifacet_etc_pos_seg_sent_stc_tok = false;	/* Annotationstype in input is pre-existing annotations (andet, fx noter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and sentences (sætninger, før tokenisering) and syntax (constituency relations) (syntaks (frasestruktur)) and tokens (tokens) if true */
         $Ifacet_lem_mrf_pos_stx = false;	/* Annotationstype in input is lemmas (lemmaer) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ifacet_mrf_pos = false;	/* Annotationstype in input is morphological features (morfologiske træk) and PoS-tags (PoS-tags) if true */
-        $Ifacetlem = false;	/* Annotationstype in input is lemmas (lemmaer) if true */
-        $Ifacetner = false;	/* Annotationstype in input is name entities (navne) if true */
-        $Ifacetpos = false;	/* Annotationstype in input is PoS-tags (PoS-tags) if true */
-        $Ifacetseg = false;	/* Annotationstype in input is segments (sætningssegmenter) if true */
-        $Ifacetsent = false;	/* Annotationstype in input is sentences (sætninger, før tokenisering) if true */
-        $Ifacetsnt = false;	/* Annotationstype in input is sentiment if true */
-        $Ifacetstc = false;	/* Annotationstype in input is syntax (constituency relations) (syntaks (frasestruktur)) if true */
-        $Ifacetstx = false;	/* Annotationstype in input is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
-        $Ifacettok = false;	/* Annotationstype in input is tokens (tokens) if true */
+        $Ifacet_ner_pos_stx = false;	/* Annotationstype in input is name entities (navne) and PoS-tags (PoS-tags) and syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
+        $Ipressof = false;	/* Sammensætning in input is standoff annotations if true */
+        $Ofacetetc = false;	/* Annotationstype in output is pre-existing annotations (andet, fx noter) if true */
         $Ofacetlem = false;	/* Annotationstype in output is lemmas (lemmaer) if true */
         $Ofacetmrf = false;	/* Annotationstype in output is morphological features (morfologiske træk) if true */
         $Ofacetner = false;	/* Annotationstype in output is name entities (navne) if true */
@@ -246,6 +238,7 @@ try {
         $Ofacetstx = false;	/* Annotationstype in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ofacettok = false;	/* Annotationstype in output is tokens (tokens) if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
+        $Opressof = false;	/* Sammensætning in output is standoff annotations if true */
 
         if( hasArgument("base") )
             {
@@ -279,124 +272,24 @@ try {
             $echos = $echos . "F=$F ";
             $inputF = $inputF . " \$F ";
             }
-        if( hasArgument("IfacetlemF") )
-            {
-            $IfacetlemF = requestFile("IfacetlemF");
-            if($IfacetlemF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'lemmas (lemmaer)' not found (IfacetlemF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetlemF=$IfacetlemF ";
-            $inputF = $inputF . " \$IfacetlemF ";
-            }
-        if( hasArgument("IfacetnerF") )
-            {
-            $IfacetnerF = requestFile("IfacetnerF");
-            if($IfacetnerF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'name entities (navne)' not found (IfacetnerF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetnerF=$IfacetnerF ";
-            $inputF = $inputF . " \$IfacetnerF ";
-            }
-        if( hasArgument("IfacetposF") )
-            {
-            $IfacetposF = requestFile("IfacetposF");
-            if($IfacetposF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetposF=$IfacetposF ";
-            $inputF = $inputF . " \$IfacetposF ";
-            }
-        if( hasArgument("IfacetsegF") )
-            {
-            $IfacetsegF = requestFile("IfacetsegF");
-            if($IfacetsegF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetsegF=$IfacetsegF ";
-            $inputF = $inputF . " \$IfacetsegF ";
-            }
-        if( hasArgument("IfacetsentF") )
-            {
-            $IfacetsentF = requestFile("IfacetsentF");
-            if($IfacetsentF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'sentences (sætninger, før tokenisering)' not found (IfacetsentF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetsentF=$IfacetsentF ";
-            $inputF = $inputF . " \$IfacetsentF ";
-            }
-        if( hasArgument("IfacetsntF") )
-            {
-            $IfacetsntF = requestFile("IfacetsntF");
-            if($IfacetsntF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'sentiment' not found (IfacetsntF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetsntF=$IfacetsntF ";
-            $inputF = $inputF . " \$IfacetsntF ";
-            }
-        if( hasArgument("IfacetstcF") )
-            {
-            $IfacetstcF = requestFile("IfacetstcF");
-            if($IfacetstcF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'syntax (constituency relations) (syntaks (frasestruktur))' not found (IfacetstcF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetstcF=$IfacetstcF ";
-            $inputF = $inputF . " \$IfacetstcF ";
-            }
-        if( hasArgument("IfacetstxF") )
-            {
-            $IfacetstxF = requestFile("IfacetstxF");
-            if($IfacetstxF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'syntax (dependency structure) (syntaks (dependensstruktur))' not found (IfacetstxF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetstxF=$IfacetstxF ";
-            $inputF = $inputF . " \$IfacetstxF ";
-            }
-        if( hasArgument("IfacettokF") )
-            {
-            $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF === '')
-                {
-                header("HTTP/1.0 404 Input with annotationstype 'tokens (tokens)' not found (IfacettokF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacettokF=$IfacettokF ";
-            $inputF = $inputF . " \$IfacettokF ";
-            }
 
 /************************
 * input/output features *
 ************************/
         if( hasArgument("Ifacet") )
             {
+            $Ifacet_etc_lem_ner_pos_seg_sent_snt_tok = existsArgumentWithValue("Ifacet", "_etc_lem_ner_pos_seg_sent_snt_tok");
+            $Ifacet_etc_lem_ner_pos_seg_sent_stc_tok = existsArgumentWithValue("Ifacet", "_etc_lem_ner_pos_seg_sent_stc_tok");
+            $Ifacet_etc_lem_ner_pos_seg_sent_stx_tok = existsArgumentWithValue("Ifacet", "_etc_lem_ner_pos_seg_sent_stx_tok");
+            $Ifacet_etc_lem_ner_pos_seg_sent_tok = existsArgumentWithValue("Ifacet", "_etc_lem_ner_pos_seg_sent_tok");
+            $Ifacet_etc_ner_pos_seg_sent_stc_tok = existsArgumentWithValue("Ifacet", "_etc_ner_pos_seg_sent_stc_tok");
+            $Ifacet_etc_ner_pos_seg_sent_stx_tok = existsArgumentWithValue("Ifacet", "_etc_ner_pos_seg_sent_stx_tok");
+            $Ifacet_etc_pos_seg_sent_stc_tok = existsArgumentWithValue("Ifacet", "_etc_pos_seg_sent_stc_tok");
             $Ifacet_lem_mrf_pos_stx = existsArgumentWithValue("Ifacet", "_lem_mrf_pos_stx");
             $Ifacet_mrf_pos = existsArgumentWithValue("Ifacet", "_mrf_pos");
-            $Ifacetlem = existsArgumentWithValue("Ifacet", "lem");
-            $Ifacetner = existsArgumentWithValue("Ifacet", "ner");
-            $Ifacetpos = existsArgumentWithValue("Ifacet", "pos");
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacetsent = existsArgumentWithValue("Ifacet", "sent");
-            $Ifacetsnt = existsArgumentWithValue("Ifacet", "snt");
-            $Ifacetstc = existsArgumentWithValue("Ifacet", "stc");
-            $Ifacetstx = existsArgumentWithValue("Ifacet", "stx");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
-            $echos = $echos . "Ifacet_lem_mrf_pos_stx=$Ifacet_lem_mrf_pos_stx " . "Ifacet_mrf_pos=$Ifacet_mrf_pos " . "Ifacetlem=$Ifacetlem " . "Ifacetner=$Ifacetner " . "Ifacetpos=$Ifacetpos " . "Ifacetseg=$Ifacetseg " . "Ifacetsent=$Ifacetsent " . "Ifacetsnt=$Ifacetsnt " . "Ifacetstc=$Ifacetstc " . "Ifacetstx=$Ifacetstx " . "Ifacettok=$Ifacettok ";
-            $input = $input . ($Ifacet_lem_mrf_pos_stx ? " \$Ifacet_lem_mrf_pos_stx" : "")  . ($Ifacet_mrf_pos ? " \$Ifacet_mrf_pos" : "")  . ($Ifacetlem ? " \$Ifacetlem" : "")  . ($Ifacetner ? " \$Ifacetner" : "")  . ($Ifacetpos ? " \$Ifacetpos" : "")  . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacetsent ? " \$Ifacetsent" : "")  . ($Ifacetsnt ? " \$Ifacetsnt" : "")  . ($Ifacetstc ? " \$Ifacetstc" : "")  . ($Ifacetstx ? " \$Ifacetstx" : "")  . ($Ifacettok ? " \$Ifacettok" : "") ;
+            $Ifacet_ner_pos_stx = existsArgumentWithValue("Ifacet", "_ner_pos_stx");
+            $echos = $echos . "Ifacet_etc_lem_ner_pos_seg_sent_snt_tok=$Ifacet_etc_lem_ner_pos_seg_sent_snt_tok " . "Ifacet_etc_lem_ner_pos_seg_sent_stc_tok=$Ifacet_etc_lem_ner_pos_seg_sent_stc_tok " . "Ifacet_etc_lem_ner_pos_seg_sent_stx_tok=$Ifacet_etc_lem_ner_pos_seg_sent_stx_tok " . "Ifacet_etc_lem_ner_pos_seg_sent_tok=$Ifacet_etc_lem_ner_pos_seg_sent_tok " . "Ifacet_etc_ner_pos_seg_sent_stc_tok=$Ifacet_etc_ner_pos_seg_sent_stc_tok " . "Ifacet_etc_ner_pos_seg_sent_stx_tok=$Ifacet_etc_ner_pos_seg_sent_stx_tok " . "Ifacet_etc_pos_seg_sent_stc_tok=$Ifacet_etc_pos_seg_sent_stc_tok " . "Ifacet_lem_mrf_pos_stx=$Ifacet_lem_mrf_pos_stx " . "Ifacet_mrf_pos=$Ifacet_mrf_pos " . "Ifacet_ner_pos_stx=$Ifacet_ner_pos_stx ";
+            $input = $input . ($Ifacet_etc_lem_ner_pos_seg_sent_snt_tok ? " \$Ifacet_etc_lem_ner_pos_seg_sent_snt_tok" : "")  . ($Ifacet_etc_lem_ner_pos_seg_sent_stc_tok ? " \$Ifacet_etc_lem_ner_pos_seg_sent_stc_tok" : "")  . ($Ifacet_etc_lem_ner_pos_seg_sent_stx_tok ? " \$Ifacet_etc_lem_ner_pos_seg_sent_stx_tok" : "")  . ($Ifacet_etc_lem_ner_pos_seg_sent_tok ? " \$Ifacet_etc_lem_ner_pos_seg_sent_tok" : "")  . ($Ifacet_etc_ner_pos_seg_sent_stc_tok ? " \$Ifacet_etc_ner_pos_seg_sent_stc_tok" : "")  . ($Ifacet_etc_ner_pos_seg_sent_stx_tok ? " \$Ifacet_etc_ner_pos_seg_sent_stx_tok" : "")  . ($Ifacet_etc_pos_seg_sent_stc_tok ? " \$Ifacet_etc_pos_seg_sent_stc_tok" : "")  . ($Ifacet_lem_mrf_pos_stx ? " \$Ifacet_lem_mrf_pos_stx" : "")  . ($Ifacet_mrf_pos ? " \$Ifacet_mrf_pos" : "")  . ($Ifacet_ner_pos_stx ? " \$Ifacet_ner_pos_stx" : "") ;
             }
         if( hasArgument("Iformat") )
             {
@@ -404,8 +297,15 @@ try {
             $echos = $echos . "Iformatteip5=$Iformatteip5 ";
             $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
+        if( hasArgument("Ipres") )
+            {
+            $Ipressof = existsArgumentWithValue("Ipres", "sof");
+            $echos = $echos . "Ipressof=$Ipressof ";
+            $input = $input . ($Ipressof ? " \$Ipressof" : "") ;
+            }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetetc = existsArgumentWithValue("Ofacet", "etc");
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
             $Ofacetmrf = existsArgumentWithValue("Ofacet", "mrf");
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
@@ -416,14 +316,20 @@ try {
             $Ofacetstc = existsArgumentWithValue("Ofacet", "stc");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsent=$Ofacetsent " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
-            $output = $output . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetmrf ? " \$Ofacetmrf" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsent ? " \$Ofacetsent" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
+            $echos = $echos . "Ofacetetc=$Ofacetetc " . "Ofacetlem=$Ofacetlem " . "Ofacetmrf=$Ofacetmrf " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsent=$Ofacetsent " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
+            $output = $output . ($Ofacetetc ? " \$Ofacetetc" : "")  . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetmrf ? " \$Ofacetmrf" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsent ? " \$Ofacetsent" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
             }
         if( hasArgument("Oformat") )
             {
             $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
             $echos = $echos . "Oformatteip5=$Oformatteip5 ";
             $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
+            }
+        if( hasArgument("Opres") )
+            {
+            $Opressof = existsArgumentWithValue("Opres", "sof");
+            $echos = $echos . "Opressof=$Opressof ";
+            $output = $output . ($Opressof ? " \$Opressof" : "") ;
             }
 
 /*******************************
@@ -453,10 +359,10 @@ try {
             scripinit($inputF,$input,$output);
         if(hasArgument("Ofacet"))
             {
-            if($Ofacetseg && $Ofacettok)
+            if($Ofacetetc && $Ofacetseg && $Ofacettok)
                 $Ofacet = 'segtok';
             else
-	            $Ofacet = getArgument("Ofacet");
+                $Ofacet = getArgument("Ofacet");
 	            
             if($mode === 'dry')
                 {
