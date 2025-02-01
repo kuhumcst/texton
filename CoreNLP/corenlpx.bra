@@ -32,7 +32,6 @@ X=
           , tok !tok
           )
         : ?opts
-      & lst$(opts,opts,APP)
       &   
         : ?spanGrpTok
         : ?spanGrpSent
@@ -115,8 +114,20 @@ X=
             & ((spanGrp.(ana.!ana),inv$!naps).!xml)
         )
       & ( stand2off
-        =   what xml naps ana spans prnt
-          .   !arg:(?what,?ana,?this.?xml.?prnt)
+        =   dat what xml XML naps ana spans prnt
+          .   ( dat
+              =   
+                .   !arg:@
+                  |   map
+                    $ ( ( 
+                        =   
+                          .   !arg:(?.?,?arg)&dat$!arg
+                            | 
+                        )
+                      . !arg
+                      )
+              )
+            & !arg:(?what,?ana,?this.?XML.?prnt)
             & :?naps
             & !prnt:(spanGrp.?,?spans)
             &     map
@@ -124,24 +135,34 @@ X=
                     ' ( a c A W Z e from id
                       .     !arg:((w|c):?e.?a,?c)
                           & !a:?A ($what.?W) ?Z
-                          & !A !Z:?a:? ("xml:id".?id) ?
-                          &   !spans
-                            :   ?
-                                ( span
-                                .     ? (from.@(?:"#" !id)) ?
-                                    : ? ("xml:id".?from) ?
-                                  , ?
+                          & !A !Z:?a
+                          & (   !c
+                              :   (?.? ("xml:id".?id) ?,?)
+                                  %
+                            | !a:? ("xml:id".?id) ?
+                            )
+                          & (     !spans
+                                :   ?
+                                    ( span
+                                    .     ? (from.@(?:"#" !id)) ?
+                                        : ? ("xml:id".?from) ?
+                                      , ?
+                                    )
+                                    ?spans
+                              & (   @(!from:? (#% ?:?xmlid))
+                                  &     ( span
+                                        .     ("xml:id".str$($this !xmlid))
+                                              (from.str$("#" !from))
+                                          , !W
+                                        )
+                                        !naps
+                                    : ?naps
+                                  & (!e.!a,!c)
+                                | ("!--".BAH) !arg
                                 )
-                                ?spans
-                          & @(!from:? (#% ?:?xmlid))
-                          &     ( span
-                                .     ("xml:id".str$($this !xmlid))
-                                      (from.str$("#" !from))
-                                  , !W
-                                )
-                                !naps
-                            : ?naps
-                          & (!e.!a,!c)
+                            |   ("!--".str$("BEH " !id " from " !from " c " !c))
+                                !arg
+                            )
                         | !arg
                       )
                   . !XML
@@ -387,6 +408,17 @@ X=
                     )
                 )
             & str$!arg
+        )
+      & ( removeO
+        =   ana spans
+          .   !arg:(spanGrp.?ana,?spans)
+            & ( spanGrp
+              .   !ana
+                ,   map
+                  $ ( (=.!arg:(?.?,~O)|)
+                    . !spans
+                    )
+              )
         )
       & 0:?entId:?sentId:?depId:?synId
       &   ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
@@ -809,6 +841,7 @@ X=
                       : (?spanGrpPos.?XML)
                     &   stand2off$(ner,ner,n.!XML.!spanGrpTok)
                       : (?spanGrpNer.?XML)
+                    & removeO$!spanGrpNer:?spanGrpNer
                     &     map
                         $ ( ( 
                             =   

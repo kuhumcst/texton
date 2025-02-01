@@ -6,7 +6,7 @@ X=
   ( doit
   =     output tmp1 tmp2
       , A B C D E F G H
-      , xmlseg xmltok posstyle wat Wat
+      , xmlseg xmltok posstyle prettyprint wat Wat
     .   ( find
         =   e a c wat rmvSpanGrp findSpanGrp
           .   ( rmvSpanGrp
@@ -59,23 +59,24 @@ X=
                   )
               )
         )
-      & !arg:(?input.?output.?wat.?posstyle)
-      & nestML$(get$(!input,X ML TRM)):?xml
+      & !arg:(?input.?output.?wat.?posstyle.?prettyprint)
+      & nestML$(get$(!input,X ML)):?xml
       &     (lem.lemma)
             (pos.pos)
             (mrf.msd morphology)
             (ner.ner)
             (pos.pos)
             (seg.seg segment)
-            (segtok.)
+            (etc.)
             (sent.sent sentence)
+            (snt.sentiment)
             (stc.syntax parse)
             (stx.syntax depparse dep dependencies)
             (tok.token)
         : ? (!wat.?Wat) ?
       & find$(!xml.!Wat):?annot
-      & (   !wat:pos
-          & !posstyle:Uni
+      & (   !prettyprint:1
+          & !wat:stc
           &   !annot
             : ( ? (spanGrp.?a,?spans) ?
               | ? (text.?,? (spanGrp.?a,?spans) ?) ?
@@ -83,34 +84,57 @@ X=
                   (TEI.?,? (text.?,? (spanGrp.?a,?spans) ?) ?)
                   ?
               )
-          &   ( spanGrp
-              .   !a
-                ,   map
-                  $ ( ( 
-                      =   a c
-                        .     !arg
-                            : ( span
-                              .   ?a
-                                , @(?:"UPosTag=" ?c ("|" ?|))
-                              )
-                          & (span.!a,!c)
-                      )
-                    . !spans
-                    )
-              )
+          &     map
+              $ ( ( 
+                  = a c.!arg:(span.?,?c)&!c \n\n
+                  )
+                . !spans
+                )
             : ?annot
-        | 
+          & put$(str$!annot,!output,NEW)
+        |   (   !wat:pos
+              & !posstyle:Uni
+              &   !annot
+                : ( ? (spanGrp.?a,?spans) ?
+                  | ? (text.?,? (spanGrp.?a,?spans) ?) ?
+                  |   ?
+                      ( TEI
+                      . ?,? (text.?,? (spanGrp.?a,?spans) ?) ?
+                      )
+                      ?
+                  )
+              &   ( spanGrp
+                  .   !a
+                    ,   map
+                      $ ( ( 
+                          =   a c
+                            .     !arg
+                                : ( span
+                                  .   ?a
+                                    , @( ?
+                                       : "UPosTag=" ?c ("|" ?|)
+                                       )
+                                  )
+                              & (span.!a,!c)
+                          )
+                        . !spans
+                        )
+                  )
+                : ?annot
+            | 
+            )
+          & put$(toML$!annot,!output,NEW)
         )
-      & put$(toML$!annot,!output,NEW)
   )
   ( new
   =   
     .   ~
-      |     ( ~&(F."uit.xml".pos.Uni)
-            | (arg$.arg$.arg$.arg$)
+      |     ( ~&("CoreNLPoutput.xml"."uit.xml".etc.Uni)
+            | ~&(F."uit.xml".pos.Uni)
+            | (arg$.arg$.arg$.arg$.arg$)
             )
-          : (?input.?output.?wat.?posstyle)
-        & (its.doit)$(!input.!output.!wat.!posstyle)
+          : (?input.?output.?wat.?posstyle.?prettyprint)
+        & (its.doit)$(!input.!output.!wat.!posstyle.!prettyprint)
   );
 
 r=

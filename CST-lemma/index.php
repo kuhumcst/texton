@@ -15,7 +15,7 @@ header('Content-type:text/plain; charset=UTF-8');
 /*
 ToolID         : CST-Lem
 PassWord       : 
-Version        : 5.06.2014.0809
+Version        : 8.5.1 (2024.07.23)
 Title          : CSTlemma
 Path in URL    : CST-lemma/	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : CST
@@ -24,6 +24,8 @@ Creator        : CST
 InfoAbout      : cst.dk
 Description    : Produces the dictionary look-up form (or lemma) for each word, inflected or not, in the input.
 ExternalURI    : https://nlpweb01.nors.ku.dk/tools/
+RestAPIkey         : *****
+RestAPIpassword    : *****
 MultiInp       : 
 PostData       : 
 Inactive       : 
@@ -930,12 +932,12 @@ try {
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
         $Ilangast = false;	/* Language in input is Asturian (asturisk) if true */
         $Ilangbe = false;	/* Language in input is Belarusian (hviderussisk) if true */
         $Ilangbg = false;	/* Language in input is Bulgarian (bulgarsk) if true */
-        $Ilangca = false;	/* Language in input is Catalan (katalansk) if true */
+        $Ilangca = false;	/* Language in input is Catalan (catalansk) if true */
         $Ilangcs = false;	/* Language in input is Czech (tjekkisk) if true */
         $Ilangcy = false;	/* Language in input is Welsh (walisisk) if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
@@ -975,6 +977,7 @@ try {
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
         $Oambigamb = false;	/* Ambiguity in output is ambiguous (tvetydig) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Oappnrm = false;	/* Appearance in output is normalised (normaliseret) if true */
@@ -986,12 +989,12 @@ try {
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatcols = false;	/* Format in output is columns, tab separated fields (kolonner, tab separeret) if true */
         $Oformatflat = false;	/* Format in output is plain (flad) if true */
-        $Oformatteip5 = false;	/* Format in output is TEIP5DKCLARIN_ANNOTATION if true */
+        $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Olangaf = false;	/* Language in output is Afrikaans (afrikaans) if true */
         $Olangast = false;	/* Language in output is Asturian (asturisk) if true */
         $Olangbe = false;	/* Language in output is Belarusian (hviderussisk) if true */
         $Olangbg = false;	/* Language in output is Bulgarian (bulgarsk) if true */
-        $Olangca = false;	/* Language in output is Catalan (katalansk) if true */
+        $Olangca = false;	/* Language in output is Catalan (catalansk) if true */
         $Olangcs = false;	/* Language in output is Czech (tjekkisk) if true */
         $Olangcy = false;	/* Language in output is Welsh (walisisk) if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
@@ -1033,6 +1036,7 @@ try {
         $Opresalf = false;	/* Assemblage in output is alphabetic list (alfabetisk liste) if true */
         $Opresfrq = false;	/* Assemblage in output is frequency list (frekvensliste) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Opressof = false;	/* Assemblage in output is standoff annotations if true */
         $Opresuaf = false;	/* Assemblage in output is alphabetic list, OOV only (alfabetisk liste, kun ukendte ord) if true */
         $Opresufq = false;	/* Assemblage in output is frequency list, OOV only (frekvensliste, kun ukendte ord) if true */
         $Ifacet_par_pos_seg_tok__pos_DSL = false;	/* Style of type of content paragraphs (paragrafsegmenter) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and tokens (tokens) in input is DSL-tagset for the PoS-tags (PoS-tags) component if true */
@@ -1202,8 +1206,9 @@ try {
         if( hasArgument("Ipres") )
             {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
-            $echos = $echos . "Ipresnml=$Ipresnml ";
-            $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
+            $Ipressof = existsArgumentWithValue("Ipres", "sof");
+            $echos = $echos . "Ipresnml=$Ipresnml " . "Ipressof=$Ipressof ";
+            $input = $input . ($Ipresnml ? " \$Ipresnml" : "")  . ($Ipressof ? " \$Ipressof" : "") ;
             }
         if( hasArgument("Oambig") )
             {
@@ -1295,10 +1300,11 @@ try {
             $Opresalf = existsArgumentWithValue("Opres", "alf");
             $Opresfrq = existsArgumentWithValue("Opres", "frq");
             $Opresnml = existsArgumentWithValue("Opres", "nml");
+            $Opressof = existsArgumentWithValue("Opres", "sof");
             $Opresuaf = existsArgumentWithValue("Opres", "uaf");
             $Opresufq = existsArgumentWithValue("Opres", "ufq");
-            $echos = $echos . "Opresalf=$Opresalf " . "Opresfrq=$Opresfrq " . "Opresnml=$Opresnml " . "Opresuaf=$Opresuaf " . "Opresufq=$Opresufq ";
-            $output = $output . ($Opresalf ? " \$Opresalf" : "")  . ($Opresfrq ? " \$Opresfrq" : "")  . ($Opresnml ? " \$Opresnml" : "")  . ($Opresuaf ? " \$Opresuaf" : "")  . ($Opresufq ? " \$Opresufq" : "") ;
+            $echos = $echos . "Opresalf=$Opresalf " . "Opresfrq=$Opresfrq " . "Opresnml=$Opresnml " . "Opressof=$Opressof " . "Opresuaf=$Opresuaf " . "Opresufq=$Opresufq ";
+            $output = $output . ($Opresalf ? " \$Opresalf" : "")  . ($Opresfrq ? " \$Opresfrq" : "")  . ($Opresnml ? " \$Opresnml" : "")  . ($Opressof ? " \$Opressof" : "")  . ($Opresuaf ? " \$Opresuaf" : "")  . ($Opresufq ? " \$Opresufq" : "") ;
             }
 
 /*******************************

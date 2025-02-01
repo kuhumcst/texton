@@ -232,7 +232,10 @@ try {
         $Ilangzh = false;	/* Language in input is Chinese (kinesisk) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
+        $Ismlsml = false;	/* Smell in input is any smell (lugt) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
+        $Ofacetetc = false;	/* Type of content in output is structured text (struktureret tekst) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
         $Ofacetner = false;	/* Type of content in output is name entities (navne) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
@@ -252,7 +255,8 @@ try {
         $Olangit = false;	/* Language in output is Italian (italiensk) if true */
         $Olangzh = false;	/* Language in output is Chinese (kinesisk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
-        $Opresnml = false;	/* Assemblage in output is normal if true */
+        $Opressof = false;	/* Assemblage in output is standoff annotations if true */
+        $OsmlTOK = false;	/* Smell in output is Tokenisation (Tokenisering) if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
 
         if( hasArgument("base") )
@@ -356,8 +360,15 @@ try {
         if( hasArgument("Ipres") )
             {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
-            $echos = $echos . "Ipresnml=$Ipresnml ";
-            $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
+            $Ipressof = existsArgumentWithValue("Ipres", "sof");
+            $echos = $echos . "Ipresnml=$Ipresnml " . "Ipressof=$Ipressof ";
+            $input = $input . ($Ipresnml ? " \$Ipresnml" : "")  . ($Ipressof ? " \$Ipressof" : "") ;
+            }
+        if( hasArgument("Isml") )
+            {
+            $Ismlsml = existsArgumentWithValue("Isml", "sml");
+            $echos = $echos . "Ismlsml=$Ismlsml ";
+            $input = $input . ($Ismlsml ? " \$Ismlsml" : "") ;
             }
         if( hasArgument("Oambig") )
             {
@@ -367,6 +378,7 @@ try {
             }
         if( hasArgument("Ofacet") )
             {
+            $Ofacetetc = existsArgumentWithValue("Ofacet", "etc");
             $Ofacetlem = existsArgumentWithValue("Ofacet", "lem");
             $Ofacetner = existsArgumentWithValue("Ofacet", "ner");
             $Ofacetpos = existsArgumentWithValue("Ofacet", "pos");
@@ -376,8 +388,8 @@ try {
             $Ofacetstc = existsArgumentWithValue("Ofacet", "stc");
             $Ofacetstx = existsArgumentWithValue("Ofacet", "stx");
             $Ofacettok = existsArgumentWithValue("Ofacet", "tok");
-            $echos = $echos . "Ofacetlem=$Ofacetlem " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsent=$Ofacetsent " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
-            $output = $output . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsent ? " \$Ofacetsent" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
+            $echos = $echos . "Ofacetetc=$Ofacetetc " . "Ofacetlem=$Ofacetlem " . "Ofacetner=$Ofacetner " . "Ofacetpos=$Ofacetpos " . "Ofacetseg=$Ofacetseg " . "Ofacetsent=$Ofacetsent " . "Ofacetsnt=$Ofacetsnt " . "Ofacetstc=$Ofacetstc " . "Ofacetstx=$Ofacetstx " . "Ofacettok=$Ofacettok ";
+            $output = $output . ($Ofacetetc ? " \$Ofacetetc" : "")  . ($Ofacetlem ? " \$Ofacetlem" : "")  . ($Ofacetner ? " \$Ofacetner" : "")  . ($Ofacetpos ? " \$Ofacetpos" : "")  . ($Ofacetseg ? " \$Ofacetseg" : "")  . ($Ofacetsent ? " \$Ofacetsent" : "")  . ($Ofacetsnt ? " \$Ofacetsnt" : "")  . ($Ofacetstc ? " \$Ofacetstc" : "")  . ($Ofacetstx ? " \$Ofacetstx" : "")  . ($Ofacettok ? " \$Ofacettok" : "") ;
             }
         if( hasArgument("Oformat") )
             {
@@ -406,9 +418,15 @@ try {
             }
         if( hasArgument("Opres") )
             {
-            $Opresnml = existsArgumentWithValue("Opres", "nml");
-            $echos = $echos . "Opresnml=$Opresnml ";
-            $output = $output . ($Opresnml ? " \$Opresnml" : "") ;
+            $Opressof = existsArgumentWithValue("Opres", "sof");
+            $echos = $echos . "Opressof=$Opressof ";
+            $output = $output . ($Opressof ? " \$Opressof" : "") ;
+            }
+        if( hasArgument("Osml") )
+            {
+            $OsmlTOK = existsArgumentWithValue("Osml", "TOK");
+            $echos = $echos . "OsmlTOK=$OsmlTOK ";
+            $output = $output . ($OsmlTOK ? " \$OsmlTOK" : "") ;
             }
 
 /*******************************

@@ -14,7 +14,7 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : mate-parser
-PassWord       :
+PassWord       : 
 Version        : 3.3
 Title          : Bohnet parser
 Path in URL    : mate-parser	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
@@ -24,9 +24,11 @@ Creator        : Bernd Bohnet
 InfoAbout      : http://code.google.com/p/mate-tools/
 Description    : Dependency parser, part of mate-tools.
 ExternalURI    : http://barbar.cs.lth.se:8081/
-XMLparms       :
-PostData       :
-Inactive       :
+RestAPIkey         : *****
+RestAPIpassword    : *****
+MultiInp       : 
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -37,7 +39,6 @@ $toollog = '../log/mateParser.log'; /* Used by the logit() function. TODO make s
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -123,7 +124,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -223,15 +224,13 @@ try {
         $Ifacetpos = false;	/* Type of content in input is PoS-tags (PoS-tags) if true */
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
-        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Ilangda = false;	/* Language in input is Danish (dansk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
-        $Ilangen = false;	/* Language in input is English (engelsk) if true */
         $Ilanges = false;	/* Language in input is Spanish (spansk) if true */
         $Ilangfr = false;	/* Language in input is French (fransk) if true */
-        $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
-        $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
         $Ofacetpos = false;	/* Type of content in output is PoS-tags (PoS-tags) if true */
@@ -241,16 +240,12 @@ try {
         $Oformatconll = false;	/* Format in output is CoNLL if true */
         $Olangda = false;	/* Language in output is Danish (dansk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
-        $Olangen = false;	/* Language in output is English (engelsk) if true */
         $Olanges = false;	/* Language in output is Spanish (spansk) if true */
         $Olangfr = false;	/* Language in output is French (fransk) if true */
-        $Operiodc20 = false;	/* Historical period in output is late modern (moderne tid) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
-        $Ifacettoksimple = false;	/* Style of type of content tokens (tokens) in input is Simple if true */
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
-        $Ofacettoksimple = false;	/* Style of type of content tokens (tokens) in output is Simple if true */
         $Oformatconllcnl2009 = false;	/* Style of format CoNLL in output is CoNLL 2009 (14 columns)CoNLL 2009 (14 kolonner) if true */
 
         if( hasArgument("base") )
@@ -277,7 +272,7 @@ try {
         if( hasArgument("IfacetlemF") )
             {
             $IfacetlemF = requestFile("IfacetlemF");
-            if($IfacetlemF == '')
+            if($IfacetlemF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'lemmas (lemmaer)' not found (IfacetlemF parameter). ");
                 return;
@@ -288,7 +283,7 @@ try {
         if( hasArgument("IfacetposF") )
             {
             $IfacetposF = requestFile("IfacetposF");
-            if($IfacetposF == '')
+            if($IfacetposF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'PoS-tags (PoS-tags)' not found (IfacetposF parameter). ");
                 return;
@@ -299,7 +294,7 @@ try {
         if( hasArgument("IfacetsegF") )
             {
             $IfacetsegF = requestFile("IfacetsegF");
-            if($IfacetsegF == '')
+            if($IfacetsegF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
@@ -310,7 +305,7 @@ try {
         if( hasArgument("IfacettokF") )
             {
             $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF == '')
+            if($IfacettokF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
@@ -347,24 +342,22 @@ try {
             {
             $Ilangda = existsArgumentWithValue("Ilang", "da");
             $Ilangde = existsArgumentWithValue("Ilang", "de");
-            $Ilangen = existsArgumentWithValue("Ilang", "en");
             $Ilanges = existsArgumentWithValue("Ilang", "es");
             $Ilangfr = existsArgumentWithValue("Ilang", "fr");
-            $echos = $echos . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilangen=$Ilangen " . "Ilanges=$Ilanges " . "Ilangfr=$Ilangfr ";
-            $input = $input . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangde ? " \$Ilangde" : "")  . ($Ilangen ? " \$Ilangen" : "")  . ($Ilanges ? " \$Ilanges" : "")  . ($Ilangfr ? " \$Ilangfr" : "") ;
+            $echos = $echos . "Ilangda=$Ilangda " . "Ilangde=$Ilangde " . "Ilanges=$Ilanges " . "Ilangfr=$Ilangfr ";
+            $input = $input . ($Ilangda ? " \$Ilangda" : "")  . ($Ilangde ? " \$Ilangde" : "")  . ($Ilanges ? " \$Ilanges" : "")  . ($Ilangfr ? " \$Ilangfr" : "") ;
             }
         if( hasArgument("Iperiod") )
             {
-            $Iperiodc20 = existsArgumentWithValue("Iperiod", "c20");
             $Iperiodc21 = existsArgumentWithValue("Iperiod", "c21");
-            $echos = $echos . "Iperiodc20=$Iperiodc20 " . "Iperiodc21=$Iperiodc21 ";
-            $input = $input . ($Iperiodc20 ? " \$Iperiodc20" : "")  . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
+            $echos = $echos . "Iperiodc21=$Iperiodc21 ";
+            $input = $input . ($Iperiodc21 ? " \$Iperiodc21" : "") ;
             }
         if( hasArgument("Ipres") )
             {
-            $Ipresnml = existsArgumentWithValue("Ipres", "nml");
-            $echos = $echos . "Ipresnml=$Ipresnml ";
-            $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
+            $Ipressof = existsArgumentWithValue("Ipres", "sof");
+            $echos = $echos . "Ipressof=$Ipressof ";
+            $input = $input . ($Ipressof ? " \$Ipressof" : "") ;
             }
         if( hasArgument("Oambig") )
             {
@@ -392,18 +385,16 @@ try {
             {
             $Olangda = existsArgumentWithValue("Olang", "da");
             $Olangde = existsArgumentWithValue("Olang", "de");
-            $Olangen = existsArgumentWithValue("Olang", "en");
             $Olanges = existsArgumentWithValue("Olang", "es");
             $Olangfr = existsArgumentWithValue("Olang", "fr");
-            $echos = $echos . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olangen=$Olangen " . "Olanges=$Olanges " . "Olangfr=$Olangfr ";
-            $output = $output . ($Olangda ? " \$Olangda" : "")  . ($Olangde ? " \$Olangde" : "")  . ($Olangen ? " \$Olangen" : "")  . ($Olanges ? " \$Olanges" : "")  . ($Olangfr ? " \$Olangfr" : "") ;
+            $echos = $echos . "Olangda=$Olangda " . "Olangde=$Olangde " . "Olanges=$Olanges " . "Olangfr=$Olangfr ";
+            $output = $output . ($Olangda ? " \$Olangda" : "")  . ($Olangde ? " \$Olangde" : "")  . ($Olanges ? " \$Olanges" : "")  . ($Olangfr ? " \$Olangfr" : "") ;
             }
         if( hasArgument("Operiod") )
             {
-            $Operiodc20 = existsArgumentWithValue("Operiod", "c20");
             $Operiodc21 = existsArgumentWithValue("Operiod", "c21");
-            $echos = $echos . "Operiodc20=$Operiodc20 " . "Operiodc21=$Operiodc21 ";
-            $output = $output . ($Operiodc20 ? " \$Operiodc20" : "")  . ($Operiodc21 ? " \$Operiodc21" : "") ;
+            $echos = $echos . "Operiodc21=$Operiodc21 ";
+            $output = $output . ($Operiodc21 ? " \$Operiodc21" : "") ;
             }
         if( hasArgument("Opres") )
             {
@@ -421,23 +412,11 @@ try {
             $echos = $echos . "IfacetposUni=$IfacetposUni ";
             $input = $input . ($IfacetposUni ? " \$IfacetposUni" : "") ;
             }
-        if( hasArgument("Ifacettok") )
-            {
-            $Ifacettoksimple = existsArgumentWithValue("Ifacettok", "simple");
-            $echos = $echos . "Ifacettoksimple=$Ifacettoksimple ";
-            $input = $input . ($Ifacettoksimple ? " \$Ifacettoksimple" : "") ;
-            }
         if( hasArgument("Ofacetpos") )
             {
             $OfacetposUni = existsArgumentWithValue("Ofacetpos", "Uni");
             $echos = $echos . "OfacetposUni=$OfacetposUni ";
             $output = $output . ($OfacetposUni ? " \$OfacetposUni" : "") ;
-            }
-        if( hasArgument("Ofacettok") )
-            {
-            $Ofacettoksimple = existsArgumentWithValue("Ofacettok", "simple");
-            $echos = $echos . "Ofacettoksimple=$Ofacettoksimple ";
-            $output = $output . ($Ofacettoksimple ? " \$Ofacettoksimple" : "") ;
             }
         if( hasArgument("Oformatconll") )
             {
@@ -485,8 +464,8 @@ try {
                 $lang = "$res/da/BohnetsParser/ddt-universal.parse";
             else if($Ilangde)
                 $lang = "$res/de/BohnetsParser/parser-ger-3.6.model";
-            else if($Ilangen)
-                $lang = "$res/en/BohnetsParser/CoNLL2009-ST-English-ALL.anna-3.3.parser.model";
+//            else if($Ilangen)
+  //              $lang = "$res/en/BohnetsParser/CoNLL2009-ST-English-ALL.anna-3.3.parser.model";
             else if($Ilanges)
                 $lang = "$res/es/BohnetsParser/CoNLL2009-ST-Spanish-ALL.anna-3.3.parser.model";
             else if($Ilangfr)

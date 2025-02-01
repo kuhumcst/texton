@@ -18,7 +18,10 @@ X=
     .   ( reverse
         =   a R
           .   :?R
-            & whl'(!arg:%?a ?arg&!a !R:?R)
+            &   whl
+              ' ( !arg:%?a ?arg
+                & !a !R:?R
+                )
             & !R
         )
       & ( theLemmas
@@ -34,14 +37,19 @@ X=
         )
       & ( short
         =   g
-          .     vap$((=.!arg.upp$!arg.low$!arg).!arg)
+          .       vap
+                $ ( (=.!arg.upp$!arg.low$!arg)
+                  . !arg
+                  )
               :   %?arg
                   ( ((?g.~!g.?)|(?g.?.!g)) ?
                   | 
                   )
             &   str
               $ ( map
-                $ ( (=.!arg:(?arg.?)&!arg)
+                $ ( ( 
+                    = .!arg:(?arg.?)&!arg
+                    )
                   . !arg
                   )
                 )
@@ -73,7 +81,8 @@ X=
                 )
             & !U+!cls
         )
-      & !arg:(?WordLemmaPosData.?F.?TheFlexRules.?lemposfile.?TorC)
+      &   !arg
+        : (?WordLemmaPosData.?F.?TheFlexRules.?lemposfile.?TorC)
       & get$"lemmatize.bra"
       & str$(!TheFlexRules "NRS.bra"):?NRSfile
       & str$(!TheFlexRules "hexs.bra"):?hexsfile
@@ -81,20 +90,25 @@ X=
       & get$!TheFlexRules:?theTree
       & (   get$!NRSfile
           & new$hash:?H
-          & whl'(!NRS:%?k ?NRS&(H..insert)$!k)
+          &   whl
+            ' ( !NRS:%?k ?NRS
+              & (H..insert)$!k
+              )
         |   ( get$!hexsfile
             |   ( get$!exsfile
                 |       vap
                       $ ( ( 
                           =   vals wrd lem cls freq
-                            .     vap$((=.!arg).!arg.\t)
+                            .       vap
+                                  $ ((=.!arg).!arg.\t)
                                 : ?vals
                               & (     !vals
                                     : ( %?wrd %?lem %?cls %?freq ?
                                       |   %?wrd %?lem %?cls
                                         & 0:?freq
                                       )
-                                  & ( @(!lem:? " " ?)&
+                                  & (   @(!lem:? " " ?)
+                                      & 
                                     |   (   !TorC:C
                                           & short$!cls:?cls
                                         | !TorC:T
@@ -115,7 +129,9 @@ X=
                                                 )
                                             : ?cls
                                         | @( !cls
-                                           : (?cls !TorC ?|?cls)
+                                           : ( ?cls !TorC ?
+                                             | ?cls
+                                             )
                                            )
                                         )
                                       &   whl
@@ -126,7 +142,9 @@ X=
                                         | 1:?frq
                                         )
                                       &   map
-                                        $ ( (=.!wrd.!lem.!arg.!frq)
+                                        $ ( ( 
+                                            = .!wrd.!lem.!arg.!frq
+                                            )
                                           . !cls
                                           )
                                     )
@@ -148,8 +166,13 @@ X=
                       )
                   &   whl
                     ' (   !r1
-                        : ?A (?L.?Cf1) ?M (!L.?Cf2) ?Z
-                      & !A (!L.!Cf1+!Cf2) !M !Z:?r1
+                        :   ?A
+                            (?L.?Cf1)
+                            ?M
+                            (!L.?Cf2)
+                            ?Z
+                      &   !A (!L.!Cf1+!Cf2) !M !Z
+                        : ?r1
                       )
                   &     map
                       $ ( ( 
@@ -170,8 +193,10 @@ X=
                         )
                     : ?r1
                   &   whl
-                    ' ( !r1:?aa (?q.?A+#%*?M+?Z) ?zz
-                      & !aa (!q.!A+!M+!Z) !zz:?r1
+                    ' (   !r1
+                        : ?aa (?q.?A+#%*?M+?Z) ?zz
+                      &   !aa (!q.!A+!M+!Z) !zz
+                        : ?r1
                       )
                   & (!wrd.!r1) !hexs:?hexs
                   )
@@ -180,7 +205,8 @@ X=
           & :?ERRORS
           & (   new$hash:?H
               &   whl
-                ' ( !hexs:(?word.?lems:?Lems) ?hexs
+                ' (   !hexs
+                    : (?word.?lems:?Lems) ?hexs
                   &   lemmatise$(!theTree.!word..0)
                     : ?results
                     : ?ress
@@ -190,7 +216,8 @@ X=
                       & !A !Z:?lems
                       &   whl
                         ' ( !nrs:%?nr ?nrs
-                          & (   (H..find)$!nr:(?nnr.?CLS)
+                          & (     (H..find)$!nr
+                                : (?nnr.?CLS)
                               & (H..remove)$!nr
                             | 0:?CLS
                             )
@@ -199,15 +226,18 @@ X=
                           )
                       )
                   & ( !lems:!results:
-                    |   (!word.!ress.!Lems.!lems.!results) !ERRORS
+                    |     (!word.!ress.!Lems.!lems.!results)
+                          !ERRORS
                       : ?ERRORS
                     )
                   )
               & :?NRS
-              & (H..forall)$(=.!arg !NRS:?NRS)
+              &   (H..forall)
+                $ (=.!arg !NRS:?NRS)
               & lst$(NRS,!NRSfile,NEW)
             |   whl
-              ' ( !hexs:(?word.?lems:?Lems) ?hexs
+              ' (   !hexs
+                  : (?word.?lems:?Lems) ?hexs
                 &   lemmatise$(!theTree.!word..0)
                   : ?results
                   : ?ress
@@ -217,7 +247,8 @@ X=
                     & !A !Z:?lems
                     )
                 & ( !lems:!results:
-                  |   (!word.!ress.!Lems.!lems.!results) !ERRORS
+                  |     (!word.!ress.!Lems.!lems.!results)
+                        !ERRORS
                     : ?ERRORS
                   )
                 )
@@ -232,7 +263,10 @@ X=
           .   new$hash:?dict
             & (   get$!arg
                 &   map
-                  $ ( (=.(dict..insert)$!arg&)
+                  $ ( ( 
+                      =   
+                        . (dict..insert)$!arg&
+                      )
                     . !hexs
                     )
               | 
@@ -246,7 +280,9 @@ X=
           .   !arg:(?wrd.?CLS)
             & (   !CLS:%+%
                 &     vap
-                    $ ( (=.utf$!arg:>128|)
+                    $ ( ( 
+                        = .utf$!arg:>128|
+                        )
                       . !wrd
                       )
                   : 
@@ -271,7 +307,9 @@ X=
                         : ?found
                       &   map
                         $ ( ( 
-                            = .!arg:(?.?arg)&!arg
+                            =   
+                              .   !arg:(?.?arg)
+                                & !arg
                             )
                           . !found
                           )
@@ -287,13 +325,15 @@ X=
                                   & 0:?CLS
                                   &   whl
                                     ' ( !nrs:%?nr ?nrs
-                                      & (H..find)$!nr:(?.?cls)
+                                      &   (H..find)$!nr
+                                        : (?.?cls)
                                       &   combineClasFreq$(!CLS.!cls)
                                         : ?CLS
                                       )
                                   &   (   !CLS:0
                                         & (!woord.XX.0)
-                                      |   junk$(!wrd.!CLS):?CLS
+                                      |     junk$(!wrd.!CLS)
+                                          : ?CLS
                                         & (!wrd.!CLS)
                                       )
                                     : (?wrd.?CLS)
@@ -305,7 +345,11 @@ X=
                       & (!svar,!svarene):?svarene
                       &   whl
                         ' (   !svar
-                            : ?a (?b.?c) ?d (!b.!c) ?e
+                            :   ?a
+                                (?b.?c)
+                                ?d
+                                (!b.!c)
+                                ?e
                           & !a (!b.!c) !d !e:?svar
                           )
                       & !svar
@@ -335,7 +379,9 @@ X=
                                 &   !toks
                                   :   ?
                                       (   ( span
-                                          .   ? ("xml:id".!from) ?
+                                          .     ?
+                                                ("xml:id".!from)
+                                                ?
                                             , ?
                                           )
                                           ?
@@ -345,14 +391,17 @@ X=
                               |     !toks
                                   :   ?
                                       (   ( span
-                                          .   ? ("xml:id".!from) ?
+                                          .     ?
+                                                ("xml:id".!from)
+                                                ?
                                             , ?
                                           )
                                           ?
                                       : ?theseToks
                                       )
                                       ( ( span
-                                        . ? ("xml:id".!to) ?,?
+                                        .   ? ("xml:id".!to) ?
+                                          , ?
                                         )
                                       : ?last
                                       )
@@ -407,7 +456,9 @@ X=
                                     $ ( ( 
                                         =   
                                           .   theWordThing
-                                            $ (!arg.1+!wordno:?wordno)
+                                            $ ( !arg
+                                              . 1+!wordno:?wordno
+                                              )
                                         )
                                       . !arg
                                       . " "
@@ -430,7 +481,9 @@ X=
           .   :?tags
             &   whl
               ' ( !arg:?*(?T.?n)+?arg
-                & (!arg:?*(!T.>0:?n)+?arg|)
+                & ( !arg:?*(!T.>0:?n)+?arg
+                  | 
+                  )
                 & !tags ((f.!n)+(T..!T),):?tags
                 )
             & (,!tags)
@@ -449,7 +502,8 @@ X=
                             ,   map
                               $ ( ( 
                                   =   A Z lemmas
-                                    .   !arg:?A+(LS.?lemmas)+?Z
+                                    .     !arg
+                                        : ?A+(LS.?lemmas)+?Z
                                       & (   !A
                                           + ( LS
                                             .   
@@ -460,7 +514,8 @@ X=
                                                           : (?lemma.?tags)
                                                         & (   (L..!lemma)
                                                             + ( TS
-                                                              . theTags$!tags
+                                                              .   theTags
+                                                                $ !tags
                                                               )
                                                           , 
                                                           )
@@ -488,10 +543,10 @@ X=
   ( new
   =   
     .   ~
-      |   
-        & arg$:?traindata
+      |   arg$:?traindata
         & arg$:?IfacetsegF
-        & ( !IfacetsegF:onefile&arg$:?F
+        & (   !IfacetsegF:onefile
+            & arg$:?F
           | arg$:?IfacettokF&:?F
           )
         & arg$:?flexrules
@@ -529,9 +584,7 @@ X=
             . !lemposfile
             . !TorC
             )
-      |   
-        & out$Hallo
-        &   "../../texton-linguistic-resources/sq/lemmatiser/training/3011552745-23-step2.3cole"
+      |     "../../texton-linguistic-resources/sq/lemmatiser/training/3011552745-23-step2.3cole"
           : ?traindata
         & onefile:?IfacetsegF
         & ( !IfacetsegF:onefile&F:?F

@@ -659,24 +659,42 @@ TexTon=
                     )
                     ( !spec:1&
                     |   "["
-                        (   !specificationTables
-                          : ? (? (%@:!featval) ?.?stbl) ?
-                        & (!!stbl|readTable$!stbl)
-                        &     mop
-                            $ ( ( 
-                                =   full
-                                  .   "|"
-                                      (     !!stbl
-                                          : ? (?full.!arg.?) ?
-                                        & localized$!full
-                                      | !arg
-                                      )
+                        (     !specificationTables
+                            :   ?
+                                (? (%@:!featval) ?.?stbl)
+                                ?
+                          & (!!stbl|readTable$!stbl)
+                          &     mop
+                              $ ( ( 
+                                  =   full
+                                    .   "|"
+                                        (     !!stbl
+                                            : ? (?full.!arg.?) ?
+                                          & localized$!full
+                                        | !arg
+                                        )
+                                  )
+                                . !spec
+                                . (=+)
                                 )
-                              . !spec
-                              . (=+)
-                              )
-                          : ("|" ?sps|?sps)
-                        & !sps
+                            : ("|" ?sps|?sps)
+                          & !sps:~
+                        |       mop
+                              $ ( ( 
+                                  =   full
+                                    .     !tooladm
+                                        :   ?
+                                          + ( ? (ToolID.!arg) ?
+                                            : ? (Title.?full) ?
+                                            )
+                                          + ?
+                                      & "|" !full
+                                  )
+                                . !spec
+                                . (=+)
+                                )
+                            : ("|" ?sps|?sps)
+                          & !sps
                         )
                         "]"
                     )
@@ -889,39 +907,110 @@ TexTon=
                       )
                 )
               & ( shorting
-                =   A Z L p S x y shrtlst
+                =   A Z L p S x y M shrtlst
                   .   !arg:(?p,?arg:?L)
                     & :?shrtlst
+                    & ( occurs
+                      =   
+                        .   mop
+                          $ ( ( 
+                              =   
+                                .   !arg:#*(?x.?y)&!x+!y
+                                  | !arg
+                              )
+                            . !arg
+                            . (=+)
+                            . (=+)
+                            )
+                      )
                     &     mop
                         $ ( ( 
-                            =   
-                              .   !arg:#*(?x.?y)&!x+!y
-                                | !arg
+                            = .!arg:#?M*%@?arg&(!M.!arg)
                             )
-                          . !L
+                          . occurs$!L
                           . (=+)
                           . (=+)
                           )
-                      : ?S
-                    & "Edges with node(s) occurring in that edge only are not
+                      : ?L
+                    & :?S
+                    & whl'(!L:%?x+?L&!x !S:?S)
+                    &   (   !arg:%+%
+                          &   !S
+                            :   ?
+                                (>1.?M)
+                                ( ?
+                                &   !arg
+                                  : (   ?A
+                                      + (?x.!M)
+                                      + ( ?Z
+                                        & !S:? (>1.!x) ?
+                                        )
+                                    |   ?A
+                                      + (!M.?x)
+                                      + ( ?Z
+                                        & !S:? (>1.!x) ?
+                                        )
+                                    )
+                                )
+                          & !A+!Z:?arg
+                          & occurs$!arg:?S
+                          &     mop
+                              $ ( ( 
+                                  =   
+                                    .     !arg:(?x.?y)
+                                        &   !S
+                                          :   ?
+                                              (1.!x|!y)
+                                              ?
+                                        & !arg+!p:?p
+                                        & 0
+                                      | !arg
+                                  )
+                                . !arg
+                                . (=+)
+                                . (=+)
+                                )
+                            : ?A
+                          & (!p,!A)
+                        | (!p+!arg,0)
+                        )
+                      : ?arg
+                    & ( 
+                      |   "Edges with node(s) occurring in that edge only are not
                        eligible for deletion.
                        Such nodes have no explicit numerical factor in S."
-                    & (   !arg:%+%
-                        & (   !arg
-                            :   ?A
-                              + (     #
-                                    * ( ?x&~(!S:?+!x+?)
-                                      . ?y&~(!S:?+!y+?)
+                        &   (   !arg:%+%
+                              & (   !arg
+                                  :   ?A
+                                    + (   (   ?x
+                                            & ~(!S:? (1.!x) ?)
+                                          .   ?y
+                                            & ~(!S:? (1.!y) ?)
+                                          )
+                                        + ?Z
+                                      & occurs$(!A+!Z):?S
+                                      & (!p+!A,!Z) !shrtlst:?shrtlst
+                                      & ~
                                       )
-                                  + ?Z
-                                & (!p+!A,!Z) !shrtlst:?shrtlst
-                                & ~
+                                | !shrtlst
                                 )
-                          | !shrtlst
-                          )
-                      | (!p,0)
+                            | (!p,0)
+                            )
+                          : ?arg
                       )
+                    & !arg
                 )
+              &     mop
+                  $ ( ( 
+                      =   
+                        .   !arg:#*((?.?):?arg)
+                          & !arg
+                      )
+                    . !pairs
+                    . (=+)
+                    . (=+)
+                    )
+                : ?pairs
               & (0,!pairs):?shrtlst:?nshrtlst
               & :?kahn
               &   whl
@@ -939,6 +1028,7 @@ TexTon=
                     ' ( !nshrtlst:(?ABC,?XYZ) ?nshrtlst
                       & shorting$(!ABC,!XYZ) !shrtlst:?shrtlst
                       )
+                  & !shrtlst:?nshrtlst
                   )
               &     map
                   $ ( (=.!kahn:~(? !arg ?)|)
@@ -1929,8 +2019,9 @@ TexTon=
           , toolPlumbing translateManyToHumanLanguage
           , abbR reorderedworkflowlist struct
           , toolsUsed topologicalOrderedTools candidateList
-        .   ( translateManyToHumanLanguage
-            =   description seqno struct abbrevs o,describeShort
+        .   0:?COUNTER
+          & ( translateManyToHumanLanguage
+            =   description seqno struct abbrevs o describeShort
               .   ( describeShort
                   =   describe circle nice arrow
                     .   ( circle
@@ -1971,7 +2062,12 @@ TexTon=
                             & ( div
                               .     (class.tooltip)
                                     (tabindex.0)
-                                    (title.str$(fullinoutdesc$(!i.", ")))
+                                    ( title
+                                    .   str
+                                      $ ( (1+!COUNTER:?COUNTER)
+                                          fullinoutdesc$(!i.", ")
+                                        )
+                                    )
                                 ,   !arg:1&" → "
                                   | !arg:2&" ⇒ "
                                   | !arg:3&" ⇛ "
@@ -3306,7 +3402,6 @@ TexTon=
                 :   ?
                   + (? (short.!feat) ?:? (table.?table) ?)
                   + ?
-              & log$(getShort !table)
               & readTable$!table
               & !!table:? (? !full ?.?ABBR.?) ?
               & !ABBR
@@ -5211,9 +5306,7 @@ try {
                     : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
                 |   !gfield:sml
-                  & log$(gfield !gfield gvaluesAlts !gvaluesAlts)
                   & !gvaluesAlts:(TOK|TXT)
-                  & log$(toolFeatures !toolFeatures)
                   & !toolFeatures:? (sml,(?.?)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
                   & "toolfeat is a sum of alternative (input.output) specs."
@@ -6026,7 +6119,6 @@ try {
                             : ? (table.?table) ?
                             )
                           + ?
-                      & log$(getFullNames !table)
                       & readTable$!table
                       & valueSeq$(!sourceValue.!!table):?so
                       & valueSeq$(!goalValue.!!table):?go
@@ -6117,24 +6209,27 @@ try {
                   |   "Failure reason 3: There is no chance that for a specific feature, the source value can be transformed to the goal value. There is no path through the DAG for that feature."
                     & ( recur
                       =   edges sourceValue goalValue aValue
-                        .   !arg:(?edges.?sourceValue,?goalValue)
-                          &     map
-                              $ ( ( 
-                                  =   
-                                    .   !arg:(?.~!sourceValue)
-                                      | 
-                                  )
-                                . !edges
-                                )
-                            : ?edges
-                            : ( ? (!sourceValue.!goalValue) ?
-                              |   ?
-                                  ( !sourceValue
-                                  .   ?aValue
-                                    & recur$(!edges.!aValue,!goalValue)
-                                  )
-                                  ?
-                              )
+                        .   !arg:(?edges.@?sourceValue^?,@?goalValue^?)
+                          & !( 
+                             ' (   map
+                                 $ ( ( 
+                                     =   
+                                       .   !arg:~(?.$sourceValue)
+                                         | 
+                                     )
+                                   . $edges
+                                   )
+                               : ?edges
+                               : ( ? ($sourceValue.$goalValue) ?
+                                 |   ?
+                                     ( $sourceValue
+                                     .   ?aValue
+                                       & recur$(!edges.!aValue,$goalValue)
+                                     )
+                                     ?
+                                 )
+                               )
+                             )
                       )
                     &     map
                         $ ( ( 
@@ -6197,18 +6292,13 @@ try {
               .   ( makeSmell
                   =   A Z o tool sml
                     .   !arg:(?tool.?arg)
-                      &   (     !arg
-                              :   ?A
-                                  ( sml
-                                  , (?o.(TOK|TXT):?SML)
-                                  )
-                                  ?Z
-                            & !A (sml,(!o.!SML^!tool)) !Z
-                          | !arg
-                          )
-                        : ?XXXYY
-                      & log$(XXXYY !XXXYY)
-                      & !XXXYY
+                      & (     !arg
+                            :   ?A
+                                (sml,(?o.(TOK|TXT):?SML))
+                                ?Z
+                          & !A (sml,(!o.!SML^!tool)) !Z
+                        | !arg
+                        )
                   )
                 & ( isfulfilled
                   =   source src goal gl tool pipe pipes
@@ -6331,7 +6421,6 @@ try {
                               & 0
                             |     unify$(!source.fold$!goaly:?XYX)
                                 : ?sourcePlus
-                              & log$(str$("UNIFY2 " !XYX))
                               & 1+!sourcegoalmatch:?sourcegoalmatch
                               & sort$!sourcePlus
                             |   !tools:?ltools
@@ -6369,12 +6458,11 @@ try {
                                         & (       matchGoalWithFeatures
                                                 $ (!goaly.!ntoolFeatures)
                                               : (?pathfields.?newGoal)
-                                            & log$(newGoal !newGoal)
-                                            & log$(str$(!tool " " !goaly))
-                                            & log$(ntoolFeatures !ntoolFeatures)
-                                            &   !tools
-                                              : ?A+(!tool.!toolFeatures)+?Z
-                                            & log$AandZ
+                                            & (   !tools:?A
+                                                & 0:?Z
+                                              |   !tools
+                                                : ?A+(!tool.!toolFeatures)+?Z
+                                              )
                                             & (       fulfil
                                                     $ ( !A+!Z
                                                       . !source
@@ -6581,22 +6669,17 @@ try {
                           . ?indent
                           . ?fintool
                           )
-                      & log$(fulfil source !source goal !goal hig !hig)
                       & "Restrict path length to max 20"
                       & !indent:<20
                       & (|1+!Calls:?Calls)
                       & 0:?accPipelines
                       & unfoldGoal$!goal:?goals
                       & 0:?found
-                      & log$(fulfil-goals !goals source !source)
                       & (   !goals
                           :   ?
                             + `%?goalterm
                             + ( ?
-                              & log$(goalterm !goalterm fiolded fold$!goalterm)
-                              &   unify$(!source.fold$!goalterm:?XYX)
-                                : ?sourcePlus
-                              & log$(str$("UNIFY1 " !XYX))
+                              & unify$(!source.fold$!goalterm):?sourcePlus
                               & 1+!Calls:?Calls
                               & 1+!found:?found
                               & sort$!sourcePlus+!accPipelines:?accPipelines
@@ -6609,7 +6692,7 @@ try {
                                       : [%(!hig:? (,!sjt) ?)
                                       )
                                     * ?
-                                & CIRCULAR!
+                                & log$CIRCULAR!
                               |     fulfilGoalProduct$(!source.!goalterm.!tools.!fintool)
                                   : ?forkk
                                 & !Calls:>0
@@ -6801,7 +6884,6 @@ try {
                       & denumerizeSum$!goal
                   )
                 & !arg:(?source.?goal.?reqtool,?fintool.?superset)
-                & log$(goalZ !goal)
                 & readTable$toolprop
                 & getActiveTools$:?activeTools
                 & :?reasons
@@ -6955,12 +7037,10 @@ try {
                       | 0:?implGoal&log$!reasons
                       )
                     & !implGoal:?goal
-                    & log$(goalY !goal)
                   | :?fintool
                   )
                 & (   !goal:0
-                    |   log$(goalA !goal)
-                      & ( !reqtool:&0:?reqtool
+                    |   ( !reqtool:&0:?reqtool
                         | 
                         )
                       & ( !superset:
@@ -6970,7 +7050,6 @@ try {
                             )
                           & getSuperGoals$!goal:?goal
                         )
-                      & log$(goalB !goal)
                       & OnEify$!goal:?goal
                       &   0
                         : ?memoizedSteps
@@ -6982,7 +7061,6 @@ try {
                       & new$hash:?unfulfillable
                       & new$hash:?notThisTool
                       & 0:?Calls
-                      & log$("Calling fulfil" goal !goal fintool fintool !fintool)
                       & ( fulfil$(!activeTools.!source.,!goal.0.!fintool)
                         | !Calls
                         )
@@ -7324,6 +7402,10 @@ try {
                             & !nv*!vn
                         )
                       & !arg:(?tgt.?src)
+                      & ( 
+                        |   log$(supplement src !src)
+                          & log$(supplement tgt !tgt)
+                        )
                       &   map
                         $ ( ( 
                             =   f vsc vN vtg nv A Z ve vs
@@ -7359,7 +7441,9 @@ try {
                             )
                           . !src
                           )
-                      & sort$!tgt
+                      & sort$!tgt:?TGT
+                      & (|log$(supplement TGT !TGT))
+                      & !TGT
                   )
                 & "'wantThis' looks workflow-wide at the subspecifications occurring in the inputs and outputs of each tool.
                   If the same tool occurs with differently subspecified values, then it is checked whether unification is possible.
@@ -7396,70 +7480,82 @@ try {
                                             )
                                             ?
                                       & `~
-                                    |   map
-                                      $ ( ( 
-                                          =   
-                                            .   !arg:(?fea,?arg)
-                                              &   !long
-                                                : ? (!fea,?Val) ?
-                                              & ( !fea
-                                                ,     !arg:@?val^?e
-                                                    & !Val:!val^?E
-                                                    & (     !e
-                                                          : (1|!E)
-                                                        & !val^!E
-                                                      |   !E:1
-                                                        & !val^!e
-                                                      )
-                                                  |   !arg:(?val.OnE)
-                                                    & ( !Val:(?Val.OnE)
-                                                      | 
-                                                      )
-                                                    & 1:?P
-                                                    &   whl
-                                                      ' ( !val:%@?v^?e*?nval
-                                                        & !Val:!v^?E*?nVal
-                                                        & (     !e
-                                                              : ( 1
-                                                                | !E
-                                                                )
-                                                            & !P*!v^!E:?P
-                                                          |   !E:1
-                                                            & !P*!v^!e:?P
-                                                          )
-                                                        &   (!nval.!nVal)
-                                                          : (?val.?Val)
+                                    |     map
+                                        $ ( ( 
+                                            =   
+                                              .   !arg:(?fea,?arg)
+                                                &   !long
+                                                  : ? (!fea,?Val) ?
+                                                & ( !fea
+                                                  ,     !arg:@?val^?e
+                                                      & !Val:!val^?E
+                                                      & (     !e
+                                                            : ( 1
+                                                              | !E
+                                                              )
+                                                          & !val^!E
+                                                        |   !E:1
+                                                          & !val^!e
                                                         )
-                                                    &   1
-                                                      : !val
-                                                      : !Val
-                                                    & (!P.OnE)
-                                                  |     !arg
-                                                      : %*%
-                                                      : ?val
-                                                    & 1:?P
-                                                    &   whl
-                                                      ' ( !val:%@?v^?e*?nval
-                                                        & !Val:!v^?E*?nVal
-                                                        & (     !e
-                                                              : ( 1
-                                                                | !E
-                                                                )
-                                                            & !P*!v^!E:?P
-                                                          |   !E:1
-                                                            & !P*!v^!e:?P
-                                                          )
-                                                        &   (!nval.!nVal)
-                                                          : (?val.?Val)
+                                                    |   !arg:(?val.OnE)
+                                                      & ( !Val:(?Val.OnE)
+                                                        | 
                                                         )
-                                                    &   1
-                                                      : !val
-                                                      : !Val
-                                                    & !P
-                                                )
+                                                      & 1:?P
+                                                      &   whl
+                                                        ' (   !val
+                                                            : %@?v^?e*?nval
+                                                          &   !Val
+                                                            : !v^?E*?nVal
+                                                          & (     !e
+                                                                : ( 1
+                                                                  | !E
+                                                                  )
+                                                              &   !P*!v^!E
+                                                                : ?P
+                                                            |   !E:1
+                                                              &   !P*!v^!e
+                                                                : ?P
+                                                            )
+                                                          &   (!nval.!nVal)
+                                                            : (?val.?Val)
+                                                          )
+                                                      &   1
+                                                        : !val
+                                                        : !Val
+                                                      & (!P.OnE)
+                                                    |     !arg
+                                                        : %*%
+                                                        : ?val
+                                                      & 1:?P
+                                                      &   whl
+                                                        ' (   !val
+                                                            : %@?v^?e*?nval
+                                                          &   !Val
+                                                            : !v^?E*?nVal
+                                                          & (     !e
+                                                                : ( 1
+                                                                  | !E
+                                                                  )
+                                                              &   !P*!v^!E
+                                                                : ?P
+                                                            |   !E:1
+                                                              &   !P*!v^!e
+                                                                : ?P
+                                                            )
+                                                          &   (!nval.!nVal)
+                                                            : (?val.?Val)
+                                                          )
+                                                      &   1
+                                                        : !val
+                                                        : !Val
+                                                      & !P
+                                                    | 
+                                                  )
+                                            )
+                                          . !short
                                           )
-                                        . !short
-                                        )
+                                      : ~(? (?,) ?)
                                     )
                               )
                             & ( rpl
@@ -7594,12 +7690,12 @@ try {
                                     )
                               )
                             & !arg:(?pipe.?toolSignatures):?savearg
-                            & "pipe is a pipe line.
+                            & "pipe is a pipeline.
 
-                                 toolSignatures is a product of tool names with exponents.
-                                 Each exponent is a term or sum of terms.
-                                 A term is a dotted pair (output features.input features).
-                                 A term can have a numeral factor."
+                               toolSignatures is a product of tool names with exponents.
+                               Each exponent is a term or sum of terms.
+                               A term is a dotted pair (output features.input features).
+                               A term can have a numeral factor."
                             & (     !pipe
                                   : (((?,?) ?)*?:?Requireds.?Sources)
                                 & "If single input, Requireds is e.g
@@ -7702,22 +7798,20 @@ try {
                       & ( unifySignaturesAtSpecLevel
                         =   tool A sigs nsigs
                           .       !arg
-                                : ?A*%@?tool^(?*(% %)*?:?sigs)*?arg
-                              & 1:?nsigs
-                              &   mop
-                                $ ( ( 
-                                    =   
-                                      .     !nsigs
-                                          * (   !arg:% %
-                                              & mergeOIbundlesWherePossible$!arg
-                                            | !arg
-                                            )
-                                        : ?nsigs
+                                : ?A*(?tool.?*(% %)*?:?sigs)*?arg
+                              &     mop
+                                  $ ( ( 
+                                      =   
+                                        .     !arg:% %
+                                            & mergeOIbundlesWherePossible$!arg
+                                          | !arg
+                                      )
+                                    . !sigs
+                                    . (=*)
+                                    . (=*)
                                     )
-                                  . !sigs
-                                  . (=*)
-                                  )
-                              & !A*!tool^!nsigs*unifySignaturesAtSpecLevel$!arg
+                                : ?nsigs
+                              & !A*(!tool.!nsigs)*unifySignaturesAtSpecLevel$!arg
                             | !arg
                         )
                       & ( unspec
@@ -7810,31 +7904,27 @@ try {
                         current computed workflow. Here, O and I are feature
                         bundles."
                       & signatureDotSep$!sig:?Nsig
-                      & "In Nsig, parameter sets that are equal if all subspecs are ignored,
-                         are combined in space separated lists "
-                      & "Discard solutions that contain steps that are
-                        equal (or at least compatible) at the un-
-                        subspecified level, but clash at the spec level.
-                        Such solutions are not 'wrong', but unlikely what
-                        the user wants."
+                      & "In Nsig, parameter sets that are equal if all subspecs are ignored are combined in space separated lists 
+                         Discard solutions that contain steps that are equal (or at least compatible) at the un-subspecified level,
+                         but clash at the spec level. Such solutions are not 'wrong', but unlikely what the user wants."
                       & "Clashing example:
                         ...
                         * ( RTFread
-                        .   (   (app,nrm)
-                            (facet,seg*tok^PT)
-                            (format,plainD)
+                          . (   (app,nrm)
+                                (facet,seg*tok^PT)
+                                (format,plainD)
                             .   (app,ocr)
-                            (facet,txt)
-                            (format,flat)
+                                (facet,txt)
+                                (format,flat)
                             )
                             (   (app,nrm)
-                            (facet,seg*tok^simple)
-                            (format,plainD)
+                                (facet,seg*tok^simple)
+                                (format,plainD)
                             .   (app,ocr)
-                            (facet,txt)
-                            (format,flat)
+                                (facet,txt)
+                                (format,flat)
                             )
-                        )
+                          )
                         * ...
 
 
@@ -7842,33 +7932,29 @@ try {
 
                         ...
                         * ( RTFread
-                        .   (   (app,nrm)
-                            (facet,seg*tok^PT)
-                            (format,plainD)
+                          . (   (app,nrm)
+                                (facet,seg*tok^PT)
+                                (format,plainD)
                             .   (app,ocr)
-                            (facet,txt)
-                            (format,flat)
+                                (facet,txt)
+                                (format,flat)
                             )
                             (   (app,nrm)
-                            (facet,seg*tok)
-                            (format,plainD)
+                                (facet,seg*tok)
+                                (format,plainD)
                             .   (app,ocr)
-                            (facet,txt)
-                            (format,flat)
+                                (facet,txt)
+                                (format,flat)
                             )
-                        )
+                          )
                         * ...
                         "
                       & ( Clashing$!Nsig&0
                         |   unifySignaturesAtSpecLevel$!Nsig:?nsig
-                          & "nsig is a product of maximally compressed
-                       signatures. If two (O.I) feature bundle pairs can
-                       enrich each other without clashing, then those
-                       pairs are merged into one. These enriched (O.I)
-                       pairs do nowhere occur in the current workflow, so
-                       now we substitute the rich O.I pairs for the
-                       original ones."
-                          & "Nsig only contains ambiguous signatures: those that need unification."
+                          & "nsig is a product of maximally compressed signatures. If two (O.I) feature bundle pairs can
+                             enrich each other without clashing, then those pairs are merged into one. These enriched (O.I)
+                             pairs do nowhere occur in the current workflow, so now we substitute the rich O.I pairs for the
+                             original ones. Nsig only contains ambiguous signatures: those that need unification."
                           & ( trySignatures
                             =   Feats tool f pAth nsig,pipes R goodpipes
                               .   !arg:(?pAth.?nsig.?pipes.?goodpipes)
@@ -7889,11 +7975,9 @@ try {
                                   | !goodpipes
                                   )
                             )
-                          & "Make pipes more complete subspec-wise.
-                       Either each tool is used in exactly one way, or the
-                       different ways ALL differ more than only at the
-                       subspec level."
-                          & trySignatures$(1.!Nsig.!arg.0)
+                          & "Make pipes more complete subspec-wise. Either each tool is used in exactly one way, or the
+                             different ways ALL differ more than only at the subspec level."
+                          & trySignatures$(1.!nsig.!arg.0)
                         )
                   )
                 & ( filter
@@ -7951,7 +8035,6 @@ try {
                                       =   
                                         .       !arg
                                               : (sml,TOK|TXT)
-                                            & log$(Sig !arg)
                                             & 
                                           |   !arg:(?f,?v)
                                             & (!f,sig$!v)
@@ -7981,11 +8064,11 @@ try {
                                         & !A*!methods:?methods
                                         & !result
                                       |   "Each {feature,value} pair in the SR (signature of the result) must
-                                                     either be (smell,new smell)
-                                                     or occur in the same factor of SM (the signature of one of the methods).
+                                            either be (smell,new smell)
+                                            or occur in the same factor of SM (the signature of one of the methods).
                                            So we must find a method for which we can prove that there are
-                                               no features different from (sml,(TOK|TXT)) in SR
-                                               that are not represented in the signature of that method SM.
+                                            no features different from (sml,(TOK|TXT)) in SR
+                                            that are not represented in the signature of that method SM.
                                            The Sig function filters the sml feature, so we don't see sml in the following code.
                                            "
                                         &   !methods
@@ -8398,6 +8481,7 @@ try {
                     & selectCommonTracks$!incarnationpipes:?As
                     & !As:?+[?NIncarnationPipes
                     & !NIncarnationPipes+!Npipes:?Npipes
+                    & log$(NpipesIncremented !Npipes)
                     & !Npipes:~>!MAXPIPES
                     &     mop
                         $ ( ( 
@@ -8426,8 +8510,8 @@ try {
                           . (=+)
                           )
                       : ?pipesN
-                    & "The 1 is the initial stop list, which is formed as a product."
-                    & "pipesN is (<user provided output specs> . <unfolded tree>) + ..."
+                    & "The 1 is the initial stop list, which is formed as a product.
+                       pipesN is (<user provided output specs> . <unfolded tree>) + ..."
                     & !pipesN:? [?NNN
                     & (   (   !parms:? (reqtool.?reqtool) ?
                             & !reqtool:~
@@ -8648,10 +8732,165 @@ try {
                   & !msg:
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
-                  & lst$(FP,path$FP,NEW,BIN,WYD)
+                  & ( SeparateSmells
+                    =   FP Sml Flt Smlfp
+                      .   !arg:?FP
+                        & ( Sml
+                          =   
+                            .     !arg:(?.?arg)
+                                &   mop
+                                  $ ( ( 
+                                      =   
+                                        .   mop
+                                          $ ( ( 
+                                              =   o Wht TUL
+                                                .       !arg
+                                                      : (?,(?o.?.?arg))
+                                                    &   (     !o
+                                                            :   ?
+                                                                (sml,@?Wht^@?TUL)
+                                                                ?
+                                                          & (!Wht.!TUL)
+                                                        | 0
+                                                        )
+                                                      + Sml$!arg
+                                                  | 0
+                                              )
+                                            . !arg
+                                            . (=*)
+                                            . (=+)
+                                            )
+                                      )
+                                    . !arg
+                                    . (=+)
+                                    . (=+)
+                                    )
+                              | 0
+                          )
+                        & ( Flt
+                          =   I
+                            .     !arg:(?I.?arg)
+                                &     mop
+                                    $ ( ( 
+                                        =   FA0
+                                          .   1:?FA0
+                                            &   mop
+                                              $ ( ( 
+                                                  =   TUL z in sub
+                                                    .   !FA0:0
+                                                      |   (     !arg
+                                                              : (?TUL,(?z.?in.?sub))
+                                                            & (     !z
+                                                                  :   ?
+                                                                      ( sml
+                                                                      , !Wht^?tl
+                                                                      )
+                                                                      ?
+                                                                & (     !tl
+                                                                      : !Wnt
+                                                                    &   Flt$!sub
+                                                                      : ?sub
+                                                                    & (   !sub
+                                                                        : 0
+                                                                      | ( !TUL
+                                                                        , ( !z
+                                                                          . !in
+                                                                          . !sub
+                                                                          )
+                                                                        )
+                                                                      )
+                                                                  | 0
+                                                                  )
+                                                              |     Flt$!sub
+                                                                  : ?sub
+                                                                & (   !sub
+                                                                    : 0
+                                                                  | ( !TUL
+                                                                    , (!z.!in.!sub)
+                                                                    )
+                                                                  )
+                                                              )
+                                                          | !arg
+                                                          )
+                                                        : ?FA0
+                                                  )
+                                                . !arg
+                                                . (=*)
+                                                . (=*)
+                                                )
+                                        )
+                                      . !arg
+                                      . (=+)
+                                      . (=+)
+                                      )
+                                  : ?arg
+                                & (!arg:0|(!I.!arg))
+                              | !arg
+                          )
+                        &   mop
+                          $ ( ( 
+                              =   sm fp
+                                .   !arg:?fp
+                                  & Sml$!fp:?Smlfp
+                                  &     mop
+                                      $ ( ( 
+                                          =   Wht TUL
+                                            .       !arg
+                                                  : #*((?Wht.?TUL):?arg)
+                                                & !Wht^!TUL
+                                              | 0
+                                          )
+                                        . !Smlfp
+                                        . (=+)
+                                        . (=*)
+                                        )
+                                    : ?sm
+                                  &   mop
+                                    $ ( ( 
+                                        =   Wnt TLs
+                                          .   
+                                            & !arg:?Wht^?TLs
+                                            & (   !TLs:@
+                                                & !fp
+                                              |   mop
+                                                $ ( ( 
+                                                    =   
+                                                      .   !arg:?Wnt
+                                                        & Flt$!fp
+                                                    )
+                                                  . !TLs
+                                                  . (=+)
+                                                  . (=+)
+                                                  )
+                                              )
+                                        )
+                                      . !sm
+                                      . (=*)
+                                      . (=+)
+                                      )
+                              )
+                            . !FP
+                            . (=+)
+                            . (=+)
+                            )
+                    )
+                  & SeparateSmells$!FP:?SHORTFP
+                  & !SHORTFP:?FP
+                  &     mop
+                      $ ( ( 
+                          =   
+                            .   (!arg:#%*?arg|)
+                              & !arg
+                          )
+                        . !FP
+                        . (=+)
+                        . (=+)
+                        )
+                    : ?FP
                   & (   !FP
                       : ((?,?) ?|~(?+(?.?)+?))
                     |   prunePipes$(!FP.!parms.!i):(?FP.?Npipes)
+                      & log$(pruned Npipes !Npipes)
                       & !Npipes:~>!MAXPIPES
                       & (   !FP:~0
                           & log$"Calling prunePipes success"
@@ -8660,7 +8899,7 @@ try {
                             | 
                             )
                         |   0:?Npipes
-                          & log$"all pipes were pruned."
+                          & log$"all pipes were pruned. Npipes set to 0"
                           & ~
                         )
                     )
@@ -8670,7 +8909,7 @@ try {
                       : ( ~:(?,?) ?
                         | ~(?+(?.?)+?)
                         )
-                    & log$(triviallyFulfilled !FP)
+                    & log$(triviallyFulfilled FP[ !FP "]")
                     & ((!FP.).triviallyFulfilled.)
                   |   !FP:?+[>!MAXPIPES
                     & !FP:?+[?NNNN
@@ -8687,6 +8926,7 @@ try {
                            have the chance to refine the goal by looking which
                            feature values are represented in the computed
                            workflows."
+                        & log$GOOD!
                         & ((!FP.!arg).workflowsFound.)
                       |   "This is unusual. If the user chooses a specific
                            workflow, it will normally not have to be
@@ -8716,7 +8956,7 @@ try {
               & (!userInput.(0.).tooMany.)
             |   !Npipes:0
               & log$(NOTFULFILLABLE FP !FP)
-              & (!userInput.(0.).notFulfillable.noPathReason$!userInput)
+              & (!userInput.(0.).notFulfillable.str$(noPathReason$!userInput))
             |   log$(Npipes !Npipes ">" !MAXPIPES)
               & (!userInput.(0.).tooMany.)
             )
@@ -9554,7 +9794,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                     &   !f
                       : ? (short.?short) ?
                       : ? (table.?table) ?
-                    & log$(checkIOparms !table)
                     & readTable$!table
                     & str$(I !short):?p
                     & (checkParms$(!arg.!p.!!table)|)
@@ -9934,7 +10173,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
           & (   !returnCode:workflowsFound
               &   (     makeWorkflowsSequential$!pipes
                       : (?reorderedworkflowlist.?topologicalOrderedTools)
-                    & log$(topologicalOrderedToolsA !topologicalOrderedTools)
                     & allRight
                   |   0:?reorderedworkflowlist
                     & :?topologicalOrderedTools
@@ -9943,6 +10181,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 : ?returnCode
             | 
             )
+          & log$ShowAllPipesIfNotTooExpensiveA
           &   ShowAllPipesIfNotTooExpensive
             $ (!returnCode.!hiddenData.!userInput.!reorderedworkflowlist.!topologicalOrderedTools)
       )
@@ -20336,6 +20575,7 @@ function main2(evt) {
                   & updateOargFromParg$!orgarg:?updatedArg
                   & makeArgsForHiddenFields$(!updatedArg.!superset):?hiddenData
                   & !hiddenData
+                  & log$ShowAllPipesA
                   & ShowAllPipes$(!hiddenData.!reorderedworkflowlist.!topologicalOrderedTools)
                 | !returnCode:tooComplex&TooExpensive$
             )
@@ -20631,6 +20871,7 @@ function main2(evt) {
                     . ?userInput
                     . ?Pfeats
                     )
+                & log$ZoomInOrShowWorkflows
                 & log$(Submit !Submit)
                 & log$(zubmit localized$!helpmespecifymygoal)
                 & (   ( localized$!"show workflows":!Submit
@@ -22625,15 +22866,7 @@ function main2(evt) {
                                                       !linkedWorkflows
                                                   )
                                           )
-                                        .     lst
-                                            $ ( linkedWorkflows
-                                              , path$linkedWorkflows
-                                              , NEW
-                                              , WYD
-                                              , BIN
-                                              , RAW
-                                              )
-                                          & !linkedWorkflows
+                                        . !linkedWorkflows
                                         )
                                   )
                               )

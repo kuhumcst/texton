@@ -24,7 +24,9 @@ Creator        : Bart Jongejan
 InfoAbout      : Bart Jongejan
 Description    : Lemmatizes input text and adds PoS-options to each lemma. Output can be ambiguous.
 ExternalURI    : 
-XMLparms       : 
+RestAPIkey         : 
+RestAPIpassword    : 
+MultiInp       : 
 PostData       : 
 Inactive       : 
 */
@@ -38,10 +40,9 @@ $toollog = '../log/lempos.log'; /* Used by the logit() function. TODO make sure 
 $dodelete = true;
 $tobedeleted = array();
 
-
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
-    return;
+    //return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'w');
     if($ftemp)
@@ -53,7 +54,7 @@ function loginit()  /* Wipes the contents of the log file! TODO Change this beha
 
 function logit($str) /* TODO You can use this function to write strings to the log file. */
     {
-    return;
+    //return;
     global $toollog,$ftemp;
     $ftemp = fopen($toollog,'a');
     if($ftemp)
@@ -123,7 +124,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -155,7 +156,7 @@ try {
             logit("url[$url]");
 
             $handle = fopen($url, "r");
-            if($handle == false)
+            if($handle === false)
                 {
                 logit("Cannot open url[$url]");
                 return "";
@@ -164,7 +165,7 @@ try {
                 {
                 $tempfilename = tempFileName("lempos_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
+                if($temp_fh === false)
                     {
                     fclose($handle);
                     logit("handle closed. Cannot open $tempfilename");
@@ -192,6 +193,7 @@ try {
         global $lemposfile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -223,7 +225,7 @@ try {
         $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformatteip5 = false;	/* Format in input is TEIP5DKCLARIN_ANNOTATION if true */
+        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Ilangbe = false;	/* Language in input is Belarusian (hviderussisk) if true */
         $Ilangbg = false;	/* Language in input is Bulgarian (bulgarsk) if true */
         $Ilangcs = false;	/* Language in input is Czech (tjekkisk) if true */
@@ -254,6 +256,7 @@ try {
         $Iperiodc20 = false;	/* Historical period in input is late modern (moderne tid) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
+        $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
         $Oambigamb = false;	/* Ambiguity in output is ambiguous (tvetydig) if true */
         $Oappdrty = false;	/* Appearance in output is optimized for software (bedst for programmer) if true */
         $Ofacetlem = false;	/* Type of content in output is lemmas (lemmaer) if true */
@@ -320,7 +323,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -331,7 +334,7 @@ try {
         if( hasArgument("IfacetsegF") )
             {
             $IfacetsegF = requestFile("IfacetsegF");
-            if($IfacetsegF == '')
+            if($IfacetsegF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
                 return;
@@ -342,7 +345,7 @@ try {
         if( hasArgument("IfacettokF") )
             {
             $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF == '')
+            if($IfacettokF === '')
                 {
                 header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
                 return;
@@ -424,8 +427,9 @@ try {
         if( hasArgument("Ipres") )
             {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
-            $echos = $echos . "Ipresnml=$Ipresnml ";
-            $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
+            $Ipressof = existsArgumentWithValue("Ipres", "sof");
+            $echos = $echos . "Ipresnml=$Ipresnml " . "Ipressof=$Ipressof ";
+            $input = $input . ($Ipresnml ? " \$Ipresnml" : "")  . ($Ipressof ? " \$Ipressof" : "") ;
             }
         if( hasArgument("Oambig") )
             {
@@ -537,7 +541,7 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         $lemposfile = tempFileName("lempos-results");
-        if($mode == 'dry')
+        if($mode === 'dry')
             scripinit($inputF,$input,$output);
         logit('CODING');
         ob_start();
@@ -621,12 +625,12 @@ try {
                 //$traindata = "$res/nl/lemmatiser/training/elex.tab";
                 //The e-Lex data have many errors and highly unusual word-lemma pairs.
                 }
-            else if($Ilangen)
+/*            else if($Ilangen)
                 {
                 $lang = "en";
                 $flexrules = "$res/en/lemmatiser/notags/0/flexrules.bra";
                 $traindata = "$res/en/lemmatiser/training/dict_en_without_doubles_github_node-lemmatizer_additions";
-                }
+                }*/
             else if($Ilanges)
                 {
                 $lang = "es";
@@ -778,9 +782,11 @@ try {
             header("HTTP/1.0 404 Input not found (IF). ");
             return;
             }*/
+        logit("lang $lang");
         if($Oformatjson)
             {
-                if($mode == 'dry')
+                
+                if($mode === 'dry')
                 {
                     if($Iformatflat)
                         scrip("../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' 'onefile' '\$F' '$flexrules' '\$lemposfile' '$TorC'");
@@ -792,12 +798,19 @@ try {
                     logit('lemposfile='.$lemposfile);
                     /* 20181001 $lang is not used by LemmaVal.bra, so it was removed as argument. */
                     if($Iformatflat)
+                        {
+                            copy($F,"F");
                         $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
+                        }
                     else
+                    {
+                        copy($IfacetsegF,"IfacetsegF");
+                        copy($IfacettokF,"IfacettokF");
                         $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
+                    }
                     logit($command);
 
-                    if(($cmd = popen($command, "r")) == NULL)
+                    if(($cmd = popen($command, "r")) === NULL)
                     {
                         throw new SystemExit(); // instead of exit()
                     }
