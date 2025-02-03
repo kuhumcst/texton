@@ -530,7 +530,6 @@ try {
                     $command = "../bin/lapos -m $toolres/gml/lapos/c13 < $plainfile";
                     }
 
-		copy($plainfile,"plainfile");
                 logit($command);
 
                 if(($cmd = popen($command, "r")) == NULL)

@@ -583,7 +583,7 @@ try {
                     else
                         {
                         $plaintext = combine($IfacettokF,$IfacetsegF);
-                        copy($plaintext,"plaintext");
+                        //copy($plaintext,"plaintext");
                         $nerfileRAW = navnegenkenderCSTNER($plaintext,"\$nerfileRAW");
                         $CSTNERfile = NERannotation($IfacettokF,$nerfileRAW,$plaintext);
                         }

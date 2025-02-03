@@ -799,13 +799,10 @@ try {
                     /* 20181001 $lang is not used by LemmaVal.bra, so it was removed as argument. */
                     if($Iformatflat)
                         {
-                            copy($F,"F");
                         $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' 'onefile' '$F' '$flexrules' '$lemposfile' '$TorC'";
                         }
                     else
                     {
-                        copy($IfacetsegF,"IfacetsegF");
-                        copy($IfacettokF,"IfacettokF");
                         $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
                     }
                     logit($command);

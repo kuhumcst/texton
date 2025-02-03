@@ -432,9 +432,9 @@ try {
             logit("opennlpPOSTagger($uploadfileSeg,$uploadfileTok,$lang)");
             $filename = combine($uploadfileTok,$uploadfileSeg);
             $opennlpPOSTaggerfileRaw = tempFileName("opennlpPOSTagger-raw");
-            copy($filename,"filename");
+//            copy($filename,"filename");
             http($filename,$opennlpPOSTaggerfileRaw,$lang);
-            copy($opennlpPOSTaggerfileRaw,"opennlpPOSTaggerfileRaw");
+  //          copy($opennlpPOSTaggerfileRaw,"opennlpPOSTaggerfileRaw");
             $filename = postagannotation($uploadfileTok,$opennlpPOSTaggerfileRaw,$filename);
             logit('filename:'.$filename);
             }
