@@ -617,6 +617,7 @@ $> sudo mv stanford-corenlp-4.5.8 /opt/
 Make link to latest version
 
 ```bash
+$> sudo rm /opt/corenlp
 $> sudo ln -s /opt/stanford-corenlp-4.5.8 /opt/corenlp
 ```
 Copy CoreNLP.sh to its destination folder
