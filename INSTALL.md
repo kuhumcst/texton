@@ -637,9 +637,9 @@ $> sudo chmod +x /usr/local/bin/CoreNLP.sh
 Check
 
 ```bash
-$> /usr/local/bin/./CoreNLP.sh start
+$> sudp /usr/local/bin/./CoreNLP.sh start
 $> sudo ps -ef | grep NLP
-$> /usr/local/bin/./CoreNLP.sh stop
+$> sudo /usr/local/bin/./CoreNLP.sh stop
 $> sudo ps -ef | grep NLP
 ```
 Copy CoreNLP.service to its destination folder
