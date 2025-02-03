@@ -602,22 +602,22 @@ Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton
 
 The following instructions assume installation in a system with systemd.
 
-Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip.
+Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.8.zip.
 
 ```bash
 $> cd ~
-$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7.zip
+$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8.zip
 ```
 Unzip and move to destination folder
 
 ```bash
-$> unzip stanford-corenlp-4.5.7.zip
-$> sudo mv stanford-corenlp-4.5.7 /opt/
+$> unzip stanford-corenlp-4.5.8.zip
+$> sudo mv stanford-corenlp-4.5.8 /opt/
 ```
 Make link to latest version
 
 ```bash
-$> sudo ln -s /opt/stanford-corenlp-4.5.7 /opt/corenlp
+$> sudo ln -s /opt/stanford-corenlp-4.5.8 /opt/corenlp
 ```
 Copy CoreNLP.sh to its destination folder
 
@@ -668,16 +668,16 @@ Logging messages are per default sent to /dev/null. To see logging messages, edi
 ```bash
 $> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
 ```
-Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.7/.
+Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.8/.
 ```bash
-$> cd /opt/stanford-corenlp-4.5.7/
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-arabic.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-chinese.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-french.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-german.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-hungarian.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-italian.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.7-models-spanish.jar
+$> cd /opt/stanford-corenlp-4.5.8/
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-arabic.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-chinese.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-french.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-german.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-hungarian.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-italian.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-spanish.jar
 ```
 Text Tonsorium needs the `properties` files stored in each of these .jar files. They are in the path
 ```
@@ -685,9 +685,9 @@ edu/stanford/nlp/pipeline/StanfordCoreNLP-<language>.properties
 ```
 where <language> is `arabic', `chinese', `french', `german', `hungarian', `italian`, `spanish' . The .properties files are obtained as follows:
 ```bash
-$> unzip -p stanford-corenlp-4.5.7-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
+$> unzip -p stanford-corenlp-4.5.8-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
 ```
-This command is executed automatically when the properties are needed and not already have been unzipped. 
+This command is executed automatically when the properties are needed and not already have been unzipped. Make sure that user `www-data' owns the folder `/opt/texton/texton-linguistic-resources'.
 
 
 
