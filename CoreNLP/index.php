@@ -15,7 +15,7 @@ header('Content-type:text/plain; charset=UTF-8');
 /*
 ToolID         : CoreNLP
 PassWord       : 
-Version        : 4.5.7
+Version        : 4.5.8
 Title          : Stanford CoreNLP
 Path in URL    : CoreNLP	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : Stanford NLP Group
@@ -70,7 +70,7 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : CoreNLP\n");
-        fwrite($fscrip," * Version          : 4.5.7\n");
+        fwrite($fscrip," * Version          : 4.5.8\n");
         fwrite($fscrip," * Title            : Stanford CoreNLP\n");
         fwrite($fscrip," * ServiceURL       : http://localhost/CoreNLP\n");
         fwrite($fscrip," * Publisher        : Stanford NLP Group\n");
@@ -233,6 +233,7 @@ try {
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
         $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
+        $IsmlTXT = false;	/* Smell in input is Text production (Tekst) if true */
         $Ismlsml = false;	/* Smell in input is any smell (lugt) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
         $Ofacetetc = false;	/* Type of content in output is structured text (struktureret tekst) if true */
@@ -366,9 +367,10 @@ try {
             }
         if( hasArgument("Isml") )
             {
+            $IsmlTXT = existsArgumentWithValue("Isml", "TXT");
             $Ismlsml = existsArgumentWithValue("Isml", "sml");
-            $echos = $echos . "Ismlsml=$Ismlsml ";
-            $input = $input . ($Ismlsml ? " \$Ismlsml" : "") ;
+            $echos = $echos . "IsmlTXT=$IsmlTXT " . "Ismlsml=$Ismlsml ";
+            $input = $input . ($IsmlTXT ? " \$IsmlTXT" : "")  . ($Ismlsml ? " \$Ismlsml" : "") ;
             }
         if( hasArgument("Oambig") )
             {
@@ -514,7 +516,21 @@ try {
                 $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$IfacettokF \$IfacetsegF \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
             else
                 $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$F $formatI/ \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
-            $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
+            if($IfacettokF === "")
+                {
+                if ($IfacetsegF === "")
+                    {
+                    $rms2 = "";
+                    }
+                else
+                    {
+                    $rms2 = "&& rm $IfacetsegF ";
+                    }
+                }
+            else
+                {
+                $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
+                }
             $rms1 =  "&& rm tmp1 && rm tmp2 ";
             $rms3 = "&& rm \$CoreNLPfile ";
             $command .= " && curl -v -F job=$job -F name=\$CoreNLPfile -F data=@\$CoreNLPfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
