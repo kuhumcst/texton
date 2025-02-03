@@ -7,7 +7,7 @@ The instructions are valid under the following assumptions:
   * The software is installed in the Windows Subsystem for Linux
   * The OS is Ubuntu 24.04 LTS or higher
   * The URI to the resulting web application is http://localhost/texton 
-  * Most of the Text Tonsorium (software and linguistic resources) is located under `/opt/texton/`.  
+  * Most of the Text Tonsorium (software and linguistic resources) is located under '/opt/texton/'.  
    Only programs that are installed using apt-get reside elsewhere.
 
 Installation requires 
@@ -17,7 +17,7 @@ Installation requires
    Checks uploaded files
   * pdffonts
   * git-lfs  
-   Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. `git-lfs` is needed to seamlessly access these.
+   Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. 'git-lfs' is needed to seamlessly access these.
   * apache2
   * PHP
   * Java
@@ -26,7 +26,7 @@ Installation requires
   * Bracmat (as JNI - Java Native Interface)
   * texton - Java part
    This is the central hub in the Text Tonsorium. It communicates with the user via a
-   browser and communicates with the tools using HTTP `GET` or `POST` requests.
+   browser and communicates with the tools using HTTP 'GET' or 'POST' requests.
   * texton - Bracmat part (this repo)
   * linguistic resources
   * proxy settings
@@ -36,8 +36,8 @@ Installation requires
   * bracmat (as command line tool) 
    Interpreters are installed in two locations:  
    as a JNI (Java Native Interface) inside Tomcat  
-   and as a command line tool in `/opt/texton/bin/`
-  * many tools wrapped in web services in `/opt/texton/`
+   and as a command line tool in '/opt/texton/bin/'
+  * many tools wrapped in web services in '/opt/texton/'
   * tools that can be compiled from source
 
 ## update/upgrade
@@ -274,7 +274,7 @@ Another index.html should be in the home directory
 
 The repo https://github.com/kuhumcst/texton-Java contains the Java code of the central hub.
 Make sure that the local git repositories texton-Java and Bracmat (see above) share the same parent folder. You can clone whereever you want, e.g. in your home folder.
-It is important that the script can `see' ../Bracmat/java-JNI/java. See the build.xml file.
+It is important that the script can 'see' ../Bracmat/java-JNI/java. See the build.xml file.
 ```bash
 $> git clone https://github.com/kuhumcst/texton-Java.git
 $> cd texton-Java
@@ -436,12 +436,12 @@ If you want to run Text Tonsorium on anything else but a personal computer, you 
 Such a password/salt pair can be created in the following way:
 
 1. On your development machine, go to http://localhost/texton/admin
-2. Enter the password that you want to use on your production system in the password field below the `Show Bracmat version' heading.
-3. Press the `Bracmat' button.
+2. Enter the password that you want to use on your production system in the password field below the 'Show Bracmat version' heading.
+3. Press the 'Bracmat' button.
 4. Open a linux terminal, and find the location of the file 'textonJava.log'. This location defaults to '/opt/texton/BASE/textonJava.log'. See setting in conf/log4j2.xml in the texton-Java repo.
 5. Open the log file for the java part of Text Tonsorium
   $> sudo less textonJava.log
-6. Go to the end of this file and find the log statement that contains the string `XMLprop`. Copy everything between `[` and `]` to the file 'properties', replacing the two same named elements.
+6. Go to the end of this file and find the log statement that contains the string 'XMLprop'. Copy everything between '[' and ']' to the file 'properties', replacing the two same named elements.
 7. Save 'properties'
 
 Notice that you also need to replace the values 'www-server' (default http://localhost) and 'baseUrlTools' (default http://localhost:8080) into something that is meaningful for your server.
@@ -490,7 +490,7 @@ $> cd /opt/texton/daner
 $> sudo git clone https://github.com/ITUnlp/daner.git
 ```
 
-Afterwards there will be a subdirectory `daner/daner`.
+Afterwards there will be a subdirectory 'daner/daner'.
 ### dependency2tree
 
 ```bash
@@ -519,7 +519,7 @@ $> cd /opt/texton/html2text
 $> sudo git clone https://github.com/soundasleep/html2text
 ```
 
-Afterwards there will be a subdirectory `html2text/html2text`.
+Afterwards there will be a subdirectory 'html2text/html2text'.
 
 ### jsoncat
 
@@ -535,7 +535,7 @@ $> sudo cp bin/jsoncat /opt/texton/bin
 
 ### Lapos
 
-An executable `lapos' is in the texton-bin repository. If that executable does not work, try to build it from source. See below.
+An executable 'lapos' is in the texton-bin repository. If that executable does not work, try to build it from source. See below.
 
 ### LibreOffice (soffice)
 
@@ -625,7 +625,7 @@ Copy CoreNLP.sh to its destination folder
 $> cd /opt/texton/CoreNLP/
 $> sudo cp CoreNLP.sh /usr/local/bin/
 ```
-You are advised to increase the `timeout' value from 5000 to e.g. 500000 in the lines
+You are advised to increase the 'timeout' value from 5000 to e.g. 500000 in the lines
 ```bash
 $> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
 ```
@@ -664,7 +664,7 @@ If CoreNLP is installed locally, you can visit its web interface by visiting htt
 
 Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-java-application-as-a-service-on-centos-599609d0c641)
 
-Logging messages are per default sent to /dev/null. To see logging messages, edit /usr/local/bin/./CoreNLP.sh and change the lines starting with `nohup java':
+Logging messages are per default sent to /dev/null. To see logging messages, edit /usr/local/bin/./CoreNLP.sh and change the lines starting with 'nohup java':
 ```bash
 $> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
 ```
@@ -679,15 +679,15 @@ $> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-hun
 $> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-italian.jar
 $> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-spanish.jar
 ```
-Text Tonsorium needs the `properties` files stored in each of these .jar files. They are in the path
+Text Tonsorium needs the 'properties' files stored in each of these .jar files. They are in the path
 ```
 edu/stanford/nlp/pipeline/StanfordCoreNLP-<language>.properties
 ```
-where <language> is `arabic', `chinese', `french', `german', `hungarian', `italian`, `spanish' . The .properties files are obtained as follows:
+where <language> is 'arabic', 'chinese', 'french', 'german', 'hungarian', 'italian', 'spanish' . The .properties files are obtained as follows:
 ```bash
 $> unzip -p stanford-corenlp-4.5.8-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
 ```
-This command is executed automatically when the properties are needed and not already have been unzipped. Make sure that user `www-data' owns the folder `/opt/texton/texton-linguistic-resources'.
+This command is executed automatically when the properties are needed and not already have been unzipped. Make sure that user 'www-data' owns the folder '/opt/texton/texton-linguistic-resources'.
 
 
 
@@ -715,7 +715,7 @@ $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
 
 Text Tonsorium needs ImageMagick to extract a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
        
-    convert-im6.q16: not authorized `*******' @ error/constitute.c/ReadImage/412.
+    convert-im6.q16: not authorized '*******' @ error/constitute.c/ReadImage/412.
 
 In that case, edit /etc/ImageMagick-6/policy.xml and add the line
 
@@ -725,7 +725,7 @@ and comment out the lines telling that rights is "none" for these file types.
 
 ### udpipe
 
-Binary `udpipe` is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
+Binary 'udpipe' is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
 
 If this executable does not work, you need to build this program. See below.
 
@@ -741,7 +741,7 @@ $> sudo mv cd udpipe-ud-2.5-191206 <texton folder>/udpipe
 
 ## Tools that can or must be compiled from source
 
-In this readme, we assume that the `bin` directory is `/opt/texton/bin`.
+In this readme, we assume that the 'bin' directory is '/opt/texton/bin'.
 
 ### cstlemma
 
@@ -759,7 +759,7 @@ $> sudo cp cstlemma/cstlemma /opt/texton/bin/
 ```bash
 $> git clone https://github.com/pantuza/jsoncat.git
 ```
-Follow the instructions in `README.md`. Copy jsoncat to `/opt/texton/bin/`.  
+Follow the instructions in 'README.md'. Copy jsoncat to '/opt/texton/bin/'.  
 
 ### Lapos
 
@@ -813,7 +813,7 @@ $> sudo cp rtfreader/rtfreader /opt/texton/bin/
 For building from source, also see https://github.com/kuhumcst/texton-bin#taggerXML
 
 Copy https://github.com/kuhumcst/taggerXML/blob/master/doc/maketaggerXML.bash to your disk and run it.
-Copy `taggerXML/taggerXML` to `/opt/texton/bin`.
+Copy 'taggerXML/taggerXML' to '/opt/texton/bin'.
 
 ```bash
 $> wget https://raw.githubusercontent.com/kuhumcst/taggerXML/master/doc/maketaggerXML.bash
