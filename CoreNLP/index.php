@@ -588,8 +588,14 @@ try {
         {
         if(!file_exists("../texton-linguistic-resources/$lang"))
             {
-            logit("mkdir");
+            logit("mkdir ../texton-linguistic-resources/$lang");
             $ret = mkdir("../texton-linguistic-resources/$lang");
+            logit("mkdir:".$ret);
+            }
+        if(!file_exists("../texton-linguistic-resources/$lang/CoreNLP"))
+            {
+            logit("mkdir ../texton-linguistic-resources/$lang/CoreNLP");
+            $ret = mkdir("../texton-linguistic-resources/$lang/CoreNLP");
             logit("mkdir:".$ret);
             }
         $res = "../texton-linguistic-resources/$lang/CoreNLP";
