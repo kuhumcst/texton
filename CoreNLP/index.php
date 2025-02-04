@@ -516,21 +516,6 @@ try {
                 $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$IfacettokF \$IfacetsegF \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
             else
                 $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$F $formatI/ \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
-            if($IfacettokF === "")
-                {
-                if ($IfacetsegF === "")
-                    {
-                    $rms2 = "";
-                    }
-                else
-                    {
-                    $rms2 = "&& rm $IfacetsegF ";
-                    }
-                }
-            else
-                {
-                $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
-                }
             $rms1 =  "&& rm tmp1 && rm tmp2 ";
             $rms3 = "&& rm \$CoreNLPfile ";
             $command .= " && curl -v -F job=$job -F name=\$CoreNLPfile -F data=@\$CoreNLPfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
@@ -567,8 +552,25 @@ try {
             if($F==='')
                 $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $IfacettokF $IfacetsegF $CoreNLPfile $tmp1 $tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsent|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
             else
+            {
+                copy($F,"F");
                 $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $F $formatI/ $CoreNLPfile $tmp1 $tmp2 "            . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsent|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
-            $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
+            }
+            if($IfacettokF === "")
+                {
+                if ($IfacetsegF === "")
+                    {
+                    $rms2 = "";
+                    }
+                else
+                    {
+                    $rms2 = "&& rm $IfacetsegF ";
+                    }
+                }
+            else
+                {
+                $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
+                }
             $rms1 =  "&& rm $tmp1 && rm $tmp2 ";
             $rms3 = "&& rm $CoreNLPfile ";
             $command .= " && curl -v -F job=$job -F name=$CoreNLPfile -F data=@$CoreNLPfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
@@ -614,9 +616,9 @@ try {
             {
             logit("$ret exists");
             if($lang==='en')
-                system("unzip -p /opt/stanford-corenlp-4.5.7/stanford-corenlp-4.5.7-models.jar $prop > $res/$prop");
+                system("unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models.jar $prop > $res/$prop");
             else
-                system("unzip -p /opt/stanford-corenlp-4.5.7/stanford-corenlp-4.5.7-models-$language.jar $prop > $res/$prop");
+                system("unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models-$language.jar $prop > $res/$prop");
             return $properties;
             }
         logit("FAIL");
