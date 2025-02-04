@@ -622,9 +622,11 @@ try {
             {
             logit("$ret exists");
             if($lang==='en')
-                system("unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models.jar $prop > $res/$prop");
+                $command = "unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models.jar $prop > $res/$prop";
             else
-                system("unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models-$language.jar $prop > $res/$prop");
+                $command = "unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models-$language.jar $prop > $res/$prop";
+            logit($command);
+            system($command);
             return $properties;
             }
         logit("FAIL");
