@@ -15,19 +15,21 @@ putenv("LANG=da_DK.utf8");
  */
 /*
 ToolID         : dep2tree
-PassWord       :
+PassWord       : 
 Version        : 1.0
 Title          : dependency2tree
-Path in URL    : /dep2tree	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
+Path in URL    : dep2tree	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : GitHub
 ContentProvider: https://github.com/boberle/dependency2tree
 Creator        : Avatar Bruno Oberle
 InfoAbout      : https://github.com/boberle/dependency2tree
 Description    : Convert CoNLL output of a dependency parser into a latex or graphviz tree.
-ExternalURI    :
-XMLparms       :
-PostData       :
-Inactive       :
+ExternalURI    : 
+RestAPIkey         : 
+RestAPIpassword    : 
+MultiInp       : 
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -38,7 +40,6 @@ $toollog = '../log/dep2tree.log'; /* Used by the logit() function. TODO make sur
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -74,7 +75,7 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         fwrite($fscrip," * ToolID           : dep2tree\n");
         fwrite($fscrip," * Version          : 1.0\n");
         fwrite($fscrip," * Title            : dependency2tree\n");
-        fwrite($fscrip," * ServiceURL       : http://localhost//dep2tree\n");
+        fwrite($fscrip," * ServiceURL       : http://localhost/dep2tree\n");
         fwrite($fscrip," * Publisher        : GitHub\n");
         fwrite($fscrip," * ContentProvider  : https://github.com/boberle/dependency2tree\n");
         fwrite($fscrip," * Creator          : Avatar Bruno Oberle\n");
@@ -124,7 +125,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -173,7 +174,7 @@ try {
 
     function requestFile($requestParm) // e.g. "IfacettokF"
         {
-        //logit("requestFile({$requestParm})");
+        logit("requestFile({$requestParm})");
 
         if(isset($_REQUEST[$requestParm]))
             {
@@ -181,13 +182,13 @@ try {
 
             $item = $_REQUEST[$requestParm];
             $url = $urlbase . urlencode($item);
-            //logit("requestParm:$requestParm");
-            //logit("urlbase:$urlbase");
-            //logit("item:$item");
-            //logit("url[$url]");
+            logit("requestParm:$requestParm");
+            logit("urlbase:$urlbase");
+            logit("item:$item");
+            logit("url[$url]");
 
             $handle = fopen($url, "r");
-            if($handle == false)
+            if($handle === false)
                 {
                 logit("Cannot open url[$url]");
                 return "";
@@ -196,7 +197,7 @@ try {
                 {
                 $tempfilename = tempFileName("dep2tree_{$requestParm}_");
                 $temp_fh = fopen($tempfilename, 'w');
-                if($temp_fh == false)
+                if($temp_fh === false)
                     {
                     fclose($handle);
                     logit("handle closed. Cannot open $tempfilename");
@@ -223,7 +224,7 @@ try {
         {
         logit("trans1000 nocomment [$nocomment]");
         $command = "export LANG=en_US.UTF-8 && python3 dependency2tree.py -o $odir/$subdir/D.svg -c $nocomment --ignore-double-indices";
-        if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+        if(($cmd = popen($command, "r")) === NULL){throw new SystemExit();} // instead of exit()
         while($read = fgets($cmd)){}
         pclose($cmd);
         }
@@ -240,6 +241,7 @@ try {
         global $dep2treefile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -264,6 +266,7 @@ try {
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
         $Iappdrty = false;	/* Appearance in input is optimized for software (bedst for programmer) if true */
         $Iappnrm = false;	/* Appearance in input is normalised (normaliseret) if true */
+        $Iappocr = false;	/* Appearance in input is OCR if true */
         $Iappunn = false;	/* Appearance in input is unnormalised (ikke-normaliseret) if true */
         $Ifacet_lem_mrf_ner_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (lemmaer) and morphological features (morfologiske træk) and name entities (navne) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and syntax (dependency structure) (syntaks (dependensstruktur)) and tokens (tokens) if true */
         $Ifacet_lem_mrf_pos_seg_stx_tok = false;	/* Type of content in input is lemmas (lemmaer) and morphological features (morfologiske træk) and PoS-tags (PoS-tags) and segments (sætningssegmenter) and syntax (dependency structure) (syntaks (dependensstruktur)) and tokens (tokens) if true */
@@ -303,7 +306,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -319,9 +322,10 @@ try {
             {
             $Iappdrty = existsArgumentWithValue("Iapp", "drty");
             $Iappnrm = existsArgumentWithValue("Iapp", "nrm");
+            $Iappocr = existsArgumentWithValue("Iapp", "ocr");
             $Iappunn = existsArgumentWithValue("Iapp", "unn");
-            $echos = $echos . "Iappdrty=$Iappdrty " . "Iappnrm=$Iappnrm " . "Iappunn=$Iappunn ";
-            $input = $input . ($Iappdrty ? " \$Iappdrty" : "")  . ($Iappnrm ? " \$Iappnrm" : "")  . ($Iappunn ? " \$Iappunn" : "") ;
+            $echos = $echos . "Iappdrty=$Iappdrty " . "Iappnrm=$Iappnrm " . "Iappocr=$Iappocr " . "Iappunn=$Iappunn ";
+            $input = $input . ($Iappdrty ? " \$Iappdrty" : "")  . ($Iappnrm ? " \$Iappnrm" : "")  . ($Iappocr ? " \$Iappocr" : "")  . ($Iappunn ? " \$Iappunn" : "") ;
             }
         if( hasArgument("Ifacet") )
             {
@@ -381,7 +385,7 @@ try {
         $command = "echo $echos >> $dep2treefile";
         logit($command);
 
-        if(($cmd = popen($command, "r")) == NULL)
+        if(($cmd = popen($command, "r")) === NULL)
             {
             throw new SystemExit(); // instead of exit()
             }
@@ -395,7 +399,7 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         $dep2treefile = tempFileName("dep2tree-results");
-        if($mode == 'dry')
+        if($mode === 'dry')
             {
             scripinit($inputF,$input,$output);
             scrip("PHP: create \"\$nocomment\" file containing all input lines not starting with \"#\"");
@@ -431,9 +435,9 @@ try {
                 {
                 fwrite($fpNocomment, $line);
                 fwrite($fpALLnocomment,$line);
-                if($line == "\n")
+                if($line === "\n")
                     {
-                    if($newlineseen == 0)
+                    if($newlineseen === 0)
                         {
                         $remainder = $remainder + 1;
                         $newlineseen = 1;
@@ -441,10 +445,10 @@ try {
                     }
                 else
                     {
-	                $newlineseen = 0;
+                    $newlineseen = 0;
                     }
 
-                if($remainder == $modulus)
+                if($remainder === $modulus)
                     {
                     $remainder = 0;
                     flock($fpNocomment, LOCK_UN);
@@ -467,7 +471,7 @@ try {
 
             $command = "../bin/bracmat 'get\$\"svghtml.bra\"' '$F' '$ALLnocomment' '$dep2treefile' '$modulus' '$odir' '$subdir' '$remainder'";
             logit("command $command");
-            if(($cmd = popen($command, "r")) == NULL){throw new SystemExit();} // instead of exit()
+            if(($cmd = popen($command, "r")) === NULL){throw new SystemExit();} // instead of exit()
             while($read = fgets($cmd)){}
             pclose($cmd);
             }
@@ -507,4 +511,3 @@ catch (SystemExit $e)
     echo $ERROR;
     }
 ?>
-
