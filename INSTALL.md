@@ -638,7 +638,7 @@ $> sudo chmod +x /usr/local/bin/CoreNLP.sh
 Check
 
 ```bash
-$> sudp /usr/local/bin/./CoreNLP.sh start
+$> sudo /usr/local/bin/./CoreNLP.sh start
 $> sudo ps -ef | grep NLP
 $> sudo /usr/local/bin/./CoreNLP.sh stop
 $> sudo ps -ef | grep NLP
