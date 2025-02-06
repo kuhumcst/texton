@@ -955,9 +955,9 @@ X=
             & !K
         )
       & ( getProperties
-        =     file javaProperties extra
+        =     file javaProperties extra nextline
             , cor lem mrf ner pos seg sent snt stc stx tok
-            , transl lang filter ftr
+            , transl lang filter ftr lines pasted line
           .     !arg
               : ( ?file
                 . ?extra
@@ -1153,38 +1153,97 @@ X=
                 . ?stx
                 . ?tok
                 )
-            & put$(!Tokenized/SegmentedPlainText,!tmp1,NEW)
-            &     getProperties
-                $ ( !properties
-                  . (outputFormat..json)+(timeout..500000)
-                  . !cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok
-                  . !lang
+            & ( doChunk
+              =   chunk
+                .   !arg:?chunk
+                  &   put
+                    $ (   str
+                        $ ( map
+                          $ ( ( 
+                              = .!arg:(.?arg)&!arg \n
+                              )
+                            . !chunk
+                            )
+                          )
+                      , !tmp1
+                      , NEW
+                      )
+                  & (       str
+                          $ ( "wget --post-file "
+                              !tmp1
+                              " 'http://localhost:9000/?properties="
+                              !properties
+                              "' -O "
+                              !tmp2
+                              " --"
+                            )
+                        : ?command
+                      & sys$!command:0
+                      & get$(!tmp2,JSN)
+                    |     put
+                        $ ( str$("cannot execute command [" !command "]\n")
+                          , "../log/CoreNLP.log"
+                          , APP
+                          , BIN
+                          )
+                      & ERROR
+                    )
+              )
+            & ( callInChunks
+              =   JSON properties Tokenized/SegmentedPlainText linesz chunk
+                .   !arg:(?Tokenized/SegmentedPlainText.?properties)
+                  &   vap$((=..!arg).!Tokenized/SegmentedPlainText.\n)
+                    : ?linesz
+                  & :?JSON
+                  &   whl
+                    ' ( !linesz:?chunk (.) ?linesz
+                      & doChunk$!chunk !JSON:?JSON
+                      )
+                  & doChunk$!linesz !JSON:?JSON
+                  & :?L
+                  &   whl
+                    ' (!JSON:%?json ?JSON&!json !L:?L)
+                  & -1:?ind
+                  & ( ( sentences
+                      .   
+                        ,   map
+                          $ ( ( 
+                              =   
+                                .   !arg:((sentences.,?arg),)
+                                  &   map
+                                    $ ( ( 
+                                        =   A Z
+                                          .   !arg:(?A+(index.?)+?Z,)
+                                            & ( !A+(index.1+!ind:?ind)+!Z
+                                              , 
+                                              )
+                                        )
+                                      . !arg
+                                      )
+                              )
+                            . !L
+                            )
+                      )
+                    , 
+                    )
+              )
+            &     percentencode
+                $ ( getProperties
+                  $ ( !properties
+                    . (outputFormat..json)+(timeout..500000)
+                    . !cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok
+                    . !lang
+                    )
                   )
               : ?properties
-            & (       str
-                    $ ( "wget --post-file "
-                        !tmp1
-                        " 'http://localhost:9000/?properties="
-                        percentencode$!properties
-                        "' -O "
-                        !tmp2
-                        " --"
-                      )
-                  : ?command
-                & sys$!command:0
-              |   put
-                $ (str$("cannot execute command [" !command "]\n"),"../log/CoreNLP.log",APP,BIN)
-              )
-            & ( !formatO:json&get$(!tmp2,STR)
-              |   get$(!tmp2,JSN):?json
-                &   str
-                  $ ( toML
-                    $ ( (its.turnJSONintoTEIP5)
-                      $ ( !json
-                        . !cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok
-                        )
-                      )
+            & callInChunks$(!Tokenized/SegmentedPlainText.!properties):?json
+            & ( !formatO:json&jsn$!json
+              |   str
+                $ ( toML
+                  $ ( (its.turnJSONintoTEIP5)
+                    $ (!json.!cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok)
                     )
+                  )
               )
         )
       &   !arg
