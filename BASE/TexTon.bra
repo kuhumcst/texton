@@ -2849,7 +2849,7 @@ TexTon=
                 ".datadetails tr:nth-child(odd) {background-color: #C8E9E9;}"
                 \r\n
                 "a, dd, dt, label, h1, h2, h3, span, p, td, input, legend, textarea, li, select, fieldset, form {font-family:"
-                (   !TyPeFaCe:sans-serif
+                (   !TPFC:sans-serif
                   & "Calibri,WorkSans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,sans-serif,Comic Sans MS"
                 | "Comic Sans MS,Calibri,WorkSans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,sans-serif"
                 )
@@ -2977,7 +2977,7 @@ TexTon=
                 "a:link, a:visited {color: #000;}"
                 \r\n
                 "a, dd, dt, label, h1, h2, h3, span, p, td, input, legend, textarea, li {font-family:"
-                (   !TyPeFaCe:sans-serif
+                (   !TPFC:sans-serif
                   & "Calibri,WorkSans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,sans-serif,Comic Sans MS"
                 | "Comic Sans MS,Calibri,WorkSans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,sans-serif"
                 )
@@ -3476,8 +3476,8 @@ TexTon=
                   .   str
                     $ ( "changelog?UIlanguage="
                         !LaNg
-                        "&TyPeFaCe="
-                        queryEncode$(!TyPeFaCe|"Comic Sans MS")
+                        "&TPFC="
+                        queryEncode$(!TPFC|"Comic Sans MS")
                         (!offset:|"#" !offset)
                       )
                   )
@@ -3504,8 +3504,8 @@ TexTon=
                         !LaNg
                         "&usedonly="
                         !usedonly
-                        "&TyPeFaCe="
-                        queryEncode$(!TyPeFaCe|"Comic Sans MS")
+                        "&TPFC="
+                        queryEncode$(!TPFC|"Comic Sans MS")
                       )
                   )
                   (!title:|(title.!title))
@@ -3534,8 +3534,8 @@ TexTon=
                         !LaNg
                         "&usedonly="
                         !usedonly
-                        "&TyPeFaCe="
-                        queryEncode$(!TyPeFaCe|"Comic Sans MS")
+                        "&TPFC="
+                        queryEncode$(!TPFC|"Comic Sans MS")
                         (!offset:|"#" !offset)
                       )
                   )
@@ -9613,15 +9613,15 @@ the Items list as input. Step descriptions in the JobStack can look like this:
       )
       ( setTypefaceNotPermanently
       =   A Z
-        .   ( !arg:? (TyPeFaCe.?arg) ?
+        .   ( !arg:? (TPFC.?arg) ?
             | "reset to default"&readTable$Typeface:%?arg ?
             )
-          & (   !hiddenData:?A (TyPeFaCe.?) ?Z
+          & (   !hiddenData:?A (TPFC.?) ?Z
               & !A !Z:?hiddenData
             | 
             )
-          & (TyPeFaCe.!arg) !hiddenData:?hiddenData
-          & !arg:?TyPeFaCe
+          & (TPFC.!arg) !hiddenData:?hiddenData
+          & !arg:?TPFC
       )
       ( getSingleItemOrNothing
       =   item
@@ -10055,10 +10055,12 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                 , 
               )
           |   !arg:previous ?arg
+            & log$(previous !arg)
             & (   !arg:?a ((surround.?):?m) ?z
                 & !a !z:?arg
               | :?m
               )
+            & log$(m !m)
             &   makeTextFormField
               $ (   localized
                   $ ( "Enter the name of a recently created output file:"
@@ -13159,7 +13161,7 @@ function main2(evt) {
       =     Tool item parms Items val oldoutput ERR Submit JobStack JobNr
           , presels errors batch jobIDoffset subjobs nth BodyContainer PIPE
           , makejobstack ApplyThePipelineToTheInput ShowOnlyTheCurrentPipe
-          , AddMetadata "The user has selected a workflow." errorInMetadata TyPeFaCe
+          , AddMetadata "The user has selected a workflow." errorInMetadata TPFC
           , MetadataInParms rememberMetadata SVG 1st 2nd metadataformat hiddenData
         .   ( ShowOnlyTheCurrentPipe
             =   formFields struct nth bm visfields oldoutput 1st 2nd metadataformat
@@ -13846,6 +13848,168 @@ function main2(evt) {
                       )
                       ?
             )
+          & ( extractUserProvidedMetadataFromTEI
+            =     ex templ xml 1st 2nd templName
+                , attMatch insert recur value
+                , A grouped k keyvalues pre tree
+                , userProvidedMetadata val val1 val2
+              .   !arg:(%@?1st ?2nd.?ex.?templName)
+                & ( attMatch
+                  =   A
+                    .   !arg
+                      : ( ?A
+                        . ~( ?
+                             `[%( !sjt:(?arg.?)
+                                & ~( !A
+                                   : ( ? !sjt ?
+                                     | ~(? (!arg.?) ?)
+                                     )
+                                   )
+                                )
+                             ?
+                           )
+                        )
+                  )
+                & ( value
+                  =   a c v
+                    .   !arg:(?a,?c)
+                      &   (     !a
+                              : ? (ref|target.?v) ?
+                            & str$(!c "@" !v)
+                          |     !a
+                              : ? (n|quantity.?v) ?
+                            & str$(!c "#" !v)
+                          | !c
+                          )
+                        : ?c
+                      & (   !a:? ("xml:lang".?v) ?
+                          & ( !v:!1st&(!c.)
+                            | (.!c)
+                            )
+                        | !c
+                        )
+                  )
+                & ( recur
+                  =   xml templ htap
+                    .   !arg:(?xml.?templ.?htap)
+                      &   map
+                        $ ( ( 
+                            =   Elem Att Cont
+                              .     !arg:(?Elem.?Att,?Cont)
+                                  & (   !Cont:@
+                                      & trim$!Cont:~:?Cont
+                                    | 
+                                    )
+                                  & (     map
+                                        $ ( ( 
+                                            =   atts Place sub
+                                              .     !arg:(?Place.?sub)
+                                                  &   !Place
+                                                    : ( !Elem
+                                                      |   (!Elem.?atts)
+                                                        & attMatch$(!Att.!atts)
+                                                      )
+                                                  & (   !Cont:@
+                                                      & (!sub.value$(!Att,!Cont))
+                                                    | recur$(!Cont.!sub.!htap !Place)
+                                                    )
+                                                | 
+                                            )
+                                          . !templ
+                                          )
+                                      : ~
+                                    | 
+                                    )
+                                | 
+                            )
+                          . !xml
+                          )
+                  )
+                & readTable$!templName:?templ
+                & nestML$(get$(path$!ex,X ML)):?xml
+                &   !xml
+                  : ? (TEI.?,? (teiHeader.?,?xml) ?) ?
+                & !templ:? (?,?templ) ?
+                & :?tree
+                & ( insert
+                  =   A L S T Z car cdr
+                    .     !arg:(?T.?L)
+                        & (   !L:%?car ?cdr
+                            & (!car:(,?car)|)
+                            & (   !T:?A (!car.?S) ?Z
+                                & !A (!car.insert$(!S.!cdr)) !Z
+                              |   !T
+                                    mop
+                                  $ ( 
+                                    . !car !cdr
+                                    . (=a b)
+                                    . (=.)
+                                    )
+                              )
+                          | 
+                          )
+                      |   mop
+                        $ ( 
+                          . !car !cdr
+                          . (=a b)
+                          . (=.)
+                          )
+                  )
+                &   map
+                  $ ( ( 
+                      =     ID TextInUI Required Control Place
+                          , Notes HelpText Pattern URL
+                        .     !arg
+                            : ( ?ID
+                              . ?TextInUI
+                              . ?Required
+                              . ?Control
+                              . TEI teiHeader ?Place
+                              . ?Notes
+                              . ?HelpText
+                              . ?Pattern
+                              . ?URL
+                              )
+                          & ( !Required:a
+                            | insert$(!tree.!Place !ID):?tree
+                            )
+                          & 
+                      )
+                    . !templ
+                    )
+                & recur$(!xml.!tree.):?keyvalues
+                & :?grouped
+                &   whl
+                  ' ( !keyvalues:(?k.?val) ?keyvalues
+                    &     ( !val:@&(!k.!val)
+                          |   !val:(?val1.)
+                            & (   !keyvalues:(!k..?val2) ?keyvalues
+                                & (!k.str$(!val1 \n !val2))
+                              | (!k.str$(!val1 \n))
+                              )
+                          |   !val:(.?val2)
+                            & (   !keyvalues:(!k.?val1.) ?keyvalues
+                                & (!k.str$(!val1 \n !val2))
+                              | (!k.str$(\n !val2))
+                              )
+                          )
+                          !grouped
+                      : ?grouped
+                    )
+                &   whl
+                  ' ( !grouped:(?k.?val) ?grouped
+                    & :?pre
+                    &   whl
+                      ' ( !grouped:?A (!k.?val2) ?grouped
+                        & !pre !A:?pre
+                        &   !val2 \n (!A:|\n\n) !val
+                          : ?val
+                        )
+                    & !pre !grouped:?grouped
+                    & (!k.str$!val) !keyvalues:?keyvalues
+                    )
+                & !keyvalues
+            )
           & ( rememberMetadata
             =   oldoutput 1st 2nd userProvidedMetadata metadataType oldjobnr file real
               .   !arg:(?metadataType.?arg)
@@ -13879,6 +14043,18 @@ function main2(evt) {
                                   ?
                               )
                               ?
+                      |   readTable$Uploads
+                        &   !Uploads
+                          :   ?
+                              (?.!oldoutput.?.?.? (format.teip5) ?)
+                              ?
+                        & log$(!oldoutput "exists and has TEIP5 format")
+                        &   !arg
+                          : ? (1st.?1st) ?
+                          : ? (2nd.?2nd) ?
+                        &     extractUserProvidedMetadataFromTEI
+                            $ (!1st !2nd.str$(data/ !oldoutput).!metadataType)
+                          : ?userProvidedMetadata
                       |   :?userProvidedMetadata
                         &   (!UIlanguage|readTable$UIlanguage)
                           : %@?1st ?2nd
@@ -13954,6 +14130,7 @@ function main2(evt) {
                               . !oldoutput,!metadataformat,!1st,!2nd
                               )
                         |   !Submit:Submit
+                          & log$Submit
                           & (   !parms:~(? (Iformat.teip5^?) ?)
                               & canConsumeMetadata$!struct
                               & (   !parms
@@ -13973,21 +14150,25 @@ function main2(evt) {
                                   & !MetaDataType:~:~none
                                 )
                               & (   MetadataInParms$(!MetaDataType.!parms)
+                                  & log$(MetadataInParms yes)
                                   & errorInMetadata$(!MetaDataType.!parms):?ERR
                                 |   ~(MetadataInParms$(!MetaDataType.!parms))
+                                  & log$(MetadataInParms no)
                                   & rememberMetadata$(!MetaDataType.!parms):?parms
                                 )
                               & !MetaDataType:~:~none
+                              & log$nowAddMetadata
                               & AddMetadata$(!MetaDataType.!nth.!parms.!ERR)
-                            |   ApplyThePipelineToTheInput
-                              $ ( !MetaDataType
-                                . !struct
-                                . !batch
-                                . !Items
-                                . !oldoutput,!metadataformat,!1st,!2nd
-                                . !parms
-                                . run
-                                )
+                            |   log$(ApplyThePipelineToTheInput oldoutput !oldoutput)
+                              &   ApplyThePipelineToTheInput
+                                $ ( !MetaDataType
+                                  . !struct
+                                  . !batch
+                                  . !Items
+                                  . !oldoutput,!metadataformat,!1st,!2nd
+                                  . !parms
+                                  . run
+                                  )
                             )
                         |   localized$!Dryrun:!Submit
                           &   ApplyThePipelineToTheInput
@@ -14003,20 +14184,7 @@ function main2(evt) {
                   )
                 &   !arg
                   : (?parms.?Submit.?batch.?Items.?oldoutput,?metadataformat,?1st,?2nd)
-                &   log
-                  $ ( "The user has selected a workflow."
-                      !parms
-                      Submit
-                      !Submit
-                      hiddenData
-                      !hiddenData
-                      oldoutput
-                      !oldoutput
-                      1st
-                      !1st
-                      2nd
-                      !2nd
-                    )
+                & log$("The user has selected a workflow." Submit !Submit)
                 & 0:?allpipes
                 & :?returnCode:?reqtool:?fintool
                 &   !parms
@@ -14027,6 +14195,7 @@ function main2(evt) {
                 & localized$("View details" "Se detaljer"):?ViewDetails
                 & :?msg
                 & (   !nth:#
+                    & log$(NTH !nth)
                     &   Pipelines$(!parms.!nth)
                       : ( (?sources.?goals.?)
                         . ( (?.?.?.?.?),(?.?struct)
@@ -14035,6 +14204,7 @@ function main2(evt) {
                         . ?returnCode
                         . ?msg
                         )
+                    & log$(returnCode !returnCode)
                     & "!returnCode:(allRight
                                    |triviallyFulfilled
                                    |tooComplex
@@ -14043,6 +14213,7 @@ function main2(evt) {
                                    |notFulfillable
                                    )"
                     & (   !returnCode:allRight
+                        & log$whichButtonNOW
                         &   whichButton
                           $ ( 
                             . !Submit
@@ -14089,7 +14260,6 @@ function main2(evt) {
               : ? (2nd.?2nd) ?
             | (!UIlanguage|readTable$UIlanguage):%@?1st ?2nd
             )
-          & log$(initialiseSpecifyGoalShowWorkflowsChosenWorkflow !arg)
           &   initialiseSpecifyGoalShowWorkflowsChosenWorkflow$!arg
             : (?errors.?hiddenData.?Items.?Tool.?parms.?BodyContainer)
           & (   !Items:
@@ -14841,17 +15011,17 @@ function main2(evt) {
                         : ?multi
                       & (   !place:(?place.?templateAtts)
                           & "Succeed if the first element in PlaceInHeader specifies attribute(s).
-                                  Special cases:
-                                  xml:lang Every odd line in text area is first language (!1st),
-                                           every even line is the second language (!2nd).
-                                  ref      Look for @<reference> in value (!val)
-                                  n        Look for # followed by integer number
-                                  date     Input of type date
-                                  ISO639   Language picker
-                                  "
+                             Special cases:
+                             xml:lang Every odd line in text area is first language (!1st),
+                                      every even line is the second language (!2nd).
+                             ref      Look for @<reference> in value (!val)
+                             n        Look for # followed by integer number
+                             date     Input of type date
+                             ISO639   Language picker
+                            "
                           & (   !templateAtts:?a ("xml:lang":?at) ?z
                               & "We need to create up to two subtrees in the current tree before handling
-                                       the other template attributes (if any)."
+                                 the other template attributes (if any)."
                               & !a !z:?templateAtts
                               & (   !val:@(?:?l1 \n ?l2)
                                   & trim$!l1:?l1
@@ -14940,7 +15110,7 @@ function main2(evt) {
                                                       : ?subtree
                                                   )
                                               & "Now we have a place somewhere inside tree
-                                                       to put the new or updated node"
+                                                 to put the new or updated node"
                                             | "New node to be added after existing tree."
                                             )
                                           &     !A
@@ -15567,7 +15737,7 @@ function main2(evt) {
               & !A !Z:?parameters
             | 
             )
-          & (   !parameters:?A (TyPeFaCe.?) ?Z
+          & (   !parameters:?A (TPFC.?) ?Z
               & !A !Z:?parameters
             | 
             )
@@ -15603,7 +15773,7 @@ function main2(evt) {
                       | !lANgs:!LaNg %?A&!A
                       | !LaNg
                     )
-                    (TyPeFaCe.!TyPeFaCe)
+                    (TPFC.!TPFC)
                     !parameters
                 )
             : % ?parameters
@@ -15633,11 +15803,11 @@ function main2(evt) {
  * Called from entry.java
  */"
       ( entry
-      =   hiddenData TyPeFaCe
+      =   hiddenData TPFC
         .   :?hiddenData
           & log$NEW
           & setLanguageNotPermanently$!arg
-          & setTypefaceNotPermanently$!arg:?TyPeFaCe
+          & setTypefaceNotPermanently$!arg:?TPFC
           &   toML
             $ ( ("!DOCTYPE"." html")
                 ( html
@@ -15869,8 +16039,8 @@ function main2(evt) {
                                                   )
                                                   ( input
                                                   .     (type.hidden)
-                                                        (name.TyPeFaCe)
-                                                        (value.!TyPeFaCe)
+                                                        (name.TPFC)
+                                                        (value.!TPFC)
                                                     , 
                                                   )
                                                   ( input
@@ -15923,9 +16093,9 @@ function main2(evt) {
                                                       .   str
                                                         $ ( "/texton/?UIlanguage="
                                                             !LaNg
-                                                            "&TyPeFaCe="
+                                                            "&TPFC="
                                                               queryEncode
-                                                            $ (     !TyPeFaCe
+                                                            $ (     !TPFC
                                                                   : "Comic Sans MS"
                                                                 & sans-serif
                                                               | "Comic Sans MS"
@@ -15933,8 +16103,7 @@ function main2(evt) {
                                                           )
                                                       )
                                                       (tabindex.0)
-                                                  ,       !TyPeFaCe
-                                                        : "Comic Sans MS"
+                                                  ,     !TPFC:"Comic Sans MS"
                                                       & sans-serif
                                                     | "Comic Sans MS"
                                                 )
@@ -16509,7 +16678,7 @@ function main2(evt) {
  * Called from help.java
  */"
       ( help
-      =     tools langlist toolsSorted Title toolNr ToolID TyPeFaCe
+      =     tools langlist toolsSorted Title toolNr ToolID TPFC
           , features feats cumfeat usedonly usedFeatures hiddenData
           , UIflowTitle featuresTitle toolsTitle workingTitle
         .   log$HELP
@@ -18065,7 +18234,7 @@ function main2(evt) {
       ( poll
       =     n step secs steplinks links DOWNLOADPSEUDOCODE hidden
           , serviceurl title DOWNLOAD steptexts mode hiddenData
-          , runningParagraphs JobNr hours minutes myjobs TyPeFaCe
+          , runningParagraphs JobNr hours minutes myjobs TPFC
         .   ( steplinks
             =     links locJobs file step outp ServiceURL JobNr
                 , seenInputs Title myjobs
@@ -18347,14 +18516,13 @@ function main2(evt) {
                   $ ( ( 
                       =   n v
                         .     !arg:(?n.?v)
-                            & !n:(TyPeFaCe|UIlanguage)
+                            & !n:(TPFC|UIlanguage)
                             & "&" !n "=" queryEncode$!v
                           | 
                       )
                     . !hiddenData
                     )
                 : "&" ?hidden
-              & log$(hidden !hidden)
               & !hidden
             | 
             )
@@ -18436,38 +18604,34 @@ function main2(evt) {
                               )
                             feedbackform$
                       )
-                |       refreshingHTMLbodyContainer
-                      $ (   !secs
-                              str
-                            $ ( "url="
-                                !wwwServer
-                                ( "/texton/dialog?" !hidden "&dialog=poll&job="
-                                | "/texton/mypoll?" !hidden "job="
-                                )
-                                !JobNr
-                              )
-                        . div
-                        .   (class.canvasdiv)
-                          ,   ( h1
-                              .   (class.smallmargin)
-                                , localized$("Running... " "Kører... ")
-                              )
-                                paragraph
-                              $ ( str
-                                $ (   localized
-                                    $ ( "Reload this page to track the status of your job. Or wait. This page auto-reloads after "
-                                        "Genindlæs denne side hvis du vil følge status på arbejdsgangen. Eller vent. Siden genindlæses automatisk efter "
-                                      )
-                                    !secs
-                                    localized$(" seconds." " sekunder.")
+                |   refreshingHTMLbodyContainer
+                  $ (   !secs
+                          str
+                        $ ( "url="
+                            !wwwServer
+                            ( "/texton/dialog?" !hidden "&dialog=poll&job="
+                            | "/texton/mypoll?" !hidden "job="
+                            )
+                            !JobNr
+                          )
+                    . div
+                    .   (class.canvasdiv)
+                      ,   ( h1
+                          . (class.smallmargin),localized$("Running... " "Kører... ")
+                          )
+                            paragraph
+                          $ ( str
+                            $ (   localized
+                                $ ( "Reload this page to track the status of your job. Or wait. This page auto-reloads after "
+                                    "Genindlæs denne side hvis du vil følge status på arbejdsgangen. Eller vent. Siden genindlæses automatisk efter "
                                   )
-                                )
-                              !links
-                              !runningParagraphs
-                        )
-                    : ?refr
-                  & log$(toML$!refr)
-                  & !refr
+                                !secs
+                                localized$(" seconds." " sekunder.")
+                              )
+                            )
+                          !links
+                          !runningParagraphs
+                    )
                 )
               |   !HTMLbodyContainer
                 $ (     ( 
@@ -18560,7 +18724,7 @@ function main2(evt) {
           , ToolExternalURI ToolMultiInp aFeature askOptional
           , ToolPostData ToolInactive askOnE checkParmsSimple
           , additionalFormFields additionalMetadata orgarg
-          , formFields storeTool handle saveToolTable TyPeFaCe
+          , formFields storeTool handle saveToolTable TPFC
           , unfoldInputAndOutput foldInputAndOutput createFeatureFieldset
           , nth AA ZZ feats windfw ContactEmail contactEmail
           , featjursPreexisting featjursURL aboutFeature error Submit
@@ -19965,7 +20129,7 @@ function main2(evt) {
           & !arg:?orgarg
           & :?hiddenData
           & setLanguageNotPermanently$!arg
-          & setTypefaceNotPermanently$!arg:?TyPeFaCe
+          & setTypefaceNotPermanently$!arg:?TPFC
           &   
             : ?servicedSources
             : ?servicedGoals
@@ -20369,7 +20533,7 @@ function main2(evt) {
  * Called from showworkflows.java
  */"
       ( showworkflows
-      =     Tool parms Items NothingToDo Submit Pfeats hiddenData TyPeFaCe
+      =     Tool parms Items NothingToDo Submit Pfeats hiddenData TPFC
           , presels errors BodyContainer topologicalOrderedTools
           , PIPE A Z TooManyWorkflows updateUploads 2or3things
           , ShowAllPipes rstr reorderedworkflowlist orgarg pipe
@@ -21028,7 +21192,7 @@ function main2(evt) {
  */"
       ( specifyGoal
       =     Tool item parms Items items presels convertISO639-3to-1-IfPossible
-          , errors batch desiredTools sourcesAndGoals BodyContainer hiddenData TyPeFaCe
+          , errors batch desiredTools sourcesAndGoals BodyContainer hiddenData TPFC
           , A itms orgarg buildItemListFromForeignData updatePreselsWithUserAmendments
           , "We are at the start. Show an input form." preSelectedOutputSpec
         .   ( buildItemListFromForeignData
@@ -22952,7 +23116,7 @@ function main2(evt) {
                   )
                 & !arg
             )
-          & (|log$NEW)
+          & log$NEW
           & log$specifyGoal-CREATELOGJE
           & AdjustSwitchboardInput$!arg:?arg
           & log$(arg !arg)
