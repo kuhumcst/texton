@@ -554,7 +554,6 @@ TexTon=
                   )
                 : ?parms
               )
-          & log$(makeTextAreaFormField !val)
           &   surround
             $ ( !parms
               .   label
@@ -13379,14 +13378,12 @@ function main2(evt) {
                                                                 )
                                                             | 
                                                             )
-                                                        .   log$(id !id)
-                                                          & !id
+                                                        . !id
                                                         .   ( val
                                                             .       !parms
                                                                   :   ?
                                                                       (!id.?val)
                                                                       ?
-                                                                & log$(val !val)
                                                                 & !val
                                                               | 
                                                             )
@@ -13912,7 +13909,6 @@ function main2(evt) {
                         $ ( ( 
                             =   Elem Att Cont
                               .     !arg:(?Elem.?Att,?Cont)
-                                  & log$(Elem !Elem)
                                   & (   !Cont:@
                                       & trim$!Cont:~
                                       & (|:?Cont)
@@ -14052,9 +14048,7 @@ function main2(evt) {
                       )
                     . !templ
                     )
-                & lst$(tree,path$tree,NEW,RAW)
                 & recur$(!xml.!tree.):?keyvalues
-                & lst$(keyvalues,path$keyvalues,NEW,RAW)
                 & :?grouped
                 &   whl
                   ' ( !keyvalues:(?k.?val) ?keyvalues
@@ -14085,7 +14079,6 @@ function main2(evt) {
                     & !pre !grouped:?grouped
                     & (!k.str$!val) !keyvalues:?keyvalues
                     )
-                & log$(keyvalues !keyvalues)
                 & !keyvalues
             )
           & ( rememberMetadata
@@ -14137,7 +14130,6 @@ function main2(evt) {
                         &   (!UIlanguage|readTable$UIlanguage)
                           : %@?1st ?2nd
                       )
-                    & lst$(userProvidedMetadata,path$userProvidedMetadata,NEW,RAW)
                     & (1st.!1st) (2nd.!2nd) !userProvidedMetadata !parms
                   )
             )
@@ -15124,7 +15116,6 @@ function main2(evt) {
               =   a b x
                 .     !arg:?arg
                     & !arg:? (?x.?) ? (!x.?) ?
-                    & log$(uniqAt !arg)
                     &   mop
                       $ ( ( 
                           =   k v
@@ -15162,7 +15153,7 @@ function main2(evt) {
                             & ( !val:@(?:?l1 \n ?l2)
                               | !val:?l1&:?l2
                               )
-                            & !l1 !l2:?ll
+                            & (.!l1) (.!l2):?ll
                             & "Remove all nodes with not matching xml:lang (Is that necessary?)"
                             &   whl
                               ' (   !tree
@@ -15182,109 +15173,117 @@ function main2(evt) {
                             &   map
                               $ ( ( 
                                   =   A Z l q lm
-                                    .     !ll:%?l ?ll
-                                        & distillRefTargets$!l:?lm
-                                        & !tree:?A
-                                        &   
-                                          : ?Z
-                                          : ?a
-                                          : ?z
-                                          : ?subtree
-                                        & "Decide where to put node."
-                                        & (     !tree
-                                              : (     ?A
-                                                      ( !place
-                                                      .     ?a
-                                                            ("xml:lang".!arg)
-                                                            ?z
-                                                        , ?subtree
-                                                      )
-                                                      ( ?Z
-                                                      & (     !addOrReplace
-                                                            : add
-                                                          & !multi:n
-                                                          & "Existing node must not be overwritten. Include it in Z."
-                                                          & !tree:!A ?Z
-                                                          &   
-                                                            : ?a
-                                                            : ?z
-                                                            : ?subtree
-                                                        |       compatibleAttributes
-                                                              $ (!templateAtts.!a !z)
-                                                            : ?z
-                                                          & :?a
-                                                        )
-                                                      )
-                                                  & "The new node is placed AFTER the first node with the same element name and same language.
-                                                     OR, if the attributes are compatible, REPLACING the first node with the same element name and same language."
-                                                |     (   ?
+                                    .     !ll:(.?l) ?ll
+                                        & ( trim$!l:
+                                          |   distillRefTargets$!l:?lm
+                                            & !tree:?A
+                                            &   
+                                              : ?Z
+                                              : ?a
+                                              : ?z
+                                              : ?subtree
+                                            & "Decide where to put node."
+                                            & (     !tree
+                                                  : (     ?A
                                                           ( !place
-                                                          .       ?a
-                                                                  ("xml:lang".?)
-                                                                  ?z
-                                                              &     compatibleAttributes
+                                                          .     ?a
+                                                                ("xml:lang".!arg)
+                                                                ?z
+                                                            , ?subtree
+                                                          )
+                                                          ( ?Z
+                                                          & (     !addOrReplace
+                                                                : add
+                                                              & !multi:n
+                                                              & "Existing node must not be overwritten. Include it in Z."
+                                                              &   !tree
+                                                                : !A ?Z
+                                                              &   
+                                                                : ?a
+                                                                : ?z
+                                                                : ?subtree
+                                                            |       compatibleAttributes
                                                                   $ ( !templateAtts
                                                                     . !a !z
                                                                     )
                                                                 : ?z
                                                               & :?a
-                                                            , ?
+                                                            )
                                                           )
-                                                      : ?A
-                                                      )
-                                                      ?Z
-                                                  & :?subtree
-                                                  & "The new node is placed AFTER the first node with the same element name that has compatible attributes and that has any specified language."
-                                                |     (   ?
-                                                          ( !place
-                                                          .     ?
-                                                                ("xml:lang".?)
-                                                                ?
-                                                            , ?
+                                                      & "AAA The new node is placed BEFORE the first node with the same element name and same language.
+                                                     OR, if the attributes are compatible, REPLACING the first node with the same element name and same language."
+                                                    |     (   ?
+                                                              ( !place
+                                                              .       ?a
+                                                                      ("xml:lang".?)
+                                                                      ?z
+                                                                  &     compatibleAttributes
+                                                                      $ ( !templateAtts
+                                                                        . !a !z
+                                                                        )
+                                                                    : ?z
+                                                                  & :?a
+                                                                , ?
+                                                              )
+                                                          : ?A
                                                           )
-                                                      : ?A
-                                                      )
-                                                      ?Z
-                                                  &   
-                                                    : ?a
-                                                    : ?z
-                                                    : ?subtree
-                                                  & "The new node is placed AFTER the first node with the same element name that has any specified language."
-                                                )
-                                            & "Now we have a place somewhere inside tree to put the new or updated node"
-                                          | "New node to be added after existing tree."
-                                          )
-                                        &     ExtractAttributesFromContent
-                                            $ (!templateAtts.!a !z,!lm)
-                                          : (?xat.?lm)
-                                        &   uniqAt$(("xml:lang".!arg) !xat)
-                                          : ?attributes
-                                        &     !A
-                                              (   !subtree:@
-                                                & (     !a !z
-                                                      : ? (quantity.?q) ?
-                                                    & (   !q:#
-                                                        & ( !place
-                                                          .   !attributes
-                                                            , str$(!q " ") !lm
+                                                          ?Z
+                                                      & :?subtree
+                                                      & "BBB The new node is placed AFTER the first node with the same element name that has compatible attributes and that has any specified language."
+                                                    |     (   ?
+                                                              ( !place
+                                                              .     ?
+                                                                    ("xml:lang".?)
+                                                                    ?
+                                                                , ?
+                                                              )
+                                                          : ?A
                                                           )
-                                                      | 
-                                                      )
-                                                  | (!place.!attributes,!lm)
-                                                  )
-                                              | ( !place
-                                                .   !attributes
-                                                  ,   addOrInsertOneOrMoreElements
-                                                    $ ( !addOrReplace
-                                                      . !subPlaceInHeader
-                                                      . !lm
-                                                      . !subtree
-                                                      )
-                                                )
+                                                          ?Z
+                                                      &   
+                                                        : ?a
+                                                        : ?z
+                                                        : ?subtree
+                                                      & "CCC The new node is placed AFTER the first node with the same element name that has any specified language."
+                                                    )
+                                                & "DDD Now we have a place somewhere inside tree to put the new or updated node"
+                                              | "EEE New node to be added after existing tree."
                                               )
-                                              !Z
-                                          : ?tree
-                                      | "No subtree if no input for second language available"
+                                            &     ExtractAttributesFromContent
+                                                $ (!templateAtts.!a !z,!lm)
+                                              : (?xat.?lm)
+                                            &     uniqAt
+                                                $ (("xml:lang".!arg) !xat)
+                                              : ?attributes
+                                            &     !A
+                                                  (   !subtree:@
+                                                    & (     !a !z
+                                                          :   ?
+                                                              (quantity.?q)
+                                                              ?
+                                                        & (   !q:#
+                                                            & ( !place
+                                                              .   !attributes
+                                                                , str$(!q " ") !lm
+                                                              )
+                                                          | 
+                                                          )
+                                                      | (!place.!attributes,!lm)
+                                                      )
+                                                  | ( !place
+                                                    .   !attributes
+                                                      ,   addOrInsertOneOrMoreElements
+                                                        $ ( !addOrReplace
+                                                          . !subPlaceInHeader
+                                                          . !lm
+                                                          . !subtree
+                                                          )
+                                                    )
+                                                  )
+                                                  !Z
+                                              : ?tree
+                                          )
+                                      | "FFF No subtree if no input for second language available"
                                   )
                                 . !1st !2nd
                                 )
@@ -15295,10 +15294,9 @@ function main2(evt) {
               )
             & ( addOrInsertOneOrMoreElements
               =     PlaceInHeader val tree A Z a z l1 l2 ll multi atts
-                  , xat nxt insert
+                  , xat subt
                   , subPlaceInHeader addOrReplace place subtree templateAtts
                 .   !arg:(?addOrReplace.?arg:?PlaceInHeader.?val.?tree)
-                  & no:?insert
                   & (   !PlaceInHeader:%?place ?subPlaceInHeader
                       & :?nxt
                       &   (   (   !place:(,?place)
@@ -15310,10 +15308,6 @@ function main2(evt) {
                           | 1
                           )
                         : ?multi
-                      & (   !tree
-                          : (!place.,? (!nxt.?) ?) ?
-                        | yes:?insert
-                        )
                       & (   !place:(?place.?templateAtts)
                           & "Succeed if the first element in PlaceInHeader specifies attribute(s).
                              Special cases:
@@ -15325,8 +15319,7 @@ function main2(evt) {
                              ISO639   Language picker
                             "
                           & (   !templateAtts:?a "xml:lang" ?z
-                              &   log
-                                $ "We need to create up to two subtrees in the current tree before handling the other template attributes (if any)."
+                              & "We need to create up to two subtrees in the current tree before handling the other template attributes (if any)."
                               & !a !z:?templateAtts
                               &     BilingualFields
                                   $ ( !tree
@@ -15339,27 +15332,17 @@ function main2(evt) {
                                     . !2nd
                                     )
                                 : ?tree
-                            |     log
-                                $ ( "There is no xml:lang. What about other elements in templateAtts?"
-                                    \n
-                                    addOrReplace
-                                    !addOrReplace
-                                    \n
-                                    \nmulti
-                                    !multi
-                                    templateAtts
-                                    !templateAtts
-                                    \nplace
-                                    !place
-                                    \ntree
-                                    !tree
-                                  )
+                            |   "There is no xml:lang. What about other elements in templateAtts?"
                               & (   ( !addOrReplace:replace
-                                    | !insert:yes
+                                    |   !tree
+                                      : ~( (!place.,? (!nxt.?) ?)
+                                           ?
+                                         )
+                                    | !tree:~(? (!place.,?subt) ?)
+                                    | !subt:~(? (!nxt.?) ?)
                                     |   !addOrReplace:add
                                       & !multi:n
                                     )
-                                  & log$PASSED
                                   &   !tree
                                     :   ?A
                                         ( !place
@@ -15371,7 +15354,7 @@ function main2(evt) {
                                   & ( !addOrReplace:replace
                                     | (!place.!atts,!subtree) !Z:?Z
                                     )
-                                  & log$"Node where to add subtree found"
+                                  & "Node where to add subtree found"
                                   & (   !place:idno
                                       & (   !val:~:~"-"
                                           & :?subtree
@@ -15415,14 +15398,13 @@ function main2(evt) {
                                 )
                             )
                         |   "No template attributes here."
-                          & log$(place !place tree !tree)
                           & !tree:?A
                           & :?Z:?a:?subtree
                           & (   !tree:?A (!place.?a,?subtree) ?Z
                               & (   !addOrReplace:add
                                   & !multi:n
-                                  & "Existing node must not be overwritten. Include it in Z."
-                                  & !insert:no
+                                  & !tree:? (!place.,?subt) ?
+                                  & !subt:? (!nxt.?) ?
                                   & (!place.!a,!subtree) !Z:?Z
                                   & :?a:?subtree
                                 | 
@@ -15474,7 +15456,7 @@ function main2(evt) {
                   & !autogenerated
               )
             & ( inject
-              =     userProvidedMetadata autogenerated
+              =     userProvidedMetadata autogenerated trimmedval
                   , Required/optional/automatic val Line Line2 tree
                   , PlaceInHeader id remove Metadata collect collected
                 .   ( comp
@@ -15526,33 +15508,34 @@ function main2(evt) {
                     )
                   & "inject body starts here"
                   & !arg:(?userProvidedMetadata.?autogenerated.?Metadata)
-                  & lst$(autogenerated,path$autogeneratedS,NEW,RAW)
                   & readTable$UIlanguage
                   & ( rearrangeUserProvidedMetadataIntoRepeatedGroups
                     =     userProvidedMetadata Metadata A Z mixup pairup group
-                        , att1 att2 path1 path2 ID1 ID2 multiple rem1 rem2
+                        , att1 att2 path1 path2 ID1 ID2 multiple rem1 rem2 kit
                       .   !arg:(?userProvidedMetadata.?Metadata)
+                        & ( kit
+                          =   L a
+                            .   :?L
+                              &   whl
+                                ' ( !arg:(.?a) ?arg
+                                  & !a !L:?L
+                                  )
+                              & (.str$!L)
+                          )
                         & ( group
                           =   AA
                             .     !arg:?AA (.) ?arg
-                                &   ( 
-                                    .   str
-                                      $ ( map
-                                        $ ( ( 
-                                            =   
-                                              .     !arg:(.?arg)
-                                                  & !arg
-                                                | 
-                                            )
-                                          . !AA
-                                          )
-                                        )
-                                    )
-                                    group$!arg
-                              | 
+                                & kit$!AA group$!arg
+                              | kit$!arg
+                          )
+                        & ( groupN
+                          =   
+                            .     !arg:? (.) ?arg
+                                & 1+groupN$!arg
+                              | 1
                           )
                         & ( pairup
-                          =   tmp a
+                          =   tmp a b
                             .   :?tmp
                               &   whl
                                 ' (   !arg
@@ -15572,112 +15555,266 @@ function main2(evt) {
                                   )
                               & !arg
                           )
-                        & ( mixup
-                          =   att1 ID1 data1 att2 ID2 data2 ut
-                            .     !arg
-                                : ((?att1.?ID1.?data1),(?att2.?ID2.?data2))
-                              &   vap$((=..trim$!arg).!data1.\n)
-                                : ?data1
-                              &   vap$((=..trim$!arg).!data2.\n)
-                                : ?data2
-                              & log$(data1 !data1 data2 !data2)
-                              & (   !att1:? "xml:lang" ?
-                                  & pairup$!data1:?data1
-                                | 
-                                )
-                              & (   !att2:? "xml:lang" ?
-                                  & pairup$!data2:?data2
-                                | 
-                                )
-                              & log$(NOGEENS data1 !data1 data2 !data2)
-                              & group$!data2:?data2
-                              & log$(TENLANGELESTE data2 !data2)
-                              & :?ut
+                        & ( pairupN
+                          =   a b n
+                            .   1:?n
                               &   whl
-                                ' ( !data1:(.?a) ?data1
-                                  & !data2:(.?b) ?data2
-                                  & !ut (!ID1.!a) (!ID2.!b):?ut
+                                ' (   !arg
+                                    : (.?a) (.?b) ?arg
+                                  & (   !a !b:
+                                      & 1+!n:?n
+                                    | 
+                                    )
                                   )
-                              & log$(utut !ut)
-                              & !ut
+                              & !n
                           )
-                        & log$rearrangeUserProvidedMetadataIntoRepeatedGroups
-                        & log$(Metadata !Metadata)
-                        &   map
-                          $ ( ( 
-                              =   metadata
-                                .     !arg:(?,?metadata)
-                                    & (   whl
+                        & ( singleN
+                          =   a n
+                            .   1:?n
+                              &   whl
+                                ' ( !arg:(.?a) ?arg
+                                  & (   !a:
+                                      & 1+!n:?n
+                                    | 
+                                    )
+                                  )
+                              & !n
+                          )
+                        & ( mixup
+                          =     att1 ID1 data1 att2 ID2 data2 ut Nhyp n
+                              , L l1 l2
+                            .   "How many groups are there? A list of N lines can either be one single group or N groups.
+                                 Find out by finding the largest number that is compatible with all elements in arg."
+                              & 0:?Nhyp
+                              & 0:?n
+                              & (   !arg:(?att1.?ID1.?data1)
+                                  & "A group contains only one element type. Number of elements in group
+                                     is decided by max number of times xml:lang attribute is repeated."
+                                  & vap$(trim.!data1.\n):?data1
+                                  & :?L
+                                  & 0:?Nhyp
+                                  & (   !att1:? "xml:lang" ?
+                                      &   whl
+                                        ' ( !data1:%?l1 %?l2 ?data1
+                                          & 1+!Nhyp:?Nhyp
+                                          &   !L \n\n trim$!l1 \n trim$!l2 \n
+                                            : ?L
+                                          )
+                                      & ( trim$!data1:
+                                        |   !L \n\n !data1 \n:?L
+                                          & 1+!Nhyp:?Nhyp
+                                        )
+                                      & !L:\n\n ?data1 \n
+                                      & str$!data1:?data1
+                                    |     whl
+                                        ' ( !data1:%?l1 ?data1
+                                          & 1+!Nhyp:?Nhyp
+                                          & !L \n !l1 \n:?L
+                                          )
+                                      & !L:\n ?data1
+                                      & str$!data1:?data1
+                                    )
+                                  & (!att1.!ID1.!data1):?arg
+                                |   map
+                                  $ ( ( 
+                                      =   
+                                        .   !arg:(?att1.?ID1.?data1)
+                                          &     vap
+                                              $ ( (=..trim$!arg)
+                                                . !data1
+                                                . \n
+                                                )
+                                            : ?data1
+                                          & (   !att1:? "xml:lang" ?
+                                              & pairupN$!data1:?n
+                                              & ( !n:>!Nhyp:?Nhyp
+                                                | 
+                                                )
+                                            |   singleN$!data1:?n
+                                              & ( !n:>!Nhyp:?Nhyp
+                                                | 
+                                                )
+                                            )
+                                      )
+                                    . !arg
+                                    )
+                                )
+                              & "Force data into Nhyp groups."
+                              &     map
+                                  $ ( ( 
+                                      =   L
+                                        .     !arg:(?att1.?ID1.?data1)
+                                            &     vap
+                                                $ ( (=..trim$!arg)
+                                                  . !data1
+                                                  . \n
+                                                  )
+                                              : ?data1
+                                            & (   !att1:? "xml:lang" ?
+                                                & pairupN$!data1:?n
+                                                & ( !n:!Nhyp
+                                                  |   !data1:? [?n
+                                                    & 1/2*!n:!Nhyp
+                                                    & :?L
+                                                    &   whl
+                                                      ' (   !data1
+                                                          : %?a %?b ?data1
+                                                        &     !L
+                                                              (.)
+                                                              !a
+                                                              !b
+                                                          : ?L
+                                                        )
+                                                    &   !L
+                                                      : (.) ?data1
+                                                  )
+                                              |   singleN$!data1:?n
+                                                & ( !n:!Nhyp
+                                                  |   !data1:? [?n
+                                                    & !n:!Nhyp
+                                                    & :?L
+                                                    &   whl
+                                                      ' ( !data1:%?a ?data1
+                                                        &   !L (.) !a
+                                                          : ?L
+                                                        )
+                                                    &   !L
+                                                      : (.) ?data1
+                                                  )
+                                              )
+                                            & (!att1.!ID1.!data1)
+                                          |   log
+                                            $ (BAD Nhyp !Nhyp n !n data1 !data1)
+                                      )
+                                    . !arg
+                                    )
+                                : ?arg
+                              &     map
+                                  $ ( ( 
+                                      =   
+                                        .   !arg:(?att1.?ID1.?data1)
+                                          & ( 
+                                            |     vap
+                                                $ ( (=..trim$!arg)
+                                                  . !data1
+                                                  . \n
+                                                  )
+                                              : ?data1
+                                            )
+                                          & (   !att1:? "xml:lang" ?
+                                              & pairup$!data1:?data1
+                                            | 
+                                            )
+                                          & group$!data1:?data1
+                                          & (!ID1.!data1)
+                                      )
+                                    . !arg
+                                    )
+                                : ?arg
+                              & :?ut:?tu
+                              &   whl
+                                ' ( !arg:(?.(.?) ?) ?
+                                  &       map
+                                        $ ( ( 
+                                            =   
+                                              .     !arg
+                                                  : (?ID1.(.?a) ?data1)
+                                                & (!ID1.!a)
+                                            )
+                                          . !arg
+                                          )
+                                        !tu
+                                    : ?tu
+                                  &     map
+                                      $ ( ( 
+                                          =   
+                                            .   !arg:(?ID1.% ?data1)
+                                              & (!ID1.!data1)
+                                          )
+                                        . !arg
+                                        )
+                                    : ?arg
+                                  )
+                              & !tu
+                          )
+                        & ( commaGroup
+                          =   metadata IDs
+                            .     !arg:(?,?metadata)
+                                & "The part before the comma is a field set header.
+                                   The part after the comma is a list of fields, or elements."
+                                & (   whl
+                                    ' (   !metadata
+                                        :   ?
+                                            ( ?ID1
+                                            . ?
+                                            . oneOrMore
+                                            . ?
+                                            .   ?path1 (,?multiple) ?rem1
+                                              : (   ?
+                                                    ( ?
+                                                    . ? ("xml:lang":?att) ?
+                                                    )
+                                                    ?
+                                                |   ?
+                                                  & :?att
+                                                )
+                                            . ?
+                                            )
+                                            ?metadata
+                                      & (!att.!ID1):?IDs
+                                      &   whl
                                         ' (   !metadata
-                                            :   ?
-                                                (?ID1.?.oneOrMore.?.?path1.?)
-                                                ( ?ID2
+                                            :   ( ?ID2
                                                 . ?
                                                 . oneOrMore
                                                 . ?
-                                                .     ?path2
-                                                      (,?multiple)
+                                                .     !path1
+                                                      (,!multiple)
                                                       ?rem2
-                                                  &   !path1
-                                                    :   !path2
-                                                        (,!multiple)
-                                                        ?rem1
+                                                  : (   ?
+                                                        ( ?
+                                                        .   ?
+                                                            ("xml:lang":?att)
+                                                            ?
+                                                        )
+                                                        ?
+                                                    |   ?
+                                                      & :?att
+                                                    )
                                                 . ?
                                                 )
                                                 ?metadata
-                                          & log$(ID1 !ID1 ID2 !ID2)
-                                          &   !userProvidedMetadata
-                                            :   ?A
-                                                (!ID1.?data1)
-                                                (!ID2.?data2)
-                                                ?Z
-                                          &   (     !path1
-                                                  :   ?
-                                                      (?.? "xml:lang" ?)
-                                                      ?
-                                                & "xml:lang"
-                                              | 
-                                              )
-                                            : ?att1
-                                          &   (     !path2 !multiple !rem2
-                                                  :   ?
-                                                      (?.? "xml:lang" ?)
-                                                      ?
-                                                & "xml:lang"
-                                              | 
-                                              )
-                                            : ?att2
-                                          & log$(att1 !att1 att2 !att2)
-                                          &     !A
-                                                  mixup
-                                                $ ( (!att1.!ID1.!data1)
-                                                  , (!att2.!ID2.!data2)
-                                                  )
-                                                !Z
-                                            : ?userProvidedMetadata
+                                          & !IDs (!att.!ID2):?IDs
                                           )
-                                      | 
+                                      &     map
+                                          $ ( ( 
+                                              =   att ID data1
+                                                .     !arg:(?att.?ID)
+                                                    &   !userProvidedMetadata
+                                                      : ?A (!ID.?data1) ?Z
+                                                    &   !A !Z
+                                                      : ?userProvidedMetadata
+                                                    & (!att.!ID.!data1)
+                                                  | 
+                                              )
+                                            . !IDs
+                                            )
+                                        : ?attIDdata
+                                      &   !A mixup$!attIDdata !Z
+                                        : ?userProvidedMetadata
                                       )
                                   | 
-                              )
-                            . !Metadata
-                            )
+                                  )
+                              | 
+                          )
+                        & map$(commaGroup.!Metadata)
                         & !userProvidedMetadata
                     )
-                  & log$NAARrearrangeUserProvidedMetadataIntoRepeatedGroups
                   &   rearrangeUserProvidedMetadataIntoRepeatedGroups$(!userProvidedMetadata.!Metadata)
                     : ?userProvidedMetadata
-                  &   lst
-                    $ ( userProvidedMetadata
-                      , path$userProvidedMetadataRearranged
-                      , NEW
-                      , WYD
-                      , BIN
-                      , RAW
-                      )
                   &   whl
                     ' ( !userProvidedMetadata:(?id.?val) ?userProvidedMetadata
-                      & trim$!val:?val
+                      & trim$!val:?trimmedval
                       & (     !Metadata
                             :   ?
                                 ( ?
@@ -15696,12 +15833,12 @@ function main2(evt) {
                                 ?
                           &   (     !Required/optional/automatic
                                   : ( ? r ?
-                                    | ? o ?&!val:~
+                                    |   ? o ?
+                                      & !trimmedval:~
                                     )
-                                & log$(val12 !val)
                                 &   addOrInsertOneOrMoreElements
                                   $ (replace.!PlaceInHeader.!val.!autogenerated)
-                              |   !val:
+                              |   !trimmedval:
                                 &   !Required/optional/automatic
                                   : ? (o|zeroOrMore) ?
                                   : ~(? a ?)
@@ -15709,10 +15846,9 @@ function main2(evt) {
                                   : ?autogenerated
                               |     !Required/optional/automatic
                                   : (? oneOrMore ?|? zeroOrMore ?)
-                                & !val:~
+                                & !trimmedval:~
                                 &   (   !PlaceInHeader:? (,?) ?
                                       & :?collected
-                                      & log$(PLACEINHEADER !PlaceInHeader)
                                       & yes
                                     | no
                                     )
@@ -15730,23 +15866,22 @@ function main2(evt) {
                                                & :?val
                                              )
                                            )
-                                      | @( !val
-                                         : ( ?Line \n ?val
-                                           | ?Line&:?val
+                                      |   @( !val
+                                           : ( ?Line \n ?val
+                                             |   ?Line
+                                               & :?val
+                                             )
                                            )
-                                         )
+                                        & trim$!Line:?Line
                                       )
-                                    & trim$!Line:?Line
-                                    & ( !Line:
-                                      |   log$(LineNY !Line)
-                                        & (   !collect:no
-                                            &     addOrInsertOneOrMoreElements
-                                                $ (add.!PlaceInHeader.!Line.!autogenerated)
-                                              : ?autogenerated
-                                          | !collected !Line:?collected
-                                          )
+                                    & ( trim$!Line:
+                                      |   !collect:no
+                                        &     addOrInsertOneOrMoreElements
+                                            $ (add.!PlaceInHeader.!Line.!autogenerated)
+                                          : ?autogenerated
+                                      | !collected !Line:?collected
                                       )
-                                    & !val:~
+                                    & trim$!val:~
                                     )
                                 & ( !collect:no
                                   |     addOrInsertOneOrMoreElements
@@ -15759,7 +15894,6 @@ function main2(evt) {
                         | 
                         )
                       )
-                  & lst$(autogenerated,path$autogeneratedT,NEW RAW)
                   & !autogenerated
               )
             & ( replList
