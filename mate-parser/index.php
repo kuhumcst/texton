@@ -617,22 +617,22 @@ try {
             }
         }
 
-    function conllout($Ifacettok,$Ifacetseg,$Ifacetpos,$Ifacetlem)
+    function conllout($IfacettokF,$IfacetsegF,$IfacetposF,$IfacetlemF)
         {
         global $mode;
-        logit("conllout($Ifacettok,$Ifacetseg,$Ifacetpos,$Ifacetlem)");
+        logit("conllout($IfacettokF,$IfacetsegF,$IfacetposF,$IfacetlemF)");
 
         $conllfile = tempFileName("conllout-results");
         if($mode == 'dry')
         {
-            if($Ifacetlem == "")
-                scrip("../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '\$conllfile' '$Ifacettok' '$Ifacetseg' '$Ifacetpos' ''");
+            if($IfacetlemF == "")
+                scrip("../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '\$conllfile' '$IfacettokF' '$IfacetsegF' '$IfacetposF' ''");
             else
-                scrip("../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '\$conllfile' '$Ifacettok' '$Ifacetseg' '$Ifacetpos' '\$IfacetlemF'");
+                scrip("../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '\$conllfile' '$IfacettokF' '$IfacetsegF' '$IfacetposF' '\$IfacetlemF'");
         }
         else
         {
-            $command = "../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '$conllfile' '$Ifacettok' '$Ifacetseg' '$Ifacetpos' '$Ifacetlem'";
+            $command = "../bin/bracmat 'get\$\"../shared_scripts/conlln.bra\"' '$conllfile' '$IfacettokF' '$IfacetsegF' '$IfacetposF' '$IfacetlemF'";
 
             logit($command);
 
