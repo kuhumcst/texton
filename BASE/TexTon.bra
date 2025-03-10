@@ -5276,7 +5276,7 @@ try {
                     : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
                 |   !gfield:sml
-                  & !gvaluesAlts:(TOK|TXT)
+                  & !gvaluesAlts:(~nsl:~sml)
                   & !toolFeatures:? (sml,(?.?)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
                   & "toolfeat is a sum of alternative (input.output) specs."
@@ -6263,7 +6263,7 @@ try {
                     .   !arg:(?tool.?arg)
                       & (     !arg
                             :   ?A
-                                (sml,(?o.(TOK|TXT):?SML))
+                                (sml,(?o.(~nsl:~sml:?SML)))
                                 ?Z
                           & !A (sml,(!o.!SML^!tool)) !Z
                         | !arg
@@ -8002,7 +8002,7 @@ try {
                                   $ ( ( 
                                       =   
                                         .       !arg
-                                              : (sml,TOK|TXT)
+                                              : (sml,(~nsl:~sml))
                                             & 
                                           |   !arg:(?f,?v)
                                             & (!f,sig$!v)
@@ -8035,7 +8035,7 @@ try {
                                             either be (smell,new smell)
                                             or occur in the same factor of SM (the signature of one of the methods).
                                            So we must find a method for which we can prove that there are
-                                            no features different from (sml,(TOK|TXT)) in SR
+                                            no features different from (sml,(~nsl:~sml)) in SR
                                             that are not represented in the signature of that method SM.
                                            The Sig function filters the sml feature, so we don't see sml in the following code.
                                            "
@@ -8703,6 +8703,8 @@ try {
                   & ( SeparateSmells
                     =   FP Sml Flt Smlfp
                       .   !arg:?FP
+                        & "Sml: Create a sum of (<smell type>.<tool name>) pairs
+                           from an analysis of a candidate workflow."
                         & ( Sml
                           =   
                             .     !arg:(?.?arg)
@@ -8735,6 +8737,11 @@ try {
                                     )
                               | 0
                           )
+                        & "Flt: 'Wht' is a given smell type.
+                           Input: a potentially ambiguous workflow design, or subtree thereof.
+                           Flt reduces ambiguous workflow designs by weeding out tool outputs that that carry smell Wht, 
+                           but are not the wanted tool Wnt.
+                           The variable FA0 is set to zero as soon as incompatibility is noticed."
                         & ( Flt
                           =   I
                             .     !arg:(?I.?arg)
@@ -8795,6 +8802,10 @@ try {
                                 & (!arg:0|(!I.!arg))
                               | !arg
                           )
+                        & "For each workflow fp, create sum of #*(smell.tool) pairs.
+                           Convert sum to product of (smell^tools) factors.
+                           If tools consists of just one tool, workflow is OK.
+                           "
                         &   mop
                           $ ( ( 
                               =   sm fp
@@ -8815,21 +8826,21 @@ try {
                                     : ?sm
                                   &   mop
                                     $ ( ( 
-                                        =   Wnt TLs
-                                          .   
-                                            & !arg:?Wht^?TLs
+                                        =   Wht Wnt TLs
+                                          .   !arg:?Wht^?TLs
                                             & (   !TLs:@
                                                 & !fp
-                                              |   mop
-                                                $ ( ( 
-                                                    =   
-                                                      .   !arg:?Wnt
-                                                        & Flt$!fp
+                                              |   log$(SPLIT-TLs !TLs)
+                                                &   mop
+                                                  $ ( ( 
+                                                      =   
+                                                        .   !arg:?Wnt
+                                                          & Flt$!fp
+                                                      )
+                                                    . !TLs
+                                                    . (=+)
+                                                    . (=+)
                                                     )
-                                                  . !TLs
-                                                  . (=+)
-                                                  . (=+)
-                                                  )
                                               )
                                         )
                                       . !sm
