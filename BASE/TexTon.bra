@@ -287,6 +287,7 @@ TexTon=
                   )
                   !hiddenData
               : ?hiddenData
+            & log$(setLang !hiddenData)
           |   !lANgs:%?LaNg ?
             & log$("failed to set language to " !arg)
             & ~
@@ -5276,7 +5277,7 @@ try {
                     : ?pathfields
                   & !newGoal (!gfield,!gvaluesAlts):?newGoal
                 |   !gfield:sml
-                  & !gvaluesAlts:(~nsl:~sml)
+                  & !gvaluesAlts:~nsl:~sml
                   & !toolFeatures:? (sml,(?.?)) ?
                 |   !toolFeatures:?Ar (!gfield,?toolfeat) ?Zr
                   & "toolfeat is a sum of alternative (input.output) specs."
@@ -6263,7 +6264,7 @@ try {
                     .   !arg:(?tool.?arg)
                       & (     !arg
                             :   ?A
-                                (sml,(?o.(~nsl:~sml:?SML)))
+                                (sml,(?o.~nsl:~sml:?SML))
                                 ?Z
                           & !A (sml,(!o.!SML^!tool)) !Z
                         | !arg
@@ -8002,7 +8003,7 @@ try {
                                   $ ( ( 
                                       =   
                                         .       !arg
-                                              : (sml,(~nsl:~sml))
+                                              : (sml,~nsl:~sml)
                                             & 
                                           |   !arg:(?f,?v)
                                             & (!f,sig$!v)
@@ -9596,6 +9597,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
         .   ( !arg:? (UIlanguage.?arg) ?
             | "reset to default"&readTable$UIlanguage:%?arg ?
             )
+          & log$(setLanguageNotPermanently !arg)
           & setLang$!arg
       )
       ( setTypefaceNotPermanently
@@ -16391,7 +16393,7 @@ function main2(evt) {
                       | !lANgs:!LaNg %?A&!A
                       | !LaNg
                     )
-                    (TPFC.!TPFC)
+                    (!TPFC&(TPFC.!TPFC)|)
                     !parameters
                 )
             : % ?parameters
@@ -20743,6 +20745,7 @@ function main2(evt) {
           & "Body of Register starts here"
           & log$NEW
           & log$REGiSTER
+          & log$(arg !arg)
           & !arg:?orgarg
           & :?hiddenData
           & setLanguageNotPermanently$!arg
@@ -20758,7 +20761,7 @@ function main2(evt) {
           & localized$("Show more entry fields" "Vis flere inputfelter"):?UpdateButton
           & localized$("PHP wrapper" PHP-kode):?PHPbutton
           & 0:?tabind
-          & :?hiddenData:?formFields:?Metadata
+          & :?formFields:?Metadata
           & readTable$facets
           & (|readTable$toolprop)
           & readTable$tooladm
@@ -20772,6 +20775,7 @@ function main2(evt) {
           & ( !arg:? (mail2.?mail2) ?
             | :?mail2
             )
+          & log$(hiddenData1 !hiddenData)
           & (   createBoilerPlate$!arg:(?ToolName.?password.?contactEmail.?arg)
               &     ( h1
                     .   
@@ -20787,6 +20791,7 @@ function main2(evt) {
                     )
                     staticFields$!arg
                 : ?formFields
+              & log$(hiddenData2 !hiddenData)
               & "
                 Decide in how far the features as received in the request
                 string (the arg variable) or the features as defined in
@@ -21083,6 +21088,7 @@ function main2(evt) {
                                             | (mail2.!mail2)
                                             )
                                             (contactEmail.!contactEmail)
+                                            !hiddenData
                                           )
                                         submit$!deleteToolButton
                                         submit$!UpdateButton
@@ -24001,7 +24007,15 @@ function main2(evt) {
           , contactEmail handle passwordAsHandle
         .     0:?tabind
             & readTable$tooladm
-            & :?msg:?selected:?contactEmail:?handle
+            &   
+              : ?hiddenData
+              : ?msg
+              : ?selected
+              : ?contactEmail
+              : ?handle
+            & log$(UPDATE !arg)
+            & setLanguageNotPermanently$!arg
+            & log$(hiddenData is nu !hiddenData)
             & (!arg:? (msg.?msg) ?|)
             & (!arg:? (selected.?selected) ?|)
             & ( !arg:? (passwordAsHandle.?passwordAsHandle) ?
@@ -24048,15 +24062,28 @@ function main2(evt) {
                             )
                           submit$next
                           helplink$(usedonly.n)
-                            makeHiddenFields
-                          $ ( ( !passwordAsHandle:(.)&
-                              | (passwordAsHandle.!passwordAsHandle)
+                          (   log
+                            $ ( FIELDS2HIDE
+                                ( !passwordAsHandle:(.)&
+                                | (passwordAsHandle.!passwordAsHandle)
+                                )
+                                ( !contactEmail:
+                                | (contactEmail.!contactEmail)
+                                )
+                                (!handle:|(handle.!handle))
+                                !hiddenData
                               )
-                              ( !contactEmail:
-                              | (contactEmail.!contactEmail)
+                          &   makeHiddenFields
+                            $ ( ( !passwordAsHandle:(.)&
+                                | (passwordAsHandle.!passwordAsHandle)
+                                )
+                                ( !contactEmail:
+                                | (contactEmail.!contactEmail)
+                                )
+                                (!handle:|(handle.!handle))
+                                !hiddenData
                               )
-                              (!handle:|(handle.!handle))
-                            )
+                          )
                       . POST
                       )
                   )
