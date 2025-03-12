@@ -214,14 +214,10 @@ try {
         $output = "";	/* List of all output features. */
         $echos = "";	/* List arguments and their actual values. For sanity check of this generated script. All references to this variable can be removed once your web service is working as intended. */
         $F = "";	/* Input (ONLY used if there is exactly ONE input to this workflow step) */
-        $IfacetsegF = "";	/* Input with type of content segments (sætningssegmenter) */
-        $IfacettokF = "";	/* Input with type of content tokens (tokens) */
         $Iambiguna = false;	/* Ambiguity in input is unambiguous (utvetydig) if true */
-        $Ifacetseg = false;	/* Type of content in input is segments (sætningssegmenter) if true */
-        $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
+        $Ifacet_seg_tok = false;	/* Type of content in input is segments (sætningssegmenter) and tokens (tokens) if true */
         $Ifacettxt = false;	/* Type of content in input is text (ingen annotation) if true */
         $Iformatflat = false;	/* Format in input is plain (flad) if true */
-        $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
         $Ilangar = false;	/* Language in input is Arabic (arabisk) if true */
         $Ilangde = false;	/* Language in input is German (tysk) if true */
         $Ilangen = false;	/* Language in input is English (engelsk) if true */
@@ -232,7 +228,7 @@ try {
         $Ilangzh = false;	/* Language in input is Chinese (kinesisk) if true */
         $Iperiodc21 = false;	/* Historical period in input is contemporary (efterkrigstiden) if true */
         $Ipresnml = false;	/* Assemblage in input is normal if true */
-        $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
+        $IsmlTOK = false;	/* Smell in input is Tokenisation (Tokenisering) if true */
         $IsmlTXT = false;	/* Smell in input is Text production (Tekst) if true */
         $Ismlsml = false;	/* Smell in input is any smell (lugt) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
@@ -246,6 +242,7 @@ try {
         $Ofacetstc = false;	/* Type of content in output is syntax (constituency relations) (syntaks (frasestruktur)) if true */
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
+        $Oformatflat = false;	/* Format in output is plain (flad) if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
         $Olangar = false;	/* Language in output is Arabic (arabisk) if true */
         $Olangde = false;	/* Language in output is German (tysk) if true */
@@ -256,8 +253,10 @@ try {
         $Olangit = false;	/* Language in output is Italian (italiensk) if true */
         $Olangzh = false;	/* Language in output is Chinese (kinesisk) if true */
         $Operiodc21 = false;	/* Historical period in output is contemporary (efterkrigstiden) if true */
+        $Opresnml = false;	/* Assemblage in output is normal if true */
         $Opressof = false;	/* Assemblage in output is standoff annotations if true */
         $OsmlTOK = false;	/* Smell in output is Tokenisation (Tokenisering) if true */
+        $OsmlTeiP5 = false;	/* Smell in output is plain to TEI (flad til TEI) if true */
         $OfacetposPT = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Penn Treebank if true */
 
         if( hasArgument("base") )
@@ -292,28 +291,6 @@ try {
             $echos = $echos . "F=$F ";
             $inputF = $inputF . " \$F ";
             }
-        if( hasArgument("IfacetsegF") )
-            {
-            $IfacetsegF = requestFile("IfacetsegF");
-            if($IfacetsegF === '')
-                {
-                header("HTTP/1.0 404 Input with type of content 'segments (sætningssegmenter)' not found (IfacetsegF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacetsegF=$IfacetsegF ";
-            $inputF = $inputF . " \$IfacetsegF ";
-            }
-        if( hasArgument("IfacettokF") )
-            {
-            $IfacettokF = requestFile("IfacettokF");
-            if($IfacettokF === '')
-                {
-                header("HTTP/1.0 404 Input with type of content 'tokens (tokens)' not found (IfacettokF parameter). ");
-                return;
-                }
-            $echos = $echos . "IfacettokF=$IfacettokF ";
-            $inputF = $inputF . " \$IfacettokF ";
-            }
 
 /************************
 * input/output features *
@@ -326,18 +303,16 @@ try {
             }
         if( hasArgument("Ifacet") )
             {
-            $Ifacetseg = existsArgumentWithValue("Ifacet", "seg");
-            $Ifacettok = existsArgumentWithValue("Ifacet", "tok");
+            $Ifacet_seg_tok = existsArgumentWithValue("Ifacet", "_seg_tok");
             $Ifacettxt = existsArgumentWithValue("Ifacet", "txt");
-            $echos = $echos . "Ifacetseg=$Ifacetseg " . "Ifacettok=$Ifacettok " . "Ifacettxt=$Ifacettxt ";
-            $input = $input . ($Ifacetseg ? " \$Ifacetseg" : "")  . ($Ifacettok ? " \$Ifacettok" : "")  . ($Ifacettxt ? " \$Ifacettxt" : "") ;
+            $echos = $echos . "Ifacet_seg_tok=$Ifacet_seg_tok " . "Ifacettxt=$Ifacettxt ";
+            $input = $input . ($Ifacet_seg_tok ? " \$Ifacet_seg_tok" : "")  . ($Ifacettxt ? " \$Ifacettxt" : "") ;
             }
         if( hasArgument("Iformat") )
             {
             $Iformatflat = existsArgumentWithValue("Iformat", "flat");
-            $Iformatteip5 = existsArgumentWithValue("Iformat", "teip5");
-            $echos = $echos . "Iformatflat=$Iformatflat " . "Iformatteip5=$Iformatteip5 ";
-            $input = $input . ($Iformatflat ? " \$Iformatflat" : "")  . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
+            $echos = $echos . "Iformatflat=$Iformatflat ";
+            $input = $input . ($Iformatflat ? " \$Iformatflat" : "") ;
             }
         if( hasArgument("Ilang") )
             {
@@ -361,16 +336,16 @@ try {
         if( hasArgument("Ipres") )
             {
             $Ipresnml = existsArgumentWithValue("Ipres", "nml");
-            $Ipressof = existsArgumentWithValue("Ipres", "sof");
-            $echos = $echos . "Ipresnml=$Ipresnml " . "Ipressof=$Ipressof ";
-            $input = $input . ($Ipresnml ? " \$Ipresnml" : "")  . ($Ipressof ? " \$Ipressof" : "") ;
+            $echos = $echos . "Ipresnml=$Ipresnml ";
+            $input = $input . ($Ipresnml ? " \$Ipresnml" : "") ;
             }
         if( hasArgument("Isml") )
             {
+            $IsmlTOK = existsArgumentWithValue("Isml", "TOK");
             $IsmlTXT = existsArgumentWithValue("Isml", "TXT");
             $Ismlsml = existsArgumentWithValue("Isml", "sml");
-            $echos = $echos . "IsmlTXT=$IsmlTXT " . "Ismlsml=$Ismlsml ";
-            $input = $input . ($IsmlTXT ? " \$IsmlTXT" : "")  . ($Ismlsml ? " \$Ismlsml" : "") ;
+            $echos = $echos . "IsmlTOK=$IsmlTOK " . "IsmlTXT=$IsmlTXT " . "Ismlsml=$Ismlsml ";
+            $input = $input . ($IsmlTOK ? " \$IsmlTOK" : "")  . ($IsmlTXT ? " \$IsmlTXT" : "")  . ($Ismlsml ? " \$Ismlsml" : "") ;
             }
         if( hasArgument("Oambig") )
             {
@@ -395,9 +370,10 @@ try {
             }
         if( hasArgument("Oformat") )
             {
+            $Oformatflat = existsArgumentWithValue("Oformat", "flat");
             $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
-            $echos = $echos . "Oformatteip5=$Oformatteip5 ";
-            $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
+            $echos = $echos . "Oformatflat=$Oformatflat " . "Oformatteip5=$Oformatteip5 ";
+            $output = $output . ($Oformatflat ? " \$Oformatflat" : "")  . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
             }
         if( hasArgument("Olang") )
             {
@@ -420,15 +396,17 @@ try {
             }
         if( hasArgument("Opres") )
             {
+            $Opresnml = existsArgumentWithValue("Opres", "nml");
             $Opressof = existsArgumentWithValue("Opres", "sof");
-            $echos = $echos . "Opressof=$Opressof ";
-            $output = $output . ($Opressof ? " \$Opressof" : "") ;
+            $echos = $echos . "Opresnml=$Opresnml " . "Opressof=$Opressof ";
+            $output = $output . ($Opresnml ? " \$Opresnml" : "")  . ($Opressof ? " \$Opressof" : "") ;
             }
         if( hasArgument("Osml") )
             {
             $OsmlTOK = existsArgumentWithValue("Osml", "TOK");
-            $echos = $echos . "OsmlTOK=$OsmlTOK ";
-            $output = $output . ($OsmlTOK ? " \$OsmlTOK" : "") ;
+            $OsmlTeiP5 = existsArgumentWithValue("Osml", "TeiP5");
+            $echos = $echos . "OsmlTOK=$OsmlTOK " . "OsmlTeiP5=$OsmlTeiP5 ";
+            $output = $output . ($OsmlTOK ? " \$OsmlTOK" : "")  . ($OsmlTeiP5 ? " \$OsmlTeiP5" : "") ;
             }
 
 /*******************************
@@ -512,10 +490,7 @@ try {
         if($mode === 'dry')
             {
             scripinit($inputF,$input,$output);
-            if($F==='')
-                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$IfacettokF \$IfacetsegF \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
-            else
-                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$F $formatI/ \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
+            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties \$F $formatI/ \$CoreNLPfile tmp1 tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
             $rms1 =  "&& rm tmp1 && rm tmp2 ";
             $rms3 = "&& rm \$CoreNLPfile ";
             $command .= " && curl -v -F job=$job -F name=\$CoreNLPfile -F data=@\$CoreNLPfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
@@ -549,28 +524,8 @@ try {
             {
             $tmp1 = tempFileName("corenlp-tmp1");
             $tmp2 = tempFileName("corenlp-tmp2");
-            if($F==='')
-                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $IfacettokF $IfacetsegF $CoreNLPfile $tmp1 $tmp2 " . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsent|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
-            else
-            {
-//                copy($F,"F");
-                $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $F $formatI/ $CoreNLPfile $tmp1 $tmp2 "            . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsent|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
-            }
-            if($IfacettokF === "")
-                {
-                if ($IfacetsegF === "")
-                    {
-                    $rms2 = "";
-                    }
-                else
-                    {
-                    $rms2 = "&& rm $IfacetsegF ";
-                    }
-                }
-            else
-                {
-                $rms2 = "&& rm $IfacettokF && rm $IfacetsegF ";
-                }
+            $command = "../bin/bracmat \"get'\\\"corenlpx.bra\\\"\" $formatO $lang $language $properties $F $formatI/ $CoreNLPfile $tmp1 $tmp2 "            . ($Ofacetcor|0) . ' ' . ($Ofacetlem|0) . ' ' . ($Ofacetmrf|0) . ' ' . ($Ofacetner|0) . ' ' . ($Ofacetpos|0) . ' ' . ($Ofacetseg|0) . ' ' . ($Ofacetsent|0) . ' ' . ($Ofacetsnt|0) . ' ' . ($Ofacetstc|0) . ' ' . ($Ofacetstx|0) . ' ' . ($Ofacettok|0);
+            $rms2 = "&& rm $F ";
             $rms1 =  "&& rm $tmp1 && rm $tmp2 ";
             $rms3 = "&& rm $CoreNLPfile ";
             $command .= " && curl -v -F job=$job -F name=$CoreNLPfile -F data=@$CoreNLPfile $post2 " . $rms1 . $rms2 . $rms3 . " >> ../log/corenlp.log 2>&1 &";
@@ -668,4 +623,3 @@ catch (SystemExit $e)
     echo $ERROR;
     }
 ?>
-

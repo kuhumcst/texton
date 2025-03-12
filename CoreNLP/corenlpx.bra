@@ -170,7 +170,7 @@ X=
               : ?xml
             & ((spanGrp.(ana.!ana),inv$!naps).!xml)
         )
-      & ( collectSyn
+      & ( cutOut
         =   ana B
           .   !arg:(?arg.?what.?ana)
             &     map
@@ -408,6 +408,21 @@ X=
                     )
                 )
             & str$!arg
+        )
+      & ( from2
+        =   fromId toId
+          .     !arg
+              :   ( ?
+                  .   ? ("xml:id".@(?:? (#% ?:?fromId))) ?
+                    , ?
+                  )
+                  ?
+              :   ?
+                  ( ?
+                  .   ? ("xml:id".@(?:? (#% ?:?toId))) ?
+                    , ?
+                  )
+            & (!fromId.!toId)
         )
       & ( removeO
         =   ana spans
@@ -684,7 +699,6 @@ X=
                                                             , ?
                                                           )
                                                           ?
-                                                    &   !segtok
                                                       :   ?
                                                           ( ?
                                                           .       ?
@@ -730,29 +744,7 @@ X=
                                         )
                                       )
                                       ( !parse:
-                                      |     !segtok
-                                          :   ( ?
-                                              .     ?
-                                                    ( "xml:id"
-                                                    . @( ?
-                                                       : ? (#% ?:?fromId)
-                                                       )
-                                                    )
-                                                    ?
-                                                , ?
-                                              )
-                                              ?
-                                          :   ?
-                                              ( ?
-                                              .     ?
-                                                    ( "xml:id"
-                                                    . @( ?
-                                                       : ? (#% ?:?toId)
-                                                       )
-                                                    )
-                                                    ?
-                                                , ?
-                                              )
+                                      |   from2$!segtok:(?fromId.?toId)
                                         & ( spanGrp
                                           .   (ana.parse)
                                             , ( span
@@ -771,29 +763,7 @@ X=
                                           )
                                       )
                                       ( !sentiment:
-                                      |     !segtok
-                                          :   ( ?
-                                              .     ?
-                                                    ( "xml:id"
-                                                    . @( ?
-                                                       : ? (#% ?:?fromId)
-                                                       )
-                                                    )
-                                                    ?
-                                                , ?
-                                              )
-                                              ?
-                                          :   ?
-                                              ( ?
-                                              .     ?
-                                                    ( "xml:id"
-                                                    . @( ?
-                                                       : ? (#% ?:?toId)
-                                                       )
-                                                    )
-                                                    ?
-                                                , ?
-                                              )
+                                      |   from2$!segtok:(?fromId.?toId)
                                         & ( spanGrp
                                           .   (ana.sentiment)
                                             , ( span
@@ -813,6 +783,27 @@ X=
                                               )
                                           )
                                       )
+                                      ( !sentimentTree:
+                                      |   from2$!segtok:(?fromId.?toId)
+                                        & ( spanGrp
+                                          .   (ana.sentimentTree)
+                                            , ( span
+                                              .     ( "xml:id"
+                                                    .   str
+                                                      $ ( sent
+                                                          ( 1+!sentId
+                                                          : ?sentId
+                                                          )
+                                                        )
+                                                    )
+                                                    (from.str$("#t" !fromId))
+                                                    ( !toId:!fromId
+                                                    | (to.str$("#t" !toId))
+                                                    )
+                                                , !sentimentTree
+                                              )
+                                          )
+                                      )
                                       (.s.)
                               )
                             . !sentences
@@ -822,19 +813,21 @@ X=
                       : ?XML
                     & cor lem mrf ner pos seg sent snt stc stx tok
                     & (   !stc:1
-                        & collectSyn$(!XML.parse.parse):(?spanGrpStc.?XML)
+                        & cutOut$(!XML.parse.parse):(?spanGrpStc.?XML)
                       | 
                       )
                     & (   !stx:1
-                        & collectSyn$(!XML.depparse.depparse):(?spanGrpSyn.?XML)
+                        & cutOut$(!XML.depparse.depparse):(?spanGrpSyn.?XML)
                       | 
                       )
                     & (   !snt:1
-                        & collectSyn$(!XML.sentiment.sentiment):(?spanGrpSnt.?XML)
+                        & cutOut$(!XML.sentiment.sentiment):(?spanGrpSnt.?XML)
+                        &   cutOut$(!XML.sentimentTree.sentimentTree)
+                          : (?spanGrpSntTree.?XML)
                       | 
                       )
                     & (   !ner:1
-                        &   collectSyn$(!XML.entitymentions.entitymentions)
+                        &   cutOut$(!XML.entitymentions.entitymentions)
                           : (?spanGrpEntitymentions.?XML)
                       | 
                       )
@@ -896,7 +889,7 @@ X=
                         ( !stx:1&!spanGrpSyn
                         | 
                         )
-                        ( !snt:1&!spanGrpSnt
+                        ( !snt:1&!spanGrpSnt !spanGrpSntTree
                         | 
                         )
                         ( !cor:1&!spanGrpCor
@@ -1138,6 +1131,50 @@ X=
                   )
                 )
         )
+      & ( getSentiment
+        =   
+          .   !arg:? (TEI.?,? (text.,?spanGrps) ?) ?
+            &   !spanGrps
+              : ? (spanGrp.(ana.sentiment),?sentiment) ?
+              : ? (spanGrp.(ana.sentimentTree),?sentimentTree) ?
+            & ( words
+              =   
+                .   vap
+                  $ ( ( 
+                      =   
+                        .     vap$(.!arg." "):? %@?arg
+                            & " " !arg
+                          | 
+                      )
+                    . !tree
+                    . ")"
+                    )
+              )
+            &   str
+              $ ( map
+                $ ( ( 
+                    =   from to value
+                      .     !arg
+                          : ( span
+                            .     ? (from.?from) ?
+                                : ? (to.?to) ?
+                              , ?value
+                            )
+                        & (     !sentimentTree
+                              :   ( span
+                                  .     ? (from.!from) ?
+                                      : ? (to.!to) ?
+                                    , ?tree
+                                  )
+                                  ?sentimentTree
+                            & !value ":" words$!tree \n !tree \n\n
+                          | !value \n\n
+                          )
+                    )
+                  . !sentiment
+                  )
+                )
+        )
       & ( transform
         =     Tokenized/SegmentedPlainText tmp1 tmp2 formatO lang language properties
             , cor lem mrf ner pos seg sent snt stc stx tok
@@ -1251,11 +1288,11 @@ X=
             & put$(\n\n,"../log/CoreNLP.log",APP)
             & callInChunks$(!Tokenized/SegmentedPlainText.!properties):?json
             & ( !formatO:json&jsn$!json
-              |   str
-                $ ( toML
-                  $ ( (its.turnJSONintoTEIP5)
+              |       (its.turnJSONintoTEIP5)
                     $ (!json.!cor,!lem,!mrf,!ner,!pos,!seg,!sent,!snt,!stc,!stx,!tok)
-                    )
+                  : ?spanGrps
+                & ( !formatO:flat&getSentiment$!spanGrps
+                  | str$(toML$!spanGrps)
                   )
               )
         )
