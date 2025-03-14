@@ -755,7 +755,8 @@ X=
                                                         )
                                                     )
                                                     (from.str$("#t" !fromId))
-                                                    ( !toId:!fromId
+                                                    (   !toId:!fromId
+                                                      & 
                                                     | (to.str$("#t" !toId))
                                                     )
                                                 , !parse
@@ -776,7 +777,8 @@ X=
                                                         )
                                                     )
                                                     (from.str$("#t" !fromId))
-                                                    ( !toId:!fromId
+                                                    (   !toId:!fromId
+                                                      & 
                                                     | (to.str$("#t" !toId))
                                                     )
                                                 , !sentiment
@@ -797,7 +799,8 @@ X=
                                                         )
                                                     )
                                                     (from.str$("#t" !fromId))
-                                                    ( !toId:!fromId
+                                                    (   !toId:!fromId
+                                                      & 
                                                     | (to.str$("#t" !toId))
                                                     )
                                                 , !sentimentTree
@@ -903,13 +906,14 @@ X=
       , xmlseg xmltok lang language properties
       , cor lem mrf ner pos seg sent snt stc stx tok
     .   ( turnTEIP5intoPlain
-        =   
+        =   fr to inputtok inputseg word
           .   !arg:(?inputtok.?inputseg)
             &   !inputseg
               :   ( span
                   .     ? (from.@(?:"#" ?fr)) ?
-                      : ? (to.@(?:"#" ?to)) ?
-                      : ? ("xml:id".?Sid) ?
+                      : ( ? (to.@(?:"#" ?to)) ?
+                        | ?&!fr:?to
+                        )
                     , 
                   )
                   ?inputseg
@@ -923,24 +927,21 @@ X=
                               : ? ("xml:id".?Tid) ?
                             , ?word
                           )
-                      &   !sep
-                          ( (   !Tid:!to
-                              & 1:?wno
-                              & \n:?sep
-                              &   !inputseg
-                                :   ( span
-                                    .     ? (from.@(?:"#" ?fr)) ?
-                                        : ? (to.@(?:"#" ?to)) ?
-                                        : ? ("xml:id".?Sid) ?
-                                      , 
-                                    )
-                                    ?inputseg
-                            |   1+!wno:?wno
-                              & :?sep
-                            )
-                          & !word
-                          )
+                      &   !word
                           " "
+                          (   !Tid:!to
+                            &   !inputseg
+                              :   ( span
+                                  .     ? (from.@(?:"#" ?fr)) ?
+                                      : ( ? (to.@(?:"#" ?to)) ?
+                                        | ?&!fr:?to
+                                        )
+                                    , 
+                                  )
+                                  ?inputseg
+                            & \n
+                          | 
+                          )
                   )
                 . !inputtok
                 )
@@ -1157,13 +1158,17 @@ X=
                       .     !arg
                           : ( span
                             .     ? (from.?from) ?
-                                : ? (to.?to) ?
+                                : ( ? (to.?to) ?
+                                  | ?&!from:?to
+                                  )
                               , ?value
                             )
                         & (     !sentimentTree
                               :   ( span
                                   .     ? (from.!from) ?
-                                      : ? (to.!to) ?
+                                      :   ?
+                                          (to|from.!to)
+                                          ?
                                     , ?tree
                                   )
                                   ?sentimentTree
@@ -1199,13 +1204,13 @@ X=
                 . ?tok
                 )
             & ( doChunk
-              =   chunk
-                .   !arg:?chunk
+              =   chunk JSON theText tmp1 properties tmp2 command RETURN
+                .   !arg:(?chunk.?tmp1.?properties.?tmp2)
                   &   put
                     $ (   str
                         $ ( map
                           $ ( ( 
-                              = .!arg:(.?arg)&!arg \n
+                              = .!arg:(.?arg)&!arg \n\n
                               )
                             . !chunk
                             )
@@ -1213,6 +1218,7 @@ X=
                       , !tmp1
                       , NEW
                       )
+                  & get$(!tmp1,STR):?theText
                   & (       str
                           $ ( "wget --post-file "
                               !tmp1
@@ -1223,10 +1229,12 @@ X=
                               " --"
                             )
                         : ?command
-                      & sys$!command:0
+                      & sys$!command:?RETURN
+                      & !RETURN:0
                       & get$(!tmp2,JSN)
                     |     put
-                        $ ( str$("cannot execute command [" !command "]\n")
+                        $ ( str$("cannot execute command [" !command "]
+RETURN CODE: " !RETURN)
                           , "../log/CoreNLP.log"
                           , APP
                           , BIN
@@ -1237,15 +1245,34 @@ X=
             & ( callInChunks
               =   JSON properties Tokenized/SegmentedPlainText linesz chunk
                 .   !arg:(?Tokenized/SegmentedPlainText.?properties)
-                  &   vap$((=..!arg).!Tokenized/SegmentedPlainText.\n)
+                  &     vap
+                      $ ( ( 
+                          =   
+                            . 
+                            .   vap
+                              $ ( ( 
+                                  =   
+                                    .   whl'@(!arg:" " ?arg)
+                                      & whl'@(!arg:?arg " ")
+                                      & !arg
+                                  )
+                                . !arg
+                                . \r
+                                )
+                          )
+                        . !Tokenized/SegmentedPlainText
+                        . \n
+                        )
                     : ?linesz
                   & :?JSON
                   &   whl
                     ' ( !linesz:?chunk (.) ?linesz
-                      & doChunk$!chunk !JSON:?JSON
+                      & ( !chunk:
+                        | doChunk$(!chunk.!tmp1.!properties.!tmp2) !JSON:?JSON
+                        )
                       )
                   & ( !linesz:
-                    | doChunk$!linesz !JSON:?JSON
+                    | doChunk$(!linesz.!tmp1.!properties.!tmp2) !JSON:?JSON
                     )
                   & :?L
                   &   whl
@@ -1285,7 +1312,6 @@ X=
               : ?properties
             & put$(str$(\n "properties:" \n),"../log/CoreNLP.log",APP)
             & lst$(properties,"../log/CoreNLP.log",APP,RAW)
-            & put$(\n\n,"../log/CoreNLP.log",APP)
             & callInChunks$(!Tokenized/SegmentedPlainText.!properties):?json
             & ( !formatO:json&jsn$!json
               |       (its.turnJSONintoTEIP5)
@@ -1361,7 +1387,7 @@ X=
             . !tok
             )
         : ?OuTput
-      & put$(!OuTput,!output,NEW)
+      & put$(str$!OuTput,!output,NEW)
   )
   ( new
   =   
