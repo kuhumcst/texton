@@ -436,469 +436,339 @@ X=
               )
         )
       & 0:?entId:?sentId:?depId:?synId
+      &     (p.)
+              mop
+            $ ( ( 
+                =   sind lemma ner pos
+                  .   1+!s:?s
+                    &   !arg
+                      : (   ?+(index.?sind)+?+(tokens.,?tokens)+?
+                          : ( ?+(entitymentions.,?entitymentions)+?
+                            | ?&:?entitymentions
+                            )
+                          : (   ?
+                              & !stc:0
+                              & :?parse
+                            | ?+(parse..?parse)+?
+                            | ?&:?parse
+                            )
+                          : ( ?+(sentiment..?sentiment)+?
+                            | ?&:?sentiment
+                            )
+                          : ( ?+(sentimentDistribution.,?sentimentDistribution)+?
+                            | ?&:?sentimentDistribution
+                            )
+                          : ( ?+(sentimentTree..?sentimentTree)+?
+                            | ?&:?sentimentTree
+                            )
+                          : ( ?+(sentimentValue..?sentimentValue)+?
+                            | ?&:?sentimentValue
+                            )
+                        , 
+                        )
+                    & (   !stx:1
+                        &   !arg
+                          : (   ?+(enhancedPlusPlusDependencies.,?deps)+?
+                              | ?+(enhancedDependencies.,?deps)+?
+                              | ?+(basicDependencies.,?deps)+?
+                              | ?&:?deps
+                            , 
+                            )
+                      | :?deps
+                      )
+                    &   (   !tokens:(?+(before..?before)+?,) ?
+                          & @(!before:(? \n ?|? \r ?))
+                          & (.p.) (p.)
+                        | 
+                        )
+                        (s.)
+                        (     map
+                            $ ( ( 
+                                =   
+                                  .     !arg
+                                      : (   ( ?+(before..?before)+?
+                                            |   ?
+                                              & :?before
+                                            )
+                                          :   ?
+                                            + (characterOffsetBegin.?characterOffsetBegin)
+                                            + (characterOffsetEnd.?characterOffsetEnd)
+                                            + ?
+                                          : ( ?+(index.?index)+?
+                                            | ?&:?index
+                                            )
+                                          : ( ?+(lemma..?lemma)+?
+                                            | ?&:?lemma
+                                            )
+                                          : ( ?+(ner..?ner)+?
+                                            | ?&:?ner
+                                            )
+                                          : ( ?+(originalText..?originalText)+?
+                                            |   ?
+                                              & :?originalText
+                                            )
+                                          : ( ?+(pos..?pos)+?
+                                            | ?&:?pos
+                                            )
+                                          : (   ?+(word..?word)+?
+                                              & (   !word:
+                                                  & low$!pos:?word
+                                                | 
+                                                )
+                                            | ?&:?word
+                                            )
+                                        , 
+                                        )
+                                    &   ( !before:
+                                        | ( c
+                                          .     trim$!before:
+                                              & ((type.s),)
+                                            | ((type.p),!before)
+                                          )
+                                        )
+                                          divvy
+                                        $ ( !sind
+                                          . !index
+                                          . !lemma
+                                          . !ner
+                                          . !originalText
+                                          . !pos
+                                          . !word
+                                          . !characterOffsetBegin
+                                          . !characterOffsetEnd
+                                          )
+                                )
+                              . !tokens
+                              )
+                          : (   (c.? (type.s) ?,)
+                                ?segtok
+                            | ?segtok
+                            )
+                        & idfy$!segtok:?segtok
+                        )
+                        ( !deps:
+                        | ( spanGrp
+                          .   (ana.depparse)
+                            ,   map
+                              $ ( ( 
+                                  =   
+                                    .       !arg
+                                          : (   (dep..?dep)
+                                              + (dependent.?dependent)
+                                              + (dependentGloss..?dependentGloss)
+                                              + (governor.?governor)
+                                              + (governorGloss..?governorGloss)
+                                            , 
+                                            )
+                                        & ( span
+                                          .     ( "xml:id"
+                                                .   str
+                                                  $ (dep (1+!depId:?depId))
+                                                )
+                                                (from.str$("#t" !sind "." !dependent))
+                                            ,   (   !governor:>0
+                                                  & ( link
+                                                    .   ( target
+                                                        .   str
+                                                          $ ("#t" !sind "." !governor)
+                                                        )
+                                                      , 
+                                                    )
+                                                | 
+                                                )
+                                                (term.,!dep)
+                                          )
+                                      | 
+                                  )
+                                . !deps
+                                )
+                          )
+                        )
+                        ( !entitymentions:
+                        | ( spanGrp
+                          .   (ana.entitymentions)
+                            ,   map
+                              $ ( ( 
+                                  =   
+                                    .     !arg
+                                        : (     (characterOffsetBegin.?characterOffsetBegin)
+                                              + (characterOffsetEnd.?characterOffsetEnd)
+                                              + ?
+                                              + (ner..?ner)
+                                              + ?
+                                              + (text..?text)
+                                              + ?
+                                            : ( ?+(normalizedNER..?normalizedNER)+?
+                                              |   ?
+                                                & :?normalizedNER
+                                              )
+                                          , 
+                                          )
+                                      &   !segtok
+                                        :   ?
+                                            ( ?
+                                            .       ?
+                                                    ( characterOffsetBegin
+                                                    . !characterOffsetBegin
+                                                    )
+                                                    ?
+                                                :   ?
+                                                    ( "xml:id"
+                                                    . @( ?
+                                                       : ? (#% ?:?fromId)
+                                                       )
+                                                    )
+                                                    ?
+                                              , ?
+                                            )
+                                            ?
+                                        :   ?
+                                            ( ?
+                                            .       ?
+                                                    (characterOffsetEnd.!characterOffsetEnd)
+                                                    ?
+                                                :   ?
+                                                    ( "xml:id"
+                                                    . @( ?
+                                                       : ? (#% ?:?toId)
+                                                       )
+                                                    )
+                                                    ?
+                                              , ?
+                                            )
+                                            ?
+                                      & ( span
+                                        .     ( "xml:id"
+                                              .   str
+                                                $ (ent (1+!entId:?entId))
+                                              )
+                                              (from.str$("#t" !fromId))
+                                              (   !fromId:!toId
+                                                & 
+                                              | (to.str$("#t" !toId))
+                                              )
+                                              (type.!ner)
+                                          ,   !normalizedNER:~
+                                            | !text
+                                        )
+                                  )
+                                . !entitymentions
+                                )
+                          )
+                        )
+                        ( !parse:
+                        |   from2$!segtok:(?fromId.?toId)
+                          & ( spanGrp
+                            .   (ana.parse)
+                              , ( span
+                                .     ("xml:id".str$(syn (1+!synId:?synId)))
+                                      (from.str$("#t" !fromId))
+                                      ( !toId:!fromId&
+                                      | (to.str$("#t" !toId))
+                                      )
+                                  , !parse
+                                )
+                            )
+                        )
+                        ( !sentiment:
+                        |   from2$!segtok:(?fromId.?toId)
+                          & ( spanGrp
+                            .   (ana.sentiment)
+                              , ( span
+                                .     ("xml:id".str$(sent (1+!sentId:?sentId)))
+                                      (from.str$("#t" !fromId))
+                                      ( !toId:!fromId&
+                                      | (to.str$("#t" !toId))
+                                      )
+                                  , !sentiment
+                                )
+                            )
+                        )
+                        ( !sentimentTree:
+                        |   from2$!segtok:(?fromId.?toId)
+                          & ( spanGrp
+                            .   (ana.sentimentTree)
+                              , ( span
+                                .     ("xml:id".str$(sent (1+!sentId:?sentId)))
+                                      (from.str$("#t" !fromId))
+                                      ( !toId:!fromId&
+                                      | (to.str$("#t" !toId))
+                                      )
+                                  , !sentimentTree
+                                )
+                            )
+                        )
+                        (.s.)
+                )
+              . !sentences
+              . (=a b)
+              )
+            (.p.)
+        : ?XML
+      & cor lem mrf ner pos seg sent snt stc stx tok
+      & (   !stc:1
+          & cutOut$(!XML.parse.parse):(?spanGrpStc.?XML)
+        | 
+        )
+      & (   !stx:1
+          & cutOut$(!XML.depparse.depparse):(?spanGrpSyn.?XML)
+        | 
+        )
+      & (   !snt:1
+          & cutOut$(!XML.sentiment.sentiment):(?spanGrpSnt.?XML)
+          & cutOut$(!XML.sentimentTree.sentimentTree):(?spanGrpSntTree.?XML)
+        | 
+        )
+      & (   !ner:1
+          & cutOut$(!XML.entitymentions.entitymentions):(?spanGrpEntitymentions.?XML)
+        | 
+        )
+      & standoff$(token,token,i,t.!XML):(?spanGrpTok.?XML)
+      & stand2off$(lemma,lemma,l.!XML.!spanGrpTok):(?spanGrpLemma.?XML)
+      & stand2off$(pos,pos,p.!XML.!spanGrpTok):(?spanGrpPos.?XML)
+      & stand2off$(ner,ner,n.!XML.!spanGrpTok):(?spanGrpNer.?XML)
+      & removeO$!spanGrpNer:?spanGrpNer
+      &     map
+          $ ( ( 
+              =   
+                .       !arg
+                      : ( ?e
+                        .     ?a
+                              (characterOffsetBegin.?)
+                              (characterOffsetEnd.?)
+                              ?z
+                          , ?c
+                        )
+                    & (!e.!a !z,!c)
+                  | !arg
+              )
+            . !XML
+            )
+        : ?XML
+      & nestML$!XML:?XML
+      & sentence$!XML:?spanGrpSent
+      & segment$(!spanGrpSent.!spanGrpTok):?spanGrpSeg
+      &     !XML
+            (!tok:1&!spanGrpTok|)
+            (!sent:1&!spanGrpSent|)
+            (!seg:1&!spanGrpSeg|)
+            (!mrf:1&!spanGrpMrf|)
+            (!pos:1&!spanGrpPos|)
+            ( !ner:1&!spanGrpNer !spanGrpEntitymentions
+            | 
+            )
+            (!lem:1&!spanGrpLemma|)
+            (!stc:1&!spanGrpStc|)
+            (!stx:1&!spanGrpSyn|)
+            ( !snt:1&!spanGrpSnt !spanGrpSntTree
+            | 
+            )
+            (!cor:1&!spanGrpCor|)
+        : ?XML
       &   ("?"."xml version=\"1.0\" encoding=\"UTF-8\"")
           ( TEI
           .   (xmlns."http://www.tei-c.org/ns/1.0")
-            ,   (teiHeader.,)
-                ( text
-                .   
-                  ,       (p.)
-                            mop
-                          $ ( ( 
-                              =   sind lemma ner pos
-                                .   1+!s:?s
-                                  &   !arg
-                                    : (   ?+(index.?sind)+?+(tokens.,?tokens)+?
-                                        : ( ?+(entitymentions.,?entitymentions)+?
-                                          |   ?
-                                            & :?entitymentions
-                                          )
-                                        : (   ?
-                                            & !stc:0
-                                            & :?parse
-                                          | ?+(parse..?parse)+?
-                                          | ?&:?parse
-                                          )
-                                        : ( ?+(sentiment..?sentiment)+?
-                                          |   ?
-                                            & :?sentiment
-                                          )
-                                        : (   ?
-                                            + ( sentimentDistribution
-                                              . ,?sentimentDistribution
-                                              )
-                                            + ?
-                                          |   ?
-                                            & :?sentimentDistribution
-                                          )
-                                        : ( ?+(sentimentTree..?sentimentTree)+?
-                                          |   ?
-                                            & :?sentimentTree
-                                          )
-                                        : ( ?+(sentimentValue..?sentimentValue)+?
-                                          |   ?
-                                            & :?sentimentValue
-                                          )
-                                      , 
-                                      )
-                                  & (   !stx:1
-                                      &   !arg
-                                        : (   ?+(enhancedPlusPlusDependencies.,?deps)+?
-                                            | ?+(enhancedDependencies.,?deps)+?
-                                            | ?+(basicDependencies.,?deps)+?
-                                            | ?&:?deps
-                                          , 
-                                          )
-                                    | :?deps
-                                    )
-                                  &   (     !tokens
-                                          :   (?+(before..?before)+?,)
-                                              ?
-                                        & @( !before
-                                           : (? \n ?|? \r ?)
-                                           )
-                                        & (.p.) (p.)
-                                      | 
-                                      )
-                                      (s.)
-                                      (     map
-                                          $ ( ( 
-                                              =   
-                                                .     !arg
-                                                    : (   (   ?
-                                                            + (before..?before)
-                                                            + ?
-                                                          |   ?
-                                                            & :?before
-                                                          )
-                                                        :   ?
-                                                          + ( characterOffsetBegin
-                                                            . ?characterOffsetBegin
-                                                            )
-                                                          + ( characterOffsetEnd
-                                                            . ?characterOffsetEnd
-                                                            )
-                                                          + ?
-                                                        : ( ?+(index.?index)+?
-                                                          |   ?
-                                                            & :?index
-                                                          )
-                                                        : ( ?+(lemma..?lemma)+?
-                                                          |   ?
-                                                            & :?lemma
-                                                          )
-                                                        : ( ?+(ner..?ner)+?
-                                                          |   ?
-                                                            & :?ner
-                                                          )
-                                                        : (   ?
-                                                            + ( originalText
-                                                              . 
-                                                              . ?originalText
-                                                              )
-                                                            + ?
-                                                          |   ?
-                                                            &   
-                                                              : ?originalText
-                                                          )
-                                                        : ( ?+(pos..?pos)+?
-                                                          |   ?
-                                                            & :?pos
-                                                          )
-                                                        : (   ?+(word..?word)+?
-                                                            & (   !word:
-                                                                &   low$!pos
-                                                                  : ?word
-                                                              | 
-                                                              )
-                                                          |   ?
-                                                            & :?word
-                                                          )
-                                                      , 
-                                                      )
-                                                  &   ( !before:
-                                                      | ( c
-                                                        .       trim$!before
-                                                              : 
-                                                            & ((type.s),)
-                                                          | ( (type.p)
-                                                            , !before
-                                                            )
-                                                        )
-                                                      )
-                                                        divvy
-                                                      $ ( !sind
-                                                        . !index
-                                                        . !lemma
-                                                        . !ner
-                                                        . !originalText
-                                                        . !pos
-                                                        . !word
-                                                        . !characterOffsetBegin
-                                                        . !characterOffsetEnd
-                                                        )
-                                              )
-                                            . !tokens
-                                            )
-                                        : (   ( c
-                                              . ? (type.s) ?,
-                                              )
-                                              ?segtok
-                                          | ?segtok
-                                          )
-                                      & idfy$!segtok:?segtok
-                                      )
-                                      ( !deps:
-                                      | ( spanGrp
-                                        .   (ana.depparse)
-                                          ,   map
-                                            $ ( ( 
-                                                =   
-                                                  .       !arg
-                                                        : (   (dep..?dep)
-                                                            + (dependent.?dependent)
-                                                            + ( dependentGloss
-                                                              . 
-                                                              . ?dependentGloss
-                                                              )
-                                                            + (governor.?governor)
-                                                            + ( governorGloss
-                                                              . 
-                                                              . ?governorGloss
-                                                              )
-                                                          , 
-                                                          )
-                                                      & ( span
-                                                        .     ( "xml:id"
-                                                              .   str
-                                                                $ ( dep
-                                                                    ( 1+!depId
-                                                                    : ?depId
-                                                                    )
-                                                                  )
-                                                              )
-                                                              ( from
-                                                              .   str
-                                                                $ ( "#t"
-                                                                    !sind
-                                                                    "."
-                                                                    !dependent
-                                                                  )
-                                                              )
-                                                          ,   (     !governor
-                                                                  : >0
-                                                                & ( link
-                                                                  .   ( target
-                                                                      .   str
-                                                                        $ ( "#t"
-                                                                            !sind
-                                                                            "."
-                                                                            !governor
-                                                                          )
-                                                                      )
-                                                                    , 
-                                                                  )
-                                                              | 
-                                                              )
-                                                              (term.,!dep)
-                                                        )
-                                                    | 
-                                                )
-                                              . !deps
-                                              )
-                                        )
-                                      )
-                                      ( !entitymentions:
-                                      | ( spanGrp
-                                        .   (ana.entitymentions)
-                                          ,   map
-                                            $ ( ( 
-                                                =   
-                                                  .     !arg
-                                                      : (     ( characterOffsetBegin
-                                                              . ?characterOffsetBegin
-                                                              )
-                                                            + ( characterOffsetEnd
-                                                              . ?characterOffsetEnd
-                                                              )
-                                                            + ?
-                                                            + (ner..?ner)
-                                                            + ?
-                                                            + (text..?text)
-                                                            + ?
-                                                          : (   ?
-                                                              + ( normalizedNER
-                                                                . 
-                                                                . ?normalizedNER
-                                                                )
-                                                              + ?
-                                                            |   ?
-                                                              &   
-                                                                : ?normalizedNER
-                                                            )
-                                                        , 
-                                                        )
-                                                    &   !segtok
-                                                      :   ?
-                                                          ( ?
-                                                          .       ?
-                                                                  ( characterOffsetBegin
-                                                                  . !characterOffsetBegin
-                                                                  )
-                                                                  ?
-                                                              :   ?
-                                                                  ( "xml:id"
-                                                                  . @( ?
-                                                                     :   ?
-                                                                         ( #% ?
-                                                                         : ?fromId
-                                                                         )
-                                                                     )
-                                                                  )
-                                                                  ?
-                                                            , ?
-                                                          )
-                                                          ?
-                                                      :   ?
-                                                          ( ?
-                                                          .       ?
-                                                                  ( characterOffsetEnd
-                                                                  . !characterOffsetEnd
-                                                                  )
-                                                                  ?
-                                                              :   ?
-                                                                  ( "xml:id"
-                                                                  . @( ?
-                                                                     :   ?
-                                                                         ( #% ?
-                                                                         : ?toId
-                                                                         )
-                                                                     )
-                                                                  )
-                                                                  ?
-                                                            , ?
-                                                          )
-                                                          ?
-                                                    & ( span
-                                                      .     ( "xml:id"
-                                                            .   str
-                                                              $ ( ent
-                                                                  ( 1+!entId
-                                                                  : ?entId
-                                                                  )
-                                                                )
-                                                            )
-                                                            (from.str$("#t" !fromId))
-                                                            (     !fromId
-                                                                : !toId
-                                                              & 
-                                                            | (to.str$("#t" !toId))
-                                                            )
-                                                            (type.!ner)
-                                                        ,   !normalizedNER:~
-                                                          | !text
-                                                      )
-                                                )
-                                              . !entitymentions
-                                              )
-                                        )
-                                      )
-                                      ( !parse:
-                                      |   from2$!segtok:(?fromId.?toId)
-                                        & ( spanGrp
-                                          .   (ana.parse)
-                                            , ( span
-                                              .     ( "xml:id"
-                                                    .   str
-                                                      $ ( syn
-                                                          (1+!synId:?synId)
-                                                        )
-                                                    )
-                                                    (from.str$("#t" !fromId))
-                                                    (   !toId:!fromId
-                                                      & 
-                                                    | (to.str$("#t" !toId))
-                                                    )
-                                                , !parse
-                                              )
-                                          )
-                                      )
-                                      ( !sentiment:
-                                      |   from2$!segtok:(?fromId.?toId)
-                                        & ( spanGrp
-                                          .   (ana.sentiment)
-                                            , ( span
-                                              .     ( "xml:id"
-                                                    .   str
-                                                      $ ( sent
-                                                          ( 1+!sentId
-                                                          : ?sentId
-                                                          )
-                                                        )
-                                                    )
-                                                    (from.str$("#t" !fromId))
-                                                    (   !toId:!fromId
-                                                      & 
-                                                    | (to.str$("#t" !toId))
-                                                    )
-                                                , !sentiment
-                                              )
-                                          )
-                                      )
-                                      ( !sentimentTree:
-                                      |   from2$!segtok:(?fromId.?toId)
-                                        & ( spanGrp
-                                          .   (ana.sentimentTree)
-                                            , ( span
-                                              .     ( "xml:id"
-                                                    .   str
-                                                      $ ( sent
-                                                          ( 1+!sentId
-                                                          : ?sentId
-                                                          )
-                                                        )
-                                                    )
-                                                    (from.str$("#t" !fromId))
-                                                    (   !toId:!fromId
-                                                      & 
-                                                    | (to.str$("#t" !toId))
-                                                    )
-                                                , !sentimentTree
-                                              )
-                                          )
-                                      )
-                                      (.s.)
-                              )
-                            . !sentences
-                            . (=a b)
-                            )
-                          (.p.)
-                      : ?XML
-                    & cor lem mrf ner pos seg sent snt stc stx tok
-                    & (   !stc:1
-                        & cutOut$(!XML.parse.parse):(?spanGrpStc.?XML)
-                      | 
-                      )
-                    & (   !stx:1
-                        & cutOut$(!XML.depparse.depparse):(?spanGrpSyn.?XML)
-                      | 
-                      )
-                    & (   !snt:1
-                        & cutOut$(!XML.sentiment.sentiment):(?spanGrpSnt.?XML)
-                        &   cutOut$(!XML.sentimentTree.sentimentTree)
-                          : (?spanGrpSntTree.?XML)
-                      | 
-                      )
-                    & (   !ner:1
-                        &   cutOut$(!XML.entitymentions.entitymentions)
-                          : (?spanGrpEntitymentions.?XML)
-                      | 
-                      )
-                    &   standoff$(token,token,i,t.!XML)
-                      : (?spanGrpTok.?XML)
-                    &   stand2off$(lemma,lemma,l.!XML.!spanGrpTok)
-                      : (?spanGrpLemma.?XML)
-                    &   stand2off$(pos,pos,p.!XML.!spanGrpTok)
-                      : (?spanGrpPos.?XML)
-                    &   stand2off$(ner,ner,n.!XML.!spanGrpTok)
-                      : (?spanGrpNer.?XML)
-                    & removeO$!spanGrpNer:?spanGrpNer
-                    &     map
-                        $ ( ( 
-                            =   
-                              .       !arg
-                                    : ( ?e
-                                      .     ?a
-                                            (characterOffsetBegin.?)
-                                            (characterOffsetEnd.?)
-                                            ?z
-                                        , ?c
-                                      )
-                                  & (!e.!a !z,!c)
-                                | !arg
-                            )
-                          . !XML
-                          )
-                      : ?XML
-                    & nestML$!XML:?XML
-                    & sentence$!XML:?spanGrpSent
-                    & segment$(!spanGrpSent.!spanGrpTok):?spanGrpSeg
-                    &   !XML
-                        ( !tok:1&!spanGrpTok
-                        | 
-                        )
-                        ( !sent:1&!spanGrpSent
-                        | 
-                        )
-                        ( !seg:1&!spanGrpSeg
-                        | 
-                        )
-                        ( !mrf:1&!spanGrpMrf
-                        | 
-                        )
-                        ( !pos:1&!spanGrpPos
-                        | 
-                        )
-                        (   !ner:1
-                          & !spanGrpNer !spanGrpEntitymentions
-                        | 
-                        )
-                        ( !lem:1&!spanGrpLemma
-                        | 
-                        )
-                        ( !stc:1&!spanGrpStc
-                        | 
-                        )
-                        ( !stx:1&!spanGrpSyn
-                        | 
-                        )
-                        ( !snt:1&!spanGrpSnt !spanGrpSntTree
-                        | 
-                        )
-                        ( !cor:1&!spanGrpCor
-                        | 
-                        )
-                )
+            , (teiHeader.,) (text.,(body.,!XML))
           )
   )
   ( doit
@@ -1204,7 +1074,7 @@ X=
                 . ?tok
                 )
             & ( doChunk
-              =   chunk JSON theText tmp1 properties tmp2 command RETURN
+              =   chunk JSON tmp1 properties tmp2 command RETURN
                 .   !arg:(?chunk.?tmp1.?properties.?tmp2)
                   &   put
                     $ (   str
@@ -1218,23 +1088,29 @@ X=
                       , !tmp1
                       , NEW
                       )
-                  & get$(!tmp1,STR):?theText
-                  & (       str
-                          $ ( "wget --post-file "
-                              !tmp1
-                              " 'http://localhost:9000/?properties="
-                              !properties
-                              "' -O "
-                              !tmp2
-                              " --"
-                            )
-                        : ?command
-                      & sys$!command:?RETURN
+                  &     str
+                      $ ( "wget --quiet --post-file "
+                          !tmp1
+                          " 'http://localhost:9000/?properties="
+                          !properties
+                          "' -O "
+                          !tmp2
+                          " --"
+                        )
+                    : ?command
+                  & (   sys$!command:?RETURN
                       & !RETURN:0
                       & get$(!tmp2,JSN)
                     |     put
-                        $ ( str$("cannot execute command [" !command "]
-RETURN CODE: " !RETURN)
+                        $ (   str
+                            $ ( \n
+                                "cannot execute command ["
+                                !command
+                                "]\n"
+                                "RETURN CODE: "
+                                !RETURN
+                                \n
+                              )
                           , "../log/CoreNLP.log"
                           , APP
                           , BIN
