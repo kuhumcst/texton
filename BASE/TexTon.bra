@@ -147,6 +147,7 @@ TexTon=
       (Bookmark=Bookmark Marker)
       (Dryrun="Test workflow" "Test arbejdsgang")
       (Usermsg="Send feed back" "Send feedback")
+      (reqstar=span.(class.requiblue),"*")
       ("show workflows"="Show available workflows" "Vis mulige arbejdsgange")
       ( "skip zoom"
       =   "Show available workflows  (Not recommended in this phase)"
@@ -458,7 +459,8 @@ TexTon=
                 : ( ? (size.?size) ?
                   | ?&:?size
                   )
-                : ( ? (required.?required) ?
+                : (   ? REQUIRED ?
+                    & (required.required):?required
                   | ?&:?required
                   )
                 : ( ? (note.?note) ?
@@ -468,12 +470,7 @@ TexTon=
               )
           &   surround
             $ ( !parms
-              .   label
-                $ ( !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
-                  )
+              . label$(!text (!required:|" " !reqstar))
               .   ( input
                   .     (tabindex.1+!tabind:?tabind&0)
                         (type.text)
@@ -484,6 +481,7 @@ TexTon=
                         | (disabled.disabled)
                         )
                         (!size:|(size.!size))
+                        !required
                     , 
                   )
                   !note
@@ -504,7 +502,8 @@ TexTon=
                 : ( ? (size.?size) ?
                   | ?&:?size
                   )
-                : ( ? (required.?required) ?
+                : (   ? REQUIRED ?
+                    & (required.required):?required
                   | ?&:?required
                   )
                 : ( ? (note.?note) ?
@@ -514,12 +513,7 @@ TexTon=
               )
           &   surround
             $ ( !parms
-              .   label
-                $ ( !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
-                  )
+              . label$(!text (!required:|" " !reqstar))
               .   ( input
                   .     (tabindex.1+!tabind:?tabind&0)
                         (type.date)
@@ -530,6 +524,7 @@ TexTon=
                         | (disabled.disabled)
                         )
                         (!size:|(size.!size))
+                        !required
                     , 
                   )
                   !note
@@ -544,7 +539,8 @@ TexTon=
                 : ( ? (desc.?desc) ?
                   | ?&:?desc
                   )
-                : ( ? (required.?required) ?
+                : (   ? REQUIRED ?
+                    & (required.required):?required
                   | ?&:?required
                   )
                 : ( ? (note.?note) ?
@@ -557,12 +553,7 @@ TexTon=
               )
           &   surround
             $ ( !parms
-              .   label
-                $ ( !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
-                  )
+              . label$(!text (!required:|" " !reqstar))
               .   ( textarea
                   .     (tabindex.1+!tabind:?tabind&0)
                         (name.!parm)
@@ -570,6 +561,7 @@ TexTon=
                         (cols.100)
                         (!desc:|(title.!desc))
                         (!placeholder:|(placeholder.!placeholder))
+                        !required
                     ,   @(!val:\n ?)&str$(\n !val)
                       | @(!val:\r\n ?)&str$(\r\n !val)
                       | !val
@@ -586,7 +578,8 @@ TexTon=
                 : ( ? (desc.?desc) ?
                   | ?&:?desc
                   )
-                : ( ? (required.?required) ?
+                : (   ? REQUIRED ?
+                    & (required.required):?required
                   | ?&:?required
                   )
               )
@@ -596,17 +589,13 @@ TexTon=
                     (rows.2)
                     (cols.60)
                     (!desc:|(title.!desc))
+                    !required
                 , trim$!val
               )
               \r\n
               (br.,)
               \r\n
-                label
-              $ ( !text
-                  ( !required:
-                  | " " (span.(class.requiblue),!required)
-                  )
-                )
+              label$(!text (!required:|" " !reqstar))
       )
       ( ToolTitle
       =   
@@ -2728,13 +2717,12 @@ TexTon=
                 : ( ? (size.?size) ?
                   | ?&:?size
                   )
-                : ( ? (required.?required) ?
+                : (   ? REQUIRED ?
+                    & (required.required):?required
                   | ?&:?required
                   )
               )
-          &   ( !required:
-              | (span.(class.requiblue),!required)
-              )
+          &   (!required:|!reqstar)
               (span.,!text)
               \r\n
               ( input
@@ -2744,6 +2732,7 @@ TexTon=
                     (value.)
                     (!desc:|(title.!desc))
                     (!size:|(size.!size))
+                    !required
                 , 
               )
               \r\n
@@ -2757,7 +2746,8 @@ TexTon=
                 : ( ? (desc.?desc) ?
                   | ?&:?desc
                   )
-                : ( ? (required.?required) ?
+                : (   ? REQUIRED ?
+                    & (required.required):?required
                   | ?&:?required
                   )
                 : ( ? (note.?note) ?
@@ -2767,16 +2757,12 @@ TexTon=
               )
           &   surround
             $ ( !parms
-              .   label
-                $ ( !text
-                    ( !required:
-                    | " " (span.(class.requiblue),!required)
-                    )
-                  )
+              . label$(!text (!required:|" " !reqstar))
               .   ( select
                   .     (tabindex.1+!tabind:?tabind&0)
                         (name.!parm)
                         (!desc:|(title.!desc))
+                        !required
                     , \r\n !options
                   )
                   !note
@@ -10179,7 +10165,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                     )
                     (size.40)
-                    (required.span.(class.requiblue),)
+                    REQUIRED
                 )
               submit$(localized$!Usermsg)
               ( !fb:
@@ -13306,20 +13292,14 @@ function main2(evt) {
                                                               .   localized
                                                                 $ !Hjælpetekst
                                                               )
-                                                              ( required
-                                                              .       !"Required / optional  / automatic"
-                                                                    :   ?
-                                                                        ( r
-                                                                        | oneOrMore
-                                                                        )
-                                                                        ?
-                                                                  & ( span
-                                                                    .   ( class
-                                                                        . requiblue
-                                                                        )
-                                                                      , "*"
-                                                                    )
-                                                                | 
+                                                              (     !"Required / optional  / automatic"
+                                                                  :   ?
+                                                                      ( r
+                                                                      | oneOrMore
+                                                                      )
+                                                                      ?
+                                                                & REQUIRED
+                                                              | 
                                                               )
                                                               ( !note:
                                                               | (note.!note)
@@ -13364,20 +13344,14 @@ function main2(evt) {
                                                               .   localized
                                                                 $ !Hjælpetekst
                                                               )
-                                                              ( required
-                                                              .       !"Required / optional  / automatic"
-                                                                    :   ?
-                                                                        ( r
-                                                                        | oneOrMore
-                                                                        )
-                                                                        ?
-                                                                  & ( span
-                                                                    .   ( class
-                                                                        . requiblue
-                                                                        )
-                                                                      , "*"
-                                                                    )
-                                                                | 
+                                                              (     !"Required / optional  / automatic"
+                                                                  :   ?
+                                                                      ( r
+                                                                      | oneOrMore
+                                                                      )
+                                                                      ?
+                                                                & REQUIRED
+                                                              | 
                                                               )
                                                               ( !note:
                                                               | (note.!note)
@@ -13429,20 +13403,14 @@ function main2(evt) {
                                                             ( desc
                                                             . localized$!Hjælpetekst
                                                             )
-                                                            ( required
-                                                            .       !"Required / optional  / automatic"
-                                                                  :   ?
-                                                                      ( r
-                                                                      | oneOrMore
-                                                                      )
-                                                                      ?
-                                                                & ( span
-                                                                  .   ( class
-                                                                      . requiblue
-                                                                      )
-                                                                    , "*"
-                                                                  )
-                                                              | 
+                                                            (     !"Required / optional  / automatic"
+                                                                :   ?
+                                                                    ( r
+                                                                    | oneOrMore
+                                                                    )
+                                                                    ?
+                                                              & REQUIRED
+                                                            | 
                                                             )
                                                             ( !note:
                                                             | (note.!note)
@@ -19559,7 +19527,7 @@ function main2(evt) {
                                 . ToolName
                                 . makeTextFormField
                                 .   (desc.localized$("short unique name" "kort unikt navn"))
-                                    (required."*")
+                                    REQUIRED
                                 )
                                 staticField
                               $ ( !arg
@@ -19572,7 +19540,7 @@ function main2(evt) {
                                       $ ("full name of the tool" "Værktøjets fulde navn")
                                     )
                                     (size.40)
-                                    (required."*")
+                                    REQUIRED
                                 )
                                 staticField
                               $ ( !arg
@@ -19586,7 +19554,7 @@ function main2(evt) {
                                           "må kun indeholde ascii-bogstaver, punktum og cifre"
                                         )
                                     )
-                                    (required."*")
+                                    REQUIRED
                                 )
                             )
                             paragraph
@@ -19596,8 +19564,7 @@ function main2(evt) {
                                 . pblshr
                                 . ToolPublisher
                                 . makeTextFormField
-                                . required
-                                . "*"
+                                . REQUIRED
                                 )
                                 staticField
                               $ ( !arg
@@ -19605,8 +19572,7 @@ function main2(evt) {
                                 . cntPrvdr
                                 . ContentProvider
                                 . makeTextFormField
-                                . required
-                                . "*"
+                                . REQUIRED
                                 )
                                 staticField
                               $ ( !arg
@@ -19614,7 +19580,7 @@ function main2(evt) {
                                 . crtr
                                 . ToolCreator
                                 . makeTextFormField
-                                . (size.25) (required."*")
+                                . (size.25) REQUIRED
                                 )
                             )
                             paragraph
@@ -19656,7 +19622,7 @@ function main2(evt) {
                                     . localized$("URI of documentation" "Dokumentationens URI")
                                     )
                                     (size.40)
-                                    (required."*")
+                                    REQUIRED
                                 )
                                 staticField
                               $ ( !arg
@@ -19700,8 +19666,7 @@ function main2(evt) {
                               . dscrptn
                               . ToolDescription
                               . makeTextAreaFormField
-                              . required
-                              . "*"
+                              . REQUIRED
                               )
                             )
                       )
@@ -24068,8 +24033,7 @@ function main2(evt) {
                           $ ( makeSelectFormField
                             $ ( localized$("Choose a tool" "Vælg et værktøj")
                               . name
-                              .   (options.makeOptionList$(!L.!selected))
-                                  (required."*")
+                              . (options.makeOptionList$(!L.!selected)) REQUIRED
                               )
                             )
                             paragraph
