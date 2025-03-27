@@ -238,6 +238,7 @@ try {
         $Ifacetstx = false;	/* Type of content in input is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ifacettok = false;	/* Type of content in input is tokens (tokens) if true */
         $Iformatteip5 = false;	/* Format in input is TEIP5 if true */
+        $Ilanggml = false;	/* Language in input is Middle Low German (middelnedertysk) if true */
         $Ipressof = false;	/* Assemblage in input is standoff annotations if true */
         $Oambigpru = false;	/* Ambiguity in output is pruned (beskåret) if true */
         $Oambiguna = false;	/* Ambiguity in output is unambiguous (utvetydig) if true */
@@ -251,6 +252,7 @@ try {
         $Ofacetstx = false;	/* Type of content in output is syntax (dependency structure) (syntaks (dependensstruktur)) if true */
         $Ofacettok = false;	/* Type of content in output is tokens (tokens) if true */
         $Oformatteip5 = false;	/* Format in output is TEIP5 if true */
+        $Olanggml = false;	/* Language in output is Middle Low German (middelnedertysk) if true */
         $Opresinl = false;	/* Assemblage in output is inline annotations if true */
         $IfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in input is Universal Part-of-Speech Tagset if true */
         $OfacetposUni = false;	/* Style of type of content PoS-tags (PoS-tags) in output is Universal Part-of-Speech Tagset if true */
@@ -413,6 +415,12 @@ try {
             $echos = $echos . "Iformatteip5=$Iformatteip5 ";
             $input = $input . ($Iformatteip5 ? " \$Iformatteip5" : "") ;
             }
+        if( hasArgument("Ilang") )
+            {
+            $Ilanggml = existsArgumentWithValue("Ilang", "gml");
+            $echos = $echos . "Ilanggml=$Ilanggml ";
+            $input = $input . ($Ilanggml ? " \$Ilanggml" : "") ;
+            }
         if( hasArgument("Ipres") )
             {
             $Ipressof = existsArgumentWithValue("Ipres", "sof");
@@ -450,6 +458,12 @@ try {
             $Oformatteip5 = existsArgumentWithValue("Oformat", "teip5");
             $echos = $echos . "Oformatteip5=$Oformatteip5 ";
             $output = $output . ($Oformatteip5 ? " \$Oformatteip5" : "") ;
+            }
+        if( hasArgument("Olang") )
+            {
+            $Olanggml = existsArgumentWithValue("Olang", "gml");
+            $echos = $echos . "Olanggml=$Olanggml ";
+            $output = $output . ($Olanggml ? " \$Olanggml" : "") ;
             }
         if( hasArgument("Opres") )
             {
@@ -550,6 +564,16 @@ try {
                 {
                 logit("Ofacet lem-mrf-pos-tok");
                 $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" \$Ifacet_seg_tokF \$IfacettokF \$IfacetposF \$IfacetmrfF \$IfacetlemF \"*\" \"*\" \"*\" \$rawXML $xmllint";
+                $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
+                }
+            else if(  $Ofacetlem
+                   && $Ofacetpos
+                   && $Ofacetseg
+                   && $Ofacettok
+                   )
+                {
+                logit("Ofacet lem-pos-seg-tok");
+                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF \"*\" $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
                 $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
                 }
             scrip($command);
@@ -653,6 +677,20 @@ try {
                 $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
                 $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
                 }
+            else if(  $Ofacetlem
+                   && $Ofacetpos
+                   && $Ofacetseg
+                   && $Ofacettok
+                   )
+                {
+                logit("Ofacet lem-pos-seg-tok");
+                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $Ifacet_seg_tokF $IfacettokF $IfacetposF \"*\" $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
+                $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
+                copy($Ifacet_seg_tokF,"IfacetetcF");
+                copy($IfacettokF,"IfacettokF");
+                copy($IfacetposF,"IfacetposF");
+                copy($IfacetlemF,"IfacetlemF");
+                }
             logit($command);
             exec($command);
 
@@ -673,4 +711,3 @@ catch (SystemExit $e)
     echo $ERROR;
     }
 ?>
-
