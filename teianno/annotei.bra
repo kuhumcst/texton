@@ -6,7 +6,7 @@ Retain elements that occur in the TEI P5 input in the output.}
 program-annotei=
   ( doit
   =   Id
-    .   !arg:(?tei.?tok.?pos.?mrf.?lem.?seg.?stx.?ner.?output)
+    .   !arg:(?tagset.?tei.?tok.?pos.?mrf.?lem.?seg.?stx.?ner.?output)
       & get$(!tei,X ML):?XmL
       & nestML$!XmL:?Nest
       &   nestML$(get$(!tei,X ML))
@@ -41,9 +41,10 @@ program-annotei=
                         )
                         ?
                   & (msd.n.seg)
-                | (msd.y.text)
-                |   "pos attribute could be derived from msd substring 'UPosTag=<pos>|', but is generally not the same."
+                |   !mrf:(|"*")
+                  & "pos attribute could be derived from msd substring 'UPosTag=<pos>|', but is generally not the same."
                   & (pos.y.text)
+                | (msd.y.text)
                 )
               : (?POS.?PCLEMMA.?ANNOTATE)
             & "PCLEMMA = y means: punctuation has lemmas, too."
@@ -188,7 +189,8 @@ program-annotei=
         =   p m
           .   !arg:(?p.?m)
             &   str
-              $ ( "UPosTag="
+              $ ( !tagset
+                  "="
                   !p
                   ( !m:(|"_")&
                   | "|" !m
@@ -1488,7 +1490,8 @@ program-annotei=
     .   ~&"Remove the ~ to merely reformat the code, not run it."
       |   ~
         &   (its.doit)
-          $ ( "C:\\projects\\parlamint\\small\\IfacetsetoF"
+          $ ( UPosTag
+            . "C:\\projects\\parlamint\\small\\IfacetsetoF"
             . "C:\\projects\\parlamint\\small\\IfacettokF"
             . "C:\\projects\\parlamint\\small\\IfacetposF"
             . "C:\\projects\\parlamint\\small\\IfacetmrfF"
@@ -1499,7 +1502,17 @@ program-annotei=
             . "C:\\projects\\parlamint\\small\\small.out.xml"
             )
       |   (its.doit)
-        $ (arg$.arg$.arg$.arg$.arg$.arg$.arg$.arg$.arg$)
+        $ ( arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          . arg$
+          )
   );
 
 r=
