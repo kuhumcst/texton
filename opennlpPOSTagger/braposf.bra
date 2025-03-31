@@ -44,6 +44,16 @@ X=
           .   @(!arg:? #%?sent "." ?)&str$(!sent ".")
             | 
         )
+      & ( units
+        =   
+          .   vap
+            $ ( (=.vap$((=.vap$(.!arg." ")).!arg.\r))
+              . !arg
+              . \n
+              )
+        )
+      & units$!pos:?pos
+      & units$!tokens:?tokens
       &   whl
         ' ( !XMLtok
           : (   (?e.?a) @?A (.!e.) ?XMLtok
@@ -55,25 +65,15 @@ X=
                   )
               & (@(!from:"#" ?from)|)
               & (@(!to:"#" ?to)|)
-              & @( !pos
-                 : %?p (" "|\n|\r) ?pos
-                 )
-              & @( !tokens
-                 : %?w (" "|\n|\r) ?tokens
-                 )
-              & @( rev$!w
-                 : ( ?w (" "|\n|\r) ?
-                   | ?w
-                   )
-                 )
-              & rev$!w:?w
+              & !pos:%?p ?pos
+              & !tokens:%?w ?tokens
               &     ( !e
-                    .       @(low$!A:? !w ?oldA)
+                    .       @(!A:? ~<>!w ?oldA)
                           & sentNo$!t:?sno
                           & (!sno:!snold|0:?nr)
                           &   ("xml:id".str$(p !sno (1+!nr:?nr)))
                               (from.str$("#" !t))
-                        |   @(low$!oldA:? !w ?oldA)
+                        |   @(!oldA:? ~<>!w ?oldA)
                           & sentNo$!oldt:?sno
                           & (!sno:!snold|0:?nr)
                           &   (!e.!a) !A (.!e.) !XMLtok
@@ -97,8 +97,7 @@ X=
       &     ( 
             =   g L
               .   :?L
-                &   whl
-                  ' (!arg:%?g ?arg&!g !L:?L)
+                & whl'(!arg:%?g ?arg&!g !L:?L)
                 & !L
             )
           $ !nXML
@@ -116,10 +115,11 @@ Create TEIP5-DKCLARINANNOTATION XML from token positionss (XML) tokens (flat) an
 "
     , "braposf.bra"
     , NEW
+    , BIN
     )
-& lst'(X,"braposf.bra",APP)
-& put'(\n,"braposf.bra",APP)
-& lst'(r,"braposf.bra",APP)
-& put$(str$("\nnew'" X ";\n"),"braposf.bra",APP);
+& lst'(X,"braposf.bra",APP,WYD,BIN)
+& put'(\n,"braposf.bra",APP,BIN)
+& lst'(r,"braposf.bra",APP,WYD,BIN)
+& put$(str$("\nnew'" X ";\n"),"braposf.bra",APP,BIN);
 
 new'X;
