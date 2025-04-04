@@ -227,6 +227,7 @@ try {
         $periodsubdir = "";
         $Uminus = "-";
         $H = "2";
+        $l = "-"; // Do not convert lemma to lower case. (default)
         //$c = "\$b1[[\$b~1]?\$B]";
         //$c = "\$b[[\$b0]?(\$B)]";
         $cx = "\$b1[[\$b?]~1\$B]";
@@ -470,6 +471,7 @@ try {
             $flexrulessubdir = "/1";
             $flexrules = "flexrules";
             $trigrams = "-T '$toolres/$language/lemmatiser/trigramFrequenciesSorted'";
+            $l = ""; // Convert all lemmas to lowercase
             if($Iperiodc13)
                 {
                 $periodsubdir = "/c13";
@@ -761,7 +763,7 @@ try {
         if($dict !== "")
             $command = $command . " -d'$toolres/$language/lemmatiser/$foptarg$periodsubdir$dict'";
 
-        $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l- $trigrams -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
+        $command = "$toolbin/cstlemma -L -eU -p -t$toptarg -U$Uminus -u$Uminus -H$H -l$l $trigrams -f'$toolres/$language/lemmatiser/$foptarg$periodsubdir$flexrulessubdir/$flexrules' -i $filename -o $tmpno " . $command;
         
 	//copy($filename,"filename");
         logit("commandB:" . $command);
