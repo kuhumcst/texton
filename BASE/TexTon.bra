@@ -439,11 +439,6 @@ TexTon=
             )
       )
       (label=.!arg:|(label.,!arg))
-      ( makeStaticTextFormField
-      =   text val parms
-        .   !arg:(?text.?val.?parms)
-          & surround$(!parms.label$!text.!val)
-      )
       ( makeTextFormField
       =   text parm val desc readonly size required note parms
         .     !arg
@@ -1037,13 +1032,11 @@ TexTon=
           , toolPlumbing "*" simplify disam reorder
           , wf wfs workflow workflowlist saveio toolPattern
         .   ( reorder
-            =     reorderedworkflowlist nr groupIfSameTools
-                , workflow weighted presentable p n
+            =   reorderedworkflowlist nr,workflow weighted presentable p n
               .   ( presentable
                   =     mul2com accumulateAbbreviations findUnvisitedWF
                       , replace insertNameInFirst
-                      , removeWorkflowsPrecedingRefs isReferenced
-                      , deleteReference renameReference
+                      , removeWorkflowsPrecedingRefs renameReference
                       , abbrevs name newseqno newseqnos nrefs ref
                       , refs seq seqno struct wf
                     .   ( mul2com
@@ -1162,41 +1155,6 @@ TexTon=
                               & removeWorkflowsPrecedingRefs$!a !b
                             | !arg
                         )
-                      & "isReferenced and deleteReference: use these to remove
-                         sequence numbers from workflow steps that only feed
-                         into the next step. Currently not used."
-                      & ( 
-                        |   ( isReferenced
-                            =   a b seqno struct
-                              .     !arg:(?seqno.?struct)
-                                  & !struct:(%?a,%?b)
-                                  & ( isReferenced$(!seqno.!a)
-                                    | isReferenced$(!seqno.!b)
-                                    )
-                                | !struct:? (.!seqno.?) ?
-                                |   !struct:%?a %?b
-                                  & ( isReferenced$(!seqno.!a)
-                                    | isReferenced$(!seqno.!b)
-                                    )
-                            )
-                          & ( deleteReference
-                            =   a b struct seqno n m
-                              .   !arg:(?seqno.?struct)
-                                & (   !struct:(%?a,%?b)
-                                    & ( deleteReference$(!seqno.!a):?a
-                                      | deleteReference$(!seqno.!b):?b
-                                      )
-                                    & (!a,!b)
-                                  |   !struct:?a (?n.!seqno.?m) ?b
-                                    & !a (!n..!m) !b
-                                  |   !struct:%?a %?b
-                                    & ( deleteReference$(!seqno.!a):?a
-                                      | deleteReference$(!seqno.!b):?b
-                                      )
-                                    & !a !b
-                                  )
-                            )
-                        )
                       & ( renameReference
                         =   a b struct seq n m seqno nseqno
                           .   !arg:(?seq.?struct)
@@ -1235,10 +1193,7 @@ TexTon=
                       &   whl
                         ' ( !nrefs:(?.?seqno) ?nrefs
                           & 1+!newseqno:?newseqno
-                          & (   (|isReferenced$(!seqno.!struct))
-                              & (!seqno.!newseqno) !newseqnos:?newseqnos
-                            | deleteReference$(!seqno.!struct):?struct
-                            )
+                          & (!seqno.!newseqno) !newseqnos:?newseqnos
                           )
                       &   whl
                         ' ( !newseqnos:%?seq ?newseqnos
@@ -1290,22 +1245,6 @@ TexTon=
                         , (!abbrevs.!struct)
                         )
                   )
-                & ( 
-                  | ( groupIfSameTools
-                    =   L seen a b c B sb
-                      .   0:?L
-                        & :?seen
-                        &   whl
-                          ' ( !arg:((?a.?b.?c),?B)+?arg
-                            & sort$!b:?sb
-                            & ( !seen:? (!sb.?b) ?
-                              | (!sb.!b) !seen:?seen
-                              )
-                            & !L+((!a.!b.!c),!B):?L
-                            )
-                        & !L
-                    )
-                  )
                 &     mop
                     $ ( ( 
                         =   nr workflow
@@ -1317,9 +1256,6 @@ TexTon=
                       . (=+)
                       )
                   : ?reorderedworkflowlist
-                & ( 
-                  | groupIfSameTools$!reorderedworkflowlist:?reorderedworkflowlist
-                  )
                 & :?p
                 & 0:?n
                 &   mop
@@ -10514,29 +10450,6 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                         )
                   )
                 )
-                ( ellipsisje
-                . ( 
-                  =   chrono step cx cy ill
-                    .   !arg:(?step.?chrono.?ill.?cx.?cy)
-                      & (   (Create..path)
-                          + ( attributes
-                            .     ( D
-                                  . 
-                                  .   str
-                                    $ ("M " !cx+3 " " !cy+3 " l -6 0 l 0 6 l 6 0 l 0 -6")
-                                  )
-                                + (fill..grey)
-                                + (stroke..blue)
-                                + (stroke-width.4)
-                              , 
-                            )
-                          + (step.!step)
-                          + (chrono.!chrono)
-                          + (enact.!ill)
-                        , 
-                        )
-                  )
-                )
                 ( ellipsis
                 . ( 
                   =   chrono step cx cy ill
@@ -10704,25 +10617,7 @@ the Items list as input. Step descriptions in the JobStack can look like this:
                             ?
                       & centr$!afrom:(?x1.?y1)
                       & centr$!ato:(?x2.?y2)
-                      &   ( 
-                          | (   (Create..line)
-                              + ( attributes
-                                .     (x1.!x1)
-                                    + (y1.!y1)
-                                    + (x2.!x2)
-                                    + (y2.!y2)
-                                    + (stroke..black)
-                                    + (stroke-width.4)
-                                  , 
-                                )
-                              + (from.!from)
-                              + (to.!to)
-                              + (chrono.!kro)
-                              + (ill.!text)
-                            , 
-                            )
-                          )
-                          (   (Create..path)
+                      &   (   (Create..path)
                             + ( attributes
                               .     (stroke..white)
                                   + (stroke-width.4)
@@ -11655,7 +11550,7 @@ function main2(evt) {
           , planets pointsTTT x y z nameedges
           , MM col degreeSum desc fr nn to
           , xx1 xx2 xmax xmin yy1 yy2 ymax ymin
-          , some breuk F M/planets2 W dampeningDoneDhreshold
+          , some F M/planets2 W dampeningDoneDhreshold
           , degrees dimensions epsilon freezing hasCrossing
           , iterations maxn nlinks noCrossing planets q
           , evry planettitles titlelinks
@@ -11788,11 +11683,6 @@ function main2(evt) {
             )
         .   !arg:(?planettitles.?titlelinks)
           & !planettitles:? [?planets
-          & ( breuk
-            =   a b
-              .   @(!arg:?a "/" ?b)&str$(!a "_" !b)
-                | !arg
-            )
           & 2:?dimensions
           & 2200:?iterations
           & 7/10:?freezing
@@ -13430,25 +13320,7 @@ function main2(evt) {
                                                 |     !"Required / optional  / automatic"
                                                     : ? a ?
                                                   & !"Tekst i grænsefladen":~
-                                                  & ( 
-                                                    |   makeStaticTextFormField
-                                                      $ (   localized
-                                                          $ !"Tekst i grænsefladen"
-                                                        . ( span
-                                                          .   (class.autogen)
-                                                            ,   str
-                                                              $ ( " ("
-                                                                    localized
-                                                                  $ ( autogenerated
-                                                                      "automatisk genereret"
-                                                                    )
-                                                                  ") "
-                                                                )
-                                                          )
-                                                        . surround
-                                                        . div
-                                                        )
-                                                    )
+                                                  & 
                                                 | 
                                                 )
                                           )
@@ -14208,7 +14080,6 @@ function main2(evt) {
                               . !oldoutput,!metadataformat,!1st,!2nd
                               )
                         |   !Submit:Submit
-                          & log$Submit
                           & (   !parms:~(? (Iformat.teip5^?) ?)
                               & canConsumeMetadata$!struct
                               & (   !parms
@@ -14452,6 +14323,7 @@ function main2(evt) {
                           toML
                           v
                           w
+                          TexTon
                           Globals
                           !Globals
                       : ? !arg ?
