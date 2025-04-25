@@ -5790,7 +5790,7 @@ try {
           & saveTable$recentTasks
       )
       ( Pipelines
-      =     i o o-SUpPLEMENT reqtool FP fP fp msg
+      =     i o o-SUpPLEMENT reqtool FP fP fp msg SeparateSmells Sml Flt Smlfp
           , superset userInput prunePipes windFW fintool
           , calls nth parms furtherCheck o2o extractIOfeaturesFromHTTParg
           , A Z reorderedworkflowlist topologicalOrderedTools
@@ -8080,46 +8080,79 @@ try {
                             & !R
                         )
                       & "Union: result includes all features of the bundles combined.
-                         The result of 'Union' can be percolated downstream. (Towards the output.)"
+                         The result of 'Union' can be percolated downstream. (Towards the output.)
+                         Only shared feature values survive.
+                         Exception: all smell sml feature values must survive."
                       & ( Union
-                        =   x y f e g vs ys A Z
-                          .   !arg:(?x.?y)
-                            &   sort
-                              $ (   map
-                                  $ ( ( 
-                                      =   
-                                        .   !arg:(?f,?vs)
-                                          & (   !y:?A (!f,?ys) ?Z
-                                              & !A !Z:?y
-                                              & 1:?g
-                                              &   mop
-                                                $ ( ( 
-                                                    =   
-                                                      .     !g
-                                                          * (     !arg
-                                                                :   ?arg
-                                                                  ^ ( #%*?e
-                                                                    | 1+?e
-                                                                    )
-                                                              & !arg^!e
-                                                            | !arg
+                        =   x y f e g vs ys A Z sav did
+                          .   !arg:(?x.?y):?sav
+                            & :?did
+                            &     sort
+                                $ (   map
+                                    $ ( ( 
+                                        =   
+                                          .   !arg:(?f,?vs)
+                                            & (     !y
+                                                  : ?A (!f,?ys) ?Z
+                                                & !A !Z:?y
+                                                &   (   (|~)
+                                                      & !f:sml
+                                                      &   mop
+                                                        $ ( ( 
+                                                            =   
+                                                              .       !arg
+                                                                    : ?arg^(#*%@?e)
+                                                                  & !arg^!e
+                                                                | !arg
                                                             )
-                                                        : ?g
+                                                          . !vs*!ys
+                                                          . (=*)
+                                                          . (=*)
+                                                          )
+                                                    |   mop
+                                                      $ ( ( 
+                                                          =   
+                                                            .       !arg
+                                                                  :   ?arg
+                                                                    ^ ( #%*?e
+                                                                      |   1+?e
+                                                                        &   did
+                                                                          : ?did
+                                                                        &   log
+                                                                          $ ( "Union$("
+                                                                              !sav
+                                                                              ") arg="
+                                                                              !arg
+                                                                              "^(1+!e)=(1+"
+                                                                              !e
+                                                                              ")"
+                                                                            )
+                                                                      )
+                                                                & !arg^!e
+                                                              | !arg
+                                                          )
+                                                        . !vs*!ys
+                                                        . (=*)
+                                                        . (=*)
+                                                        )
                                                     )
-                                                  . !vs*!ys
-                                                  . (=*)
+                                                  : ?g
+                                                & (   !g:1
+                                                    & 
+                                                  | (!f,!g)
                                                   )
-                                              & (   !g:1
-                                                  & 
-                                                | (!f,!g)
-                                                )
-                                            | !arg
-                                            )
+                                              | !arg
+                                              )
+                                        )
+                                      . !x
                                       )
-                                    . !x
-                                    )
-                                  !y
-                                )
+                                    !y
+                                  )
+                              : ?RE
+                            & ( !did:did&log$(RE !RE)
+                              | 
+                              )
+                            & !RE
                         )
                       & ( Results
                         =   L R OF RF
@@ -8156,7 +8189,7 @@ try {
                             | (harmonizeSubspecsOnSimilarFeatures$!arg:?L.!L)
                         )
                       & ( fromMethods
-                        =   L R OF LF RF sLF sRF Typ
+                        =   L R OF LF RF sLF sRF Typ smR smL uni
                           .   !arg:(?arg.?OF)
                             & (   !arg:%?L*%?R
                                 & fromMethods$(!R.!OF):(?R.?RF)
@@ -8164,13 +8197,18 @@ try {
                                   |   fromToolOrSource$(!L.!OF):(?L.?LF)
                                     & (   ( !L:0
                                           |     !RF
-                                              : ? (sml,%?Typ^?sRF) ?
+                                              : ? (sml,?smR) ?
                                             &   !LF
-                                              : ? (sml,!Typ^?sLF) ?
-                                            & ~(!sRF:!sLF)
+                                              : ? (sml,?smL) ?
+                                            & log$(smR !smR)
+                                            & log$(smL !smL)
+                                            & !smL*!smR:?*?^(%+%)*?
+                                            & log$INCOMPATIBLE
                                           )
                                         & (0.0)
-                                      | (!L*!R.Union$(!RF.!LF))
+                                      |   Union$(!RF.!LF):?uni
+                                        & log$(union !uni RF !RF LF !LF)
+                                        & (!L*!R.!uni)
                                       )
                                   )
                               | fromToolOrSource$(!arg.!OF)
@@ -8623,8 +8661,56 @@ try {
                   & !msg:
                   & log$"Calling fp success"
                   & "prunePipes fails if tooComplex"
+                  & "Flt: 'Wht' is a given smell type.
+                     Input: a potentially ambiguous workflow design, or subtree thereof.
+                     Flt reduces ambiguous workflow designs by weeding out tool outputs that that carry smell Wht, 
+                     but are not the wanted tool Wnt.
+                     The variable FA0 is set to zero as soon as incompatibility is noticed."
+                  & ( Flt
+                    =   I sml
+                      .     !arg:(?I.?arg)
+                          &     mop
+                              $ ( ( 
+                                  =   FA0
+                                    .   1:?FA0
+                                      &   mop
+                                        $ ( ( 
+                                            =   TUL z in sub
+                                              .   !FA0:0
+                                                |   (     !arg
+                                                        : (?TUL,(?z.?in.?sub))
+                                                      & (     !z
+                                                            :   ?
+                                                                ( sml
+                                                                , ?*!Wht^~!Wnt*?
+                                                                )
+                                                                ?
+                                                          & 0
+                                                        |     Flt$!sub
+                                                            : ?sub
+                                                          & ( !sub:0
+                                                            | (!TUL,(!z.!in.!sub))
+                                                            )
+                                                        )
+                                                    | !arg
+                                                    )
+                                                  : ?FA0
+                                            )
+                                          . !arg
+                                          . (=*)
+                                          . (=*)
+                                          )
+                                  )
+                                . !arg
+                                . (=+)
+                                . (=+)
+                                )
+                            : ?arg
+                          & (!arg:0|(!I.!arg))
+                        | !arg
+                    )
                   & ( SeparateSmells
-                    =   FP Sml Flt Smlfp
+                    =   FP NFP
                       .   !arg:?FP
                         & "Sml: Create a sum of (<smell type>.<tool name>) pairs
                            from an analysis of a candidate workflow."
@@ -8636,12 +8722,16 @@ try {
                                       =   
                                         .   mop
                                           $ ( ( 
-                                              =   o Wht TUL
+                                              =   o Wht TUL sml
                                                 .       !arg
                                                       : (?,(?o.?.?arg))
                                                     &   (     !o
                                                             :   ?
-                                                                (sml,@?Wht^@?TUL)
+                                                                ( sml
+                                                                ,   ?sml
+                                                                  &   !sml
+                                                                    : @?Wht^@?TUL
+                                                                )
                                                                 ?
                                                           & (!Wht.!TUL)
                                                         | 0
@@ -8660,75 +8750,11 @@ try {
                                     )
                               | 0
                           )
-                        & "Flt: 'Wht' is a given smell type.
-                           Input: a potentially ambiguous workflow design, or subtree thereof.
-                           Flt reduces ambiguous workflow designs by weeding out tool outputs that that carry smell Wht, 
-                           but are not the wanted tool Wnt.
-                           The variable FA0 is set to zero as soon as incompatibility is noticed."
-                        & ( Flt
-                          =   I
-                            .     !arg:(?I.?arg)
-                                &     mop
-                                    $ ( ( 
-                                        =   FA0
-                                          .   1:?FA0
-                                            &   mop
-                                              $ ( ( 
-                                                  =   TUL z in sub
-                                                    .   !FA0:0
-                                                      |   (     !arg
-                                                              : (?TUL,(?z.?in.?sub))
-                                                            & (     !z
-                                                                  :   ?
-                                                                      ( sml
-                                                                      , !Wht^?tl
-                                                                      )
-                                                                      ?
-                                                                & (     !tl
-                                                                      : !Wnt
-                                                                    &   Flt$!sub
-                                                                      : ?sub
-                                                                    & (   !sub
-                                                                        : 0
-                                                                      | ( !TUL
-                                                                        , ( !z
-                                                                          . !in
-                                                                          . !sub
-                                                                          )
-                                                                        )
-                                                                      )
-                                                                  | 0
-                                                                  )
-                                                              |     Flt$!sub
-                                                                  : ?sub
-                                                                & (   !sub
-                                                                    : 0
-                                                                  | ( !TUL
-                                                                    , (!z.!in.!sub)
-                                                                    )
-                                                                  )
-                                                              )
-                                                          | !arg
-                                                          )
-                                                        : ?FA0
-                                                  )
-                                                . !arg
-                                                . (=*)
-                                                . (=*)
-                                                )
-                                        )
-                                      . !arg
-                                      . (=+)
-                                      . (=+)
-                                      )
-                                  : ?arg
-                                & (!arg:0|(!I.!arg))
-                              | !arg
-                          )
                         & "For each workflow fp, create sum of #*(smell.tool) pairs.
                            Convert sum to product of (smell^tools) factors.
                            If tools consists of just one tool, workflow is OK.
                            "
+                        & 0:?FPNR
                         &   mop
                           $ ( ( 
                               =   sm fp
@@ -8753,23 +8779,25 @@ try {
                                           .   !arg:?Wht^?TLs
                                             & (   !TLs:@
                                                 & !fp
-                                              |   log$(SPLIT-TLs !TLs)
-                                                &   mop
+                                              |     mop
                                                   $ ( ( 
-                                                      =   
+                                                      =   fP
                                                         .   !arg:?Wnt
-                                                          & Flt$!fp
+                                                          & Flt$!fp:?fP
+                                                          & !fP
                                                       )
                                                     . !TLs
                                                     . (=+)
                                                     . (=+)
                                                     )
+                                                : ?fp
                                               )
                                         )
                                       . !sm
                                       . (=*)
                                       . (=+)
                                       )
+                                  & !fp
                               )
                             . !FP
                             . (=+)
