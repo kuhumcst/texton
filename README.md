@@ -7,7 +7,7 @@ The Text Tonsorium may compose many workflows that all lead to your goal.
 It will then ask you to choose one of the proposed workflows.
 
 The original version of the Text Tonsorium was made during the [DK-Clarin project](https://dkclarin.ku.dk/).
-The Text Tonsorium is written in the [Bracmat](https://github.com/BartJongejan/Bracmat) programming language, except for the communication with the user's browser and with the tools (web services in their own right), which is implemented in Java.
+The Text Tonsorium is written in the [Bracmat](https://github.com/BartJongejan/Bracmat) programming language, except for the communication with the user's browser and with the tools (web services in their own right), which is implemented in Java. For the Java part, you need another [GitHub](https://github.com/kuhumcst/texton-Java) repository.
 
 The file textonInstall.txt gives a detailed description of how to install the Text Tonsorium in the Windows Subsystem for Linux.
 
