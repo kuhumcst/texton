@@ -696,10 +696,12 @@ try {
                 logit("Ofacet lem-pos-seg-tok");
                 $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF \"*\" $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
                 $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
+                /*
                 copy($Ifacet_seg_tokF,"IfacetetcF");
                 copy($IfacettokF,"IfacettokF");
                 copy($IfacetposF,"IfacetposF");
                 copy($IfacetlemF,"IfacetlemF");
+                */
                 }
             logit($command);
             exec($command);
