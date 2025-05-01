@@ -28,7 +28,7 @@ RestAPIkey         :
 RestAPIpassword    : 
 MultiInp       : 
 PostData       : 
-Inactive       : on
+Inactive       : 
 */
 
 /*******************
@@ -228,7 +228,9 @@ try {
         $Olanggml = false;	/* Sprog in output is Middle Low German (middelnedertysk) if true */
         $Operiodc13 = false;	/* Historisk periode in output is medieval (middelalderen) if true */
         $Opresnml = false;	/* Sammensætning in output is normal if true */
+        $Ifacetlemasi = false;	/* Style of annotationstype lemmas (lemmaer) in input is as-issom ordet if true */
         $IfacetposHiNTS = false;	/* Style of annotationstype PoS-tags (PoS-tags) in input is HiNTS (Historisches-Niederdeutsch-Tagset) if true */
+        $Ofacetlemnam = false;	/* Style of annotationstype lemmas (lemmaer) in output is names capitalisednavne med stort if true */
 
         if( hasArgument("base") )
             {
@@ -354,14 +356,26 @@ try {
 /*******************************
 * input/output features styles *
 *******************************/
+        if( hasArgument("Ifacetlem") )
+            {
+            $Ifacetlemasi = existsArgumentWithValue("Ifacetlem", "asi");
+            $echos = $echos . "Ifacetlemasi=$Ifacetlemasi ";
+            $input = $input . ($Ifacetlemasi ? " \$Ifacetlemasi" : "") ;
+            }
         if( hasArgument("Ifacetpos") )
             {
             $IfacetposHiNTS = existsArgumentWithValue("Ifacetpos", "HiNTS");
             $echos = $echos . "IfacetposHiNTS=$IfacetposHiNTS ";
             $input = $input . ($IfacetposHiNTS ? " \$IfacetposHiNTS" : "") ;
             }
+        if( hasArgument("Ofacetlem") )
+            {
+            $Ofacetlemnam = existsArgumentWithValue("Ofacetlem", "nam");
+            $echos = $echos . "Ofacetlemnam=$Ofacetlemnam ";
+            $output = $output . ($Ofacetlemnam ? " \$Ofacetlemnam" : "") ;
+            }
 
-//* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
+/* DUMMY CODE TO SANITY CHECK GENERATED SCRIPT (TODO Remove one of the two solidi from the beginning of this line to activate your own code)
         $lemcasefile = tempFileName("lemcase-results");
         $command = "echo $echos >> $lemcasefile";
         logit($command);
@@ -382,6 +396,10 @@ try {
         $lemcasefile = tempFileName("lemcase-results");
         if($mode === 'dry')
             scripinit($inputF,$input,$output);
+        else
+            {
+            copy($IfacetlemF,$lemcasefile);
+            }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $lemcasefile
 //*/
         $tmpf = fopen($lemcasefile,'r');

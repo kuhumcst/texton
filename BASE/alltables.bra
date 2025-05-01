@@ -2020,6 +2020,7 @@ features=
     .   (pos.tagSets)
         (mrf.morfSets)
         (tok.tokenisationStyles)
+        (lem.lemmaStyles)
     )
     ( sourcehelp
     .   "The default type of content of the input is \"text\". Change it if necessary."
@@ -2250,6 +2251,10 @@ jobs=
 jsonStyles=
   ("No unique ID" "Ingen unik ID".nid.)
   ("With xml id" "Med xml id".xid.);
+lemmaStyles=
+  ("all lowercase" "små bogstaver".low.)
+  (as-is "som ordet".asi.)
+  ("names capitalised" "navne med stort".nam.);
 linguae=
   (Abkhaz abkhasisk.ab.abk)
   (Afar afar.aa.aar)
@@ -3368,7 +3373,7 @@ Uses Stanford CoreNLP NER and the model from DKIE to tag incoming Danish plain t
     (RestAPIpassword."*****")
     (MultiInp.)
     (PostData.)
-    (Inactive.on)
+    (Inactive.)
   )
 + ( (ToolID.lempos)
     (PassWord.)
@@ -3975,14 +3980,15 @@ toolprop=
   .   (ambig,(amb.amb))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      ,   ((par*seg*tok.OnE).lem*par*seg)
+      ,   ((par*seg*tok.OnE).lem^asi*par*seg)
         + ( (par*pos^HiNTS*seg*tok.OnE)
-          .   lem*par*seg
-            + lem*par*pos^HiNTS*seg*tok
+          .   lem^asi*par*seg
+            + lem^asi*par*pos^HiNTS*seg*tok
           )
-        + ((seg*tok.OnE).lem*seg)
+        + ((seg*tok.OnE).lem^asi*seg)
         + ( (pos^HiNTS*seg*tok.OnE)
-          . lem*seg+lem*pos^HiNTS*seg*tok
+          .   lem^asi*seg
+            + lem^asi*pos^HiNTS*seg*tok
           )
       )
       (format,(flat.cols+flat))
@@ -3994,8 +4000,10 @@ toolprop=
   .   (ambig,(amb.amb))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      ,   ((par*seg*tok.OnE).lem*par*seg*tok)
-        + ((seg*tok.OnE).lem*seg*tok)
+      ,   ( (par*seg*tok.OnE)
+          . lem^asi*par*seg*tok
+          )
+        + ((seg*tok.OnE).lem^asi*seg*tok)
       )
       (format,(flat.cols+flat))
       (lang,(da.da)+(gml.gml))
@@ -4006,9 +4014,11 @@ toolprop=
   .   (ambig,(amb.amb))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      ,   ((seg*tok.OnE).lem+lem*tok)
+      ,   ((seg*tok.OnE).lem^asi+lem^asi*tok)
         + ( (pos^HiNTS*seg*tok.OnE)
-          . lem+lem*tok+lem*pos^HiNTS*tok
+          .   lem^asi
+            + lem^asi*tok
+            + lem^asi*pos^HiNTS*tok
           )
       )
       (format,(flat.flat))
@@ -4074,9 +4084,12 @@ toolprop=
       (app,(nrm.nrm))
       ( facet
       ,   ( (par*seg*tok.OnE)
-          . lem*par*seg+lem*par*seg*tok
+          .   lem^asi*par*seg
+            + lem^asi*par*seg*tok
           )
-        + ((seg*tok.OnE).lem*seg+lem*seg*tok)
+        + ( (seg*tok.OnE)
+          . lem^asi*seg+lem^asi*seg*tok
+          )
       )
       (format,(flat.cols+flat))
       (lang,(da.da)+(gml.gml))
@@ -4086,7 +4099,27 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(una.amb))
       (app,(nrm.nrm))
-      (facet,((seg*tok.OnE).lem+lem*tok))
+      ( facet
+      ,   ( (par*pos^HiNTS*seg*tok.OnE)
+          .   lem^asi*par*seg
+            + lem^asi*par*pos^HiNTS*seg*tok
+          )
+        + ( (pos^HiNTS*seg*tok.OnE)
+          .   lem^asi*seg
+            + lem^asi*pos^HiNTS*seg*tok
+          )
+      )
+      (format,(flat.cols+flat))
+      (lang,(gml.gml))
+      (period,(c13.c13))
+      (pres,(nml.nml))
+  )
++ ( CST-Lem
+  .   (ambig,(una.amb))
+      (app,(nrm.nrm))
+      ( facet
+      , ((seg*tok.OnE).lem^asi+lem^asi*tok)
+      )
       (format,(flat.flat))
       (lang,(da.da)+(gml.gml))
       (period,(c13.c13))
@@ -4094,13 +4127,50 @@ toolprop=
   )
 + ( CST-Lem
   .   (ambig,(una.amb))
+      (app,(nrm.nrm))
+      ( facet
+      , ( (pos^HiNTS*seg*tok.OnE)
+        .   lem^asi
+          + lem^asi*tok
+          + lem^asi*pos^HiNTS*tok
+        )
+      )
+      (format,(flat.flat))
+      (lang,(gml.gml))
+      (period,(c13.c13))
+      (pres,(nml.alf+frq+uaf+ufq))
+  )
++ ( CST-Lem
+  .   (ambig,(una.amb))
       (app,(unn.unn))
       ( facet
-      ,   ((par*seg*tok.OnE).lem*par*seg*tok)
-        + ((seg*tok.OnE).lem*seg*tok)
+      ,   ( (par*seg*tok.OnE)
+          . lem^asi*par*seg*tok
+          )
+        + ((seg*tok.OnE).lem^asi*seg*tok)
       )
       (format,(flat.cols+flat))
       (lang,(da.da)+(gml.gml))
+      (period,(c13.c13))
+      (pres,(nml.nml))
+  )
++ ( CST-Lem
+  .   (ambig,(una.una))
+      (app,(nrm.nrm))
+      ( facet
+      ,   ((par*seg*tok.OnE).lem^asi*par*seg)
+        + ( (par*pos^HiNTS*seg*tok.OnE)
+          .   lem^asi*par*seg
+            + lem^asi*par*pos^HiNTS*seg*tok
+          )
+        + ((seg*tok.OnE).lem^asi*seg)
+        + ( (pos^HiNTS*seg*tok.OnE)
+          .   lem^asi*seg
+            + lem^asi*pos^HiNTS*seg*tok
+          )
+      )
+      (format,(flat.cols+flat))
+      (lang,(gml.gml))
       (period,(c13.c13))
       (pres,(nml.nml))
   )
@@ -4120,6 +4190,22 @@ toolprop=
       (lang,(da.da))
       (period,(c20.c20))
       (pres,(nml.nml))
+  )
++ ( CST-Lem
+  .   (ambig,(una.una))
+      (app,(nrm.nrm))
+      ( facet
+      ,   ((seg*tok.OnE).lem^asi+lem^asi*tok)
+        + ( (pos^HiNTS*seg*tok.OnE)
+          .   lem^asi
+            + lem^asi*tok
+            + lem^asi*pos^HiNTS*tok
+          )
+      )
+      (format,(flat.flat))
+      (lang,(gml.gml))
+      (period,(c13.c13))
+      (pres,(nml.alf+frq+uaf+ufq))
   )
 + ( CST-Lem
   .   (ambig,(una.una))
@@ -4165,15 +4251,6 @@ toolprop=
         + (uk.uk)
       )
       (period,(c21.c21))
-      (pres,(sof.sof))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.una))
-      (app,(nrm.nrm))
-      (facet,(tok.lem))
-      (format,(teip5.teip5))
-      (lang,(gml.gml))
-      (period,(c13.c13))
       (pres,(sof.sof))
   )
 + ( CST-Lem
@@ -4242,7 +4319,7 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(una.amb+una))
       (app,(nrm.nrm)+(unn.unn))
-      (facet,(tok.lem))
+      (facet,(tok.lem^asi))
       (format,(teip5.teip5))
       (lang,(da.da)+(gml.gml))
       (period,(c13.c13))
@@ -4260,7 +4337,7 @@ toolprop=
 + ( CST-Lem
   .   (ambig,(una.amb+una))
       (app,(nrm.nrm)+(unn.unn))
-      (facet,(tok pos^HiNTS.lem))
+      (facet,(tok pos^HiNTS.lem^asi))
       (format,(teip5.teip5))
       (lang,(gml.gml))
       (period,(c13.c13))
@@ -4355,36 +4432,7 @@ toolprop=
         + ((seg*tok.OnE).lem*seg)
       )
       (format,(flat.cols+flat))
-      (lang,(gml.gml))
-      (period,(c13.c13))
-      (pres,(nml.nml))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      ( facet
-      ,   ((par*seg*tok.OnE).lem*par*seg)
-        + ((seg*tok.OnE).lem*seg)
-      )
-      (format,(flat.cols+flat))
       (lang,(la.la))
-      (pres,(nml.nml))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      ( facet
-      ,   ( (par*pos^HiNTS*seg*tok.OnE)
-          .   lem*par*seg
-            + lem*par*pos^HiNTS*seg*tok
-          )
-        + ( (pos^HiNTS*seg*tok.OnE)
-          . lem*seg+lem*pos^HiNTS*seg*tok
-          )
-      )
-      (format,(flat.cols+flat))
-      (lang,(gml.gml))
-      (period,(c13.c13))
       (pres,(nml.nml))
   )
 + ( CST-Lem
@@ -4430,7 +4478,9 @@ toolprop=
       (app,(nrm.nrm))
       ( facet
       , ( pos^HiNTS*tok
-        . lem+lem*tok+lem*pos^HiNTS*tok
+        .   lem^asi
+          + lem^asi*tok
+          + lem^asi*pos^HiNTS*tok
         )
       )
       (format,(teip5.flat))
@@ -4500,29 +4550,7 @@ toolprop=
       (app,(nrm.nrm))
       (facet,((seg*tok.OnE).lem+lem*tok))
       (format,(flat.flat))
-      (lang,(gml.gml))
-      (period,(c13.c13))
-      (pres,(nml.alf+frq+uaf+ufq))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      (facet,((seg*tok.OnE).lem+lem*tok))
-      (format,(flat.flat))
       (lang,(la.la))
-      (pres,(nml.alf+frq+uaf+ufq))
-  )
-+ ( CST-Lem
-  .   (ambig,(una.amb+una))
-      (app,(nrm.nrm))
-      ( facet
-      , ( (pos^HiNTS*seg*tok.OnE)
-        . lem+lem*tok+lem*pos^HiNTS*tok
-        )
-      )
-      (format,(flat.flat))
-      (lang,(gml.gml))
-      (period,(c13.c13))
       (pres,(nml.alf+frq+uaf+ufq))
   )
 + ( CST-Lem
@@ -4558,7 +4586,9 @@ toolprop=
       ( facet
       ,   (tok.lem+lem*tok)
         + ( pos^HiNTS*tok
-          . lem+lem*tok+lem*pos^HiNTS*tok
+          .   lem^asi
+            + lem^asi*tok
+            + lem^asi*pos^HiNTS*tok
           )
       )
       (format,(teip5.flat))
@@ -4570,14 +4600,15 @@ toolprop=
   .   (ambig,(una.amb+una))
       (app,(unn.unn))
       ( facet
-      ,   ((par*seg*tok.OnE).lem*par*seg)
+      ,   ((par*seg*tok.OnE).lem^asi*par*seg)
         + ( (par*pos^HiNTS*seg*tok.OnE)
-          .   lem*par*seg
-            + lem*par*pos^HiNTS*seg*tok
+          .   lem^asi*par*seg
+            + lem^asi*par*pos^HiNTS*seg*tok
           )
-        + ((seg*tok.OnE).lem*seg)
+        + ((seg*tok.OnE).lem^asi*seg)
         + ( (pos^HiNTS*seg*tok.OnE)
-          . lem*seg+lem*pos^HiNTS*seg*tok
+          .   lem^asi*seg
+            + lem^asi*pos^HiNTS*seg*tok
           )
       )
       (format,(flat.cols+flat))
@@ -4589,9 +4620,11 @@ toolprop=
   .   (ambig,(una.amb+una))
       (app,(unn.unn))
       ( facet
-      ,   ((seg*tok.OnE).lem+lem*tok)
+      ,   ((seg*tok.OnE).lem^asi+lem^asi*tok)
         + ( (pos^HiNTS*seg*tok.OnE)
-          . lem+lem*tok+lem*pos^HiNTS*tok
+          .   lem^asi
+            + lem^asi*tok
+            + lem^asi*pos^HiNTS*tok
           )
       )
       (format,(flat.flat))
@@ -5053,8 +5086,8 @@ toolprop=
   .   (ambig,(pru.pru)+(una.una))
       (app,(nrm.nrm)+(unn.unn))
       ( facet
-      , ( lem*pos^HiNTS*tok*(seg*tok.OnE)
-        . lem*pos^HiNTS*seg*tok
+      , ( lem^nam*pos^HiNTS*tok*(seg*tok.OnE)
+        . lem^nam*pos^HiNTS*seg*tok
         )
       )
       (format,(teip5.teip5))
@@ -5388,12 +5421,9 @@ toolprop=
   . (facet,(kwic.kwic)) (format,(url.flat))
   )
 + ( lemcase
-  .   (ambig,(una.una))
-      (facet,(lem*pos^HiNTS.lem))
+  .   (facet,(lem^asi*pos^HiNTS.lem^nam))
       (format,(teip5.teip5))
       (lang,(gml.gml))
-      (period,(c13.c13))
-      (pres,(nml.nml))
   )
 + ( lempos
   .   (ambig,(una.amb))
@@ -6141,6 +6171,7 @@ where=
       htmlStyles
       imageStyles
       jsonStyles
+      lemmaStyles
       morfSets
       sndStyles
       tagSets
