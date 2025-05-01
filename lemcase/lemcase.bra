@@ -1,0 +1,78 @@
+{lemcase.bra
+
+Convert JSON to ORG-mode}
+
+X=
+  ( doit
+  =   
+    .   !arg:(?lem.?pos.?uit)
+      &   nestML$(get$(!lem,X ML))
+        : ?AAA (spanGrp.?att,?Lem) ?ZZZ
+      &   nestML$(get$(!pos,X ML))
+        : ? (spanGrp.?,?Pos) ?
+      &     map
+          $ ( ( 
+              =   
+                .       !arg
+                      : ( span
+                        . ? (from.?from) ?,NE
+                        )
+                    & !from
+                  | 
+              )
+            . !Pos
+            )
+        : ?NE
+      &     map
+          $ ( ( 
+              =   
+                .       !arg
+                      : ( span
+                        .     ?atts
+                            : ?aa (from.?from) ?zz
+                          , ?lem
+                        )
+                    & !NE:? !from ?NE
+                    & vap$(.!lem):%@?car ?cdr
+                    & (span.!atts,str$(upp$!car !cdr))
+                  | !arg
+              )
+            . !Lem
+            )
+        : ?nice
+      &   put
+        $ ( toML$(!AAA (spanGrp.!att,!nice) !ZZZ)
+          , !uit
+          , NEW
+          )
+  )
+  ( new
+  =   
+    .   ~
+      |   IfacetlemF:?lem
+        & IfacetposF:?pos
+        & uit:?uit
+        & (its.doit)$(!lem.!pos.!uit)
+      |   arg$:?lem
+        & arg$:?pos
+        & arg$:?uit
+        & (its.doit)$(!lem.!pos.!uit)
+  );
+
+r=
+  get'("lemcase.bra",TXT)
+& rmv$(str$(lemcase ".bak"))
+& ren$("lemcase.bra".str$(lemcase ".bak"))
+&   put
+  $ ("{lemcase.bra
+
+Convert JSON to ORG-mode}
+
+","lemcase.bra",NEW,BIN)
+& lst'(X,"lemcase.bra",APP)
+& put'(\n,"lemcase.bra",APP,BIN)
+& lst'(r,"lemcase.bra",APP)
+& put$(str$("\nnew'" X ";\n"),"lemcase.bra",APP,BIN)
+& ;
+
+new'X;

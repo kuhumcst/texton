@@ -398,7 +398,16 @@ try {
             scripinit($inputF,$input,$output);
         else
             {
-            copy($IfacetlemF,$lemcasefile);
+//            copy($IfacetposF,"IfacetposF");
+//            copy($IfacetlemF,"IfacetlemF");
+            $command = "../bin/bracmat 'get\$\"lemcase.bra\"' '$IfacetlemF' '$IfacetposF' '$lemcasefile'";
+            logit($command);
+            if(($cmd = popen($command, "r")) == NULL)
+                exit(1);
+
+            while($read = fgets($cmd))
+                {
+                }
             }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $lemcasefile
 //*/
