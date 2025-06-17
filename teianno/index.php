@@ -521,12 +521,13 @@ try {
         if($OfacetposUni)
             $tagset = "UPosTag";
 
+        $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset ";
         if($mode === 'dry')
             {
+            $command .= "\$Ifacet_seg_tokF \$IfacettokF \$IfacetposF ";
             scripinit($inputF,$input,$output);
             $rms = " && rm \$TEIannofile && rm \$rawXML && rm \$Ifacet_seg_tokF && rm \$IfacettokF && rm \$IfacetposF && rm \$IfacetmrfF && rm \$IfacetlemF ";
             $xmllint = "&& xmllint --format --output \$TEIannofile \$rawXML ";
-            $command = "";
             if(  $Ofacetlem
               && $Ofacetmrf
               && $Ofacetner
@@ -537,9 +538,8 @@ try {
               )
                 {
                 logit("Ofacet lem-mrf-ner-pos-seg-stx-tok");
-                $rmsa = " && rm \$IfacetsegF && rm \$IfacetstxF && rm \$IfacetnerF ";
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset \$Ifacet_seg_tokF \$IfacettokF \$IfacetposF \$IfacetmrfF \$IfacetlemF \$IfacetsegF \$IfacetstxF \$IfacetnerF \$rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
+                $rmsa = " && rm \$IfacetsegF && rm \$IfacetstxF && rm \$IfacetnerF && rm \$IfacetmrfF";
+                $command .= "\$IfacetmrfF \$IfacetlemF \$IfacetsegF \$IfacetstxF \$IfacetnerF";
                 }
             else if(  $Ofacetlem
                    && $Ofacetmrf
@@ -550,9 +550,8 @@ try {
                    )
                 {
                 logit("Ofacet lem-mrf-pos-seg-stx-tok");
-                $rmsa = " && rm \$IfacetsegF && rm \$IfacetstxF ";
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset \$Ifacet_seg_tokF \$IfacettokF \$IfacetposF \$IfacetmrfF \$IfacetlemF \$IfacetsegF \$IfacetstxF \"*\" \$rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
+                $rmsa = " && rm \$IfacetsegF && rm \$IfacetstxF && rm \$IfacetmrfF";
+                $command .= "\$IfacetmrfF \$IfacetlemF \$IfacetsegF \$IfacetstxF \"*\"";
                 }
             else if(  $Ofacetlem
                    && $Ofacetmrf
@@ -562,9 +561,8 @@ try {
                    )
                 {
                 logit("Ofacet lem-mrf-ner-pos-tok");
-                $rmsa = " && rm $IfacetnerF ";
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset \$Ifacet_seg_tokF \$IfacettokF \$IfacetposF \$IfacetmrfF \$IfacetlemF \"*\" \"*\" \$IfacetnerF \$rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
+                $rmsa = " && rm \$IfacetnerF && rm \$IfacetmrfF";
+                $command .= "\$IfacetmrfF \$IfacetlemF \"*\" \"*\" \$IfacetnerF";
                 }
             else if(  $Ofacetlem
                    && $Ofacetmrf
@@ -572,9 +570,9 @@ try {
                    && $Ofacettok
                    )
                 {
+                $rmsa = " && rm \$IfacetmrfF";
                 logit("Ofacet lem-mrf-pos-tok");
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset \$Ifacet_seg_tokF \$IfacettokF \$IfacetposF \$IfacetmrfF \$IfacetlemF \"*\" \"*\" \"*\" \$rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
+                $command .= "\$IfacetmrfF \$IfacetlemF \"*\" \"*\" \"*\"";
                 }
             else if(  $Ofacetlem
                    && $Ofacetpos
@@ -582,10 +580,11 @@ try {
                    && $Ofacettok
                    )
                 {
+                $rmsa = "";
                 logit("Ofacet lem-pos-seg-tok");
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF \"*\" $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
+                $command .= "\"*\" \$IfacetlemF \"*\" \"*\" \"*\"";
                 }
+            $command .= " \$rawXML $xmllint && curl -v -F job=$job -F name=\$TEIannofile -F data=@\$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             scrip($command);
 
             $tmpf = fopen($TEIannofile,'r');
@@ -611,19 +610,18 @@ try {
             }
         else
             {
+            $command .= " $Ifacet_seg_tokF $IfacettokF $IfacetposF ";
             logit("TEIANNO");
             $rawXML = tempFileName("TEIannofile-rawXML");
-            $rms = " && rm $TEIannofile && rm $rawXML && rm $Ifacet_seg_tokF && rm $IfacettokF && rm $IfacetposF && rm $IfacetmrfF && rm $IfacetlemF ";
+            $rms = " && rm $TEIannofile && rm $rawXML && rm $Ifacet_seg_tokF && rm $IfacettokF && rm $IfacetposF && rm $IfacetlemF ";
             $xmllint = "&& xmllint --format --output $TEIannofile $rawXML ";
-/*
-            copy($Ifacet_seg_tokF,"IfacetetcF");
+//*
+            copy($Ifacet_seg_tokF,"Ifacet_seg_tokF");
             copy($IfacettokF,"IfacettokF");
             copy($IfacetposF,"IfacetposF");
-            copy($IfacetmrfF,"IfacetmrfF");
             copy($IfacetlemF,"IfacetlemF");
 /*/
 //*/
-            $command = "";
             if(  $Ofacetlem
               && $Ofacetmrf
               && $Ofacetner
@@ -634,15 +632,15 @@ try {
               )
                 {
                 logit("Ofacet lem-mrf-ner-pos-seg-stx-tok");
-                $rmsa = " && rm $IfacetsegF && rm $IfacetstxF && rm $IfacetnerF ";
-/*
+                $rmsa = " && rm $IfacetsegF && rm $IfacetstxF && rm $IfacetnerF && rm $IfacetmrfF";
+//*
                 copy($IfacetsegF,"IfacetsegF");
                 copy($IfacetstxF,"IfacetstxF");
                 copy($IfacetnerF,"IfacetnerF");
+                copy($IfacetmrfF,"IfacetmrfF");
 /*/
 //*/
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF $rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
+                $command .= "$IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF $IfacetnerF";
                 }
             else if(  $Ofacetlem
                    && $Ofacetmrf
@@ -653,14 +651,14 @@ try {
                    )
                 {
                 logit("Ofacet lem-mrf-pos-seg-stx-tok");
-                $rmsa = " && rm $IfacetsegF && rm $IfacetstxF ";
-/*
+                $rmsa = " && rm $IfacetsegF && rm $IfacetstxF && rm $IfacetmrfF";
+//*
                 copy($IfacetsegF,"IfacetsegF");
                 copy($IfacetstxF,"IfacetstxF");
+                copy($IfacetmrfF,"IfacetmrfF");
 /*/
 //*/
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\" $rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
+                $command .= "$IfacetmrfF $IfacetlemF $IfacetsegF $IfacetstxF \"*\"";
                 }
             else if(  $Ofacetlem
                    && $Ofacetmrf
@@ -670,12 +668,12 @@ try {
                    )
                 {
                 logit("Ofacet lem-mrf-ner-pos-tok");
-                $rmsa = " && rm $IfacetnerF ";
-/*
+                $rmsa = " && rm $IfacetnerF && rm $IfacetmrfF";
+//*
                 copy($IfacetnerF,"IfacetnerF");
+                copy($IfacetmrfF,"IfacetmrfF");
 //*/
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF $rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
+                $command .= "$IfacetmrfF $IfacetlemF \"*\" \"*\" $IfacetnerF";
                 }
             else if(  $Ofacetlem
                    && $Ofacetmrf
@@ -683,9 +681,10 @@ try {
                    && $Ofacettok
                    )
                 {
+                $rmsa = " && rm $IfacetmrfF";
+                copy($IfacetmrfF,"IfacetmrfF");
                 logit("Ofacet lem-mrf-pos-tok");
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF $IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
+                $command .= "$IfacetmrfF $IfacetlemF \"*\" \"*\" \"*\"";
                 }
             else if(  $Ofacetlem
                    && $Ofacetpos
@@ -693,19 +692,15 @@ try {
                    && $Ofacettok
                    )
                 {
+                $rmsa = "";
                 logit("Ofacet lem-pos-seg-tok");
-                $command = "../bin/bracmat \"get'\\\"annotei.bra\\\"\" $tagset $Ifacet_seg_tokF $IfacettokF $IfacetposF \"*\" $IfacetlemF \"*\" \"*\" \"*\" $rawXML $xmllint";
-                $command .= " && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms > ../log/TEIanno.log 2>&1 &";
-                /*
-                copy($Ifacet_seg_tokF,"IfacetetcF");
-                copy($IfacettokF,"IfacettokF");
-                copy($IfacetposF,"IfacetposF");
-                copy($IfacetlemF,"IfacetlemF");
-                */
+                $command .= "\"*\" $IfacetlemF \"*\" \"*\" \"*\"";
                 }
+            $command .= " $rawXML $xmllint && curl -v -F job=$job -F name=$TEIannofile -F data=@$TEIannofile $post2 $rms $rmsa > ../log/TEIanno.log 2>&1 &";
             logit($command);
             exec($command);
 
+            logit($command);
             logit('RETURN 202');
             header("HTTP/1.0 202 Accepted");
             }
