@@ -251,7 +251,8 @@ program-annotei=
                         ( ?Z
                         &     !excludes
                               ( exclude
-                              . @(str$(!A !Z):?A " ")&!A
+                              .   @(str$(!A !Z):?A " ")
+                                & str$!A
                               )
                           : ?excludes
                         & !ids ("xml:id".str$!M):?ids
@@ -264,12 +265,18 @@ program-annotei=
             & (!ids.!excludes)
         )
       & ( rid
-        =   aa zz tokid
+        =   aa zz tokid ID id d
           .   !arg:(?tokid.?arg)
-            &   ( !arg:?aa ("xml:id".?) ?zz&!aa !zz
+            & str$!tokid:?id
+            &   (   !arg:?aa ("xml:id".?ID) ?zz
+                  & ( @(!ID:i #)
+                    |   (@(!id:"#" ?d)|!id:?d)
+                      & (IDS..insert)$(!d.!ID)
+                    )
+                  & !aa !zz
                 | !arg
                 )
-                ("xml:id".!tokid)
+                ("xml:id".!id)
         )
       & ( anno
         =   A e a c lenPS lenLS lenMS id to PS MS LS tokid
@@ -430,7 +437,8 @@ program-annotei=
                                                                                       )
                                                                                   :   " "
                                                                                       ?arg
-                                                                                & !arg
+                                                                                &   str
+                                                                                  $ !arg
                                                                               )
                                                                             )
                                                                         , !c
@@ -554,8 +562,6 @@ program-annotei=
                   )
               )
         )
-      & :?MWUend:?mwu:?to:?SP
-      & anno$!tei:?tei
       & ( cleanup
         =   A e a c aa zz pat
           .   !arg:(?arg.(=?pat))
@@ -874,51 +880,6 @@ program-annotei=
                 )
             & !tei
         )
-      & ( !stx:
-        |   getListOfLinkGrp$(!tei.!seg.!stx):?ListOfLinkGrp
-          & :?listOfMissedLinkGrp
-          & ( !textatt:? ("xml:id"|id.?parentID) ?
-            | !TEIatt:? ("xml:id"|id.?parentID) ?
-            | :?parentID
-            )
-          & 0:?Id
-          & spotAndInsertSTXEasy$(!tei.!parentID):?tei
-          & ( !listOfMissedLinkGrp:
-            |     spotAndInsertSTXhard$(!tei.!listOfMissedLinkGrp !ListOfLinkGrp.!parentID)
-                : ?tei
-              & ( getIDsRight
-                =   
-                  .   map
-                    $ ( ( 
-                        =   e a c b d v S I F A Z idTYpe
-                          .     !arg:(?e.?a,?c)
-                              & ( !e
-                                .         !a
-                                        :   ?b
-                                            (   ("xml:id"|id)
-                                              : ?idTYpe
-                                            . ?v
-                                            )
-                                            ?d
-                                      & @(str$!v:?S "." ~/#%?I)
-                                      &   (   !prefi:?A (!S.?F) ?Z
-                                            & (!S.!F+1:?F) !A !Z
-                                          | (!S.1:?F) !prefi
-                                          )
-                                        : ?prefi
-                                      & !b (!idTYpe.str$(!S "." !F)) !d
-                                    | !a
-                                  , getIDsRight$!c
-                                )
-                            | !arg
-                        )
-                      . !arg
-                      )
-                )
-              & :?prefi
-              & getIDsRight$!tei:?tei
-            )
-        )
       & ( Camel
         =   
           .   map
@@ -1011,7 +972,6 @@ program-annotei=
               . !to,!cat
               )
         )
-      & (!nerH:|insertNER$(!tei.):(?tei.?))
       & ( rm#
         =   
           .   map
@@ -1034,11 +994,10 @@ program-annotei=
               . !arg
               )
         )
-      & rm#$!tei:?tei
       & ( adaptID
         =   subnr idtype parentID
           .   ( mapfnc
-              =   e a c A Z v vv nc id newv idrem
+              =   e a c A Z v vv nc id newv idrem n
                 .   !arg:@
                   |   !arg:(?e.?a,?c)
                     & (     !a
@@ -1048,7 +1007,11 @@ program-annotei=
                               )
                               ?Z
                         & 1+!subnr:?subnr
-                        & (   (IDS..find)$!id:(?.?vv)
+                        & (   !a:? (exclude.?) ?
+                            & @(!id:?id ".A" ?subnr)
+                            & (IDS..find)$!id:(?.?vv)
+                            & !vv ".A" !subnr:?newv
+                          |   (IDS..find)$!id:(?.?vv)
                             &   !vv "." (!idrem:|A) !subnr
                               : ?newv
                           |   @(!id:!parentID ?)
@@ -1067,22 +1030,19 @@ program-annotei=
                           )
                         & !A (!idtype.str$!newv) !Z:?a
                         & (   !a:?A (exclude.?a) ?Z
-                            &     !A
-                                  ( exclude
-                                  .   str
-                                    $ ( map
-                                      $ ( ( 
-                                          =   
-                                            .     @(!arg:"#" !id)
-                                                & "#" !vv
-                                              | !arg
-                                          )
-                                        . !a
-                                        )
-                                      )
+                            &     vap
+                                $ ( ( 
+                                    =   id
+                                      .     @(!arg:"#" ? ".A" ?id)
+                                          & " " "#" !vv ".A" !id
+                                        | !arg:
+                                        | " " !arg
+                                    )
+                                  . !a
+                                  . " "
                                   )
-                                  !Z
-                              : ?a
+                              : " " ?a
+                            & !A (exclude.str$!a) !Z:?a
                           | 
                           )
                         & (!e.!a,adaptID$(!c.!idtype.!newv))
@@ -1116,7 +1076,7 @@ program-annotei=
                                 , adaptID$(!c.!idtype.!newv)
                               )
                           |   !e:s
-                            & ( (!e.!a,!c)
+                            & ( (!e.!a,reidentify$!c)
                               |   "Create an id."
                                 & (   !idtype:
                                     & (   !c
@@ -1203,13 +1163,6 @@ program-annotei=
                 . !tei
                 )
         )
-      & new$hash:?IDS
-      & 0:?nr
-      & reidentify$!tei:?tei
-      & :?ides
-      & (IDS..forall)$(=.!arg !ides:?ides)
-      & relink$(.!tei):?tei
-      & :?IDS
       & ( TagUsage
         =   
           .   map
@@ -1288,10 +1241,72 @@ program-annotei=
                 . !head
                 )
         )
+      & :?MWUend:?mwu:?to:?SP
+      & new$hash:?IDS
+      & anno$!tei:?tei
+      & ( !stx:
+        |   getListOfLinkGrp$(!tei.!seg.!stx):?ListOfLinkGrp
+          & :?listOfMissedLinkGrp
+          & ( !textatt:? ("xml:id"|id.?parentID) ?
+            | !TEIatt:? ("xml:id"|id.?parentID) ?
+            | :?parentID
+            )
+          & 0:?Id
+          & spotAndInsertSTXEasy$(!tei.!parentID):?tei
+          & ( !listOfMissedLinkGrp:
+            |     spotAndInsertSTXhard$(!tei.!listOfMissedLinkGrp !ListOfLinkGrp.!parentID)
+                : ?tei
+              & ( getIDsRight
+                =   
+                  .   map
+                    $ ( ( 
+                        =   e a c b d v S I F A Z idTYpe
+                          .     !arg:(?e.?a,?c)
+                              & ( !e
+                                .         !a
+                                        :   ?b
+                                            (   ("xml:id"|id)
+                                              : ?idTYpe
+                                            . ?v
+                                            )
+                                            ?d
+                                      & @(str$!v:?S "." ~/#%?I)
+                                      &   (   !prefi:?A (!S.?F) ?Z
+                                            & (!S.!F+1:?F) !A !Z
+                                          | (!S.1:?F) !prefi
+                                          )
+                                        : ?prefi
+                                      & !b (!idTYpe.str$(!S "." !F)) !d
+                                    | !a
+                                  , getIDsRight$!c
+                                )
+                            | !arg
+                        )
+                      . !arg
+                      )
+                )
+              & :?prefi
+              & getIDsRight$!tei:?tei
+            )
+        )
+      & :?ides
+      & (IDS..forall)$(=.!arg !ides:?ides)
+      &   (!ides:? [>1&true|false)
+        : ?existingIDs
+      & "Now all xml:id have a '#' in front, which will disappear again."
+      & (!nerH:|insertNER$(!tei.):(?tei.?))
+      & rm#$!tei:?tei
+      & 0:?nr
+      & reidentify$!tei:?tei
+      & :?ides
+      & (IDS..forall)$(=.!arg !ides:?ides)
+      & relink$(.!tei):?tei
+      & :?IDS
       & ( ~
         |       cleanup
               $ ( !tei
                 .     !stx:
+                    & !existingIDs:false
                     & ( 
                       =   ?aa
                           (   "xml:id"
@@ -1314,173 +1329,6 @@ program-annotei=
             )
         )
       & updateHead$(!head.!tei):?head
-      & "Modified toML. No space before slash in empty tags."
-      & ( toML
-        =   O d t g l "&" w \" "'" H G S D E F I U
-          .   :?O
-            & chr$127:?D
-            & ( d
-              = a.whl'(!arg:%?a ?arg&!a !O:?O)
-              )
-            &     
-                ' ( a c n
-                  .     @(!arg:?a (>%@($D) ?:?arg))
-                      & ( @( !arg
-                           : (%?c&utf$!c:?n) ?arg
-                           )
-                        | @( !arg
-                           : (%?c&asc$!c:?n) ?arg
-                           )
-                        )
-                      & !a "&#" !n ";" S$!arg
-                    | !arg
-                  )
-              : (=?S)
-            &     
-                ' ( a c n
-                  .     @(!arg:?a (>%@($D) ?:?arg))
-                      & (   @( !arg
-                             : (%?c&utf$!c:?n) ?arg
-                             )
-                          & (   !n:>255
-                              & !a "&#" !n ";" I$!arg
-                            | !a chr$!n I$!arg
-                            )
-                        | !a !arg
-                        )
-                    | !arg
-                  )
-              : (=?I)
-            &     
-                ' ( a c n
-                  .     @(!arg:?a (>%@($D) ?:?arg))
-                      & (   @( !arg
-                             : (%?c&utf$!c:?n) ?
-                             )
-                          & !a !arg
-                        |   @( !arg
-                             : (%?c&asc$!c:?n) ?arg
-                             )
-                          & !a chu$!n U$!arg
-                        )
-                    | !arg
-                  )
-              : (=?U)
-            &   MLencoding$!arg
-              : ( ~<>utf-8&U:?F
-                | ~<>iso-8859-1&I:?F
-                | ?&S:?F
-                )
-            & '($F)$!a:(=?H)
-            & '($F)$!arg:(=?G)
-            &     
-                ' ( a b
-                  .     @(!arg:?a "&" ?arg)
-                      & $H "&amp;" "&"$!arg
-                    | $G
-                  )
-              : (=?"&")
-            &     
-                ' ( a b
-                  .     @(!arg:?a ()$D ?arg)
-                      & "&"$!a (@(!arg:%?b ?arg)&!b) E$!arg
-                    | "&"$!arg
-                  )
-              : (=?E)
-            &     
-                ' ( a
-                  .   @(!arg:?a "<" ?arg)&E$!a "&lt;" l$!arg
-                    | E$!arg
-                  )
-              : (=?l)
-            & ( g
-              =   a
-                .   @(!arg:?a ">" ?arg)&l$!a "&gt;" g$!arg
-                  | l$!arg
-              )
-            & ( \"
-              =   a
-                .   @(!arg:?a \" ?arg)&g$!a "&quot;" \"$!arg
-                  | g$!arg
-              )
-            & ( "'"
-              =   a
-                .   @(!arg:?a "'" ?arg)&\"$!a "&apos;" "'"$!arg
-                  | \"$!arg
-              )
-            & ( t
-              =   a v
-                .     !arg:(?a.?v) ?arg
-                    & " " g$!a "=\"" "'"$!v \" t$!arg
-                  | 
-              )
-            & (   !arg:? (html|HTML.?) ?
-                & ( Q
-                  =   !C:
-                    &   low$!A
-                      : ( area
-                        | base
-                        | br
-                        | col
-                        | command
-                        | embed
-                        | hr
-                        | img
-                        | input
-                        | keygen
-                        | link
-                        | meta
-                        | param
-                        | source
-                        | track
-                        | wbr
-                        )
-                  )
-              | (Q=!C:)
-              )
-            &     
-                ' ( r A B C T
-                  .   whl
-                    ' ( !arg:%?r ?arg
-                      & (   !r:(?A.?B)
-                          & (   !B:(?T,?C)
-                              & ( $Q&d$("<" !A t$!T "/>")
-                                |   d$("<" !A t$!T ">")
-                                  & (   !A:(~<>script|~<>style)
-                                      & d$!C
-                                    | w$!C
-                                    )
-                                  & d$("</" !A ">")
-                                )
-                            |   !A
-                              : (   
-                                  & !B:(?B.)
-                                  & d$("</" g$!B ">")
-                                | "!"&d$("<!" !F$!B ">")
-                                | "!--"&d$("<!--" !F$!B "-->")
-                                | "?"&d$("<?" !F$!B "?>")
-                                | "![CDATA["&d$("<![CDATA[" !F$!B "]]>")
-                                | "!DOCTYPE"&d$("<!DOCTYPE" !F$!B ">")
-                                | ?&d$("<" !A t$!B ">")
-                                )
-                            )
-                        | d$(g$!r)
-                        )
-                      )
-                  )
-              : (=?w)
-            & w$!arg
-            &   str
-              $ ( ( 
-                  =   a L
-                    .   :?L
-                      &   whl
-                        ' (!arg:%?a ?arg&!a !L:?L)
-                      & !L
-                  )
-                $ !O
-                )
-        )
       &   (   !head:
             & !tail:
             & !TEIatt:
@@ -1488,26 +1336,29 @@ program-annotei=
           | !teiA (TEI.!TEIatt,!head (text.!textatt,!tei) !tail) !teiZ
           )
         : ?tei
-      & lst$(tei,tei,NEW)
-      & put$(toML$!tei,!output,NEW)
+      & (|get$"tei.bra":?tei)
+      & str$(toML$!tei):?tei
+      & put$(!tei,!output,NEW)
   )
   ( new
-  =   
+  =   r tagset
     .   ~&"Remove the ~ to merely reformat the code, not run it."
-      | ~&(its.doit)$("*".IfacetetcF.IfacettokF.IfacetposF."*".IfacetlemF."*"."*"."*"."out.xml")
-      |   ~
+      |   arg$:?tagset
         &   (its.doit)
-          $ ( UPosTag
-            . "C:\\projects\\parlamint\\small\\IfacetsetoF"
-            . "C:\\projects\\parlamint\\small\\IfacettokF"
-            . "C:\\projects\\parlamint\\small\\IfacetposF"
-            . "C:\\projects\\parlamint\\small\\IfacetmrfF"
-            . "C:\\projects\\parlamint\\small\\IfacetlemF"
-            . "C:\\projects\\parlamint\\small\\IfacetsegF"
-            . "C:\\projects\\parlamint\\small\\IfacetstxF"
-            . "*"
-            . "C:\\projects\\parlamint\\small\\small.out.xml"
+          $ ( !tagset
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
+            . arg$
             )
+      |   
+        &   (its.doit)
+          $ ("*"."Ifacet_seg_tokF".IfacettokF.IfacetposF."*".IfacetlemF."*"."*"."*"."out.xml")
       |   
         &   (its.doit)
           $ ( UPosTag
@@ -1521,18 +1372,6 @@ program-annotei=
             . "C:/gitprojects/texton/teianno/parlamint/IfacetnerF"
             . "C:/gitprojects/texton/teianno/parlamint/small.out.xml"
             )
-      |   (its.doit)
-        $ ( arg$
-          . arg$
-          . arg$
-          . arg$
-          . arg$
-          . arg$
-          . arg$
-          . arg$
-          . arg$
-          . arg$
-          )
   );
 
 r=
