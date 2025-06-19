@@ -373,8 +373,14 @@ try {
             else if($Iperiodc13)
                 {
                 $periodsubdir = "/c13-c18";
+                $trigrams = "-T '$toolres/$language/lemmatiser/notags/c13-c18/tabfile.trigramFrequenciesSorted'";
                 if($pos === 'n')
-                    $flexrulessubdir = "/1";
+                    {
+                    //$flexrulessubdir = "/1";
+                    $flexrules = "flexrules.tabfile.ph_XC";
+                    $flexrulessubdir = "/1"; // 20250619
+                    $dict = "/dict.tabfile.ph";
+                    }
                 else // Not the case, currently (May 2018)
                     {
                     $flexrulessubdir = "/links";

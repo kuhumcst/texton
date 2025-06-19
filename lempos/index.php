@@ -600,14 +600,15 @@ try {
                     }
                 else
                     {
-                    $flexrules = "$res/da/lemmatiser/notags/c13-c18/0/flexrules.bra";
+                    $flexrules = "$res/da/lemmatiser/notags/c13-c18/0/flexrules.tabfile.ph_XC.bra";
                     //$traindata = "$res/da/lemmatiser/training/tabfile";
                     //$flexrules = "$res/da/lemmatiser/notags/c13-c18/2/flex.bra";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-B-2-4202-step2.4cole";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-C-1-4244-step2.4cole";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-D-3-4247-step2.4cole";
                     //$traindata = "$res/da/lemmatiser/training/guldkorpus-dsl-tabfile-E-1-4251-step2.4cole";
-                    $traindata = "$res/da/lemmatiser/training/c13-c18/diplAndDSLFRQ";
+                    //$traindata = "$res/da/lemmatiser/training/c13-c18/diplAndDSLFRQ";
+                    $traindata = "$res/da/lemmatiser/training/c13-c18/tabfile.ph"; // Pure DSL data
                     }
                 }
             if($Ilangde)
@@ -803,6 +804,13 @@ try {
                         }
                     else
                     {
+                        /*
+                        copy($traindata,"traindata");
+                        copy($IfacetsegF,"IfacetsegF");
+                        copy($IfacettokF,"IfacettokF");
+                        copy($flexrules,"flexrules");
+                        copy($lemposfile,"lemposfile");
+                        */
                         $command = "../bin/bracmat 'get\$\"LemmaVal.bra\"' '$traindata' '$IfacetsegF' '$IfacettokF' '$flexrules' '$lemposfile' '$TorC'";
                     }
                     logit($command);
