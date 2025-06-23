@@ -377,7 +377,7 @@ try {
                 if($pos === 'n')
                     {
                     //$flexrulessubdir = "/1";
-                    $flexrules = "flexrules.DSLGULD.tab.ph_C2_XW";
+                    $flexrules = "flexrules.DSLGULD.tab.ph_XS";
                     $flexrulessubdir = "/1"; // 20250619
                     $dict = "/dict.tabfile.ph";
                     }
