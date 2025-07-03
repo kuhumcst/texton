@@ -74,6 +74,7 @@ Then
 ```bash
 $> sudo systemctl daemon-reload
 $> sudo systemctl reload clamav-daemon.service
+$> sudo systemctl restart clamav-daemon.socket
 $> sudo ss -anp | grep -E "(Active|State|clam|3310)"
 ```
 ```
