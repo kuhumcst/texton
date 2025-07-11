@@ -401,6 +401,7 @@ try {
                 else
                     scrip("$pdfminer -t html -o \$pdfminerfile \$F ## pdfminer EUSKE (original)");
                 }
+            scrip("../bin/bracmat 'get\$\"../shared_scripts/ligature.bra\"' '\$pdfminerfile'");
             }
         else
             {
@@ -429,6 +430,20 @@ try {
             while($read = fgets($cmd))
                 {
                 }
+
+            $command = "../bin/bracmat 'get\$\"../shared_scripts/ligature.bra\"' '$pdfminerfile'";
+
+            logit($command);
+
+            if(($cmd = popen($command, "r")) == NULL)
+                {
+                throw new SystemExit(); // instead of exit()
+                }
+
+            while($read = fgets($cmd))
+                {
+                }
+
             pclose($cmd);
             }
 // YOUR CODE ENDS HERE. OUTPUT EXPECTED IN $pdfminerfile
