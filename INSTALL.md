@@ -74,6 +74,7 @@ Then
 ```bash
 $> sudo systemctl daemon-reload
 $> sudo systemctl reload clamav-daemon.service
+$> sudo systemctl restart clamav-daemon.socket
 $> sudo ss -anp | grep -E "(Active|State|clam|3310)"
 ```
 ```
@@ -210,6 +211,7 @@ Environment="CATALINA_HOME=/opt/tomcat-texton"
 Environment="CATALINA_BASE=/opt/tomcat-texton"
 Environment='CATALINA_OPTS=-Xms7168M -Xmx7168M -server -XX:+UseG1GC'
 Environment='JAVA_OPTS=-Djava.security.egd=file:/dev/./urandom'
+#The next line will be without hash symbol when bracmat.jar is in place in later step
 #Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
 ExecStart=/opt/tomcat-texton/bin/startup.sh
 ExecStop=/opt/tomcat-texton/bin/shutdown.sh
