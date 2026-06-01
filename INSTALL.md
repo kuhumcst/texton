@@ -141,7 +141,7 @@ $> sudo service apache2 reload
 
 ```bash
 $> sudo apt-get install php libapache2-mod-php
-$> sudo a2enmod php8.3
+$> #sudo a2enmod php8.3
 $> sudo service apache2 restart
 ```
 
@@ -174,15 +174,16 @@ $> sudo apt install default-jdk
 
 On WSL Ubuntu, Tomcat is downloaded and installed as /opt/tomcat-texton/. This can go as follows:
 
-Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.1/bin/apache-tomcat-11.0.1.tar.gz.
+Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz
+.
 ```bash
 $> sudo mkdir /opt/tomcat11
 $> sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
 $> sudo chown tomcat: /opt/tomcat11
 $> cd ~
-$> wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.1/bin/apache-tomcat-11.0.1.tar.gz -P .
-$> sudo tar -xvzf apache-tomcat-11.0.1.tar.gz -C /opt/tomcat11
-$> sudo ln -s /opt/tomcat11/apache-tomcat-11.0.1 /opt/tomcat-texton
+$> wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz -P .
+$> sudo tar -xvzf apache-tomcat-11.0.22.tar.gz -C /opt/tomcat11
+$> sudo ln -s /opt/tomcat11/apache-tomcat-11.0.22 /opt/tomcat-texton
 $> sudo chown -RH tomcat: /opt/tomcat-texton
 $> sudo chmod ugo+rx /opt/tomcat11/
 $> sudo chmod o+rx /opt/tomcat-texton/bin/
@@ -239,12 +240,28 @@ $> sudo systemctl daemon-reload
 $> sudo systemctl enable tomcat-texton.service
 $> sudo systemctl start tomcat-texton.service
 ```
-To test that Tomcat is working:
+
+### Install build tools
+```bash
+sudo apt install gcc
+sudo apt install make
+sudo apt install ant
+``
+
+### Install Readline library used by Bracmat
+```bash
+sudo apt-get install libreadline-dev
+```
+
+## bracmat
+
 ```bash
 $> cd ~
-$> wget http://localhost:8080
+$> git clone https://github.com/BartJongejan/Bracmat.git
+$> cd Bracmat/src/
+$> make
+$> sudo cp bracmat /opt/texton/bin/
 ```
-This should result in a index.html in the home directory.
 
 ### Install Bracmat JNI
 
@@ -252,8 +269,7 @@ Create the Tomcat lib bracmat.jar and the shared library libbracmat.so.1.0.
 The script compileAndTestJNI.sh assumes that the folder /opt/tomcat-texton/ exists and that the tomcat binaries are in the bin subfolder. Edit compileAndTestJNI.sh if necessary.
 
 ```bash
-$> git clone https://github.com/BartJongejan/Bracmat.git
-$> cd Bracmat/java-JNI
+$> cd ~/Bracmat/java-JNI
 $> sudo chmod ugo+x compileAndTestJNI.sh
 $> sudo ./compileAndTestJNI.sh
 ```
@@ -262,15 +278,8 @@ Open /etc/systemd/system/tomcat-texton.service again and remove the hash sign in
 ```
 Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
 
+### Install Texton ###
 ```
-Then:
-```bash
-$> sudo systemctl daemon-reload
-$> sudo systemctl restart tomcat-texton.service
-$> cd ~
-$> wget http://localhost:8080
-```
-Another index.html should be in the home directory
 
 ## texton-Java
 
@@ -278,6 +287,7 @@ The repo https://github.com/kuhumcst/texton-Java contains the Java code of the c
 Make sure that the local git repositories texton-Java and Bracmat (see above) share the same parent folder. You can clone whereever you want, e.g. in your home folder.
 It is important that the script can 'see' ../Bracmat/java-JNI/java. See the build.xml file.
 ```bash
+$> cd ~
 $> git clone https://github.com/kuhumcst/texton-Java.git
 $> cd texton-Java
 $> sudo chmod ugo+x compileTomcat.sh
@@ -294,6 +304,30 @@ $> sudo chgrp -R www-data *
 $> sudo chmod -R g+w * 
 $> sudo chown -R tomcat: BASE
 ```
+
+### Copy bracmat command line tool to destination folder ###
+
+```bash
+$> cd ~/Bracmat/src/
+$> sudo cp bracmat /opt/texton/bin/
+```
+
+### enabling webservices
+
+```bash
+$> cd /opt/texton/apache2-sites/
+$> sudo cp texton.conf /etc/apache2/sites-available/
+$> sudo a2ensite texton.conf
+$> sudo service apache2 reload
+```
+Then:
+```bash
+$> sudo systemctl daemon-reload
+$> sudo systemctl restart tomcat-texton.service
+$> cd ~
+$> wget http://localhost:8080
+```
+An index.html should be in the home directory
 
 ## linguistic resources
 
@@ -315,14 +349,6 @@ Set group to www-data, recursively
 
 ```bash
 $> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
-```
-### enabling webservices
-
-```bash
-$> cd /opt/texton/apache2-sites/
-$> sudo cp texton.conf /etc/apache2/sites-available/
-$> sudo a2ensite texton.conf
-$> sudo service apache2 reload
 ```
 ## Proxy settings
 
@@ -380,7 +406,10 @@ $> sudo su
 # pip3 install cltk
 # exit
 ```
-
+Alternatively,
+```bash
+sudo /usr/bin/pip3 install --prefix /usr cltk
+```
 ## xmllint
 
 The teianno tool uses xmllint.
@@ -390,15 +419,6 @@ Installing:
 $> sudo apt install libxml2-utils
 ```
 
-## bracmat
-
-```bash
-$> cd ~
-$> git clone https://github.com/BartJongejan/Bracmat.git
-$> cd Bracmat/src/
-$> make
-$> sudo cp bracmat /opt/texton/bin/
-```
 
 ### running Text Tonsorium the first time
 
@@ -421,7 +441,6 @@ Create file /opt/texton/BASE/meta/properties containing
 ```bash
 $> sudo chown tomcat: /opt/texton/BASE/meta/properties
 ```
-Open a browser and navigate to http://localhost:8080/texton/
 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
@@ -437,7 +456,7 @@ You are now ready to upload input to http://localhost:8080/texton/ and to comput
 If you want to run Text Tonsorium on anything else but a personal computer, you must set an administrator 'password' and a 'salt' value in the file /opt/texton/BASE/metaproperties.
 Such a password/salt pair can be created in the following way:
 
-1. On your development machine, go to http://localhost/texton/admin
+1. On your development machine, go to http://localhost/texton/admin.html
 2. Enter the password that you want to use on your production system in the password field below the 'Show Bracmat version' heading.
 3. Press the 'Bracmat' button.
 4. Open a linux terminal, and find the location of the file 'textonJava.log'. This location defaults to '/opt/texton/BASE/textonJava.log'. See setting in conf/log4j2.xml in the texton-Java repo.
