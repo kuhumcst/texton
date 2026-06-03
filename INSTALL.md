@@ -20,10 +20,18 @@ Installation requires
    Some files in the Text Tonsorium are too big for GitHub. There is another place where large files are kept. 'git-lfs' is needed to seamlessly access these.
   * apache2
   * PHP
+    php-curl, php-mbstring, php-dom
   * Java
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
-  * Bracmat (as JNI - Java Native Interface)
+  * gcc, make, ant
+   Needed to build the JNI (Java Native Interface) part of Bracmat, among other things.
+  * Bracmat command line tool
+   The Bracmat command line tool is needed in many workflows. It is also needed to build the JNI (Java Native Interface) part of Bracmat, among other things.
+  * Bracmat as JNI - Java Native Interface
+   Bracmat is the main programming language in which the Text Tonsorium workflow manager is implemented.
+   The Java part of the Text Tonsorium workflow manager calls Bracmat as a JNI (Java Native Interface).
+   (Bracmat as command line tool is needed for many tools that are wrapped in web services.)
   * texton - Java part
    This is the central hub in the Text Tonsorium. It communicates with the user via a
    browser and communicates with the tools using HTTP 'GET' or 'POST' requests.
@@ -39,6 +47,8 @@ Installation requires
    and as a command line tool in '/opt/texton/bin/'
   * many tools wrapped in web services in '/opt/texton/'
   * tools that can be compiled from source
+  * cltk
+	* 
 
 ## update/upgrade
 ```bash
@@ -397,8 +407,7 @@ We need pip3
 $> sudo apt-get install python3-pip
 ```
 
-Libraries must be installed for all users, so we install them as root:
-
+The cltk library, which is used by the Lapos tagger, must be installed for all users:
 ```bash
 $> sudo su
 # cd ~
