@@ -24,31 +24,57 @@ Installation requires
   * Java
   * Tomcat  
    *Not* installed using apt-get install, sits in /opt/tomcat/latest/
-  * gcc, make, ant
+  * gcc, make, ant  
    Needed to build the JNI (Java Native Interface) part of Bracmat, among other things.
-  * Bracmat command line tool
+  * Bracmat command line tool  
    The Bracmat command line tool is needed in many workflows. It is also needed to build the JNI (Java Native Interface) part of Bracmat, among other things.
-  * Bracmat as JNI - Java Native Interface
+  * Bracmat as JNI - Java Native Interface  
    Bracmat is the main programming language in which the Text Tonsorium workflow manager is implemented.
    The Java part of the Text Tonsorium workflow manager calls Bracmat as a JNI (Java Native Interface).
    (Bracmat as command line tool is needed for many tools that are wrapped in web services.)
-  * texton - Java part
-   This is the central hub in the Text Tonsorium. It communicates with the user via a
-   browser and communicates with the tools using HTTP 'GET' or 'POST' requests.
-  * texton - Bracmat part (this repo)
+  * Texton, Java part
+  * Texton, Bracmat part (this repo)
   * linguistic resources
   * proxy settings
   * cron jobs
-  * python3
+  * Python3
   * xmllint
-  * bracmat (as command line tool) 
-   Interpreters are installed in two locations:  
-   as a JNI (Java Native Interface) inside Tomcat  
-   and as a command line tool in '/opt/texton/bin/'
-  * many tools wrapped in web services in '/opt/texton/'
-  * tools that can be compiled from source
-  * cltk
-	* 
+  * running Text Tonsorium the first time
+    * Using the admin page
+  * Wrapped NLP tools
+    * ANNIE
+    * CST-lemma
+    * Cuneiform
+    * daner
+    * dependency2tree
+    * espeak
+    * html2text
+    * jsoncat
+    * Lapos
+    * LibreOffice (soffice)
+    * mate-parser
+    * mate-POStagger
+    * np-genkender
+    * opennlpPOSTagger
+    * pdf2htmlEX
+    * PDFminer
+    * repetitiveness checker
+    * taggerXML
+    * Stanford CoreNLP
+    * Tesseract OCR
+    * udpipe
+  * Tools that can or must be compiled from source
+    * cstlemma
+    * jsoncat
+    * Lapos
+    * mate-parser
+    * mate-POStagger
+    * opennlpPOSTagger
+    * pdf2htmlEX
+    * repetitiveness checker
+    * rtfreader
+    * taggerXML
+    * udpipe
 
 ## update/upgrade
 ```bash
@@ -233,7 +259,7 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 ```
-Notice that the parameter -Xmx could be set to a higher value if the computer has e.g. 32 GB RAM.
+Notice that the parameter -Xmx could be set to a higher value if the computer has enough memory, e.g. -Xmx16G if there is 32 GB RAM.
 Also notice that the commented line that includes bracmat.jar in the Environment will be activated once bracmat.jar is created and copied to $CATALINA_HOME/lib/. 
 
 Create folder /etc/systemd/system/tomcat-texton.service.d and file /etc/systemd/system/tomcat-texton.service.d/override.conf
@@ -251,29 +277,31 @@ $> sudo systemctl enable tomcat-texton.service
 $> sudo systemctl start tomcat-texton.service
 ```
 
-### Install build tools
+## Install build tools
 ```bash
 sudo apt install gcc
 sudo apt install make
 sudo apt install ant
-``
-
-### Install Readline library used by Bracmat
-```bash
-sudo apt-get install libreadline-dev
 ```
 
-## bracmat
 
+
+## Bracmat
+### Install Readline and Curl libraries
+```bash
+sudo apt-get install libreadline-dev
+sudo apt-get install libcurl4-openssl-dev
+```
+### Build and install the Bracmat command line tool
 ```bash
 $> cd ~
 $> git clone https://github.com/BartJongejan/Bracmat.git
 $> cd Bracmat/src/
-$> make
-$> sudo cp bracmat /opt/texton/bin/
+$> make potuurl
+$> sudo cp bracmaturl /opt/texton/bin/bracmat
 ```
 
-### Install Bracmat JNI
+## Install Bracmat JNI
 
 Create the Tomcat lib bracmat.jar and the shared library libbracmat.so.1.0.
 The script compileAndTestJNI.sh assumes that the folder /opt/tomcat-texton/ exists and that the tomcat binaries are in the bin subfolder. Edit compileAndTestJNI.sh if necessary.
@@ -287,9 +315,9 @@ $> sudo ./compileAndTestJNI.sh
 Open /etc/systemd/system/tomcat-texton.service again and remove the hash sign in front of this line:
 ```
 Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
-
-### Install Texton ###
 ```
+
+# Install Texton 
 
 ## texton-Java
 
@@ -407,18 +435,6 @@ We need pip3
 $> sudo apt-get install python3-pip
 ```
 
-The cltk library, which is used by the Lapos tagger, must be installed for all users:
-```bash
-$> sudo su
-# cd ~
-# umask 022
-# pip3 install cltk
-# exit
-```
-Alternatively,
-```bash
-sudo /usr/bin/pip3 install --prefix /usr cltk
-```
 ## xmllint
 
 The teianno tool uses xmllint.
@@ -429,9 +445,10 @@ $> sudo apt install libxml2-utils
 ```
 
 
-### running Text Tonsorium the first time
+## Using the admin page
 
-Create file /opt/texton/BASE/meta/properties containing
+### Server settings
+Create (as root) file /opt/texton/BASE/meta/properties containing
 ```
 ( baseUrlTools
 . "http://localhost:8080"
@@ -451,6 +468,19 @@ Create file /opt/texton/BASE/meta/properties containing
 $> sudo chown tomcat: /opt/texton/BASE/meta/properties
 ```
 
+If you want to run Text Tonsorium on anything else but a personal computer, all four values must be edited, e.g.
+```bash
+(baseUrlTools."https://abc.de".)
+(wwwServer."https://abc.de".)
+( password
+. "8nkh55fywo765nkJKB5mllbkM29tfai5l889nggRRRR557uhvrttyQLKKU+hHIHO667321980ghddfg7rttGKA=="
+. "NONEmpty string as password."
+)
+(salt."TrH53+jhhjk335hffd32jg==".)
+```
+(The values in this example are not real and should not be used. The password and salt values should be generated as described below.)
+
+### Install metadata tables
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
 ```bash
@@ -460,7 +490,6 @@ $> ls -lrt alltables*
 
 Copy the file name of the most recent "alltables..." file to the clipboard. Now navigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
-You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
 
 If you want to run Text Tonsorium on anything else but a personal computer, you must set an administrator 'password' and a 'salt' value in the file /opt/texton/BASE/metaproperties.
 Such a password/salt pair can be created in the following way:
@@ -480,7 +509,10 @@ If the registered tools are configured to be on the same localhost as the Text T
 
 The dot following the property value of each of the entries in the 'properties' file is important. Between this dot and the closing parenthesis you can write a comment, e.g., "This is the password used on my development machine.".
 
-## Using the admin page
+
+## running Text Tonsorium the first time
+
+You are now ready to upload input to http://localhost:8080/texton/ and to compute workflows, but you cannot yet run those workflows, since many tools are still lacking.
 
 The tools made available via Text Tonsorium are registered in the files texton/BASE/meta/tooladm and texton/BASE/meta/toolprop. The tooladm file contains boilerplate information, such as the name of each tool, its description, its URL and the email address of the owner of the tool. In the public version this email address is x@x.xxx. The toolprop file, on the other hand, describes the input and output feautures of each tool. These features are used by Text Tonsorium to compute viable workflows to satify the user's text annotation and/or transformation needs.
 
@@ -490,6 +522,11 @@ If Text Tonsorium is installed locally, open http://localhost/texton/admin.html 
 
 Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
+Make sure the binaries in /opt/texton/bin are executable.
+```bash
+$> sudo chmod ugo+x *
+$> chmod ugo-x readme.txt
+```
 
 ### ANNIE
 
@@ -525,10 +562,6 @@ Afterwards there will be a subdirectory 'daner/daner'.
 
 ```bash
 $> git clone https://github.com/boberle/dependency2tree.git
-```
-
-
-```bash
 $> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
 $> sudo apt install graphviz
 ```
@@ -587,8 +620,11 @@ This webservice calls another webservice. The .war file for that webservice is i
 
 ### np-genkender
 
-This tool uses a very old, but still functioning, 3rd party program, CASS. To install,
-go to the np-genkender/CASS/ directory and unpack scol-1-12.tgz.
+This tool uses a very old, but still functioning, 3rd party program, CASS. 
+```bash
+$> cd /opt/texton/np-genkender/CASS/
+$> sudo tar -xzf scol-1-12.tgz
+```
 
 ### opennlpPOSTagger
 
@@ -632,23 +668,23 @@ Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton
 
 The following instructions assume installation in a system with systemd.
 
-Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.8.zip.
+Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.10.zip.
 
 ```bash
 $> cd ~
-$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8.zip
+$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10.zip
 ```
 Unzip and move to destination folder
 
 ```bash
-$> unzip stanford-corenlp-4.5.8.zip
-$> sudo mv stanford-corenlp-4.5.8 /opt/
+$> unzip stanford-corenlp-4.5.10.zip
+$> sudo mv stanford-corenlp-4.5.10 /opt/
 ```
 Make link to latest version
 
 ```bash
 $> sudo rm /opt/corenlp
-$> sudo ln -s /opt/stanford-corenlp-4.5.8 /opt/corenlp
+$> sudo ln -i -s /opt/stanford-corenlp-4.5.10 /opt/corenlp
 ```
 Copy CoreNLP.sh to its destination folder
 
@@ -656,9 +692,13 @@ Copy CoreNLP.sh to its destination folder
 $> cd /opt/texton/CoreNLP/
 $> sudo cp CoreNLP.sh /usr/local/bin/
 ```
-You are advised to increase the 'timeout' value from 5000 to e.g. 500000 in the lines
+You are advised to increase the 'timeout' value.
 ```bash
-$> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
+$> sudo vi /usr/local/bin/CoreNLP.sh
+```
+Find the lines starting with 'nohup java' and change the timeout value from 5000 to 500000, i.e. change
+```bash
+nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 5000 --add-modules java.se.ee /tmp 2>> /dev/null >>/dev/null &
 ```
 Make executable
 
@@ -699,16 +739,16 @@ Logging messages are per default sent to /dev/null. To see logging messages, edi
 ```bash
 $> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
 ```
-Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.8/.
+Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.10/.
 ```bash
-$> cd /opt/stanford-corenlp-4.5.8/
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-arabic.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-chinese.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-french.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-german.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-hungarian.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-italian.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.8-models-spanish.jar
+$> cd /opt/stanford-corenlp-4.5.10/
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-arabic.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-chinese.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-french.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-german.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-hungarian.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-italian.jar
+$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-spanish.jar
 ```
 Text Tonsorium needs the 'properties' files stored in each of these .jar files. They are in the path
 ```
@@ -716,11 +756,12 @@ edu/stanford/nlp/pipeline/StanfordCoreNLP-<language>.properties
 ```
 where <language> is 'arabic', 'chinese', 'french', 'german', 'hungarian', 'italian', 'spanish' . The .properties files are obtained as follows:
 ```bash
-$> unzip -p stanford-corenlp-4.5.8-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
+$> unzip -p stanford-corenlp-4.5.10-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
 ```
 This command is executed automatically when the properties are needed and not already have been unzipped. Make sure that user 'www-data' owns the folder '/opt/texton/texton-linguistic-resources'.
-
-
+```bash
+$> sudo chown -R www-data /opt/texton-linguistic-resources
+```
 
 ### Tesseract OCR
 
@@ -738,7 +779,8 @@ $> sudo git clone https://github.com/paalberti/tesseract-dan-fraktur
 ```
 
 For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
-Make sure that tesseract can be seen by the webserver.
+
+Make sure that tesseract can be seen by the webserver in /usr/bin/tesseract.
 
 ```bash
 $> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
@@ -764,11 +806,15 @@ The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cu
 Unzip this resource:
 
 ```bash
-$> cd ~
-$> wget https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/udpipe-ud-2.5-191206.zip
-$> unzip udpipe-ud-2.5-191206.zip
-$> sudo mv cd udpipe-ud-2.5-191206 <texton folder>/udpipe
+$> cd /opt/texton/udpipe
+$> sudo mkdir udpipe-ud-2.5-191206
+$> cd udpipe-ud-2.5-191206
+$> sudo chown www-data:<your user> .
+$> sudo chmod ug+w .
 ```
+
+Press the button "Download instructions for command line" and copy the instructions to the terminal. Execute the instructions.
+
 
 ## Tools that can or must be compiled from source
 
@@ -794,6 +840,20 @@ Follow the instructions in 'README.md'. Copy jsoncat to '/opt/texton/bin/'.
 
 ### Lapos
 
+The cltk library, which is used by the Lapos tagger, must be installed for all users:
+```bash
+$> sudo su
+# cd ~
+# umask 022
+# pip3 install cltk
+# exit
+```
+Alternatively,
+```bash
+sudo /usr/bin/pip3 install --prefix /usr cltk
+```
+
+Building Lapos from source is straightforward. Clone the repo:
 ```bash
 $> cd ~
 $> git clone https://github.com/cltk/lapos.git
@@ -814,11 +874,24 @@ The .war file can be built from source, see  https://github.com/kuhumcst/mate-PO
 The .war file can be built from source, see https://github.com/kuhumcst/opennlpPOSTagger.  Copy the .war file to the tomcat webapps folder.
 
 ### pdf2htmlEX
+You can download and build the source code of pdf2htmlEX from
 ```bash
 $> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
 ```
+However, it is advised to follow the instructions in the wiki of the pdf2htmlEX repo, which are more detailed and up to date.
 
 See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
+
+For example, on Debian based systems, you can do the following:
+```bash
+$> cd ~
+$> wget https://github.com/pdf2htmlEX/pdf2htmlEX/releases/download/v0.18.8.rc1/pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
+```
+(On Ubuntu 26.04, you may need out of luck in the following step.)
+Install the .deb package
+```
+$> sudo sudo apt install ./pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
+```
 
 ### repetitiveness checker
 
