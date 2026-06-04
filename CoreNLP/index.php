@@ -15,7 +15,7 @@ header('Content-type:text/plain; charset=UTF-8');
 /*
 ToolID         : CoreNLP
 PassWord       : 
-Version        : 4.5.8
+Version        : 4.5.10
 Title          : Stanford CoreNLP
 Path in URL    : CoreNLP	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : Stanford NLP Group
@@ -70,7 +70,7 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : CoreNLP\n");
-        fwrite($fscrip," * Version          : 4.5.8\n");
+        fwrite($fscrip," * Version          : 4.5.10\n");
         fwrite($fscrip," * Title            : Stanford CoreNLP\n");
         fwrite($fscrip," * ServiceURL       : http://localhost/CoreNLP\n");
         fwrite($fscrip," * Publisher        : Stanford NLP Group\n");
@@ -577,9 +577,9 @@ try {
             {
             logit("$ret exists");
             if($lang==='en')
-                $command = "unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models.jar $prop > $res/$prop";
+                $command = "unzip -p /opt/stanford-corenlp-4.5.10/stanford-corenlp-4.5.10-models.jar $prop > $res/$prop";
             else
-                $command = "unzip -p /opt/stanford-corenlp-4.5.8/stanford-corenlp-4.5.8-models-$language.jar $prop > $res/$prop";
+                $command = "unzip -p /opt/stanford-corenlp-4.5.10/stanford-corenlp-4.5.10-models-$language.jar $prop > $res/$prop";
             logit($command);
             system($command);
             return $properties;

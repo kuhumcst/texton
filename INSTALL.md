@@ -762,6 +762,11 @@ This command is executed automatically when the properties are needed and not al
 ```bash
 $> sudo chown -R www-data /opt/texton-linguistic-resources
 ```
+Also make sure that the file /opt/texton/CoreNLP/index.php mentions the correct version of CoreNLP. That is, check all instances of the string
+
+    stanford-corenlp-4.5.10
+
+and edit if necessary.
 
 ### Tesseract OCR
 
