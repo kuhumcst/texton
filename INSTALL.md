@@ -78,26 +78,26 @@ Installation requires
 
 ## update/upgrade
 ```bash
-$> sudo apt-get update
-$> sudo apt-get upgrade
+sudo apt-get update
+sudo apt-get upgrade
 ```
 
 ## unzip
 ```bash
-$> sudo apt install unzip
+sudo apt install unzip
 ```
 ## ClamAV
 Checks uploaded files.
 See https://www.clamav.net/. Install: 
 ```bash
-$> sudo apt-get install clamav clamav-daemon -y
-$> sudo dpkg-reconfigure clamav-daemon
+sudo apt-get install clamav clamav-daemon -y
+sudo dpkg-reconfigure clamav-daemon
 ```
 Choose TCP and port 3310. Leave the rest as-is. 
 Edit /etc/systemd/system/clamav-daemon.socket.d/override.conf 
 ```bash
-$> sudo mkdir /etc/systemd/system/clamav-daemon.socket.d
-$> sudo vi /etc/systemd/system/clamav-daemon.socket.d/override.conf
+sudo mkdir /etc/systemd/system/clamav-daemon.socket.d
+sudo vi /etc/systemd/system/clamav-daemon.socket.d/override.conf
 ```
 Enter:
 ```
@@ -108,10 +108,10 @@ ListenStream=127.0.0.1:3310
 ```
 Then
 ```bash
-$> sudo systemctl daemon-reload
-$> sudo systemctl reload clamav-daemon.service
-$> sudo systemctl restart clamav-daemon.socket
-$> sudo ss -anp | grep -E "(Active|State|clam|3310)"
+sudo systemctl daemon-reload
+sudo systemctl reload clamav-daemon.service
+sudo systemctl restart clamav-daemon.socket
+sudo ss -anp | grep -E "(Active|State|clam|3310)"
 ```
 ```
 Netid State   Recv-Q Send-Q                                          Local Address:Port        Peer Address:Port      Process
@@ -126,7 +126,7 @@ X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
 ```
 (See https://en.wikipedia.org/wiki/EICAR_test_file). Then
 ```bash
-$> clamdscan --fdpass EICAR
+clamdscan --fdpass EICAR
 ```
 The output should tell that there is an error:
 ```
@@ -139,7 +139,7 @@ End Date:   2024:12:07 16:22:35
 ```
 To increase the max size of files to scan, edit clamd.conf
 ```bash
-$> sudo vi /etc/clamav/clamd.conf
+sudo vi /etc/clamav/clamd.conf
 ```
 and increase StreamMaxLength from the default value 25M:
 ```
@@ -148,37 +148,37 @@ StreamMaxLength 250M
 ## pdffonts
 Install prerequisite:
 ```bash
-$> sudo apt install poppler-utils
+sudo apt install poppler-utils
 ```
 This installs /usr/bin/pdffonts.
 
 ## git-lfs
 
 ```bash
-$> sudo apt-get install -y git-lfs
+sudo apt-get install -y git-lfs
 ```
 ## apache
 
 ```bash
-$> sudo apt install apache2
+sudo apt install apache2
 ```
 
 ### enabling webservices
 
 ```bash
-$> cd /opt/texton/apache2-sites/
-$> sudo cp texton.conf /etc/apache2/sites-available/
-$> sudo a2ensite texton.conf
-$> sudo a2dissite 000-default.conf
-$> sudo service apache2 reload
+cd /opt/texton/apache2-sites/
+sudo cp texton.conf /etc/apache2/sites-available/
+sudo a2ensite texton.conf
+sudo a2dissite 000-default.conf
+sudo service apache2 reload
 ```
 
 ## PHP
 
 ```bash
-$> sudo apt-get install php libapache2-mod-php
-$> #sudo a2enmod php8.3
-$> sudo service apache2 restart
+sudo apt-get install php libapache2-mod-php
+#sudo a2enmod php8.3
+sudo service apache2 restart
 ```
 
 Note "php8.3" is an example. Use the php version that you saw being installed in the previous step. 
@@ -187,24 +187,24 @@ Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) 
 Some php scripts use the CURLFile class. To make that work
 
 ```bash
-$> sudo apt-get install php-curl
+sudo apt-get install php-curl
 ```
 
 The html2text converter (https://github.com/soundasleep/html2text.git) requires two PHP packages
 
 ```bash
-$> sudo apt-get install php-mbstring
-$> sudo apt-get install php-dom
+sudo apt-get install php-mbstring
+sudo apt-get install php-dom
 ```
 
 Restart apache
 
 ```bash
-$> sudo service apache2 restart
+sudo service apache2 restart
 ```
 ## Java
 ```bash
-$> sudo apt install default-jdk
+sudo apt install default-jdk
 ```
 ## Tomcat
 
@@ -213,17 +213,17 @@ On WSL Ubuntu, Tomcat is downloaded and installed as /opt/tomcat-texton/. This c
 Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz
 .
 ```bash
-$> sudo mkdir /opt/tomcat11
-$> sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
-$> sudo chown tomcat: /opt/tomcat11
-$> cd ~
-$> wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz -P .
-$> sudo tar -xvzf apache-tomcat-11.0.22.tar.gz -C /opt/tomcat11
-$> sudo ln -s /opt/tomcat11/apache-tomcat-11.0.22 /opt/tomcat-texton
-$> sudo chown -RH tomcat: /opt/tomcat-texton
-$> sudo chmod ugo+rx /opt/tomcat11/
-$> sudo chmod o+rx /opt/tomcat-texton/bin/
-$> sudo chmod o+rx /opt/tomcat-texton/logs/
+sudo mkdir /opt/tomcat11
+sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
+sudo chown tomcat: /opt/tomcat11
+cd ~
+wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz -P .
+sudo tar -xvzf apache-tomcat-11.0.22.tar.gz -C /opt/tomcat11
+sudo ln -s /opt/tomcat11/apache-tomcat-11.0.22 /opt/tomcat-texton
+sudo chown -RH tomcat: /opt/tomcat-texton
+sudo chmod ugo+rx /opt/tomcat11/
+sudo chmod o+rx /opt/tomcat-texton/bin/
+sudo chmod o+rx /opt/tomcat-texton/logs/
 ```
 [This step is perhaps not necessary! Edit /opt/tomcat-texton/conf/server.xml
 ```
@@ -270,11 +270,11 @@ ReadWritePaths=/opt/texton/BASE/ /var/log/texton/
 
 Then
 ```bash
-$> sudo mkdir /var/log/texton
-$> sudo chown tomcat: /var/log/texton
-$> sudo systemctl daemon-reload
-$> sudo systemctl enable tomcat-texton.service
-$> sudo systemctl start tomcat-texton.service
+sudo mkdir /var/log/texton
+sudo chown tomcat: /var/log/texton
+sudo systemctl daemon-reload
+sudo systemctl enable tomcat-texton.service
+sudo systemctl start tomcat-texton.service
 ```
 
 ## Install build tools
@@ -294,11 +294,11 @@ sudo apt-get install libcurl4-openssl-dev
 ```
 ### Build and install the Bracmat command line tool
 ```bash
-$> cd ~
-$> git clone https://github.com/BartJongejan/Bracmat.git
-$> cd Bracmat/src/
-$> make potuurl
-$> sudo cp bracmaturl /opt/texton/bin/bracmat
+cd ~
+git clone https://github.com/BartJongejan/Bracmat.git
+cd Bracmat/src/
+make potuurl
+sudo cp bracmaturl /opt/texton/bin/bracmat
 ```
 
 ## Install Bracmat JNI
@@ -307,9 +307,9 @@ Create the Tomcat lib bracmat.jar and the shared library libbracmat.so.1.0.
 The script compileAndTestJNI.sh assumes that the folder /opt/tomcat-texton/ exists and that the tomcat binaries are in the bin subfolder. Edit compileAndTestJNI.sh if necessary.
 
 ```bash
-$> cd ~/Bracmat/java-JNI
-$> sudo chmod ugo+x compileAndTestJNI.sh
-$> sudo ./compileAndTestJNI.sh
+cd ~/Bracmat/java-JNI
+sudo chmod ugo+x compileAndTestJNI.sh
+sudo ./compileAndTestJNI.sh
 ```
 
 Open /etc/systemd/system/tomcat-texton.service again and remove the hash sign in front of this line:
@@ -325,73 +325,73 @@ The repo https://github.com/kuhumcst/texton-Java contains the Java code of the c
 Make sure that the local git repositories texton-Java and Bracmat (see above) share the same parent folder. You can clone whereever you want, e.g. in your home folder.
 It is important that the script can 'see' ../Bracmat/java-JNI/java. See the build.xml file.
 ```bash
-$> cd ~
-$> git clone https://github.com/kuhumcst/texton-Java.git
-$> cd texton-Java
-$> sudo chmod ugo+x compileTomcat.sh
-$> sudo ./compileTomcat.sh
-$> cd ..
+cd ~
+git clone https://github.com/kuhumcst/texton-Java.git
+cd texton-Java
+sudo chmod ugo+x compileTomcat.sh
+sudo ./compileTomcat.sh
+cd ..
 ```
 ## texton - Bracmat part (this repo)
 
 ```bash
-$> cd /opt
-$> sudo git clone https://github.com/kuhumcst/texton.git
-$> cd texton
-$> sudo chgrp -R www-data *
-$> sudo chmod -R g+w * 
-$> sudo chown -R tomcat: BASE
+cd /opt
+sudo git clone https://github.com/kuhumcst/texton.git
+cd texton
+sudo chgrp -R www-data *
+sudo chmod -R g+w * 
+sudo chown -R tomcat: BASE
 ```
 
 ### Copy bracmat command line tool to destination folder ###
 
 ```bash
-$> cd ~/Bracmat/src/
-$> sudo cp bracmat /opt/texton/bin/
+cd ~/Bracmat/src/
+sudo cp bracmat /opt/texton/bin/
 ```
 
 ### enabling webservices
 
 ```bash
-$> cd /opt/texton/apache2-sites/
-$> sudo cp texton.conf /etc/apache2/sites-available/
-$> sudo a2ensite texton.conf
-$> sudo service apache2 reload
+cd /opt/texton/apache2-sites/
+sudo cp texton.conf /etc/apache2/sites-available/
+sudo a2ensite texton.conf
+sudo service apache2 reload
 ```
 Then:
 ```bash
-$> sudo systemctl daemon-reload
-$> sudo systemctl restart tomcat-texton.service
-$> cd ~
-$> wget http://localhost:8080
+sudo systemctl daemon-reload
+sudo systemctl restart tomcat-texton.service
+cd ~
+wget http://localhost:8080
 ```
 An index.html should be in the home directory
 
 ## linguistic resources
 
 ```bash
-$> cd /opt
-$> sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
-$> sudo chmod -R ug+w /opt/texton-linguistic-resources
-$> cd texton
-$> sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
+cd /opt
+sudo git clone https://github.com/kuhumcst/texton-linguistic-resources.git
+sudo chmod -R ug+w /opt/texton-linguistic-resources
+cd texton
+sudo ln -s /opt/texton-linguistic-resources texton-linguistic-resources
 ```
 
 Make all directories accessible and readable and give owner and group write rights
 
 ```bash
-$> sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
+sudo find /opt/texton/texton-linguistic-resources -type d -exec chmod 775 {} \; 
 ```
 
 Set group to www-data, recursively
 
 ```bash
-$> sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
+sudo chown -RL <user>:www-data /opt/texton/texton-linguistic-resources
 ```
 ## Proxy settings
 
 ```bash
-$> sudo vi /etc/apache2/mods-available/proxy.conf
+sudo vi /etc/apache2/mods-available/proxy.conf
 ```
 
 Add:
@@ -410,16 +410,16 @@ ProxyPassMatch "/texton/(.*)$" "http://127.0.0.1:8080/texton/$1"
 ```
 
 ```bash
-$> sudo a2enmod proxy
-$> sudo a2enmod proxy_ajp
-$> sudo a2enmod proxy_http
-$> sudo service apache2 restart
+sudo a2enmod proxy
+sudo a2enmod proxy_ajp
+sudo a2enmod proxy_http
+sudo service apache2 restart
 ```
 
 ## cron jobs
 The input, intermediate and final data in workflow processes, and tomcat log files, can be cleaned out automatically by using cron jobs as follows: 
 ```bash
-$> sudo crontab -e
+sudo crontab -e
 ```
 Enter
 ```
@@ -432,7 +432,7 @@ Enter
 We need pip3
 
 ```bash
-$> sudo apt-get install python3-pip
+sudo apt-get install python3-pip
 ```
 
 ## xmllint
@@ -441,7 +441,7 @@ The teianno tool uses xmllint.
 Installing:
 
 ```bash
-$> sudo apt install libxml2-utils
+sudo apt install libxml2-utils
 ```
 
 
@@ -465,7 +465,7 @@ Create (as root) file /opt/texton/BASE/meta/properties containing
 (salt."CvPAQd7naaqtVD1xJD37eg==".)
 ```
 ```bash
-$> sudo chown tomcat: /opt/texton/BASE/meta/properties
+sudo chown tomcat: /opt/texton/BASE/meta/properties
 ```
 
 If you want to run Text Tonsorium on anything else but a personal computer, all four values must be edited, e.g.
@@ -484,8 +484,8 @@ If you want to run Text Tonsorium on anything else but a personal computer, all 
 Before proceeding, we need to install the metadata tables that the Text Tonsorium needs to compute workflows. Assuming that the Text Tonsorium is installed in /opt, do
 
 ```bash
-$> cd /opt/texton/BASE/
-$> ls -lrt alltables*
+cd /opt/texton/BASE/
+ls -lrt alltables*
 ```
 
 Copy the file name of the most recent "alltables..." file to the clipboard. Now navigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
@@ -499,7 +499,7 @@ Such a password/salt pair can be created in the following way:
 3. Press the 'Bracmat' button.
 4. Open a linux terminal, and find the location of the file 'textonJava.log'. This location defaults to '/opt/texton/BASE/textonJava.log'. See setting in conf/log4j2.xml in the texton-Java repo.
 5. Open the log file for the java part of Text Tonsorium
-  $> sudo less textonJava.log
+  sudo less textonJava.log
 6. Go to the end of this file and find the log statement that contains the string 'XMLprop'. Copy everything between '[' and ']' to the file 'properties', replacing the two same named elements.
 7. Save 'properties'
 
@@ -524,8 +524,8 @@ Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
 Make sure the binaries in /opt/texton/bin are executable.
 ```bash
-$> sudo chmod ugo+x *
-$> chmod ugo-x readme.txt
+sudo chmod ugo+x *
+chmod ugo-x readme.txt
 ```
 
 ### ANNIE
@@ -542,7 +542,7 @@ Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton
 A somewhat old OCR program. In most cases not as good as Tesseract, but sometimes it is. Nice feature: RTF output that more or less retains page lay-out. 
 
 ```bash
-$> sudo apt install cuneiform
+sudo apt install cuneiform
 ```
 Also needed is ImageMagick
 
@@ -553,33 +553,33 @@ $>sudo apt install imagemagick
 Daner is at https://github.com/ITUnlp/daner
 
 ```bash
-$> cd /opt/texton/daner
-$> sudo git clone https://github.com/ITUnlp/daner.git
+cd /opt/texton/daner
+sudo git clone https://github.com/ITUnlp/daner.git
 ```
 
 Afterwards there will be a subdirectory 'daner/daner'.
 ### dependency2tree
 
 ```bash
-$> git clone https://github.com/boberle/dependency2tree.git
-$> sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
-$> sudo apt install graphviz
+git clone https://github.com/boberle/dependency2tree.git
+sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
+sudo apt install graphviz
 ```
 ### espeak
 
 This is simply installed by the following command:
 
 ```bash
-$> sudo apt-get install espeak
+sudo apt-get install espeak
 ```
 
 ### html2text
 
 ```bash
-$> sudo apt-get install php-mbstring
-$> sudo apt-get install php-dom
-$> cd /opt/texton/html2text
-$> sudo git clone https://github.com/soundasleep/html2text
+sudo apt-get install php-mbstring
+sudo apt-get install php-dom
+cd /opt/texton/html2text
+sudo git clone https://github.com/soundasleep/html2text
 ```
 
 Afterwards there will be a subdirectory 'html2text/html2text'.
@@ -589,11 +589,11 @@ Afterwards there will be a subdirectory 'html2text/html2text'.
 See https://github.com/kuhumcst/texton-bin#jsoncat
 
 ```bash
-$> cd ~
-$> git clone https://github.com/pantuza/jsoncat.git
-$> cd jsoncat
-$> make
-$> sudo cp bin/jsoncat /opt/texton/bin
+cd ~
+git clone https://github.com/pantuza/jsoncat.git
+cd jsoncat
+make
+sudo cp bin/jsoncat /opt/texton/bin
 ```
 
 ### Lapos
@@ -605,7 +605,7 @@ An executable 'lapos' is in the texton-bin repository. If that executable does n
 LibreOffice is used to convert sundry Office formats to RTF. RTF can be handled by the tokenizer, RTFreader.
 
 ```bash
-$> sudo apt install libreoffice
+sudo apt install libreoffice
 ```
 
 It is difficult to get soffice to do what we want from PHP. What works on one machine does not always work on another one. Be warned.
@@ -622,8 +622,8 @@ This webservice calls another webservice. The .war file for that webservice is i
 
 This tool uses a very old, but still functioning, 3rd party program, CASS. 
 ```bash
-$> cd /opt/texton/np-genkender/CASS/
-$> sudo tar -xzf scol-1-12.tgz
+cd /opt/texton/np-genkender/CASS/
+sudo tar -xzf scol-1-12.tgz
 ```
 
 ### opennlpPOSTagger
@@ -639,12 +639,12 @@ This tool can be downloaded in binary format, but we have not tried that. For bu
 Visit https://github.com/euske/pdfminer and follow the installation instructions.
 
 ```bash
-$> sudo apt install python3-pdfminer
+sudo apt install python3-pdfminer
 ```
 
 On older systems try the following, now deprecated, method: 
 ```bash
-$> sudo su
+sudo su
 # cd ~
 # umask 022
 # pip3 install pdfminer
@@ -653,7 +653,7 @@ $> sudo su
 If you like, you can instead install the newer pdfminer.six (https://github.com/pdfminer/pdfminer.six) software. We do currently (2020.08.20) see no reason to do that.
 
 ```bash
-$> pip3 install pdfminer.six
+pip3 install pdfminer.six
 ```
 
 ### repetitiveness checker
@@ -671,30 +671,30 @@ The following instructions assume installation in a system with systemd.
 Fetch CoreNLP. Visit https://stanfordnlp.github.io/CoreNLP/download.html and copy the link to the latest version. In this case https://nlp.stanford.edu/software/stanford-corenlp-4.5.10.zip.
 
 ```bash
-$> cd ~
-$> wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10.zip
+cd ~
+wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10.zip
 ```
 Unzip and move to destination folder
 
 ```bash
-$> unzip stanford-corenlp-4.5.10.zip
-$> sudo mv stanford-corenlp-4.5.10 /opt/
+unzip stanford-corenlp-4.5.10.zip
+sudo mv stanford-corenlp-4.5.10 /opt/
 ```
 Make link to latest version
 
 ```bash
-$> sudo rm /opt/corenlp
-$> sudo ln -i -s /opt/stanford-corenlp-4.5.10 /opt/corenlp
+sudo rm /opt/corenlp
+sudo ln -i -s /opt/stanford-corenlp-4.5.10 /opt/corenlp
 ```
 Copy CoreNLP.sh to its destination folder
 
 ```bash
-$> cd /opt/texton/CoreNLP/
-$> sudo cp CoreNLP.sh /usr/local/bin/
+cd /opt/texton/CoreNLP/
+sudo cp CoreNLP.sh /usr/local/bin/
 ```
 You are advised to increase the 'timeout' value.
 ```bash
-$> sudo vi /usr/local/bin/CoreNLP.sh
+sudo vi /usr/local/bin/CoreNLP.sh
 ```
 Find the lines starting with 'nohup java' and change the timeout value from 5000 to 500000, i.e. change
 ```bash
@@ -703,32 +703,32 @@ nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPS
 Make executable
 
 ```bash
-$> sudo chmod +x /usr/local/bin/CoreNLP.sh
+sudo chmod +x /usr/local/bin/CoreNLP.sh
 ```
 Check
 
 ```bash
-$> sudo /usr/local/bin/./CoreNLP.sh start
-$> sudo ps -ef | grep NLP
-$> sudo /usr/local/bin/./CoreNLP.sh stop
-$> sudo ps -ef | grep NLP
+sudo /usr/local/bin/./CoreNLP.sh start
+sudo ps -ef | grep NLP
+sudo /usr/local/bin/./CoreNLP.sh stop
+sudo ps -ef | grep NLP
 ```
 Copy CoreNLP.service to its destination folder
 
 ```bash
-$> sudo cp CoreNLP.service /etc/systemd/system/
+sudo cp CoreNLP.service /etc/systemd/system/
 ```
 Enable the service
 
 ```bash
-$> sudo systemctl daemon-reload
-$> sudo systemctl enable CoreNLP.service
+sudo systemctl daemon-reload
+sudo systemctl enable CoreNLP.service
 ```
 Start/Stop service
 
 ```bash
-$> sudo systemctl start CoreNLP.service
-$> sudo systemctl stop CoreNLP.service
+sudo systemctl start CoreNLP.service
+sudo systemctl stop CoreNLP.service
 ```
 
 If CoreNLP is installed locally, you can visit its web interface by visiting http://localhost:9000/
@@ -737,18 +737,18 @@ Acknowledgement: Ameya Dhamnaskar (https://medium.com/@ameyadhamnaskar/running-j
 
 Logging messages are per default sent to /dev/null. To see logging messages, edit /usr/local/bin/./CoreNLP.sh and change the lines starting with 'nohup java':
 ```bash
-$> nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
+nohup java -mx6g -cp "/opt/corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 500000 --add-modules java.se.ee /tmp 2>> /var/log/CoreNLP.err >>/var/log/CoreNLP.log &
 ```
 Copy models for other languages than english to the folder where the CoreNLP jars are located, e.g. /opt/stanford-corenlp-4.5.10/.
 ```bash
-$> cd /opt/stanford-corenlp-4.5.10/
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-arabic.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-chinese.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-french.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-german.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-hungarian.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-italian.jar
-$> sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-spanish.jar
+cd /opt/stanford-corenlp-4.5.10/
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-arabic.jar
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-chinese.jar
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-french.jar
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-german.jar
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-hungarian.jar
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-italian.jar
+sudo wget https://nlp.stanford.edu/software/stanford-corenlp-4.5.10-models-spanish.jar
 ```
 Text Tonsorium needs the 'properties' files stored in each of these .jar files. They are in the path
 ```
@@ -756,11 +756,11 @@ edu/stanford/nlp/pipeline/StanfordCoreNLP-<language>.properties
 ```
 where <language> is 'arabic', 'chinese', 'french', 'german', 'hungarian', 'italian', 'spanish' . The .properties files are obtained as follows:
 ```bash
-$> unzip -p stanford-corenlp-4.5.10-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
+unzip -p stanford-corenlp-4.5.10-models-<language>.jar StanfordCoreNLP-<language>.properties > StanfordCoreNLP-<language>.properties
 ```
 This command is executed automatically when the properties are needed and not already have been unzipped. Make sure that user 'www-data' owns the folder '/opt/texton/texton-linguistic-resources'.
 ```bash
-$> sudo chown -R www-data /opt/texton-linguistic-resources
+sudo chown -R www-data /opt/texton-linguistic-resources
 ```
 Also make sure that the file /opt/texton/CoreNLP/index.php mentions the correct version of CoreNLP. That is, check all instances of the string
 
@@ -771,16 +771,16 @@ and edit if necessary.
 ### Tesseract OCR
 
 ```bash
-$> sudo apt install tesseract-ocr
-$> sudo apt install imagemagick
+sudo apt install tesseract-ocr
+sudo apt install imagemagick
 ```
 
 In addition
 
 ```bash
-$> cd /opt/texton/tesseract
-$> sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
-$> sudo git clone https://github.com/paalberti/tesseract-dan-fraktur
+cd /opt/texton/tesseract
+sudo git clone https://github.com/tesseract-ocr/tessdata_best.git
+sudo git clone https://github.com/paalberti/tesseract-dan-fraktur
 ```
 
 For better results, it may be better to install Tesseract from  source (https://github.com/tesseract-ocr/tesseract).
@@ -788,7 +788,7 @@ For better results, it may be better to install Tesseract from  source (https://
 Make sure that tesseract can be seen by the webserver in /usr/bin/tesseract.
 
 ```bash
-$> sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
+sudo ln /usr/local/bin/tesseract /usr/bin/tesseract
 ```
 
 Text Tonsorium needs ImageMagick to extract a PDF file. Sometimes the program 'convert', part of ImageMagic, says it is not authorized to do that:
@@ -811,11 +811,11 @@ The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cu
 Unzip this resource:
 
 ```bash
-$> cd /opt/texton/udpipe
-$> sudo mkdir udpipe-ud-2.5-191206
-$> cd udpipe-ud-2.5-191206
-$> sudo chown www-data:<your user> .
-$> sudo chmod ug+w .
+cd /opt/texton/udpipe
+sudo mkdir udpipe-ud-2.5-191206
+cd udpipe-ud-2.5-191206
+sudo chown www-data:<your user> .
+sudo chmod ug+w .
 ```
 
 Press the button "Download instructions for command line" and copy the instructions to the terminal. Execute the instructions.
@@ -830,16 +830,16 @@ In this readme, we assume that the 'bin' directory is '/opt/texton/bin'.
 For building from source, also see https://github.com/kuhumcst/texton-bin#cstlemma
 
 ```bash
-$> wget https://raw.githubusercontent.com/kuhumcst/cstlemma/master/doc/makecstlemma.bash
-$> chmod ugo+x makecstlemma.bash
-$> ./makecstlemma.bash
-$> sudo cp cstlemma/cstlemma /opt/texton/bin/
+wget https://raw.githubusercontent.com/kuhumcst/cstlemma/master/doc/makecstlemma.bash
+chmod ugo+x makecstlemma.bash
+./makecstlemma.bash
+sudo cp cstlemma/cstlemma /opt/texton/bin/
 ```
 
 ### jsoncat
 
 ```bash
-$> git clone https://github.com/pantuza/jsoncat.git
+git clone https://github.com/pantuza/jsoncat.git
 ```
 Follow the instructions in 'README.md'. Copy jsoncat to '/opt/texton/bin/'.  
 
@@ -847,7 +847,7 @@ Follow the instructions in 'README.md'. Copy jsoncat to '/opt/texton/bin/'.
 
 The cltk library, which is used by the Lapos tagger, must be installed for all users:
 ```bash
-$> sudo su
+sudo su
 # cd ~
 # umask 022
 # pip3 install cltk
@@ -860,8 +860,8 @@ sudo /usr/bin/pip3 install --prefix /usr cltk
 
 Building Lapos from source is straightforward. Clone the repo:
 ```bash
-$> cd ~
-$> git clone https://github.com/cltk/lapos.git
+cd ~
+git clone https://github.com/cltk/lapos.git
 ```
 
 Follow the build instructions. Copy the executable file "lapos" to /opt/texton/bin.
@@ -881,7 +881,7 @@ The .war file can be built from source, see https://github.com/kuhumcst/opennlpP
 ### pdf2htmlEX
 You can download and build the source code of pdf2htmlEX from
 ```bash
-$> sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
+sudo git clone https://github.com/pdf2htmlEX/pdf2htmlEX.git
 ```
 However, it is advised to follow the instructions in the wiki of the pdf2htmlEX repo, which are more detailed and up to date.
 
@@ -889,13 +889,13 @@ See https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Building
 
 For example, on Debian based systems, you can do the following:
 ```bash
-$> cd ~
-$> wget https://github.com/pdf2htmlEX/pdf2htmlEX/releases/download/v0.18.8.rc1/pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
+cd ~
+wget https://github.com/pdf2htmlEX/pdf2htmlEX/releases/download/v0.18.8.rc1/pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
 ```
 (On Ubuntu 26.04, you may need out of luck in the following step.)
 Install the .deb package
 ```
-$> sudo sudo apt install ./pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
+sudo sudo apt install ./pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
 ```
 
 ### repetitiveness checker
@@ -903,18 +903,18 @@ $> sudo sudo apt install ./pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x
 For building from source, also see https://github.com/kuhumcst/texton-bin#repver
 
 ```bash
-$> wget https://raw.githubusercontent.com/kuhumcst/repetitiveness-checker/master/doc/makerepver.bash
-$> chmod ugo+x makerepver.bash
-$> ./makerepver.bash
-$> sudo cp repetitiveness-checker/repver /opt/texton/bin/
+wget https://raw.githubusercontent.com/kuhumcst/repetitiveness-checker/master/doc/makerepver.bash
+chmod ugo+x makerepver.bash
+./makerepver.bash
+sudo cp repetitiveness-checker/repver /opt/texton/bin/
 ```
 
 ### rtfreader
 ```bash
-$> wget https://raw.githubusercontent.com/kuhumcst/rtfreader/master/doc/makertfreader.bash
-$> sudo chmod ugo+x makertfreader.bash
-$> ./makerepver.bash
-$> sudo cp rtfreader/rtfreader /opt/texton/bin/
+wget https://raw.githubusercontent.com/kuhumcst/rtfreader/master/doc/makertfreader.bash
+sudo chmod ugo+x makertfreader.bash
+./makerepver.bash
+sudo cp rtfreader/rtfreader /opt/texton/bin/
 ```
 
 ### taggerXML
@@ -925,10 +925,10 @@ Copy https://github.com/kuhumcst/taggerXML/blob/master/doc/maketaggerXML.bash to
 Copy 'taggerXML/taggerXML' to '/opt/texton/bin'.
 
 ```bash
-$> wget https://raw.githubusercontent.com/kuhumcst/taggerXML/master/doc/maketaggerXML.bash
-$> sudo chmod ugo+x maketaggerXML.bash
-$> ./maketaggerXML.bash
-$> sudo cp taggerXML/taggerXML /opt/texton/bin/
+wget https://raw.githubusercontent.com/kuhumcst/taggerXML/master/doc/maketaggerXML.bash
+sudo chmod ugo+x maketaggerXML.bash
+./maketaggerXML.bash
+sudo cp taggerXML/taggerXML /opt/texton/bin/
 ```
 
 ### udpipe
@@ -938,9 +938,9 @@ The generated binary needs shared objects, which can come in different versions.
 It may be a good idea to clone the repo and build udpipe from source.
 
 ```bash
-$> cd ~
-$> git clone https://github.com/ufal/udpipe.git
-$> cd udpipe/src
-$> make
-$> cp udpipe <texton folder>/bin
+cd ~
+git clone https://github.com/ufal/udpipe.git
+cd udpipe/src
+make
+cp udpipe <texton folder>/bin
 ```
