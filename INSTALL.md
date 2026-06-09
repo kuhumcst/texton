@@ -343,7 +343,7 @@ sudo chmod -R g+w *
 sudo chown -R tomcat: BASE
 ```
 
-### Copy bracmat command line tool to destination folder ###
+### Copy bracmat command line tool to destination folder
 
 ```bash
 cd ~/Bracmat/src/
