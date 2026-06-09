@@ -35,8 +35,7 @@ X=
                  :   ?arg
                      (" "|\t|\n|\r)
                  )
-            & (!arg|"'æffter skreffne' -> 'æffterskreffne'"
-            & str$vap$(.!arg." "))
+            & !arg
         )
       & ( trim
         =   A B
@@ -414,11 +413,13 @@ X=
                         | –
                         | —
                         | "!"
+                        | ¡
                         | ‹
                         | ›
                         | «
                         | »
                         | "?"
+                        | ¿
                         | ‘
                         | ’
                         | “
@@ -506,11 +507,13 @@ X=
                         | –
                         | —
                         | "!"
+                        | ¡
                         | ‹
                         | ›
                         | «
                         | »
                         | "?"
+                        | ¿
                         | ‘
                         | ’
                         | “
@@ -563,11 +566,13 @@ X=
                                         | –
                                         | —
                                         | "!"
+                                        | ¡
                                         | ‹
                                         | ›
                                         | «
                                         | »
                                         | "?"
+                                        | ¿
                                         | ‘
                                         | ’
                                         | “
@@ -701,7 +706,15 @@ X=
               |   vap$((=.!arg).!arg):?chars
                 & ( considerAbbrev$(!chars.)
                   |     !chars
-                      : ?A ((","|";"|":"):?P)
+                      :   ?A
+                          ( ( ","
+                            | ";"
+                            | ":"
+                            | ¡
+                            | ¿
+                            )
+                          : ?P
+                          )
                     & getAll$(!A.!P):(?A.?P)
                     &   (considerAbbrev$(!A.!P)|Split$!A)
                         ( c
@@ -1345,12 +1358,15 @@ X=
                                   : (c.? (type.s) ?,?)
                                 & 
                               | RemoveSpaceFromS$!arg
+                             
                           )
                         . !c
                         )
                   )
+                
                 )
             | map$((=.RemoveSpaceFromS$!arg).!arg)
+           
         )
       & ( RemoveSpace
         =   e a c
@@ -1361,6 +1377,7 @@ X=
             | !arg:(?e.?a,?c)&(!e.!a,RemoveSpace$!c)
             | !arg:% %&map$(RemoveSpace.!arg)
             | !arg
+	
         )
       & ( removeOutliers
         =   
@@ -1466,6 +1483,36 @@ X=
             | !arg:% %&map$(smukkeser.!arg)
             | !arg
         )
+      & ( replace-l-with-lb
+        =   found L e B K
+          .   0:?found
+            &     map
+                $ ( ( 
+                    =   
+                      .     !arg:(l.?arg)
+                          & 1+found:?found
+                          & (lb.!arg,)
+                        | !arg:(.l.)&
+                        | !arg
+                    )
+                  . !arg
+                  )
+              : ?arg
+            & ( !found:0
+              |   :?L
+                &   whl
+                  ' ( !arg:%?e ?arg
+                    & (   !e:@
+                        & !arg:%@?B ?arg
+                        & str$(!e !B):?e
+                      | 
+                      )
+                    & !e !L:?L
+                    )
+                & whl'(!L:%?e ?L&!e !arg:?arg)
+              )
+            & (!arg.!found)
+        )
       & !arg:(?input.?style.?abbreviations.?language)
       & :?SentenceEndingAbbrSeen
       & new$hash:?Mabbr
@@ -1484,12 +1531,12 @@ X=
           . !abbreviations
           )
       & get$(!input,X ML TRM):?xml
+      & replace-l-with-lb$!xml:(?xml.?found-l)
       & nestML$!xml:?xml
       &   !xml
         : ?XXX (TEI.?teiatt,?AAA (text.?textatt,?text) ?DDD) ?YYY
       & 0:?tok:?sen:?IS
       & findIDs$!text:?IDs
-      & (IDs..forall)$out
       & 0:?ID
       & trav$(!text..):?nbody
       & contractwadddel$!nbody:?nbody2
