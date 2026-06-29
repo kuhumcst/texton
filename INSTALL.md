@@ -163,16 +163,6 @@ sudo apt-get install -y git-lfs
 sudo apt install apache2
 ```
 
-### enabling webservices
-
-```bash
-cd /opt/texton/apache2-sites/
-sudo cp texton.conf /etc/apache2/sites-available/
-sudo a2ensite texton.conf
-sudo a2dissite 000-default.conf
-sudo service apache2 reload
-```
-
 ## PHP
 
 ```bash
@@ -182,7 +172,6 @@ sudo service apache2 restart
 ```
 
 Note "php8.3" is an example. Use the php version that you saw being installed in the previous step. 
-Copy /opt/texton/apache2-sites/texton.conf (i.e. a file comtained in this repo) to /etc/apache2/sites-available. 
 
 Some php scripts use the CURLFile class. To make that work
 
@@ -341,6 +330,16 @@ cd texton
 sudo chgrp -R www-data *
 sudo chmod -R g+w * 
 sudo chown -R tomcat: BASE
+```
+
+### enabling webservices
+
+```bash
+cd /opt/texton/apache2-sites/
+sudo cp texton.conf /etc/apache2/sites-available/
+sudo a2ensite texton.conf
+sudo a2dissite 000-default.conf
+sudo service apache2 reload
 ```
 
 ### Copy bracmat command line tool to destination folder ###
