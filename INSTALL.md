@@ -199,20 +199,18 @@ sudo apt install default-jdk
 
 On WSL Ubuntu, Tomcat is downloaded and installed as /opt/tomcat-texton/. This can go as follows:
 
-Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz
+Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.23/bin/apache-tomcat-11.0.23.tar.gz
 .
 ```bash
-sudo mkdir /opt/tomcat11
 sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
-sudo chown tomcat: /opt/tomcat11
 cd ~
-wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz -P .
-sudo tar -xvzf apache-tomcat-11.0.22.tar.gz -C /opt/tomcat11
-sudo ln -s /opt/tomcat11/apache-tomcat-11.0.22 /opt/tomcat-texton
+wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.23/bin/apache-tomcat-11.0.23.tar.gz -P .
+sudo tar -xvzf apache-tomcat-11.0.23.tar.gz -C /opt/tomcat11
+sudo ln -s /opt/tomcat11/apache-tomcat-11.0.23 /opt/tomcat-texton
 sudo chown -RH tomcat: /opt/tomcat-texton
-sudo chmod ugo+rx /opt/tomcat11/
-sudo chmod o+rx /opt/tomcat-texton/bin/
-sudo chmod o+rx /opt/tomcat-texton/logs/
+#sudo chmod ugo+rx /opt/tomcat11/
+#sudo chmod o+rx /opt/tomcat-texton/bin/
+#sudo chmod o+rx /opt/tomcat-texton/logs/
 ```
 [This step is perhaps not necessary! Edit /opt/tomcat-texton/conf/server.xml
 ```
@@ -220,7 +218,10 @@ sudo chmod o+rx /opt/tomcat-texton/logs/
 ```
 ]
 
-Create /etc/systemd/system/tomcat-texton.service
+```
+sudo vi /etc/systemd/system/tomcat-texton.service
+```
+Paste the following text:
 ```
 [Unit]
 Description=Apache Tomcat Web Application Container
@@ -251,19 +252,14 @@ WantedBy=multi-user.target
 Notice that the parameter -Xmx could be set to a higher value if the computer has enough memory, e.g. -Xmx16G if there is 32 GB RAM.
 Also notice that the commented line that includes bracmat.jar in the Environment will be activated once bracmat.jar is created and copied to $CATALINA_HOME/lib/. 
 
-Create folder /etc/systemd/system/tomcat-texton.service.d and file /etc/systemd/system/tomcat-texton.service.d/override.conf
+```
+sudo mkdir /etc/systemd/system/tomcat-texton.service.d
+sudo vi /etc/systemd/system/tomcat-texton.service.d/override.conf
+```
+Paste the following text:
 ```
 [Service]
 ReadWritePaths=/opt/texton/BASE/ /var/log/texton/
-```
-
-Then
-```bash
-sudo mkdir /var/log/texton
-sudo chown tomcat: /var/log/texton
-sudo systemctl daemon-reload
-sudo systemctl enable tomcat-texton.service
-sudo systemctl start tomcat-texton.service
 ```
 
 ## Install build tools
@@ -273,21 +269,11 @@ sudo apt install make
 sudo apt install ant
 ```
 
-
-
 ## Bracmat
 ### Install Readline and Curl libraries
 ```bash
 sudo apt-get install libreadline-dev
 sudo apt-get install libcurl4-openssl-dev
-```
-### Build and install the Bracmat command line tool
-```bash
-cd ~
-git clone https://github.com/BartJongejan/Bracmat.git
-cd Bracmat/src/
-make potuurl
-sudo cp bracmaturl /opt/texton/bin/bracmat
 ```
 
 ## Install Bracmat JNI
@@ -296,12 +282,17 @@ Create the Tomcat lib bracmat.jar and the shared library libbracmat.so.1.0.
 The script compileAndTestJNI.sh assumes that the folder /opt/tomcat-texton/ exists and that the tomcat binaries are in the bin subfolder. Edit compileAndTestJNI.sh if necessary.
 
 ```bash
+cd ~
+git clone https://github.com/BartJongejan/Bracmat.git
 cd ~/Bracmat/java-JNI
 sudo chmod ugo+x compileAndTestJNI.sh
 sudo ./compileAndTestJNI.sh
 ```
 
-Open /etc/systemd/system/tomcat-texton.service again and remove the hash sign in front of this line:
+```
+sudo vi /etc/systemd/system/tomcat-texton.service
+```
+Remove the hash sign in front of this line:
 ```
 Environment="CLASSPATH=$CLASSPATH:$CATALINA_HOME/lib/bracmat.jar"
 ```
@@ -331,6 +322,11 @@ sudo chgrp -R www-data *
 sudo chmod -R g+w * 
 sudo chown -R tomcat: BASE
 ```
+Then
+```bash
+sudo mkdir /var/log/texton
+sudo chown tomcat: /var/log/texton
+```
 
 ### enabling webservices
 
@@ -339,14 +335,17 @@ cd /opt/texton/apache2-sites/
 sudo cp texton.conf /etc/apache2/sites-available/
 sudo a2ensite texton.conf
 sudo a2dissite 000-default.conf
+sudo systemctl daemon-reload
+sudo systemctl enable tomcat-texton.service
+sudo systemctl start tomcat-texton.service
 sudo service apache2 reload
 ```
 
-### Copy bracmat command line tool to destination folder ###
-
+### Build and install the Bracmat command line tool
 ```bash
 cd ~/Bracmat/src/
-sudo cp bracmat /opt/texton/bin/
+make potuurl
+sudo cp bracmaturl /opt/texton/bin/bracmat
 ```
 
 ### enabling webservices
@@ -447,7 +446,10 @@ sudo apt install libxml2-utils
 ## Using the admin page
 
 ### Server settings
-Create (as root) file /opt/texton/BASE/meta/properties containing
+```
+sudo vi /opt/texton/BASE/meta/properties
+```
+Paste the following content:
 ```
 ( baseUrlTools
 . "http://localhost:8080"
@@ -487,7 +489,9 @@ cd /opt/texton/BASE/
 ls -lrt alltables*
 ```
 
-Copy the file name of the most recent "alltables..." file to the clipboard. Now navigate to http://localhost:8080/texton/admin.html. In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
+Copy the file name of the most recent "alltables..." file to the clipboard. Now navigate to http://localhost:8080/texton/admin.html. 
+(If you see 404 instead of the admin page, `localhost forwarding` may be broken. In a Powershell prompt, type `wsl hostname -I`. Use the IP number that you see instead of `localhost`.)
+In the text field under "Import metadata tables", paste the name of the "alltables..." file and press the "import" button.
 
 
 If you want to run Text Tonsorium on anything else but a personal computer, you must set an administrator 'password' and a 'salt' value in the file /opt/texton/BASE/metaproperties.
@@ -521,6 +525,10 @@ If Text Tonsorium is installed locally, open http://localhost/texton/admin.html 
 
 Many of the tools require binary executable (i.e. compiled and linked) files.
 Some of the necessary binaries can be obtained by cloning https://github.com/kuhumcst/texton-bin. Some binaries must be obtained from 3rd party repos. Some binaries can be built from source.
+```
+cd /opt
+sudo git clone https://github.com/kuhumcst/texton-bin
+```
 Make sure the binaries in /opt/texton/bin are executable.
 ```bash
 sudo chmod ugo+x *
@@ -535,6 +543,9 @@ Alternatively, one can insert the needed values directly in the texton/BASE/meta
 ### CST-lemma
 
 Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin.
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/cstlemma  /opt/texton/bin/cstlemma
+```
 
 ### Cuneiform
 
@@ -546,7 +557,7 @@ sudo apt install cuneiform
 Also needed is ImageMagick
 
 ```bash
-$>sudo apt install imagemagick
+sudo apt install imagemagick
 ```
 ### daner
 Daner is at https://github.com/ITUnlp/daner
@@ -560,6 +571,7 @@ Afterwards there will be a subdirectory 'daner/daner'.
 ### dependency2tree
 
 ```bash
+cd ~
 git clone https://github.com/boberle/dependency2tree.git
 sudo cp dependency2tree/dependency2tree.py /opt/texton/dep2tree
 sudo apt install graphviz
@@ -575,8 +587,8 @@ sudo apt-get install espeak
 ### html2text
 
 ```bash
-sudo apt-get install php-mbstring
-sudo apt-get install php-dom
+#sudo apt-get install php-mbstring
+#sudo apt-get install php-dom
 cd /opt/texton/html2text
 sudo git clone https://github.com/soundasleep/html2text
 ```
@@ -585,7 +597,11 @@ Afterwards there will be a subdirectory 'html2text/html2text'.
 
 ### jsoncat
 
-See https://github.com/kuhumcst/texton-bin#jsoncat
+You can simply do
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/jsoncat /opt/texton/bin/jsoncat
+```
+Otherwise, see https://github.com/kuhumcst/texton-bin#jsoncat
 
 ```bash
 cd ~
@@ -597,7 +613,11 @@ sudo cp bin/jsoncat /opt/texton/bin
 
 ### Lapos
 
-An executable 'lapos' is in the texton-bin repository. If that executable does not work, try to build it from source. See below.
+An executable 'lapos' is in the texton-bin repository.
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/lapos /opt/texton/bin/lapos
+```
+If that executable does not work, try to build it from source. See below.
 
 ### LibreOffice (soffice)
 
@@ -612,10 +632,15 @@ It is difficult to get soffice to do what we want from PHP. What works on one ma
 ### mate-parser
 
 This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the BohnetsParser.war file to the tomcat webapps folder.
-
+```
+sudo ln -i -s /opt/texton-bin/opt/tomcat-texton/webapps/BohnetsParser.war /opt/tomcat-texton/webapps/BohnetsParser.war
+```
 ### mate-POStagger
 
 This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin. Copy the BohnetsTagger.war file to the tomcat webapps folder.
+```
+sudo ln -i -s /opt/texton-bin/opt/tomcat-texton/webapps/BohnetsTagger.war /opt/tomcat-texton/webapps/BohnetsTagger.war
+```
 
 ### np-genkender
 
@@ -628,7 +653,9 @@ sudo tar -xzf scol-1-12.tgz
 ### opennlpPOSTagger
 
 This webservice calls another webservice. The .war file for that webservice is in https://github.com/kuhumcst/texton-bin.  Copy the .war file to the tomcat webapps folder.
-
+```
+sudo ln -i -s /opt/texton-bin/opt/tomcat-texton/webapps/opennlpPOSTagger.war /opt/tomcat-texton/webapps/opennlpPOSTagger.war
+```
 ### pdf2htmlEX
 
 This tool can be downloaded in binary format, but we have not tried that. For building, see further down.
@@ -654,15 +681,26 @@ If you like, you can instead install the newer pdfminer.six (https://github.com/
 ```bash
 pip3 install pdfminer.six
 ```
+### rtfreader (tokenizer/segmenter)
+
+
+Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/rtfreader  /opt/texton/bin/rtfreader
+```
 
 ### repetitiveness checker
 
 Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
-
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/repver  /opt/texton/bin/repver
+```
 ### taggerXML
 
 Binary is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
-
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/taggerXML  /opt/texton/bin/taggerXML
+```
 ### Stanford CoreNLP
 
 The following instructions assume installation in a system with systemd.
@@ -794,7 +832,11 @@ Text Tonsorium needs ImageMagick to extract a PDF file. Sometimes the program 'c
        
     convert-im6.q16: not authorized '*******' @ error/constitute.c/ReadImage/412.
 
-In that case, edit /etc/ImageMagick-6/policy.xml and add the line
+In that case, edit /etc/ImageMagick-6/policy.xml,
+```
+sudo vi /etc/ImageMagick-6/policy.xml
+```
+add the line
 
     <policy domain="coder" rights="read|write" pattern="{EPS,PS2,PS3,PS,PDF,XPS}" />
 
@@ -803,7 +845,9 @@ and comment out the lines telling that rights is "none" for these file types.
 ### udpipe
 
 Binary 'udpipe' is in https://github.com/kuhumcst/texton-bin. Copy or link to /opt/texton/bin
-
+```
+sudo ln -i -s /opt/texton-bin/opt/texton/bin/udpipe  /opt/texton/bin/udpipe
+```
 If this executable does not work, you need to build this program. See below.
 
 The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
@@ -891,10 +935,10 @@ For example, on Debian based systems, you can do the following:
 cd ~
 wget https://github.com/pdf2htmlEX/pdf2htmlEX/releases/download/v0.18.8.rc1/pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
 ```
-(On Ubuntu 26.04, you may need out of luck in the following step.)
+(On Ubuntu 26.04, you may be out of luck in the following step.)
 Install the .deb package
 ```
-sudo sudo apt install ./pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
+sudo apt install ./pdf2htmlEX-0.18.8.rc1-master-20200630-Ubuntu-bionic-x86_64.deb
 ```
 
 ### repetitiveness checker
