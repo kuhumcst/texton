@@ -5,7 +5,7 @@ This document explains how you can install the Text Tonsorium under Linux Ubuntu
 The instructions are valid under the following assumptions:
 
   * The software is installed in the Windows Subsystem for Linux
-  * The OS is Ubuntu 24.04 LTS or higher
+  * The OS is Ubuntu 24.04 LTS or higher. Text Tonsorium can also be run under RedHat. 
   * The URI to the resulting web application is http://localhost/texton 
   * Most of the Text Tonsorium (software and linguistic resources) is located under '/opt/texton/'.  
    Only programs that are installed using apt-get reside elsewhere.
@@ -848,9 +848,11 @@ Binary 'udpipe' is in https://github.com/kuhumcst/texton-bin. Copy or link to /o
 ```
 sudo ln -i -s /opt/texton-bin/opt/texton/bin/udpipe  /opt/texton/bin/udpipe
 ```
-If this executable does not work, you need to build this program. See below.
+If this executable does not work (i.e. /opt/texton/bin/udpipe cannot be executed), you need to build this program. See below.
 
 The models udpipe-ud-2.5-191206.zip can be downloaded from https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-3131
+Press the button "Download instructions for command line" and copy the instructions to the terminal. Execute the instructions.
+
 Unzip this resource:
 
 ```bash
@@ -860,9 +862,6 @@ cd udpipe-ud-2.5-191206
 sudo chown www-data:<your user> .
 sudo chmod ug+w .
 ```
-
-Press the button "Download instructions for command line" and copy the instructions to the terminal. Execute the instructions.
-
 
 ## Tools that can or must be compiled from source
 
