@@ -18241,6 +18241,7 @@ function main2(evt) {
       ( keep
       =     jobNr jobID jobstatus files toolURL parms file
           , find jobNrParm stagingName stem toolid hiddenData
+          , otherJobNrParm Reason
         .   ( find
             =   x T L R
               .   !arg:(?x.?T)
@@ -18292,20 +18293,33 @@ function main2(evt) {
                 )
             |     !jobs
                 :   ?
-                    ( ~!jobNrParm
+                    ( ~!jobNrParm:?otherJobNrParm
                     .   ?
                         ( (?.?files.?.?parms.?file)
-                        & ( !files:? !stagingName ?
-                          | !file:!stagingName
-                          |   !parms:?+(I.?parms)+?
-                            & find$(!stagingName.!parms)
-                          )
+                        &   (   !files:? !stagingName ?
+                              & in-files !files
+                            | !file:!stagingName&file !file
+                            |   !parms:?+(I.?parms)+?
+                              & find$(!stagingName.!parms)
+                              & parms !parms
+                            )
+                          : ?Reason
                         )
                         ?
                     )
                     ?
               & "The user wants to delete everything from this job, but another job is still using the file. So, no. Keep it."
-              & log$(!stagingName !jobNrParm yes)
+              &   log
+                $ ( stagingName
+                    !stagingName
+                    jobNrParm
+                    !jobNrParm
+                    otherJobNrParm
+                    !otherJobNrParm
+                    Reason
+                    !Reason
+                    yes
+                  )
               & yes
             |   "The user's wish can be fulfilled."
               & log$(!stagingName !jobNrParm no)
@@ -19148,10 +19162,7 @@ function main2(evt) {
                           $ (   str
                               $ (" The zipped results are kept for no more than " !minutes " minutes! ")
                                 str
-                              $ ( " De zippede resultater bliver bevaret i højst "
-                                  !minutes
-                                  " minutter!"
-                                )
+                              $ (" De zippede resultater bliver bevaret i højst " !minutes " minutter!")
                             )
                         )
                   |   paragraph
