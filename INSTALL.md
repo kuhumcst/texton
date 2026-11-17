@@ -271,9 +271,16 @@ sudo apt install ant
 
 ## Bracmat
 ### Install Readline and Curl libraries
+In Debian or Ubuntu:
 ```bash
 sudo apt-get install libreadline-dev
 sudo apt-get install libcurl4-openssl-dev
+```
+In Redhat, CentOS, or Fedora:
+```bash
+sudo dnf check-update
+sudo dnf install readline-devel
+sudo yum install libcurl-devel -y
 ```
 
 ## Install Bracmat JNI
