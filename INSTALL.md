@@ -199,14 +199,14 @@ sudo apt install default-jdk
 
 On WSL Ubuntu, Tomcat is downloaded and installed as /opt/tomcat-texton/. This can go as follows:
 
-Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.23/bin/apache-tomcat-11.0.23.tar.gz
+Visit https://tomcat.apache.org/ to obtain a link to a recent .tar.gz archive. In this example, https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.29/bin/apache-tomcat-11.0.29.tar.gz
 .
 ```bash
 sudo useradd -r -m -U -d /opt/tomcat11 -s /bin/false tomcat
 cd ~
-wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.23/bin/apache-tomcat-11.0.23.tar.gz -P .
-sudo tar -xvzf apache-tomcat-11.0.23.tar.gz -C /opt/tomcat11
-sudo ln -s /opt/tomcat11/apache-tomcat-11.0.23 /opt/tomcat-texton
+wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.29/bin/apache-tomcat-11.0.29.tar.gz -P .
+sudo tar -xvzf apache-tomcat-11.0.29.tar.gz -C /opt/tomcat11
+sudo ln -s /opt/tomcat11/apache-tomcat-11.0.29 /opt/tomcat-texton
 sudo chown -RH tomcat: /opt/tomcat-texton
 #sudo chmod ugo+rx /opt/tomcat11/
 #sudo chmod o+rx /opt/tomcat-texton/bin/
@@ -271,9 +271,16 @@ sudo apt install ant
 
 ## Bracmat
 ### Install Readline and Curl libraries
+In Debian or Ubuntu:
 ```bash
 sudo apt-get install libreadline-dev
 sudo apt-get install libcurl4-openssl-dev
+```
+In Redhat, CentOS, or Fedora:
+```bash
+sudo dnf check-update
+sudo dnf install readline-devel
+sudo yum install libcurl-devel -y
 ```
 
 ## Install Bracmat JNI
