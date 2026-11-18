@@ -96,7 +96,7 @@ function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
         fwrite($fscrip," * ContentProvider  : GitHub\n");
         fwrite($fscrip," * Creator          : Ray Smith a.o.\n");
         fwrite($fscrip," * InfoAbout        : https://github.com/tesseract-ocr/tesseract/wiki\n");
-        fwrite($fscrip," * Description      : Tesseract Open Source OCR Engine. Tesseract 4 adds a new neural net (LSTM) based OCR engine which is focused on line recognition, but also still supports the legacy Tesseract OCR engine of Tesseract 3 which works by recognizing character patterns.\n");
+        fwrite($fscrip," * Description      : Tesseract OCR is the industry-standard free, open-source Optical Character Recognition engine. It uses LSTM neural networks to read text from images and scanned documents in 100+ languages — typically above 99% character accuracy on clean, printed pages.\n");
         fwrite($fscrip," * ExternalURI      : \n");
         fwrite($fscrip," * inputF " . $inputF . "\n");
         fwrite($fscrip," * input  " . $input  . "\n");
