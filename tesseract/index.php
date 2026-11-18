@@ -14,19 +14,21 @@ header('Content-type:text/plain; charset=UTF-8');
  */
 /*
 ToolID         : Tesseract-OCR
-PassWord       :
-Version        : 5.1.0
+PassWord       : 
+Version        : 5.5.0
 Title          : Tesseract-OCRv5
 Path in URL    : tesseract	*** TODO make sure your web service listens on this path and that this script is readable for the webserver. ***
 Publisher      : GitHub
 ContentProvider: GitHub
 Creator        : Ray Smith a.o.
 InfoAbout      : https://github.com/tesseract-ocr/tesseract/wiki
-Description    : Tesseract Open Source OCR Engine. Tesseract 4 adds a new neural net (LSTM) based OCR engine which is focused on line recognition, but also still supports the legacy Tesseract OCR engine of Tesseract 3 which works by recognizing character patterns.
-ExternalURI    :
-XMLparms       :
-PostData       :
-Inactive       :
+Description    : Tesseract OCR is the industry-standard free, open-source Optical Character Recognition engine. It uses LSTM neural networks to read text from images and scanned documents in 100+ languages — typically above 99% character accuracy on clean, printed pages.
+ExternalURI    : 
+RestAPIkey         : 
+RestAPIpassword    : 
+MultiInp       : 
+PostData       : 
+Inactive       : 
 */
 
 /*******************
@@ -37,7 +39,6 @@ $toollog = '../log/TesseractOCR.log'; /* Used by the logit() function. TODO make
 /*  TODO Set $dodelete to false if temporary files in /tmp should not be deleted before returning. */
 $dodelete = true;
 $tobedeleted = array();
-
 
 function loginit()  /* Wipes the contents of the log file! TODO Change this behaviour if needed. */
     {
@@ -63,15 +64,32 @@ function logit($str) /* TODO You can use this function to write strings to the l
         }
     }
 
+function getTesseractVersion(string $binary = 'tesseract'): ?string
+  {
+      // Older versions print --version to stderr, so capture both streams
+      $output = shell_exec(escapeshellcmd($binary) . ' --version 2>&1');
+      if (!is_string($output)) {
+          return null;
+      }
+
+      // Matches "tesseract 5.5.0", "tesseract v5.3.0.20221214", "tesseract 4.1.1-rc2"
+      if (preg_match('/^tesseract\s+v?(\d+\.\d+(?:\.\d+)?)/mi', $output, $m)) {
+          return $m[1];
+      }
+      return null;
+  }
+
 function scripinit($inputF,$input,$output)  /* Initialises outputfile. */
     {
     global $fscrip, $TesseractOCRfile;
     $fscrip = fopen($TesseractOCRfile,'w');
+    $version = getTesseractVersion() ?? "unknown";
+    
     if($fscrip)
         {
         fwrite($fscrip,"/*\n");
         fwrite($fscrip," * ToolID           : Tesseract-OCR\n");
-        fwrite($fscrip," * Version          : 5.1.0\n");
+        fwrite($fscrip," * Version          : $version\n");
         fwrite($fscrip," * Title            : Tesseract-OCRv5\n");
         fwrite($fscrip," * ServiceURL       : http://localhost/tesseract\n");
         fwrite($fscrip," * Publisher        : GitHub\n");
@@ -123,7 +141,7 @@ try {
         foreach( $query as $param )
             {
             list($name, $value) = explode('=', $param);
-            if($parameterName == urldecode($name) && $parameterValue == urldecode($value))
+            if($parameterName === urldecode($name) && $parameterValue === urldecode($value))
                 return true;
             }
         return false;
@@ -192,6 +210,7 @@ try {
         global $TesseractOCRfile;
         global $dodelete;
         global $tobedeleted;
+        global $mode;
 /***************
 * declarations *
 ***************/
@@ -225,7 +244,7 @@ try {
         $Ilangaf = false;	/* Language in input is Afrikaans (afrikaans) if true */
         $Ilangbr = false;	/* Language in input is Breton (bretonsk) if true */
         $Ilangbs = false;	/* Language in input is Bosnian (bosnisk) if true */
-        $Ilangca = false;	/* Language in input is Catalan (katalansk) if true */
+        $Ilangca = false;	/* Language in input is Catalan (catalansk) if true */
         $Ilangco = false;	/* Language in input is Corsican (korsikansk) if true */
         $Ilangcs = false;	/* Language in input is Czech (tjekkisk) if true */
         $Ilangcy = false;	/* Language in input is Welsh (walisisk) if true */
@@ -282,7 +301,7 @@ try {
         $Olangaf = false;	/* Language in output is Afrikaans (afrikaans) if true */
         $Olangbr = false;	/* Language in output is Breton (bretonsk) if true */
         $Olangbs = false;	/* Language in output is Bosnian (bosnisk) if true */
-        $Olangca = false;	/* Language in output is Catalan (katalansk) if true */
+        $Olangca = false;	/* Language in output is Catalan (catalansk) if true */
         $Olangco = false;	/* Language in output is Corsican (korsikansk) if true */
         $Olangcs = false;	/* Language in output is Czech (tjekkisk) if true */
         $Olangcy = false;	/* Language in output is Welsh (walisisk) if true */
@@ -331,7 +350,7 @@ try {
         $Olangvi = false;	/* Language in output is Vietnamese (vietnamesisk) if true */
         $Olangyi = false;	/* Language in output is Yiddish (jiddisch) if true */
         $Opresnml = false;	/* Assemblage in output is normal if true */
-        $Osmlnsl = false;	/* Smell in output is new smell (ny lugt) if true */
+        $OsmlTXT = false;	/* Smell in output is Text production (Tekst) if true */
         $Iformatimggif = false;	/* Style of format image (billede) in input is GIF if true */
         $Iformatimgjpeg = false;	/* Style of format image (billede) in input is JPEG JFIF if true */
         $Iformatimgpdf = false;	/* Style of format image (billede) in input is Image as PDF if true */
@@ -363,7 +382,7 @@ try {
         if( hasArgument("F") )
             {
             $F = requestFile("F");
-            if($F == '')
+            if($F === '')
                 {
                 header("HTTP/1.0 404 Input not found (F parameter). ");
                 return;
@@ -559,9 +578,9 @@ try {
             }
         if( hasArgument("Osml") )
             {
-            $Osmlnsl = existsArgumentWithValue("Osml", "nsl");
-            $echos = $echos . "Osmlnsl=$Osmlnsl ";
-            $output = $output . ($Osmlnsl ? " \$Osmlnsl" : "") ;
+            $OsmlTXT = existsArgumentWithValue("Osml", "TXT");
+            $echos = $echos . "OsmlTXT=$OsmlTXT ";
+            $output = $output . ($OsmlTXT ? " \$OsmlTXT" : "") ;
             }
 
 /*******************************
@@ -598,7 +617,7 @@ try {
 // YOUR CODE STARTS HERE.
 //        TODO your code!
         $TesseractOCRfile = tempFileName("TesseractOCR-results");
-        if($mode == 'dry')
+        if($mode === 'dry')
             scripinit($inputF,$input,$output);
 
         if($Iappgot)
